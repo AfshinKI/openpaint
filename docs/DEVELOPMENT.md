@@ -112,6 +112,10 @@ sufficient. Maintain one honest status ledger rather than optimistic badges.
 
 ## Extending the shared UI
 
+Read [the menu/control specification](MENUS.md) for placement and visible inventory
+before adding a toolbar group, popup or settings page. Keep unverified interactions
+explicit in the feature plan and implement only the current slice.
+
 New controls must use the rounded family in `qml/` (`PaintButton`, `IconButton`,
 `PaintMenu`, `PaintDialog`, `PaintSpinBox`, `ColorSwatch`) and `Theme` tokens. Add
 original icons to `qml/icons` and register them in the QML module. Preserve named

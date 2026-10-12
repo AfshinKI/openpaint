@@ -4,15 +4,19 @@ Status: design specification, not an implemented or pixel-verified replica.
 Goal: someone familiar with modern Paint should find the same everyday workflows
 quickly, with Linux window conventions and original OpenPaint assets.
 
+The detailed [menu and control specification](MENUS.md) defines group order,
+menu entries, brush inventory, settings and feature discovery. Read it before
+adding or rearranging visible controls; planned entries are not shipped features.
+
 ## Window anatomy
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │ OpenPaint     Untitled •                              window controls   │
 ├────────────────────────────────────────────────────────────────────────┤
-│ File   Edit   View                         Undo  Redo       Settings    │
+│ File Edit View │ Save Share Undo Redo             What’s new Settings  │
 ├────────────────────────────────────────────────────────────────────────┤
-│ Clipboard │ Image │ Tools │ Brushes │ Shapes │ Size │ Colors │ Layers   │
+│ Selection │ Image │ Tools │ Brushes │ Shapes │ Colors │ AI* │ Layers   │
 ├───────────┬───────────────────────────────────────────────┬────────────┤
 │ Tool      │                                               │ Layers     │
 │ options   │          canvas on a neutral workspace         │            │
@@ -24,6 +28,8 @@ quickly, with Linux window conventions and original OpenPaint assets.
 │ Cursor x,y    Selection w×h    Image w×h       Fit    −  100%  +         │
 └────────────────────────────────────────────────────────────────────────┘
 ```
+
+The optional intelligent-tools group remains deferred until its feature gate.
 
 Desktop decorations follow the window manager. The product must not draw fake
 Windows title-bar buttons. The first launch opens a blank white 1152×648 canvas

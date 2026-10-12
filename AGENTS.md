@@ -6,7 +6,7 @@ colors, history, navigation and safe PNG open/save. Do not claim planned feature
 ## Start with the relevant contract
 
 - Product scope/status: [feature checklist](docs/FEATURES.md) and [roadmap](docs/ROADMAP.md).
-- UI behavior: [design](docs/DESIGN.md).
+- UI behavior: [design](docs/DESIGN.md) and [menu/control specification](docs/MENUS.md).
 - Engine, threading, or persistence: [architecture](docs/ARCHITECTURE.md).
 - Implementation steps and completion criteria: [development](docs/DEVELOPMENT.md).
 - Packaging or network behavior: [releases](docs/RELEASES.md) and [privacy](docs/PRIVACY.md).
