@@ -122,6 +122,13 @@ with a useful explanation. Initial limits and budgets live in [QUALITY.md](QUALI
 
 ## Files and recovery
 
+PNG chunk CRC/profile validation links system zlib (zlib license). A bounded TIFF
+IFD0 reader extracts orientation only; EXIF/text is stripped and orientation applied
+exactly once before the document receives pixels. ICC profiles are limited to
+4 MiB decoded and must describe a Qt-supported color space. The PNG output device
+records short/failed writes and lets the codec unwind before cancelling QSaveFile;
+it never reports a failed underlying write as a successful save.
+
 PNG is the lossless interchange baseline; add JPEG, BMP, and WebP in M2. Add static
 GIF import in M4 and warn that only the first frame is used. Do not claim animation
 editing, GIF export, SVG rendering, or PSD compatibility in 1.0.

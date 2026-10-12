@@ -32,9 +32,9 @@ Only local static PNG is supported. Limits: 128 MiB encoded, 16,384 per dimensio
 untagged images are assumed sRGB. Internal pixels are 8-bit premultiplied RGBA.
 Text metadata chunks are removed before decoding and the user is informed when
 metadata was discarded. Saved images contain pixels and sRGB only, with alpha
-preserved. Animated PNG and PNG EXIF orientation are explicitly rejected rather
-than silently flattening/ignoring unsupported data. Full EXIF normalization is a
-follow-up; do not claim it is implemented.
+preserved. Animated PNG remains rejected. EXIF orientation is now normalized and EXIF is
+removed before decoding; see [PNG validation](0007-png-validation.md) for the
+bounded parser and failure coverage.
 
 Qt Quick FileDialog requests platform-native dialogs when available and falls back
 to Qt's dialog. This slice does not establish Flatpak portal replacement guarantees.

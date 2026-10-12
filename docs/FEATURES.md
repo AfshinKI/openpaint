@@ -30,7 +30,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F12 | Add/delete/rename/reorder/duplicate/merge layers | R1 covers layers/reorder/merge; other operations are product choices pending audit | M3 | Planned |
 | F13 | Transparent canvas, layer visibility/opacity | R1 plus OpenPaint contract; detailed parity needs observation | M3 | Planned |
 | F14 | Editable layered project save/reopen | R2; OpenPaint uses .ora initially | M3 | Planned |
-| F15 | PNG, JPEG, BMP, WebP interchange; static GIF import | R1 documents some formats; exact supported subset is our choice | M1–M4 | In progress: static PNG open/save implemented and tested; other formats pending. |
+| F15 | PNG, JPEG, BMP, WebP interchange; static GIF import | R1 documents some formats; exact supported subset is our choice | M1–M4 | In progress: static PNG open/save, EXIF orientation normalization and failure checks implemented; see [PNG validation](plans/0007-png-validation.md); other formats pending. |
 | F16 | Undo/redo, crash recovery, atomic saves | Product choice; reference workflow requires hands-on audit | M1–M3 | In progress: stroke history and atomic PNG saves tested; crash recovery pending. |
 | F17 | Stylus pressure, touch and fractional scaling | R1 confirms stylus; precise pressure behavior needs observation | M4 | Planned |
 | F18 | One-click background removal | R1 | M6 | Planned |
