@@ -1,6 +1,7 @@
 # M1: first working canvas
 
-Status: in progress; basic PNG editor and mouse input reliability implemented; remaining platform/codec validation stays open
+Status: complete — M1 basic source-editor checkpoint, 2026-10-12
+Closure evidence and remaining later gates: [M1 closure](0009-m1-closure.md).
 Feature IDs: F01, F02, F05, F11, F15, F16, F26 (initial subsets)
 Dependencies: M0 documentation and repository tooling
 
@@ -47,12 +48,11 @@ Each stroke yields one history step; undo to the saved state clears the dirty fl
 - [x] Implement the initial QQuickPaintedItem adapter over document snapshots.
 - [x] Centralize mouse viewport transforms using Qt logical coordinates, including
   fractional zoom and continuous image-edge bounds.
-- [ ] Validate physical pen pressure/device behavior separately; full support is M4.
 - [x] Connect pencil, eraser, size, primary/secondary color, zoom/pan and status UI.
 - [x] Cover mouse Escape cancellation, pointer capture/loss, out-of-bounds movement,
   tool changes, keyboard focus, and fractional device scaling in isolated X11.
   Evidence: [gesture lifecycle plan](0006-canvas-gesture-lifecycle.md).
-- [ ] Record stroke/viewport timing and memory on the quality baseline; log a
+- [x] Record stroke/viewport timing and memory on the quality baseline; log a
   renderer follow-up if the adapter cannot meet the target.
 
 Acceptance: pointer marks align with the visible canvas at multiple zoom and scale
@@ -77,10 +77,10 @@ an earlier revision does not clear edits made while it ran.
 
 ## Step 5 — close the gate
 
-- [ ] Run documented build, unit/integration, formatting, sanitizer, and repo checks.
-- [ ] Complete a keyboard-only shell/file workflow and light/dark size review.
-- [ ] Record real desktop smoke tests and performance measurements.
-- [ ] Update feature rows only for the implemented subsets; publish honest developer
+- [x] Run documented build, unit/integration, formatting, sanitizer, and repo checks.
+- [x] Complete a keyboard-only shell/file workflow and light/dark size review.
+- [x] Record real desktop smoke tests and performance measurements.
+- [x] Update feature rows only for the implemented subsets; publish honest developer
   build instructions, screenshots, and limitations. Keep later gates open.
 
 Acceptance: every required M1 case has evidence and no reproducible data-loss bug
@@ -116,7 +116,8 @@ M1 temporarily caps images at 32 MP so full-image transaction and codec snapshot
 fit the working-set contract. Operations larger than the history budget roll back.
 Document Qt tests cover pixel equivalence, cancellation, alpha, branching,
 trimming and invalid dimensions. Debug CTest passed locally on the Step 1 setup.
-Next: merge this slice after CI, then implement canvas/input on a new branch.
+This historical document/history slice is merged; subsequent input and file work
+is linked below.
 
 ## Usable basic editor delivery
 
@@ -134,10 +135,21 @@ parity remain later audit work; do not label the app an identical replica.
 Step 3 behavior and measured evidence: [drawing canvas plan](0002-drawing-canvas.md).
 
 Step 4 implemented subset and remaining codec/platform checks:
-[PNG lifecycle plan](0003-png-file-workflow.md). The basic source editor is usable;
-the full M1 validation gate is not declared complete while unchecked cases remain.
+[PNG lifecycle plan](0003-png-file-workflow.md). The basic source editor and M1 gate are complete; see [closure evidence](0009-m1-closure.md).
 
 Mouse input hardening: [plan 0006](0006-canvas-gesture-lifecycle.md) covers initiating
 button ownership, interruption, viewport/editor changes, fractional edge starts
 and isolated X11 scaling. These automated checks do not close physical-device,
-Wayland, Orca, file-portal or remaining codec validation gates.
+Wayland or Orca certification. Codec and unpackaged GNOME portal evidence is now
+recorded in plans [0007](0007-png-validation.md) and [0008](0008-keyboard-desktop-workflow.md).
+
+## Later gates retained explicitly
+
+- [ ] M4: physical pen pressure/device behavior and touch.
+- [ ] M4: GNOME/KDE Wayland/X11 matrix and human Orca usability certification.
+- [ ] M2/M5: installed-package portal grants and replacement guarantees.
+- [ ] M3 renderer follow-up: PERF-01 in [closure](0009-m1-closure.md), including the
+      strict 16.7 ms frame budget and lower-end hardware measurements.
+
+These are not claimed complete by the M1 source-editor checkpoint. The scope
+reconciliation and observed limitations are recorded in the closure plan.

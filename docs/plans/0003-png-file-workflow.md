@@ -50,7 +50,9 @@ All work remains offline; no file paths, image contents or diagnostics are uploa
 - [x] Editing during save preserves the snapshot and leaves new edits dirty.
 - [x] Failed open/save preserves pixels, filename and dirty state.
 - [x] UI New cancellation, Save-and-close, failed-save-close and file-dialog cancel pass.
-- [ ] Portal behavior, disk-full device injection, Wayland and accessibility matrix.
+- [x] Unpackaged GNOME portal save/open/cancel/replacement and simulated disk-full
+      device failure; evidence in plans [0007](0007-png-validation.md) and [0008](0008-keyboard-desktop-workflow.md).
+- [ ] Later gates: packaged portal grants, Wayland and full accessibility matrix.
 
 Debug and ASan/UBSan CTest passed all five suites with leak detection enabled:
 document, PNG IO, controller lifecycle, QML UI and CLI version. Formatting,
@@ -66,8 +68,7 @@ This is not a physical input-latency or cross-machine smoothness guarantee.
 
 ## Handoff
 
-The usable basic source-build checkpoint is delivered when this PR's full CI passes
-and it merges. The broader M1 platform/quality gate remains open for the unchecked
-cases above and the canvas plan's device/accessibility work. Next feature branches
-should add individual M2 tools and packaging; do not extend this branch into them.
-The maintainer permits checked PR merges through stable v1, with no bypasses.
+The basic source-editor and M1 checkpoint are complete; [closure evidence](0009-m1-closure.md)
+records performance and remaining later gates. Start each M2 feature on a fresh
+branch from current main. The maintainer permits checked PR merges through stable
+v1, with no bypasses.

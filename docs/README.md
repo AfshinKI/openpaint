@@ -12,6 +12,7 @@ These documents are implementation contracts. Plans describe intended behavior;
 | Language, modules, rendering, document and save model | [Architecture](ARCHITECTURE.md) |
 | How to implement a feature | [Development guide](DEVELOPMENT.md) |
 | First executable implementation plan | [M1 foundation](plans/0001-foundation.md) |
+| M1 completion evidence and performance baseline | [M1 closure](plans/0009-m1-closure.md) |
 | Testing and release gates | [Quality](QUALITY.md) |
 | Download formats and Updates screen | [Releases](RELEASES.md) |
 | Personal data, network access, fixture rules | [Privacy](PRIVACY.md) |

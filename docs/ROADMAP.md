@@ -1,14 +1,15 @@
 # Delivery plan
 
 A usable basic source editor supports drawing, history and safe PNG files.
-M1 platform/quality validation remains in progress; M2 tools and packages come next. See [the build guide](BUILD.md) to run the preview.
+M1 is complete for the validated source-build checkpoint; M2 tools and packages come next.
+See [M1 closure evidence and limits](plans/0009-m1-closure.md). See [the build guide](BUILD.md) to run the preview.
 Milestones are exit gates, not promised dates. Complete thin, usable slices before
 adding breadth. [FEATURES.md](FEATURES.md) is the implementation status ledger.
 
 | Gate | Result | Required acceptance evidence |
 | --- | --- | --- |
 | M0 — foundation | Reviewed docs, license, shared agent rules, templates, working docs/privacy checks | Local checks pass; repository settings verified after publication |
-| M1 — first working canvas | Native window; pencil/eraser; primary/secondary colors; PNG open/save; undo/redo; zoom/pan; dirty-close prompt | Draw → undo → redo → save → reopen preserves pixels; failed save preserves original; clean Linux build; keyboard shell; performance baseline |
+| M1 — first working canvas (complete) | Native window; pencil/eraser; primary/secondary colors; PNG open/save; undo/redo; zoom/pan; dirty-close prompt | Draw → undo → redo → save → reopen preserves pixels; failed save preserves original; clean Linux build; keyboard shell; performance baseline |
 | M2 — useful alpha | Brush options, fill, shapes/text, selections/clipboard, crop/resize/rotate, common image formats; first downloadable alpha | Workflow tests; transparency/lossy export prompts; clean-VM AppImage and test Flatpak install; Updates screen with manual release link |
 | M3 — layered beta | Layer operations, .ora projects, tiled storage as needed, bounded history, crash recovery | Cross-tool .ora round-trip; crash/recovery and disk-full tests; large-document budget; full project save fidelity |
 | M4 — desktop completeness | Freeform rotation, rulers/grid, stylus/touch, printing, accessibility, adaptive UI and translation infrastructure | GNOME/KDE Wayland and X11 matrix; Orca and keyboard tests; print preview; scale/theme screenshots; input-device tests |
@@ -60,3 +61,10 @@ security issue remains open. Downloads, corresponding source, license notices,
 release notes, install/update/uninstall instructions, and limitations are available.
 The README advertises only shipped capabilities. AI and exact Microsoft-format
 compatibility remain clearly identified future work.
+
+## Follow-ups from M1
+
+[Closure evidence](plans/0009-m1-closure.md#scope-reconciliation-and-remaining-work)
+tracks PERF-01 (renderer/lower-end performance before M3), UI-01 (rapid dialog
+handoffs in M4), and PLATFORM-01 (packaged portals, full desktop/input/accessibility
+matrix). M1 completion does not close these later gates.
