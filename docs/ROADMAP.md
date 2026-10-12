@@ -1,6 +1,7 @@
 # Delivery plan
 
-The project starts with documentation and repository checks. There is no app yet.
+The native shell and build/test setup exist. M1 is in progress; drawing and file
+editing are not implemented yet. See [the build guide](BUILD.md) to run the preview.
 Milestones are exit gates, not promised dates. Complete thin, usable slices before
 adding breadth. [FEATURES.md](FEATURES.md) is the implementation status ledger.
 

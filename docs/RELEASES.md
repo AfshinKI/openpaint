@@ -136,8 +136,8 @@ multiple windows/processes, unsaved work, failed save, and failed startup/rollba
 
 ## Release pipeline
 
-Current CI runs repository checks only. M1 adds application build/unit tests and
-format/static checks; M2 adds packaging jobs; M5 adds signed publishing/update jobs.
+Current CI runs repository checks, native shell builds/tests, and formatting/QML
+checks. M2 adds packaging jobs; M5 adds signed publishing/update jobs.
 Do not commit a workflow that pretends to build targets that do not exist.
 
 Release sequence:

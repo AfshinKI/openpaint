@@ -5,6 +5,7 @@ These documents are implementation contracts. Plans describe intended behavior;
 
 | Need | Start here |
 | --- | --- |
+| Build/run the current native shell | [Build guide](BUILD.md) |
 | Product goals and release order | [Roadmap](ROADMAP.md) |
 | Modern Paint scope and reference evidence | [Feature checklist](FEATURES.md) |
 | Layout, visual rules, shortcuts, interactions | [Interface design](DESIGN.md) |

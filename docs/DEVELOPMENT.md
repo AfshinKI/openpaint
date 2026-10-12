@@ -6,19 +6,16 @@ without relying on an earlier chat.
 
 ## Working environment
 
-Today: Python 3.11+ runs the repository checks; Git is also needed for tooling tests.
-No application target exists yet.
-Planned M1 baseline: C++20 compiler (GCC 13+ or Clang 18+), CMake 3.28+, Ninja,
-Qt 6.8+ with Quick Controls, and Qt Test/QuickTest. Pin exact tested versions and
-install commands in M1 rather than documenting untested distro package names now.
-
-M1 will supply `dev`, `release`, and `asan` CMake presets. The intended commands
-below are a future interface and **do not run in the current docs-only repository**:
+Python 3.11+ and Git run the repository checks. Application development also needs
+a C++20 compiler, CMake 3.28+, Ninja, Qt 6.8+ with Quick Controls and Qt Test, plus
+the pinned formatting tools. [BUILD.md](BUILD.md) contains tested setup instructions
+and limitations. The native shell has `dev`, `release`, and `asan` CMake presets:
 
 ```sh
 cmake --preset dev
 cmake --build --preset dev
 ctest --preset dev --output-on-failure
+cmake --build --preset dev --target format-check qml-lint
 ```
 
 No download of tools or dependencies should be hidden inside a normal build.
@@ -86,8 +83,8 @@ explicit error results that the UI can translate. Keep error logs free of image
 contents, personal paths, and prompts.
 
 Use `PascalCase` for C++ types/QML components and `camelCase` for functions and
-variables. M1 introduces a clang-format configuration and QML formatting/lint
-commands, then enforces the checked-in rules. Do not add a second style tool for
+variables. Use the checked-in clang-format configuration and QML formatting/lint
+commands. Do not add a second style tool for
 the same job. User-facing strings go through translation APIs.
 
 Signals describe state changes; actions express user intent. QML binds to typed

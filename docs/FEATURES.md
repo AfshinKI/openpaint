@@ -1,6 +1,7 @@
 # Feature checklist and reference audit
 
-Audit date: 2026-10-12. **All application features below are planned, not built.**
+Audit date: 2026-10-12. **Only the native shell subset of F01 is implemented.**
+Drawing, documents, and the remaining capabilities below are still planned.
 The reference is modern Windows 11 Paint, including separately identified preview
 features. This is a research baseline, not an exhaustive test of today's installed
 Paint. No Windows binary was available for a hands-on comparison.
@@ -13,7 +14,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 
 | ID | Capability | Evidence / distinction | Target | Status |
 | --- | --- | --- | --- | --- |
-| F01 | Familiar toolbar, light/dark, responsive canvas | R1; exact visual baseline still needs observation | M1–M4 | Planned |
+| F01 | Familiar toolbar, light/dark, responsive canvas | R1; exact visual baseline still needs observation | M1–M4 | In progress: native window/themes verified locally; toolbar/canvas pending. See [M1 evidence](plans/0001-foundation.md#evidence-and-handoff). |
 | F02 | Pencil, eraser, basic brush, sizes | R1 | M1 | Planned |
 | F03 | Additional brush styles, stroke opacity | R1, R2 | M2 | Planned |
 | F04 | Fill and adjustable tolerance | R1; tolerance announced as preview in R3 | M2 | Planned |

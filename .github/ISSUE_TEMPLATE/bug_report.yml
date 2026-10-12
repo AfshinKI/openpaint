@@ -4,7 +4,7 @@ title: "[Bug]: "
 body:
   - type: markdown
     attributes:
-      value: "Use synthetic files. Remove personal paths, images, and credentials. The repository is currently at the planning stage; docs/tooling bugs are welcome."
+      value: "Use synthetic files. Remove personal paths, images, and credentials. The native shell runs from source; drawing and file editing are not available yet."
   - type: input
     id: version
     attributes:

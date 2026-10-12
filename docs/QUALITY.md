@@ -1,7 +1,7 @@
 # Quality and validation
 
-Current checks validate repository content only. Application test suites are
-planned and become required as the corresponding code lands.
+Current checks cover repository content and the native application shell. Engine,
+codec, and updater suites become required as the corresponding code lands.
 
 ## Check selection
 
@@ -65,9 +65,9 @@ Revisit limits with measurements and a documented decision, not arbitrary remova
 
 ## CI progression
 
-Today: Python content checker and its tests on every PR/push, with read-only token
-permissions. A weekly workflow dependency check can be added through Dependabot.
-M1 adds a supported compiler/Qt matrix, formatting/QML lint, CTest, and ASan/UBSan.
+Today: Python content checks and native shell builds/tests run on every PR/push,
+with read-only tokens. CI covers GCC 13 Debug, Clang 18 Release and ASan/UBSan with
+Qt 6.8.3, formatting and QML lint. Dependabot checks workflow dependencies weekly.
 M3 adds parser fuzz targets with bounded corpora. M4 adds representative UI smoke
 tests. M5 adds artifact and updater gates. Sanitizers run in separate compatible
 jobs; known external-library exceptions must be narrow and documented.

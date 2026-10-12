@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma Singleton
+
+import QtQuick
+
+QtObject {
+    // 0 follows the desktop, 1 is light, 2 is dark. Session-only in this preview.
+    property int mode: 0
+    readonly property bool dark: mode === 2 || (mode === 0 && Application.styleHints.colorScheme === Qt.ColorScheme.Dark)
+    readonly property color window: dark ? "#181B20" : "#F5F6F8"
+    readonly property color panel: dark ? "#22262D" : "#FFFFFF"
+    readonly property color workspace: dark ? "#111418" : "#E2E5EA"
+    readonly property color text: dark ? "#F1F4F8" : "#18212B"
+    readonly property color secondaryText: dark ? "#ADB8C5" : "#4C5867"
+    readonly property color accent: dark ? "#68DCC2" : "#006B58"
+    readonly property color accentText: dark ? "#10211D" : "#FFFFFF"
+    readonly property color divider: dark ? "#454E5A" : "#C9CED6"
+}

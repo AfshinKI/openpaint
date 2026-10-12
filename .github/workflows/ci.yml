@@ -26,3 +26,46 @@ jobs:
         run: python3 tools/check_repo.py
       - name: Test validation tooling
         run: python3 -m unittest discover -s tools/tests -v
+
+  native:
+    name: Native shell (${{ matrix.compiler }}, ${{ matrix.preset }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: g++-13
+            preset: dev
+          - compiler: clang++-18
+            preset: release
+          - compiler: clang++-18
+            preset: asan
+    env:
+      CXX: ${{ matrix.compiler }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install system build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-13 clang-18 ninja-build python3-venv \
+            libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxkbcommon-x11-0
+      - name: Install pinned development tools and Qt
+        run: |
+          python3 -m venv build/tooling
+          build/tooling/bin/python -m pip install -r tools/requirements-dev.txt
+          build/tooling/bin/python -m aqt install-qt linux desktop 6.8.3 linux_gcc_64 \
+            --outputdir build/qt --archives icu qtbase qtdeclarative qtsvg qttools qtwayland
+          echo "$GITHUB_WORKSPACE/build/tooling/bin" >> "$GITHUB_PATH"
+          echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/build/qt/6.8.3/gcc_64" >> "$GITHUB_ENV"
+      - name: Configure and build
+        run: |
+          cmake --preset "${{ matrix.preset }}"
+          cmake --build --preset "${{ matrix.preset }}" --parallel 2
+      - name: Check C++ and QML
+        run: cmake --build --preset "${{ matrix.preset }}" --target format-check qml-lint
+      - name: Test application shell
+        run: ctest --preset "${{ matrix.preset }}"

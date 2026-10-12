@@ -1,0 +1,3 @@
+# Explicit setup only; CMake never installs or downloads dependencies.
+aqtinstall==3.3.0
+clang-format==18.1.8

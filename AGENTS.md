@@ -1,7 +1,7 @@
 # Working on OpenPaint
 
-OpenPaint is a Linux desktop paint app. This repository is currently a documentation
-and tooling foundation; do not claim that planned application features exist.
+OpenPaint is a Linux desktop paint app. A native application shell exists;
+drawing and document editing are not implemented yet. Do not claim planned features exist.
 
 ## Start with the relevant contract
 
@@ -52,10 +52,14 @@ with [the decision template](docs/templates/DECISION.md).
 ```sh
 python3 tools/check_repo.py
 python3 -m unittest discover -s tools/tests -v
+cmake --preset dev
+cmake --build --preset dev
+cmake --build --preset dev --target format-check qml-lint
+ctest --preset dev
 ```
 
-Application build commands in the M1 plan are a future contract until M1 implements
-them. Do not invent successful builds or install instructions.
+Application commands require the dependencies in [the build guide](docs/BUILD.md).
+Do not invent successful builds or install instructions.
 
 ## Handoff and review
 
