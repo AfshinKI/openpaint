@@ -63,6 +63,10 @@ ApplicationWindow {
             requestChange("close");
         }
     }
+    ColorPalette {
+        id: customPalette
+        objectName: "customPalette"
+    }
     Editor {
         id: editor
         objectName: "editor"
@@ -262,7 +266,7 @@ ApplicationWindow {
         }
     }
     header: ToolBar {
-        height: 112
+        height: 144
         background: Rectangle {
             anchors.fill: parent
             anchors.margins: 4
@@ -371,8 +375,7 @@ ApplicationWindow {
                         text: qsTr("Primary")
                         implicitWidth: 72
                         onClicked: {
-                            colorDialog.selectedColor = editor.primary;
-                            colorDialog.open();
+                            colorDialog.begin(editor.primary, "primary");
                         }
                         background: Rectangle {
                             color: editor.primary
@@ -398,17 +401,15 @@ ApplicationWindow {
                         }
                         Accessible.name: qsTr("Swap primary and secondary colors")
                     }
-                    Rectangle {
-                        implicitWidth: 24
-                        implicitHeight: 24
-                        color: editor.secondary
-                        border.color: Theme.divider
-                        Accessible.name: qsTr("Secondary color")
-                        Accessible.role: Accessible.Indicator
+                    ColorSwatch {
+                        objectName: "secondaryButton"
+                        swatchColor: editor.secondary
+                        text: qsTr("Edit secondary color · right-click to draw")
+                        onClicked: colorDialog.begin(editor.secondary, "secondary")
                     }
                 }
                 Label {
-                    text: qsTr("Right-click: secondary")
+                    text: qsTr("Primary / secondary")
                     color: Theme.secondaryText
                 }
             }
@@ -419,27 +420,37 @@ ApplicationWindow {
                     columnSpacing: 0
                     Repeater {
                         model: ["#000000", "#6b7280", "#8b4513", "#e53935", "#ff8c00", "#ffd600", "#2e9b46", "#00a6a6", "#1976d2", "#7b1fa2", "#ffffff", "#d1d5db", "#d7a47b", "#ff9aa2", "#ffc777", "#fff59d", "#a5d6a7", "#80deea", "#90caf9", "#ce93d8"]
-                        delegate: Button {
-                            id: swatch
+                        delegate: ColorSwatch {
                             objectName: "colorSwatch"
                             required property string modelData
-                            implicitWidth: 32
-                            implicitHeight: 32
+                            swatchColor: modelData
+                            checked: editor.primary.toString() === modelData
                             onClicked: editor.primary = modelData
-                            background: Rectangle {
-                                x: 4
-                                y: 4
-                                width: 24
-                                height: 24
-                                radius: 12
-                                color: swatch.modelData
-                                border.width: swatch.activeFocus || editor.primary.toString() === swatch.modelData ? 3 : 1
-                                border.color: swatch.activeFocus ? Theme.accent : Theme.divider
-                            }
-                            Accessible.name: qsTr("Color %1").arg(modelData)
-                            ToolTip.visible: hovered
-                            ToolTip.text: modelData
                         }
+                    }
+                }
+                RowLayout {
+                    spacing: 0
+                    Repeater {
+                        model: customPalette.colors
+                        delegate: ColorSwatch {
+                            objectName: "customToolbarSwatch"
+                            required property string modelData
+                            swatchColor: modelData
+                            text: qsTr("Custom color %1").arg(modelData)
+                            onClicked: editor.primary = modelData
+                        }
+                    }
+                    IconButton {
+                        visible: customPalette.colors.length < 10
+                        symbol: "palette"
+                        text: qsTr("Edit and save custom colors")
+                        implicitWidth: 32
+                        implicitHeight: 32
+                        onClicked: colorDialog.begin(editor.primary, "primary")
+                    }
+                    Item {
+                        Layout.fillWidth: true
                     }
                 }
                 Label {
@@ -566,11 +577,17 @@ ApplicationWindow {
             color: Theme.text
         }
     }
-    ColorDialog {
+    ColorEditor {
         id: colorDialog
-        title: qsTr("Primary color")
-        onAccepted: editor.primary = selectedColor
+        paletteStore: customPalette
+        onColorChosen: function (chosen) {
+            if (colorTarget === "primary")
+                editor.primary = chosen;
+            else
+                editor.secondary = chosen;
+        }
     }
+
     PaintDialog {
         id: closeDialog
         title: qsTr("Save changes?")
