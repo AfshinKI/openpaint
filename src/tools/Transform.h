@@ -12,7 +12,13 @@ enum class TransformKind {
     RotateHalf,
     FlipHorizontal,
     FlipVertical,
-    Crop
+    Crop,
+    ResizeSkew
+};
+struct TransformOptions {
+    QSize size;
+    qreal skewX = 0, skewY = 0;
+    bool smooth = true;
 };
 struct TransformResult {
     QImage image;
@@ -21,5 +27,6 @@ struct TransformResult {
     bool cancelled = false;
 };
 TransformResult transformImage(const QImage& source, const QRegion& mask, TransformKind kind,
-                               const std::shared_ptr<std::atomic_bool>& token);
+                               const std::shared_ptr<std::atomic_bool>& token,
+                               const TransformOptions& options = {});
 } // namespace openpaint

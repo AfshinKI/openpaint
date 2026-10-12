@@ -85,7 +85,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
 | Escape | Cancel active preview/transform; otherwise dismiss the topmost transient UI |
 | Pan / zoom | Space+drag pans outside text entry; Ctrl+wheel zooms around pointer; plain wheel scrolls |
-| Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Selected-image resizing follows in M2. |
+| Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Resize/skew supports selected content or the whole image. |
 | Transform | Shift constrains proportions or rotation increments; numeric inputs provide keyboard precision |
 | Text | Inline editor with font, size, alignment, style, foreground and optional background; Ctrl+Enter commits, Escape cancels |
 | Shape | 19-item icon palette; Shift constrains geometry, polygon clicks add vertices and Backspace removes the last; drag/release retains preview; numeric start/end and outline/fill options; Enter/Apply commits and Escape/Cancel restores original; new drawing/tool switch commits current preview; Undo cancels the preview |
@@ -207,4 +207,6 @@ with Selection and Image groups so commands fit the minimum window. Image action
 name image/selection scope explicitly. Crop uses selected bounds and clears
 unselected interior pixels; rotations and flips preserve alpha. Selected-content
 transforms retain a movable Apply/Cancel preview, while whole-image commands commit
-one undo step and refit when dimensions change. Resize/skew follows separately.
+one undo step and refit when dimensions change. Resize/skew offers pixel/percent
+size, aspect lock, smooth/nearest resampling and bounded horizontal/vertical skew.
+Its local dialog draft is accepted after closing; Cancel preserves all pixels.

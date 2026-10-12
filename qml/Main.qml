@@ -80,6 +80,12 @@ ApplicationWindow {
             requestChange("close");
         }
     }
+    ResizeDialog {
+        id: resizeDialog
+        objectName: "resizeDialog"
+        editor: window.editorController
+        parent: Overlay.overlay
+    }
     SelectionOptions {
         id: selectionOptions
         objectName: "selectionOptions"
@@ -170,7 +176,7 @@ ApplicationWindow {
         objectName: "newAction"
         text: qsTr("&New")
         shortcut: StandardKey.New
-        enabled: !editor.busy
+        enabled: !editor.busy && !resizeDialog.visible
         onTriggered: window.requestChange("new")
     }
     Action {
@@ -178,7 +184,7 @@ ApplicationWindow {
         objectName: "openAction"
         text: qsTr("&Open…")
         shortcut: StandardKey.Open
-        enabled: !editor.busy
+        enabled: !editor.busy && !resizeDialog.visible
         onTriggered: window.requestChange("open")
     }
     Action {
@@ -186,14 +192,14 @@ ApplicationWindow {
         objectName: "saveAction"
         text: qsTr("&Save")
         shortcut: StandardKey.Save
-        enabled: !editor.busy
+        enabled: !editor.busy && !resizeDialog.visible
         onTriggered: window.saveDrawing()
     }
     Action {
         id: saveAsAction
         text: qsTr("Save &As…")
         shortcut: StandardKey.SaveAs
-        enabled: !editor.busy
+        enabled: !editor.busy && !resizeDialog.visible
         onTriggered: {
             editor.commitPreview();
             saveDialog.open();
@@ -204,25 +210,26 @@ ApplicationWindow {
         objectName: "quitAction"
         text: qsTr("&Quit")
         shortcut: "Ctrl+Q"
+        enabled: !resizeDialog.visible
         onTriggered: window.close()
     }
     Action {
         id: undoAction
         text: qsTr("Undo")
         shortcut: StandardKey.Undo
-        enabled: editor.canUndo && !editor.loading && !editor.textActive
+        enabled: editor.canUndo && !editor.loading && !editor.textActive && !resizeDialog.visible
         onTriggered: editor.undo()
     }
     Action {
         id: redoAction
         text: qsTr("Redo")
         shortcut: "Ctrl+Y"
-        enabled: editor.canRedo && !editor.loading && !editor.textActive
+        enabled: editor.canRedo && !editor.loading && !editor.textActive && !resizeDialog.visible
         onTriggered: editor.redo()
     }
     Shortcut {
         sequence: "Ctrl+Shift+Z"
-        enabled: !editor.textActive
+        enabled: !editor.textActive && !resizeDialog.visible
         onActivated: editor.redo()
     }
     Action {
@@ -246,58 +253,65 @@ ApplicationWindow {
     Action {
         id: rotateRightAction
         text: editor.hasSelection ? qsTr("Rotate selection right 90°") : qsTr("Rotate image right 90°")
-        enabled: editor.canSelect && !editor.busy
+        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
         onTriggered: editor.transformImage(0)
     }
     Action {
         id: rotateLeftAction
         text: editor.hasSelection ? qsTr("Rotate selection left 90°") : qsTr("Rotate image left 90°")
-        enabled: editor.canSelect && !editor.busy
+        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
         onTriggered: editor.transformImage(1)
     }
     Action {
         id: rotateHalfAction
         text: editor.hasSelection ? qsTr("Rotate selection 180°") : qsTr("Rotate image 180°")
-        enabled: editor.canSelect && !editor.busy
+        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
         onTriggered: editor.transformImage(2)
     }
     Action {
         id: flipHorizontalAction
         text: editor.hasSelection ? qsTr("Flip selection horizontally") : qsTr("Flip image horizontally")
-        enabled: editor.canSelect && !editor.busy
+        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
         onTriggered: editor.transformImage(3)
     }
     Action {
         id: flipVerticalAction
         text: editor.hasSelection ? qsTr("Flip selection vertically") : qsTr("Flip image vertically")
-        enabled: editor.canSelect && !editor.busy
+        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
         onTriggered: editor.transformImage(4)
+    }
+    Action {
+        id: resizeAction
+        objectName: "resizeAction"
+        text: editor.hasSelection ? qsTr("Resize/skew selection…") : qsTr("Resize/skew image…")
+        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
+        onTriggered: resizeDialog.open()
     }
     Action {
         id: cropAction
         text: qsTr("Crop to selection")
-        enabled: editor.canSelect && editor.hasSelection && !editor.busy
+        enabled: editor.canSelect && editor.hasSelection && !editor.busy && !resizeDialog.visible
         onTriggered: editor.transformImage(5)
     }
     Action {
         id: copyAction
         text: qsTr("Copy")
         shortcut: "Ctrl+C"
-        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused
+        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !resizeDialog.visible
         onTriggered: editor.copySelection()
     }
     Action {
         id: cutAction
         text: qsTr("Cut")
         shortcut: "Ctrl+X"
-        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused
+        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !resizeDialog.visible
         onTriggered: editor.cutSelection()
     }
     Action {
         id: pasteAction
         text: qsTr("Paste")
         shortcut: "Ctrl+V"
-        enabled: editor.canSelect && !editor.busy && !window.textInputFocused
+        enabled: editor.canSelect && !editor.busy && !window.textInputFocused && !resizeDialog.visible
         onTriggered: editor.pasteClipboard()
     }
     Action {
@@ -305,21 +319,21 @@ ApplicationWindow {
         objectName: "selectAllAction"
         text: qsTr("Select all")
         shortcut: "Ctrl+A"
-        enabled: editor.canSelect && !window.textInputFocused
+        enabled: editor.canSelect && !window.textInputFocused && !resizeDialog.visible
         onTriggered: editor.selectAll()
     }
     Action {
         id: deselectAction
         text: qsTr("Deselect")
         shortcut: "Ctrl+D"
-        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused
+        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !resizeDialog.visible
         onTriggered: editor.deselect()
     }
     Action {
         id: deleteSelectionAction
         text: qsTr("Delete selection")
         shortcut: "Delete"
-        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused
+        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !resizeDialog.visible
         onTriggered: editor.deleteSelection()
     }
     Action {
@@ -431,6 +445,9 @@ ApplicationWindow {
                     title: qsTr("&Image")
                     PaintMenuItem {
                         action: cropAction
+                    }
+                    PaintMenuItem {
+                        action: resizeAction
                     }
                     PaintMenuItem {
                         action: rotateRightAction
@@ -587,12 +604,20 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                IconButton {
-                    symbol: "crop"
-                    objectName: "cropButton"
-                    action: cropAction
-                    Accessible.name: text
+                RowLayout {
                     Layout.alignment: Qt.AlignHCenter
+                    IconButton {
+                        symbol: "crop"
+                        objectName: "cropButton"
+                        action: cropAction
+                        Accessible.name: text
+                    }
+                    IconButton {
+                        symbol: "resize"
+                        objectName: "resizeButton"
+                        action: resizeAction
+                        Accessible.name: text
+                    }
                 }
                 PaintButton {
                     objectName: "imageMenuButton"
@@ -605,6 +630,9 @@ ApplicationWindow {
                         y: parent.height
                         PaintMenuItem {
                             action: cropAction
+                        }
+                        PaintMenuItem {
+                            action: resizeAction
                         }
                         PaintMenuItem {
                             action: rotateRightAction

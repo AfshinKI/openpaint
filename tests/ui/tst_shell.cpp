@@ -181,6 +181,52 @@ class ShellTest : public QObject {
         editor->undo();
     }
 
+    void resizeDialogWorkflow() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* dialog = window->findChild<QObject*>(QStringLiteral("resizeDialog"));
+        auto* widthInput = window->findChild<QObject*>(QStringLiteral("resizeWidth"));
+        auto* heightInput = window->findChild<QObject*>(QStringLiteral("resizeHeight"));
+        const auto original = editor->image();
+        QVERIFY(tabTo("resizeButton"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QSignalSpy closed(dialog, SIGNAL(closed()));
+        keyClick(Qt::Key_N, Qt::ControlModifier);
+        QVERIFY(dialog->property("visible").toBool());
+        QCOMPARE(editor->image(), original);
+        QVERIFY(tabTo("resizeWidth"));
+        keyClick(Qt::Key_Up);
+        QCOMPARE(widthInput->property("value").toInt(), 1153);
+        QCOMPARE(heightInput->property("value").toInt(), 649);
+        QVERIFY(QMetaObject::invokeMethod(dialog, "setPercent", Q_ARG(bool, true)));
+        QVERIFY(dialog->property("percentages").toBool());
+        QCOMPARE(widthInput->property("value").toInt(), 100);
+        window->resize(1024, 640);
+        auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("resize-light-1024.png")));
+        auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("resize-dark-1024.png")));
+        keyClick(Qt::Key_Escape);
+        QTRY_COMPARE(closed.size(), 1);
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->dirty());
+        QVERIFY(tabTo("resizeButton"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(dialog, "setPercent", Q_ARG(bool, true)));
+        QVERIFY(widthInput->setProperty("value", 50));
+        QVERIFY(heightInput->setProperty("value", 50));
+        QVERIFY(tabToButton("OK"));
+        keyClick(Qt::Key_Space);
+        QTRY_COMPARE(closed.size(), 2);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->imageSize(), QSize(576, 324));
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+    }
+
     void imageTransformWorkflow() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();
@@ -197,7 +243,8 @@ class ShellTest : public QObject {
         auto* menu = window->findChild<QObject*>(QStringLiteral("imageMenu"));
         QTRY_VERIFY(menu->property("visible").toBool());
         QSignalSpy closed(menu, SIGNAL(closed()));
-        keyClick(Qt::Key_Down); // Crop is disabled; Rotate right is first enabled.
+        keyClick(Qt::Key_Down); // Crop is disabled; Resize is first enabled.
+        keyClick(Qt::Key_Down); // Rotate right.
         keyClick(Qt::Key_Return);
         QTRY_COMPARE(closed.size(), 1);
         QTRY_VERIFY(!editor->busy());
