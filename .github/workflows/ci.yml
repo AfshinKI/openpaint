@@ -72,7 +72,8 @@ jobs:
       - name: Test isolated X11 input and scaling
         if: matrix.preset == 'dev'
         run: |
+          ldd "$CMAKE_PREFIX_PATH/plugins/platforms/libqxcb.so"
           for scale in 1 1.25 1.5 2; do
             QT_SCALE_FACTOR="$scale" xvfb-run -a -s '-screen 0 3200x2000x24 -nolisten tcp' \
-              env QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software ./build/dev/openpaint_shell_tests
+              env QT_DEBUG_PLUGINS=1 QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software ./build/dev/openpaint_shell_tests
           done
