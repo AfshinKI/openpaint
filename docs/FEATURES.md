@@ -1,7 +1,7 @@
 # Feature checklist and reference audit
 
-Audit date: 2026-10-12. **Only the native shell subset of F01 is implemented.**
-The document/history engine now exists; drawing UI and files are still planned.
+Audit date: 2026-10-12. **The first single-layer drawing canvas is implemented.**
+PNG files and remaining capabilities are still planned.
 The reference is modern Windows 11 Paint, including separately identified preview
 features. This is a research baseline, not an exhaustive test of today's installed
 Paint. No Windows binary was available for a hands-on comparison.
@@ -14,11 +14,11 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 
 | ID | Capability | Evidence / distinction | Target | Status |
 | --- | --- | --- | --- | --- |
-| F01 | Familiar toolbar, light/dark, responsive canvas | R1; exact visual baseline still needs observation | M1–M4 | In progress: native window/themes verified locally; toolbar/canvas pending. See [M1 evidence](plans/0001-foundation.md#evidence-and-handoff). |
-| F02 | Pencil, eraser, basic brush, sizes | R1 | M1 | Planned |
+| F01 | Familiar toolbar, light/dark, responsive canvas | R1; exact visual baseline still needs observation | M1–M4 | In progress: grouped toolbar, canvas and themes tested; exact parity audit pending. See [M1 evidence](plans/0001-foundation.md#evidence-and-handoff). |
+| F02 | Pencil, eraser, basic brush, sizes | R1 | M1 | Implemented: round pencil, opaque/transparent eraser, 1–128 px size; advanced brushes pending. |
 | F03 | Additional brush styles, stroke opacity | R1, R2 | M2 | Planned |
 | F04 | Fill and adjustable tolerance | R1; tolerance announced as preview in R3 | M2 | Planned |
-| F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | Planned |
+| F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | In progress: palette, primary dialog, swap and right-button secondary drawing. |
 | F06 | Lines, rectangles, ellipses, shape palette | R1; full palette needs observed inventory | M2 | Planned |
 | F07 | Text, font/style/size/alignment and background | R1; detailed control behavior needs observation | M2 | Planned |
 | F08 | Rectangle/free-form selection; copy/cut/paste | R1 | M2 | Planned |

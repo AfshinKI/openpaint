@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include "render/CanvasItem.h"
 #include <QDir>
+#include <QElapsedTimer>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlError>
@@ -7,6 +9,7 @@
 #include <QQuickWindow>
 #include <QSignalSpy>
 #include <QTest>
+#include <algorithm>
 #include <memory>
 
 class ShellTest : public QObject {
@@ -37,7 +40,7 @@ class ShellTest : public QObject {
     void launchAndResize() {
         QVERIFY(window->isVisible());
         QVERIFY(window->title().contains(QStringLiteral("OpenPaint")));
-        QVERIFY(window->findChild<QObject*>(QStringLiteral("previewNotice")));
+        QVERIFY(window->findChild<QObject*>(QStringLiteral("canvas")));
         window->resize(1024, 640);
         QTRY_COMPARE(window->size(), QSize(1024, 640));
         QVERIFY(!window->grabWindow().isNull());
@@ -47,14 +50,9 @@ class ShellTest : public QObject {
         auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
         auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
         auto* system = window->findChild<QObject*>(QStringLiteral("systemThemeAction"));
-        auto* button = window->findChild<QObject*>(QStringLiteral("aboutButton"));
         QVERIFY(light && dark && system);
-        QVERIFY(button);
-        auto* label = button->property("contentItem").value<QObject*>();
-        QVERIFY(label);
         QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
         QTRY_COMPARE(window->color(), QColor("#111418"));
-        QCOMPARE(label->property("color").value<QColor>(), QColor("#10211D"));
         QVERIFY(dark->property("checked").toBool());
         QVERIFY(!light->property("checked").toBool());
         QVERIFY(capture(QStringLiteral("shell-dark-1280.png")));
@@ -62,7 +60,6 @@ class ShellTest : public QObject {
         QVERIFY(capture(QStringLiteral("shell-dark-1024.png")));
         QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
         QTRY_COMPARE(window->color(), QColor("#E2E5EA"));
-        QCOMPARE(label->property("color").value<QColor>(), QColor("#FFFFFF"));
         QVERIFY(light->property("checked").toBool());
         QVERIFY(!dark->property("checked").toBool());
         QVERIFY(capture(QStringLiteral("shell-light-1024.png")));
@@ -83,6 +80,91 @@ class ShellTest : public QObject {
         QTest::keyClick(window, Qt::Key_Escape);
         QTRY_VERIFY(!dialog->property("visible").toBool());
         QVERIFY(window->isVisible());
+    }
+
+    void drawingAndTransforms() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        QVERIFY(canvas && editor);
+        const auto initial = editor->image();
+        auto start = canvas->mapToScene(canvas->fromDocument({100, 100})).toPoint();
+        auto end = canvas->mapToScene(canvas->fromDocument({300, 100})).toPoint();
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QVERIFY(editor->dirty());
+        QVERIFY(editor->canUndo());
+        QCOMPARE(editor->image().pixelColor(200, 100), QColor(Qt::black));
+        editor->undo();
+        QCOMPARE(editor->image(), initial);
+        QVERIFY(!editor->dirty());
+        editor->redo();
+        const auto painted = editor->image();
+        QTest::mousePress(window, Qt::LeftButton, {}, end + QPoint(0, 20));
+        QTest::mouseMove(window, end + QPoint(0, 80));
+        QTest::keyClick(window, Qt::Key_Escape);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end + QPoint(0, 80));
+        QCOMPARE(editor->image(), painted);
+        const QPointF anchor(211.5, 173.25);
+        const auto before = canvas->toDocument(anchor);
+        canvas->zoomAt(1.25, anchor);
+        QVERIFY(QLineF(before, canvas->toDocument(anchor)).length() < 0.00001);
+        QCOMPARE(editor->image(), painted);
+        editor->undo();
+    }
+
+    void interruptedAndSecondaryStroke() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        editor->secondary = Qt::red;
+        canvas->zoomAt(1.5, {200, 200});
+        auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
+        QTest::mousePress(window, Qt::RightButton, {}, at({100, 100}));
+        QTest::mouseRelease(window, Qt::RightButton, {}, at({200, 100}));
+        QCOMPARE(editor->image().pixelColor(150, 100), QColor(Qt::red));
+        const auto first = editor->image();
+        QTest::mousePress(window, Qt::LeftButton, {}, at({100, 150}));
+        QTest::mouseMove(window, at({200, 150}));
+        canvas->setFocus(false);
+        QVERIFY(editor->canUndo());
+        const auto interrupted = editor->image();
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({300, 150}));
+        QCOMPARE(editor->image(), interrupted);
+        editor->undo();
+        QCOMPARE(editor->image(), first);
+        editor->undo();
+    }
+
+    void renderTiming() {
+        if (!qEnvironmentVariableIsSet("OPENPAINT_BENCHMARK"))
+            return;
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        struct BenchmarkEditor : Editor {
+            BenchmarkEditor() {
+                QImage image(2048, 2048, QImage::Format_ARGB32_Premultiplied);
+                image.fill(Qt::white);
+                document.reset(image);
+            }
+        } benchmarkEditor;
+        auto* previousEditor = canvas->editor();
+        canvas->setEditor(&benchmarkEditor);
+        QList<double> timings;
+        benchmarkEditor.begin({100, 100}, false);
+        for (int i = 0; i < 65; ++i) {
+            QSignalSpy frame(window, &QQuickWindow::frameSwapped);
+            QElapsedTimer timer;
+            timer.start();
+            benchmarkEditor.extend({100.0 + i * 20, 100.0 + i * 10});
+            window->requestUpdate();
+            QVERIFY(frame.wait(1000));
+            if (i >= 5)
+                timings.append(timer.nsecsElapsed() / 1000000.0);
+        }
+        benchmarkEditor.finish();
+        std::sort(timings.begin(), timings.end());
+        qInfo("2048px sample-to-frame p50 %.2f ms, p95 %.2f ms (60 samples)", timings[30],
+              timings[56]);
+        canvas->setEditor(previousEditor);
     }
 
     void quitClosesWindow() {

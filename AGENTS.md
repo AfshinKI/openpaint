@@ -1,7 +1,7 @@
 # Working on OpenPaint
 
-OpenPaint is a Linux desktop paint app. A native application shell exists;
-drawing and document editing are not implemented yet. Do not claim planned features exist.
+OpenPaint is a Linux desktop paint app. A native canvas supports drawing, erasing,
+colors, history and navigation; file editing is the next slice. Do not claim planned features exist.
 
 ## Start with the relevant contract
 

@@ -6,8 +6,8 @@ OpenPaint is an independent, open-source desktop painting app inspired by modern
 Microsoft Paint: quick sketches, easy image edits, and a canvas that gets out of
 your way.
 
-> **Early development.** A native window with theme controls now runs from source.
-> Drawing and file editing are not implemented yet. No packaged release is available.
+> **Early development.** Pencil, eraser, colors, undo/redo and zoom/pan run from source.
+> PNG open/save is the next implementation slice. No packaged release is available.
 
 [Build and run the preview](docs/BUILD.md)
 
