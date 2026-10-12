@@ -95,6 +95,20 @@ X11 with the default renderer at 125% scale and offscreen/software have been
 checked locally. These
 tests do not establish Wayland, GPU rendering, Orca, or packaged-app support.
 
+For repeatable X11 input checks without live-desktop pointer interference, install
+`xvfb` and `xauth` using the distribution package manager, then run:
+
+```sh
+for scale in 1 1.25 1.5 2; do
+  QT_SCALE_FACTOR="$scale" xvfb-run -a -s '-screen 0 3200x2000x24 -nolisten tcp' \
+    env QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software ./build/dev/openpaint_shell_tests
+done
+```
+
+The GCC Debug CI lane uses this same matrix. It checks Qt's X11 input/rendering
+path in isolation, not desktop integration or physical input latency. The `canvas`
+CTest suite separately covers event-level gesture lifetime and edge coordinates.
+
 Generate synthetic captures of just the test window, excluding the desktop:
 
 ```sh

@@ -68,6 +68,11 @@ Revisit limits with measurements and a documented decision, not arbitrary remova
 Today: Python content checks and native shell builds/tests run on every PR/push,
 with read-only tokens. CI covers GCC 13 Debug, Clang 18 Release and ASan/UBSan with
 Qt 6.8.3, formatting and QML lint. Dependabot checks workflow dependencies weekly.
+The GCC Debug lane additionally runs the shell suite on isolated X11/software at
+100%, 125%, 150% and 200% scale. Xvfb prevents live-desktop pointer interference;
+it is not compositor, GPU or physical-device validation. Tests synchronize and
+grab the rendered window before coordinate actions instead of requiring an extra
+frame when the requested state may already have rendered.
 M3 adds parser fuzz targets with bounded corpora. M4 adds representative UI smoke
 tests. M5 adds artifact and updater gates. Sanitizers run in separate compatible
 jobs; known external-library exceptions must be narrow and documented.

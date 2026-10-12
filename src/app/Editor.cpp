@@ -2,10 +2,12 @@
 #include "Editor.h"
 #include <QFileInfo>
 #include <QtConcurrent>
+#include <cmath>
 void Editor::begin(QPointF point, bool secondaryButton) {
     if (loading_)
         return;
-    if (!image().rect().contains(point.toPoint()))
+    if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || point.x() < 0 || point.y() < 0 ||
+        point.x() >= image().width() || point.y() >= image().height())
         return;
     if (document.beginStroke(point, eraser ? secondary : (secondaryButton ? secondary : primary),
                              brushSize, eraser && transparentEraser)) {

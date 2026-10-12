@@ -4,6 +4,10 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Keep each canvas drag owned by its initiating button; prevent extra buttons and
+  interrupted drags from switching modes or appending stray pixels. Include the
+  final pan position and correct fractional image-edge hit testing.
+
 - Refine the color editor from supplied visual references: rectangular spectrum,
   brightness slider, RGB/HSV mode selector, basic grid and 24 custom slots. Show
   ten hollow custom slots in the compact toolbar, with smaller icons and stacked

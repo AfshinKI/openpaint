@@ -52,7 +52,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y g++-13 clang-18 ninja-build python3-venv \
-            libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxkbcommon-x11-0
+            libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxkbcommon-x11-0 xvfb xauth
       - name: Install pinned development tools and Qt
         run: |
           python3 -m venv build/tooling
@@ -69,3 +69,10 @@ jobs:
         run: cmake --build --preset "${{ matrix.preset }}" --target format-check qml-lint
       - name: Test application shell
         run: ctest --preset "${{ matrix.preset }}"
+      - name: Test isolated X11 input and scaling
+        if: matrix.preset == 'dev'
+        run: |
+          for scale in 1 1.25 1.5 2; do
+            QT_SCALE_FACTOR="$scale" xvfb-run -a -s '-screen 0 3200x2000x24 -nolisten tcp' \
+              env QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software ./build/dev/openpaint_shell_tests
+          done
