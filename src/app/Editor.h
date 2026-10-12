@@ -13,6 +13,12 @@ class Editor : public QObject {
     QML_ELEMENT
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(bool filling READ filling NOTIFY changed)
+    Q_PROPERTY(bool previewActive READ previewActive NOTIFY changed)
+    Q_PROPERTY(QPointF shapeStart READ shapeStart NOTIFY changed)
+    Q_PROPERTY(QPointF shapeEnd READ shapeEnd NOTIFY changed)
+    Q_PROPERTY(int shapeKind MEMBER shapeKind NOTIFY settingsChanged)
+    Q_PROPERTY(bool shapeOutline MEMBER shapeOutline NOTIFY settingsChanged)
+    Q_PROPERTY(bool shapeFill MEMBER shapeFill NOTIFY settingsChanged)
     Q_PROPERTY(int brushStyle MEMBER brushStyle NOTIFY settingsChanged)
     Q_PROPERTY(int opacity MEMBER opacity NOTIFY settingsChanged)
     Q_PROPERTY(int tolerance MEMBER tolerance NOTIFY settingsChanged)
@@ -31,7 +37,7 @@ class Editor : public QObject {
     Q_PROPERTY(Tool tool READ tool WRITE setTool NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentEraser MEMBER transparentEraser NOTIFY settingsChanged)
   public:
-    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush };
+    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape };
     Q_ENUM(Tool)
     Tool tool() const {
         return tool_;
@@ -78,13 +84,25 @@ class Editor : public QObject {
     }
     void begin(QPointF point, bool secondaryButton);
     void extend(QPointF point);
+    void endGesture();
+    bool previewActive() const {
+        return shapeActive_;
+    }
+    QPointF shapeStart() const {
+        return shapeStart_;
+    }
+    QPointF shapeEnd() const {
+        return shapeEnd_;
+    }
+    Q_INVOKABLE void setShapeGeometry(qreal x1, qreal y1, qreal x2, qreal y2);
     Q_INVOKABLE void finish();
     Q_INVOKABLE void cancel();
     Q_INVOKABLE void undo();
     Q_INVOKABLE void redo();
     QColor primary = Qt::black, secondary = Qt::white;
     int brushSize = 3, tolerance = 0, brushStyle = 0, opacity = 100;
-    bool transparentEraser = false;
+    bool transparentEraser = false, shapeOutline = true, shapeFill = false;
+    int shapeKind = 0;
   signals:
     void changed();
     void errorChanged();
@@ -96,6 +114,9 @@ class Editor : public QObject {
 
   private:
     void fail(const QString& message);
+    void refreshShape();
+    QPointF shapeStart_, shapeEnd_;
+    bool shapeActive_ = false, shapeSecondary_ = false;
     Tool tool_ = Tool::Pencil;
     bool busy_ = false, loading_ = false, filling_ = false;
     QFutureWatcher<openpaint::FillResult> fillWatcher_;

@@ -26,6 +26,7 @@ bool Document::reset(const QImage& image) {
     original_ = {};
     brush_.clear();
     active_ = false;
+    previewMode_ = false;
     history_.clear();
     cursor_ = 0;
     historyBytes_ = 0;
@@ -41,6 +42,7 @@ bool Document::beginStroke(QPointF point, QColor color, qreal width, bool clearA
         return false;
     if (brushStyle < -1 || brushStyle > 8 || opacity < 0 || opacity > 100)
         return false;
+    previewMode_ = false;
     brushed_ = brushStyle >= 0;
     if (brushed_ && !brush_.begin(image_.size(), point, color, width, brushStyle, opacity))
         return false;
@@ -89,6 +91,7 @@ bool Document::commitStroke() {
     if (!active_)
         return false;
     active_ = false;
+    previewMode_ = false;
     brush_.clear();
     if (dirtyRect_.isEmpty() || original_.copy(dirtyRect_) == image_.copy(dirtyRect_)) {
         original_ = {};
@@ -117,6 +120,30 @@ bool Document::commitStroke() {
     }
     return true;
 }
+bool Document::beginPreview() {
+    if (active_)
+        return false;
+    original_ = image_;
+    active_ = true;
+    brushed_ = false;
+    previewMode_ = true;
+    dirtyRect_ = {};
+    return true;
+}
+bool Document::updatePreview(const QImage& patch, QRect rect) {
+    if (!active_ || !previewMode_ ||
+        (!rect.isEmpty() && (!image_.rect().contains(rect) || patch.size() != rect.size() ||
+                             patch.format() != image_.format())))
+        return false;
+    QPainter painter(&image_);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    if (!dirtyRect_.isEmpty())
+        painter.drawImage(dirtyRect_, original_, dirtyRect_);
+    if (!rect.isEmpty())
+        painter.drawImage(rect.topLeft(), patch);
+    dirtyRect_ = dirtyRect_.united(rect);
+    return true;
+}
 bool Document::applyPatch(const QImage& candidate, QRect rect, quint64 sourceRevision) {
     if (active_ || sourceRevision != revision_ || candidate.size() != image_.size() ||
         candidate.format() != image_.format() || rect.isEmpty() || !image_.rect().contains(rect) ||
@@ -138,6 +165,7 @@ void Document::cancelStroke() {
         image_ = original_;
     original_ = {};
     active_ = false;
+    previewMode_ = false;
 }
 void Document::apply(const Patch& patch, bool forward) {
     QPainter painter(&image_);

@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add editable line, rectangle and ellipse previews with numeric geometry,
+  outline/fill options and explicit Apply/Cancel.
+
 - Add nine original brush styles, generated stroke previews and per-stroke opacity.
 
 - Add cancellable contiguous fill with adjustable tolerance and one-step undo.

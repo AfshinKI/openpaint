@@ -43,6 +43,11 @@ class Document {
     QRect extendStroke(QPointF point);
     bool commitStroke();
     void cancelStroke();
+    bool beginPreview();
+    bool updatePreview(const QImage& patch, QRect rect);
+    const QImage& previewBase() const {
+        return active_ ? original_ : image_;
+    }
     bool applyPatch(const QImage& candidate, QRect rect, quint64 sourceRevision);
     bool undo();
     bool redo();
@@ -59,7 +64,7 @@ class Document {
     void apply(const Patch& patch, bool forward);
     QImage image_, original_;
     Brush brush_;
-    bool brushed_ = false;
+    bool brushed_ = false, previewMode_ = false;
     std::vector<Patch> history_;
     size_t cursor_ = 0;
     qsizetype budget_, historyBytes_ = 0;

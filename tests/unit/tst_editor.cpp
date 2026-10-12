@@ -13,6 +13,29 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void shapeSaveCommitsPreview() {
+        Editor editor;
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 2;
+        editor.begin({20, 20}, false);
+        editor.extend({150, 100});
+        editor.endGesture();
+        QVERIFY(editor.previewActive());
+        editor.setShapeGeometry(30, 30, 160, 110);
+        const auto candidate = editor.image();
+        QTemporaryDir dir;
+        const auto url = QUrl::fromLocalFile(dir.filePath("shape.png"));
+        editor.saveFile(url);
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(!editor.previewActive());
+        QVERIFY(!editor.dirty());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, candidate);
+        editor.undo();
+        QVERIFY(editor.dirty());
+        editor.redo();
+        QVERIFY(!editor.dirty());
+    }
+
     void secondaryBrushOpacityAndSave() {
         Editor editor;
         editor.setTool(Editor::Tool::Brush);

@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Editor.h"
+#include "tools/Shape.h"
 #include <QFileInfo>
 #include <QtConcurrent>
 #include <cmath>
 void Editor::setTool(Tool tool) {
-    if (tool == tool_ || (tool != Tool::Pencil && tool != Tool::Eraser &&
-                          tool != Tool::ColorPicker && tool != Tool::Fill && tool != Tool::Brush))
+    if (tool == tool_ ||
+        (tool != Tool::Pencil && tool != Tool::Eraser && tool != Tool::ColorPicker &&
+         tool != Tool::Fill && tool != Tool::Brush && tool != Tool::Shape))
         return;
     if (filling_)
         cancelIo();
@@ -47,6 +49,16 @@ void Editor::begin(QPointF point, bool secondaryButton) {
             }));
         return;
     }
+    if (tool_ == Tool::Shape) {
+        finish();
+        if (!document.beginPreview())
+            return;
+        shapeStart_ = shapeEnd_ = point;
+        shapeActive_ = true;
+        shapeSecondary_ = secondaryButton;
+        refreshShape();
+        return;
+    }
     const bool eraser = tool_ == Tool::Eraser;
     if (document.beginStroke(point, eraser ? secondary : (secondaryButton ? secondary : primary),
                              brushSize, eraser && transparentEraser,
@@ -57,13 +69,43 @@ void Editor::begin(QPointF point, bool secondaryButton) {
     }
 }
 void Editor::extend(QPointF point) {
+    if (shapeActive_) {
+        setShapeGeometry(shapeStart_.x(), shapeStart_.y(), point.x(), point.y());
+        return;
+    }
     const auto rect = document.extendStroke(point);
     if (!rect.isEmpty())
         emit pixelsChanged(rect);
 }
+void Editor::endGesture() {
+    if (!shapeActive_)
+        finish();
+}
+void Editor::setShapeGeometry(qreal x1, qreal y1, qreal x2, qreal y2) {
+    if (!shapeActive_)
+        return;
+    for (qreal value : {x1, y1, x2, y2})
+        if (!std::isfinite(value) || std::abs(value) > 1000000)
+            return;
+    shapeStart_ = {x1, y1};
+    shapeEnd_ = {x2, y2};
+    refreshShape();
+}
+void Editor::refreshShape() {
+    if (!shapeActive_)
+        return;
+    const auto patch = openpaint::renderShape(document.previewBase(), shapeStart_, shapeEnd_,
+                                              shapeKind, shapeSecondary_ ? secondary : primary,
+                                              shapeSecondary_ ? primary : secondary, brushSize,
+                                              shapeOutline, shapeFill);
+    document.updatePreview(patch.image, patch.rect);
+    emit pixelsChanged({});
+    emit changed();
+}
 void Editor::finish() {
     if (!document.active())
         return;
+    shapeActive_ = false;
     document.commitStroke();
     emit pixelsChanged(QRect());
     emit changed();
@@ -71,6 +113,7 @@ void Editor::finish() {
 void Editor::cancel() {
     if (filling_)
         cancelIo();
+    shapeActive_ = false;
     document.cancelStroke();
     emit pixelsChanged(QRect());
     emit changed();
@@ -95,6 +138,7 @@ void Editor::redo() {
 }
 
 Editor::Editor(QObject* parent) : QObject(parent) {
+    connect(this, &Editor::settingsChanged, this, &Editor::refreshShape);
     connect(&fillWatcher_, &QFutureWatcher<openpaint::FillResult>::finished, this, [this] {
         const auto result = fillWatcher_.result();
         busy_ = filling_ = false;
