@@ -62,3 +62,8 @@ light/dark screenshots at 1024×640 and 1280×800 plus menu/dialog captures were
 reviewed. A menu-width regression assertion prevents collapsed popup surfaces.
 Icons in `qml/icons` are original project-authored GPL-3.0-or-later artwork.
 Slice 2 remains next after this branch passes CI and merges.
+
+The X11/default-renderer suite also passes at 125% scale. Test startup now waits
+for window activation and a rendered frame, preventing late native pointer events
+from contaminating synthetic strokes. Pixel assertions and production input code
+remain unchanged. Offscreen checks pass with the same readiness requirement.

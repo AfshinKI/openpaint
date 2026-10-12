@@ -30,6 +30,11 @@ class ShellTest : public QObject {
         window = qobject_cast<QQuickWindow*>(engine->rootObjects().first());
         QVERIFY(window);
         QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(window));
+        QSignalSpy readyFrame(window, &QQuickWindow::frameSwapped);
+        window->requestUpdate();
+        QVERIFY(readyFrame.wait(1000));
     }
 
     void cleanup() {
