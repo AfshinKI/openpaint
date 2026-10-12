@@ -244,6 +244,27 @@ ApplicationWindow {
         onTriggered: canvas.zoomBy(0.8)
     }
     Action {
+        id: copyAction
+        text: qsTr("Copy")
+        shortcut: "Ctrl+C"
+        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused
+        onTriggered: editor.copySelection()
+    }
+    Action {
+        id: cutAction
+        text: qsTr("Cut")
+        shortcut: "Ctrl+X"
+        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused
+        onTriggered: editor.cutSelection()
+    }
+    Action {
+        id: pasteAction
+        text: qsTr("Paste")
+        shortcut: "Ctrl+V"
+        enabled: editor.canSelect && !editor.busy && !window.textInputFocused
+        onTriggered: editor.pasteClipboard()
+    }
+    Action {
         id: selectAllAction
         objectName: "selectAllAction"
         text: qsTr("Select all")
@@ -337,6 +358,16 @@ ApplicationWindow {
             }
             PaintMenuItem {
                 action: redoAction
+            }
+            MenuSeparator {}
+            PaintMenuItem {
+                action: cutAction
+            }
+            PaintMenuItem {
+                action: copyAction
+            }
+            PaintMenuItem {
+                action: pasteAction
             }
             MenuSeparator {}
             PaintMenuItem {
@@ -757,7 +788,7 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }
@@ -765,7 +796,7 @@ ApplicationWindow {
                 objectName: "shapeOptionsButton"
                 text: qsTr("Options")
                 visible: editor.previewActive
-                onClicked: editor.textActive ? textOptions.open() : shapeOptions.open()
+                onClicked: editor.floatingActive ? selectionOptions.open() : editor.textActive ? textOptions.open() : shapeOptions.open()
             }
             PaintButton {
                 objectName: "applyPreviewButton"

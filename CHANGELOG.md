@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add PNG copy/cut/paste and movable selection previews with drag, numeric position,
+  arrow nudging, explicit Apply/Cancel and one-step undo.
+
 - Add rectangular selection, numeric bounds and select-all/deselect, with clipping
   across all drawing tools and undoable deletion to transparency.
 

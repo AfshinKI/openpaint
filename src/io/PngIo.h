@@ -20,6 +20,7 @@ struct ImageResult {
 };
 // Encode while deferring device errors until the codec has released its resources.
 bool writePng(QIODevice& device, const QImage& image);
+ImageResult decodePng(const QByteArray& bytes, const Cancellation& cancellation = {});
 ImageResult loadPng(const QString& path, const Cancellation& cancellation = {});
 // Commit injection exercises replacement failures without special filesystem privileges.
 ImageResult savePng(const QString& path, const QImage& image, const Cancellation& cancellation = {},

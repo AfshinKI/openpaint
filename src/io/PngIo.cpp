@@ -92,12 +92,11 @@ QImage cleanImage(QImage image) {
     return clean;
 }
 } // namespace
-ImageResult loadPng(const QString& path, const Cancellation& cancellation) {
+static ImageResult readPng(QIODevice& file, const Cancellation& cancellation) {
     if (cancelled(cancellation))
         return {{}, {}, true};
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly) || file.size() > 128 * 1024 * 1024)
-        return {{}, tr("Cannot open this file, or it exceeds the 128 MiB PNG limit.")};
+    if (file.size() > 128 * 1024 * 1024)
+        return {{}, tr("The image exceeds the 128 MiB PNG limit.")};
     const qint64 encodedSize = file.size();
     if (file.read(8) != QByteArray::fromHex("89504e470d0a1a0a"))
         return {{}, tr("Only PNG images are supported in this version.")};
@@ -190,6 +189,20 @@ ImageResult loadPng(const QString& path, const Cancellation& cancellation) {
             removedMetadata ? tr("Metadata was removed for privacy. Saving will write pixels "
                                  "and the sRGB profile only.")
                             : QString()};
+}
+ImageResult loadPng(const QString& path, const Cancellation& cancellation) {
+    if (cancelled(cancellation))
+        return {{}, {}, true};
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return {{}, tr("Cannot open this PNG file.")};
+    return readPng(file, cancellation);
+}
+ImageResult decodePng(const QByteArray& bytes, const Cancellation& cancellation) {
+    QBuffer buffer;
+    buffer.setData(bytes);
+    buffer.open(QIODevice::ReadOnly);
+    return readPng(buffer, cancellation);
 }
 bool writePng(QIODevice& device, const QImage& image) {
     // libpng uses longjmp on device errors; Qt 6.8's profile temporary then leaks.

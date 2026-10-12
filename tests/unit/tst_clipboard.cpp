@@ -1,0 +1,164 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+#include "app/Editor.h"
+#include <QBuffer>
+#include <QClipboard>
+#include <QGuiApplication>
+#include <QMimeData>
+#include <QPainter>
+#include <QTemporaryDir>
+#include <QtTest>
+class ClipboardEditor : public Editor {
+  public:
+    void reset(const QImage& image) {
+        document.reset(image);
+    }
+    void select(const QRegion& region) {
+        document.setSelection(region);
+    }
+};
+class ClipboardTest : public QObject {
+    Q_OBJECT
+  private slots:
+    void cleanup() {
+        QGuiApplication::clipboard()->clear();
+    }
+    void selectedAlphaAndClipboardRoundTrip() {
+        QImage source(80, 60, QImage::Format_ARGB32_Premultiplied);
+        source.fill(Qt::transparent);
+        source.setPixelColor(12, 12, QColor(255, 0, 0, 128));
+        source.setPixelColor(22, 12, Qt::blue);
+        source.setText(QStringLiteral("Comment"), QStringLiteral("synthetic metadata"));
+        ClipboardEditor editor;
+        editor.reset(source);
+        const auto original = editor.image();
+        editor.select(QRegion(QRect(10, 10, 5, 5)) + QRect(20, 10, 5, 5));
+        QVERIFY(editor.copySelection());
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(!editor.dirty());
+        const auto bytes = QGuiApplication::clipboard()->mimeData()->data("image/png");
+        const auto result = openpaint::decodePng(bytes);
+        QVERIFY(result.ok());
+        QCOMPARE(result.image.size(), QSize(15, 5));
+        QCOMPARE(result.image.pixelColor(2, 2), source.pixelColor(12, 12));
+        QCOMPARE(result.image.pixelColor(7, 2).alpha(), 0);
+        QVERIFY(result.image.textKeys().isEmpty());
+        editor.cutSelection();
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image().pixelColor(12, 12).alpha(), 0);
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.pasteClipboard();
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(editor.floatingActive());
+        editor.cancel();
+        QCOMPARE(editor.image(), original);
+        QCOMPARE(editor.selectionRect(), QRect(10, 10, 15, 5));
+    }
+    void moveOverlapCancelAndHistory() {
+        QImage source(80, 60, QImage::Format_ARGB32_Premultiplied);
+        source.fill(Qt::transparent);
+        for (int y = 10; y < 30; ++y)
+            for (int x = 10; x < 30; ++x)
+                source.setPixelColor(x, y, QColor(x * 7, y * 7, 0, 160));
+        ClipboardEditor editor;
+        editor.reset(source);
+        const auto original = editor.image();
+        editor.selectRect(10, 10, 20, 20);
+        editor.setTool(Editor::Tool::Select);
+        editor.begin({15, 15}, false);
+        editor.extend({25, 15});
+        editor.endGesture();
+        QVERIFY(editor.floatingActive());
+        QCOMPARE(editor.floatingPosition(), QPoint(20, 10));
+        QCOMPARE(editor.image().pixelColor(15, 15).alpha(), 0);
+        QCOMPARE(editor.image().pixelColor(25, 15), original.pixelColor(15, 15));
+        const auto moved = editor.image();
+        editor.cancel();
+        QCOMPARE(editor.image(), original);
+        QCOMPARE(editor.selectionRect(), QRect(10, 10, 20, 20));
+        editor.begin({15, 15}, false);
+        editor.extend({25, 15});
+        editor.endGesture();
+        editor.finish();
+        QCOMPARE(editor.image(), moved);
+        QCOMPARE(editor.selectionRect(), QRect(20, 10, 20, 20));
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), moved);
+    }
+    void pasteClippingAndFileCommit() {
+        ClipboardEditor editor;
+        QImage base(80, 60, QImage::Format_ARGB32_Premultiplied);
+        base.fill(Qt::blue);
+        editor.reset(base);
+        base = editor.image();
+        QImage source(20, 20, base.format());
+        source.fill(QColor(255, 0, 0, 128));
+        QVERIFY(editor.pasteImage(source));
+        editor.moveFloating(-10, -10);
+        const auto partly = editor.image();
+        QCOMPARE(partly.pixelColor(15, 15), QColor(Qt::blue));
+        QVERIFY(partly.pixelColor(0, 0) != QColor(Qt::blue));
+        editor.moveFloating(-20, 0);
+        QCOMPARE(editor.image(), partly);
+        editor.undo(); // Cancels only the preview.
+        QCOMPARE(editor.image(), base);
+        QVERIFY(!editor.hasSelection());
+        QVERIFY(editor.pasteImage(source));
+        editor.moveFloating(20, 20);
+        const auto pasted = editor.image();
+        QTemporaryDir dir;
+        editor.saveFile(QUrl::fromLocalFile(dir.filePath("pasted.png")));
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(!editor.floatingActive());
+        QCOMPARE(openpaint::loadPng(dir.filePath("pasted.png")).image, pasted);
+        editor.undo();
+        QCOMPARE(editor.image(), base);
+        QVERIFY(!editor.canUndo());
+        editor.redo();
+        QCOMPARE(editor.image(), pasted);
+    }
+    void invalidClipboardAndCancellation() {
+        Editor editor;
+        const auto base = editor.image();
+        auto* mime = new QMimeData;
+        mime->setText(QStringLiteral("plain text"));
+        QGuiApplication::clipboard()->setMimeData(mime);
+        editor.pasteClipboard();
+        QVERIFY(!editor.busy());
+        QVERIFY(!editor.error().isEmpty());
+        QCOMPARE(editor.image(), base);
+        mime = new QMimeData;
+        mime->setData("image/png", "broken PNG");
+        QGuiApplication::clipboard()->setMimeData(mime);
+        editor.pasteClipboard();
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(!editor.floatingActive());
+        QCOMPARE(editor.image(), base);
+        QImage tooWide(16385, 1, QImage::Format_ARGB32_Premultiplied);
+        tooWide.fill(Qt::white);
+        QByteArray oversized;
+        QBuffer encoded(&oversized);
+        encoded.open(QIODevice::WriteOnly);
+        QVERIFY(openpaint::writePng(encoded, tooWide));
+        QVERIFY(!openpaint::decodePng(oversized).ok());
+        QCOMPARE(editor.image(), base);
+        editor.selectAll();
+        const auto clipboardBefore = QGuiApplication::clipboard()->mimeData()->data("image/png");
+        editor.cutSelection();
+        editor.cancelIo();
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image(), base);
+        QCOMPARE(QGuiApplication::clipboard()->mimeData()->data("image/png"), clipboardBefore);
+        QVERIFY(editor.copySelection());
+        QTRY_VERIFY(!editor.busy());
+        editor.pasteClipboard();
+        editor.cancelIo();
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(!editor.floatingActive());
+        QCOMPARE(editor.image(), base);
+    }
+};
+QTEST_MAIN(ClipboardTest)
+#include "tst_clipboard.moc"

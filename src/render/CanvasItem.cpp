@@ -192,6 +192,18 @@ void CanvasItem::keyPressEvent(QKeyEvent* event) {
         space_ = true;
         setCursor(Qt::OpenHandCursor);
         event->accept();
+    } else if (editor_ && editor_->hasSelection() &&
+               (!editor_->previewActive() || editor_->floatingActive()) &&
+               (event->key() == Qt::Key_Left || event->key() == Qt::Key_Right ||
+                event->key() == Qt::Key_Up || event->key() == Qt::Key_Down)) {
+        const int step = event->modifiers() & Qt::ShiftModifier ? 10 : 1;
+        editor_->nudgeSelection(event->key() == Qt::Key_Left    ? -step
+                                : event->key() == Qt::Key_Right ? step
+                                                                : 0,
+                                event->key() == Qt::Key_Up     ? -step
+                                : event->key() == Qt::Key_Down ? step
+                                                               : 0);
+        event->accept();
     } else if (event->key() == Qt::Key_Backspace && editor_ && editor_->previewActive()) {
         editor_->removeShapePoint();
         event->accept();
