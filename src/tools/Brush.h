@@ -4,10 +4,12 @@
 #include <QImage>
 #include <QPointF>
 #include <QRect>
+#include <QRegion>
 namespace openpaint {
 class Brush {
   public:
-    bool begin(QSize size, QPointF point, QColor color, qreal width, int style, int opacity);
+    bool begin(QSize size, QPointF point, QColor color, qreal width, int style, int opacity,
+               const QRegion& selection = {});
     QRect extend(QImage& image, const QImage& original, QPointF point);
     void clear() {
         coverage_ = {};
@@ -17,6 +19,7 @@ class Brush {
   private:
     QRect dab(QImage& image, const QImage& original, QPointF point);
     QImage coverage_;
+    QRegion selection_;
     QPointF previous_;
     QColor color_;
     qreal width_ = 1, carry_ = 0;

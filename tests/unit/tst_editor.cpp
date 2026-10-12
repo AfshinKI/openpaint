@@ -13,6 +13,56 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void rectangularSelectionLifecycle() {
+        Editor editor;
+        const auto base = editor.image();
+        editor.setTool(Editor::Tool::Select);
+        editor.begin({50, 50}, false);
+        editor.extend({20, 30});
+        editor.endGesture();
+        QCOMPARE(editor.selectionRect(), QRect(20, 30, 31, 21));
+        QVERIFY(!editor.dirty());
+        QVERIFY(!editor.canUndo());
+        editor.begin({80, 80}, false);
+        editor.extend({100, 100});
+        editor.cancel();
+        QCOMPARE(editor.selectionRect(), QRect(20, 30, 31, 21));
+        editor.selectRect(-1, 0, 20, 20);
+        QCOMPARE(editor.selectionRect(), QRect(20, 30, 31, 21));
+        editor.setTool(Editor::Tool::Fill);
+        editor.primary = Qt::red;
+        editor.begin({30, 40}, false);
+        QVERIFY(editor.filling());
+        editor.deselect();
+        QVERIFY(editor.hasSelection());
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image().pixelColor(30, 40), QColor(Qt::red));
+        QCOMPARE(editor.image().pixelColor(10, 40), QColor(Qt::white));
+        editor.undo();
+        QCOMPARE(editor.image(), base);
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 1;
+        editor.shapeFill = true;
+        editor.begin({0, 0}, false);
+        editor.extend({80, 80});
+        const auto bounds = editor.selectionRect();
+        editor.selectAll();
+        QCOMPARE(editor.selectionRect(), bounds);
+        editor.cancel();
+        QCOMPARE(editor.image(), base);
+        QVERIFY(editor.hasSelection());
+        editor.deleteSelection();
+        QCOMPARE(editor.image().pixelColor(30, 40).alpha(), 0);
+        editor.undo();
+        QCOMPARE(editor.image(), base);
+        editor.deselect();
+        QVERIFY(!editor.hasSelection());
+        editor.selectAll();
+        QCOMPARE(editor.selectionRect(), base.rect());
+        editor.newDocument();
+        QVERIFY(!editor.hasSelection());
+        QVERIFY(!editor.dirty());
+    }
     void polygonAndConstraints() {
         Editor editor;
         const auto original = editor.image();

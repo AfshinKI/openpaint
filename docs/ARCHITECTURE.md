@@ -105,7 +105,10 @@ and a document command; it cannot save, start network requests, or mutate QML st
 Escape cancels an active operation. Tool-switch behavior must be specified and
 tested; text requires explicit commit/cancel before switching.
 
-Selection is a bounded alpha mask. Cut/move/delete affect only the selected region
+Selection is currently a bounded binary QRegion mask owned by Document. It is
+transient state outside pixel history and cannot change during a document
+transaction. Fill workers receive an immutable copy; stroke, brush and preview
+paths apply the same boundary. Future feathering can extend it to an alpha mask. Cut/move/delete affect only the selected region
 on the active layer unless an action explicitly says otherwise. Sampling merged
 colors is a separate, visible option. Erasing on a transparent layer clears alpha;
 an explicit opaque-background mode uses the secondary color. Do not guess based

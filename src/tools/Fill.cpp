@@ -6,12 +6,13 @@
 #include <vector>
 namespace openpaint {
 FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int tolerance,
-                      const std::shared_ptr<std::atomic_bool>& cancelled) {
+                      const std::shared_ptr<std::atomic_bool>& cancelled,
+                      const QRegion& selection) {
     if (!Document::validSize(source.size()) || !source.rect().contains(seed) ||
         source.format() != QImage::Format_ARGB32_Premultiplied || !color.isValid() ||
         tolerance < 0 || tolerance > 255 || !cancelled)
         return {{}, {}, true};
-    if (cancelled->load())
+    if (cancelled->load() || (!selection.isEmpty() && !selection.contains(seed)))
         return {};
     try {
         const QRgb target = source.pixel(seed), replacement = qPremultiply(color.rgba());
@@ -29,6 +30,8 @@ FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int toler
             if (seen[index])
                 return;
             seen[index] = 1;
+            if (!selection.isEmpty() && !selection.contains(QPoint(x, y)))
+                return;
             const auto pixel = source.pixel(x, y);
             if (std::max({std::abs(qRed(pixel) - qRed(target)),
                           std::abs(qGreen(pixel) - qGreen(target)),

@@ -6,6 +6,65 @@ using openpaint::Document;
 class DocumentTest : public QObject {
     Q_OBJECT
   private slots:
+    void selectionClipsStrokesAndPreviews() {
+        const QRegion mask(QRect(20, 20, 20, 20));
+        for (int brush = -1; brush < 9; ++brush) {
+            Document doc({80, 80});
+            const auto base = doc.image();
+            QVERIFY(doc.setSelection(mask));
+            QVERIFY(!doc.dirty());
+            QVERIFY(doc.beginStroke({0, 30}, Qt::black, 30, false, brush));
+            QVERIFY(!doc.setSelection({}));
+            doc.extendStroke({80, 30});
+            QVERIFY(doc.commitStroke());
+            QVERIFY(doc.image() != base);
+            for (int y = 0; y < 80; ++y)
+                for (int x = 0; x < 80; ++x)
+                    if (!mask.contains(QPoint(x, y)))
+                        QCOMPARE(doc.image().pixel(x, y), base.pixel(x, y));
+            QVERIFY(doc.undo());
+            QCOMPARE(doc.image(), base);
+            QVERIFY(doc.redo());
+        }
+        Document doc({80, 80});
+        const auto base = doc.image();
+        QVERIFY(doc.setSelection(mask));
+        QVERIFY(doc.beginPreview());
+        QImage patch(60, 60, base.format());
+        patch.fill(Qt::red);
+        QVERIFY(doc.updatePreview(patch, QRect(0, 0, 60, 60)));
+        QCOMPARE(doc.image().pixelColor(10, 30), QColor(Qt::white));
+        QCOMPARE(doc.image().pixelColor(30, 30), QColor(Qt::red));
+        QVERIFY(doc.updatePreview(patch, QRect(20, 20, 60, 60)));
+        QCOMPARE(doc.image().pixelColor(60, 30), QColor(Qt::white));
+        doc.cancelStroke();
+        QCOMPARE(doc.image(), base);
+        QVERIFY(doc.deleteSelection());
+        const auto deleted = doc.image();
+        QCOMPARE(deleted.pixelColor(30, 30).alpha(), 0);
+        QCOMPARE(deleted.pixelColor(10, 30), QColor(Qt::white));
+        QVERIFY(!doc.deleteSelection());
+        QVERIFY(doc.undo());
+        QCOMPARE(doc.image(), base);
+        QVERIFY(doc.redo());
+        QCOMPARE(doc.image(), deleted);
+        QVERIFY(!doc.setSelection(QRect(-1, 0, 10, 10)));
+        QCOMPARE(doc.selection(), mask);
+        QVERIFY(doc.reset(base));
+        QVERIFY(doc.selection().isEmpty());
+    }
+    void fillRespectsDisconnectedSelection() {
+        Document doc({60, 30});
+        const QRegion mask = QRegion(QRect(5, 5, 10, 10)) + QRect(30, 5, 10, 10);
+        const auto token = std::make_shared<std::atomic_bool>(false);
+        const auto filled = openpaint::fillRegion(doc.image(), {8, 8}, Qt::red, 255, token, mask);
+        QVERIFY(!filled.failed);
+        QCOMPARE(filled.rect, QRect(5, 5, 10, 10));
+        QCOMPARE(filled.image.pixelColor(8, 8), QColor(Qt::red));
+        QCOMPARE(filled.image.pixelColor(33, 8), QColor(Qt::white));
+        QVERIFY(
+            openpaint::fillRegion(doc.image(), {0, 0}, Qt::red, 255, token, mask).image.isNull());
+    }
     void expandedShapeGeometry() {
         using namespace openpaint;
         Document doc({160, 160});

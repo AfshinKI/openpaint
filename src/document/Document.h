@@ -5,6 +5,7 @@
 #include <QImage>
 #include <QPointF>
 #include <QRect>
+#include <QRegion>
 #include <vector>
 
 namespace openpaint {
@@ -38,6 +39,11 @@ class Document {
         savedRevision_ = revision;
     }
     bool reset(const QImage& image);
+    const QRegion& selection() const {
+        return selection_;
+    }
+    bool setSelection(const QRegion& region);
+    bool deleteSelection();
     bool beginStroke(QPointF point, QColor color, qreal width, bool clearAlpha = false,
                      int brushStyle = -1, int opacity = 100);
     QRect extendStroke(QPointF point);
@@ -63,6 +69,7 @@ class Document {
     };
     void apply(const Patch& patch, bool forward);
     QImage image_, original_;
+    QRegion selection_;
     Brush brush_;
     bool brushed_ = false, previewMode_ = false;
     std::vector<Patch> history_;

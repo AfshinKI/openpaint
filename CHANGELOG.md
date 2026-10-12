@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add rectangular selection, numeric bounds and select-all/deselect, with clipping
+  across all drawing tools and undoable deletion to transparency.
+
 - Add inline text boxes with system fonts, style/alignment/background controls,
   local text undo, explicit raster commit and guarded file transitions.
 

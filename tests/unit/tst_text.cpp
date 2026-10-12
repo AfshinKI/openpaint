@@ -6,6 +6,27 @@
 class TextTest : public QObject {
     Q_OBJECT
   private slots:
+    void selectedTextClipsRaster() {
+        Editor editor;
+        editor.selectRect(20, 20, 40, 40);
+        const auto base = editor.image();
+        editor.setTool(Editor::Tool::Text);
+        editor.begin({0, 0}, false);
+        editor.endGesture();
+        editor.textBackground = true;
+        editor.secondary = Qt::red;
+        QVERIFY(editor.setTextDraft(QStringLiteral("Selected text")));
+        QCOMPARE(editor.displayImage(), editor.image());
+        QCOMPARE(editor.image().pixelColor(10, 30), QColor(Qt::white));
+        QVERIFY(editor.image() != base);
+        for (int y = 0; y < base.height(); ++y)
+            for (int x = 0; x < base.width(); ++x)
+                if (!editor.selectionRect().contains(x, y))
+                    QCOMPARE(editor.image().pixel(x, y), base.pixel(x, y));
+        editor.commitPreview();
+        editor.undo();
+        QCOMPARE(editor.image(), base);
+    }
     void boundedFormattedPlainText() {
         QImage base(180, 100, QImage::Format_ARGB32_Premultiplied);
         base.fill(Qt::white);

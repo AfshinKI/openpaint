@@ -11,9 +11,9 @@
 void Editor::setTool(Tool tool) {
     if (textActive_)
         return;
-    if (tool == tool_ ||
-        (tool != Tool::Pencil && tool != Tool::Eraser && tool != Tool::ColorPicker &&
-         tool != Tool::Fill && tool != Tool::Brush && tool != Tool::Shape && tool != Tool::Text))
+    if (tool == tool_ || (tool != Tool::Pencil && tool != Tool::Eraser &&
+                          tool != Tool::ColorPicker && tool != Tool::Fill && tool != Tool::Brush &&
+                          tool != Tool::Shape && tool != Tool::Text && tool != Tool::Select))
         return;
     if (filling_)
         cancelIo();
@@ -28,6 +28,16 @@ void Editor::begin(QPointF point, bool secondaryButton) {
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || point.x() < 0 || point.y() < 0 ||
         point.x() >= image().width() || point.y() >= image().height())
         return;
+    if (tool_ == Tool::Select) {
+        finish();
+        previousSelection_ = document.selection();
+        selectionAnchor_ = QPoint(int(std::floor(point.x())), int(std::floor(point.y())));
+        selecting_ = true;
+        document.setSelection(QRect(selectionAnchor_, QSize(1, 1)));
+        emit pixelsChanged({});
+        emit changed();
+        return;
+    }
     if (tool_ == Tool::ColorPicker) {
         const auto color =
             image().pixelColor(int(std::floor(point.x())), int(std::floor(point.y())));
@@ -48,11 +58,12 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         cancellation_ = std::make_shared<std::atomic_bool>(false);
         busy_ = filling_ = true;
         emit changed();
-        fillWatcher_.setFuture(QtConcurrent::run(
-            [snapshot, color, point, tolerance = tolerance, token = cancellation_] {
+        fillWatcher_.setFuture(
+            QtConcurrent::run([snapshot, color, point, tolerance = tolerance, token = cancellation_,
+                               selection = document.selection()] {
                 return openpaint::fillRegion(
                     snapshot, QPoint(int(std::floor(point.x())), int(std::floor(point.y()))), color,
-                    tolerance, token);
+                    tolerance, token, selection);
             }));
         return;
     }
@@ -103,6 +114,20 @@ void Editor::begin(QPointF point, bool secondaryButton) {
     }
 }
 void Editor::extend(QPointF point, bool constrain) {
+    if (selecting_) {
+        if (std::isfinite(point.x()) && std::isfinite(point.y())) {
+            const QPoint end(
+                int(std::clamp(std::floor(point.x()), 0.0, double(image().width() - 1))),
+                int(std::clamp(std::floor(point.y()), 0.0, double(image().height() - 1))));
+            document.setSelection(QRect(QPoint(std::min(selectionAnchor_.x(), end.x()),
+                                               std::min(selectionAnchor_.y(), end.y())),
+                                        QPoint(std::max(selectionAnchor_.x(), end.x()),
+                                               std::max(selectionAnchor_.y(), end.y()))));
+            emit pixelsChanged({});
+            emit changed();
+        }
+        return;
+    }
     if (textActive_) {
         if (textDrawing_ && std::isfinite(point.x()) && std::isfinite(point.y()) &&
             std::abs(point.x()) <= 1000000 && std::abs(point.y()) <= 1000000) {
@@ -146,6 +171,12 @@ void Editor::extend(QPointF point, bool constrain) {
         emit pixelsChanged(rect);
 }
 void Editor::endGesture() {
+    if (selecting_) {
+        selecting_ = false;
+        previousSelection_ = {};
+        emit changed();
+        return;
+    }
     if (textActive_) {
         if (textDrawing_) {
             textDrawing_ = false;
@@ -229,12 +260,43 @@ void Editor::refreshText() {
     emit pixelsChanged({});
     emit changed();
 }
+void Editor::selectRect(int x, int y, int width, int height) {
+    if (!canSelect() || x < 0 || y < 0 || width < 1 || height < 1 || width > 16384 ||
+        height > 16384 || x >= image().width() || y >= image().height())
+        return;
+    finish();
+    document.setSelection(QRect(x, y, width, height).intersected(image().rect()));
+    emit pixelsChanged({});
+    emit changed();
+}
+void Editor::selectAll() {
+    selectRect(0, 0, image().width(), image().height());
+}
+void Editor::deselect() {
+    if (!canSelect())
+        return;
+    finish();
+    document.setSelection({});
+    emit pixelsChanged({});
+    emit changed();
+}
+void Editor::deleteSelection() {
+    if (!canSelect() || !hasSelection())
+        return;
+    finish();
+    if (document.deleteSelection()) {
+        emit pixelsChanged({});
+        emit changed();
+    }
+}
 void Editor::commitPreview() {
     if (textActive_)
         QGuiApplication::inputMethod()->commit();
     finish();
 }
 void Editor::finish() {
+    selecting_ = false;
+    previousSelection_ = {};
     if (shapeActive_ && shapeKind == openpaint::PolygonShape && shapePoints_.size() < 3) {
         cancel();
         return;
@@ -247,6 +309,13 @@ void Editor::finish() {
     emit changed();
 }
 void Editor::cancel() {
+    if (selecting_) {
+        document.setSelection(previousSelection_);
+        selecting_ = false;
+        previousSelection_ = {};
+    } else if (!document.active() && !loading()) {
+        document.setSelection({});
+    }
     if (filling_)
         cancelIo();
     shapeActive_ = textActive_ = textDrawing_ = false;
