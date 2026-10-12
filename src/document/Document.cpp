@@ -106,14 +106,18 @@ bool Document::commitStroke() {
         original_ = {};
         return false;
     }
+    Patch patch{dirtyRect_, original_.copy(dirtyRect_), image_.copy(dirtyRect_), revision_,
+                nextRevision_++};
+    original_ = {};
+    append(std::move(patch));
+    return true;
+}
+void Document::append(Patch patch) {
     while (history_.size() > cursor_) {
         historyBytes_ -= history_.back().bytes();
         history_.pop_back();
     }
-    Patch patch{dirtyRect_, original_.copy(dirtyRect_), image_.copy(dirtyRect_), revision_,
-                nextRevision_++};
     revision_ = patch.to;
-    original_ = {};
     historyBytes_ += patch.bytes();
     history_.push_back(std::move(patch));
     cursor_ = history_.size();
@@ -122,6 +126,17 @@ bool Document::commitStroke() {
         history_.erase(history_.begin());
         --cursor_;
     }
+}
+bool Document::replaceImage(const QImage& candidate, quint64 sourceRevision) {
+    if (active_ || sourceRevision != revision_ || candidate.isNull() ||
+        !validSize(candidate.size()) || candidate.format() != image_.format() ||
+        candidate.colorSpace() != image_.colorSpace() ||
+        candidate.sizeInBytes() + image_.sizeInBytes() > budget_ || candidate == image_)
+        return false;
+    Patch patch{{}, image_, candidate, revision_, nextRevision_++, true};
+    image_ = candidate;
+    selection_ = {};
+    append(std::move(patch));
     return true;
 }
 bool Document::beginPreview() {
@@ -189,9 +204,14 @@ void Document::cancelStroke() {
     previewMode_ = false;
 }
 void Document::apply(const Patch& patch, bool forward) {
-    QPainter painter(&image_);
-    painter.setCompositionMode(QPainter::CompositionMode_Source);
-    painter.drawImage(patch.rect.topLeft(), forward ? patch.after : patch.before);
+    if (patch.replacement) {
+        image_ = forward ? patch.after : patch.before;
+        selection_ = {};
+    } else {
+        QPainter painter(&image_);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.drawImage(patch.rect.topLeft(), forward ? patch.after : patch.before);
+    }
     revision_ = forward ? patch.to : patch.from;
 }
 bool Document::undo() {

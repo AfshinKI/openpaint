@@ -3,6 +3,7 @@
 #include "document/Document.h"
 #include "io/PngIo.h"
 #include "tools/Fill.h"
+#include "tools/Transform.h"
 #include <QFutureWatcher>
 #include <QObject>
 #include <QPolygon>
@@ -12,6 +13,7 @@
 class Editor : public QObject {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(bool transforming READ transforming NOTIFY changed)
     Q_PROPERTY(bool freeFormSelection MEMBER freeFormSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentSelection MEMBER transparentSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool clipboardBusy READ clipboardBusy NOTIFY changed)
@@ -69,6 +71,10 @@ class Editor : public QObject {
     }
     void setTool(Tool tool);
     explicit Editor(QObject* parent = nullptr);
+    bool transforming() const {
+        return transforming_;
+    }
+    Q_INVOKABLE void transformImage(int kind);
     bool clipboardBusy() const {
         return clipboardBusy_;
     }
@@ -208,6 +214,10 @@ class Editor : public QObject {
 
   private:
     void fail(const QString& message);
+    void finishTransform();
+    QFutureWatcher<openpaint::TransformResult> transformWatcher_;
+    quint64 transformRevision_ = 0;
+    bool transforming_ = false, transformSelection_ = false;
     void refreshShape();
     void refreshText();
     bool startCopy(bool cut);

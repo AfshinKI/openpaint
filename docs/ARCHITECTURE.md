@@ -86,6 +86,11 @@ Fill workers return a candidate raster and changed rectangle. `Document::applyPa
 checks source revision, bounds and history budget before committing one patch.
 Cancellation is rechecked on the GUI thread before application.
 
+Dimension-changing commands use bounded full-raster before/after history alongside
+ordinary patches; see [ADR 0002](decisions/0002-dimension-history.md). Transform
+workers return image/mask results; the controller checks cancellation and revision
+before committing or opening a selected-content preview.
+
 Shape previews use `beginPreview`/`updatePreview` on the GUI-owned document. Each
 update restores the old dirty rectangle from the original snapshot before placing
 the new clipped patch. Ending a pointer gesture can retain the preview; explicit

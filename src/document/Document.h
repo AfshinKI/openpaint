@@ -55,6 +55,7 @@ class Document {
         return active_ ? original_ : image_;
     }
     bool applyPatch(const QImage& candidate, QRect rect, quint64 sourceRevision);
+    bool replaceImage(const QImage& candidate, quint64 sourceRevision);
     bool undo();
     bool redo();
 
@@ -63,10 +64,12 @@ class Document {
         QRect rect;
         QImage before, after;
         quint64 from, to;
+        bool replacement = false;
         qsizetype bytes() const {
             return before.sizeInBytes() + after.sizeInBytes();
         }
     };
+    void append(Patch patch);
     void apply(const Patch& patch, bool forward);
     QImage image_, original_;
     QRegion selection_;

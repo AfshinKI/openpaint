@@ -2,6 +2,7 @@
 #include "Editor.h"
 #include <QBuffer>
 #include <QClipboard>
+#include <QColorSpace>
 #include <QGuiApplication>
 #include <QMimeData>
 #include <QPainter>
@@ -59,6 +60,7 @@ QImage Editor::selectedImage() const {
     if (selected.isNull())
         return {};
     selected.fill(Qt::transparent);
+    selected.setColorSpace(image().colorSpace());
     QPainter painter(&selected);
     painter.setClipRegion(selection().translated(-rect.topLeft()));
     painter.setCompositionMode(QPainter::CompositionMode_Source);
