@@ -23,8 +23,8 @@ AI, project files, packaging publication, and automatic updates.
 - [x] Add the app entry point, QML window, light/dark tokens, application actions,
   system font, and translated labels. Do not draw fake functioning editor controls.
 - [x] Add clang-format, QML lint/format checks, and a real CTest smoke test.
-- [ ] Verify launch/close offscreen in CI and in a real Linux desktop session.
-  Local offscreen and X11 tests pass; GitHub compiler-matrix result remains to be recorded.
+- [x] Verify launch/close offscreen in CI and in a real Linux desktop session.
+  Local offscreen/X11 and the GitHub compiler matrix passed; see evidence below.
 
 Acceptance: a clean checkout builds with the documented commands, launches a
 window, and closes successfully. Test discovery is nonempty and CI fails on an
@@ -95,11 +95,13 @@ engine or document operations.
 - Temporarily replacing a title assertion with an intentionally wrong expectation
   made CTest fail; the original assertion was restored and the suite passed again.
 - Formatting, zero-warning QML lint, repository checks, and all seven Python
-  tooling tests passed. The CI configuration adds GCC 13 and Clang 18 lanes.
+  tooling tests passed. [GitHub run 38288884601](https://github.com/AfshinKI/openpaint/actions/runs/38288884601)
+  passed all jobs for implementation commit `1913821`: GCC 13 Debug, Clang 18
+  Release, Clang 18 ASan/UBSan, and repository checks from clean checkouts.
 - Synthetic light/dark captures at minimum and typical sizes were reviewed. They
   contain only the app's own preview content; no user documents or desktop capture.
 
-Remaining Step 1 gate: record GitHub CI results and merge the scoped PR through
-protected main. Wayland, GPU rendering, Orca, and packaging are not verified here.
+Remaining Step 1 gate: review and merge [PR #3](https://github.com/AfshinKI/openpaint/pull/3)
+through protected main. Wayland, GPU rendering, Orca, and packaging are not verified here.
 After merge, start Step 2 on a fresh document/history branch; do not append it to
 the shell branch. Steps 2–5 and the overall M1 gate remain incomplete.
