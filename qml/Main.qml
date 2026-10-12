@@ -8,6 +8,7 @@ import OpenPaint
 
 ApplicationWindow {
     id: window
+    readonly property Editor editorController: editor
     objectName: "mainWindow"
     width: 1280
     height: 800
@@ -377,6 +378,30 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
+                IconButton {
+                    id: brushesButton
+                    objectName: "brushesButton"
+                    symbol: "brush"
+                    text: qsTr("Brushes")
+                    highlighted: editor.tool === Editor.Brush
+                    onClicked: brushesMenu.open()
+                    Accessible.name: text
+                    BrushMenu {
+                        id: brushesMenu
+                        objectName: "brushesMenu"
+                        editor: window.editorController
+                        y: brushesButton.height
+                    }
+                }
+                Label {
+                    text: qsTr("Brushes")
+                    color: Theme.secondaryText
+                }
+            }
+            ToolSeparator {
+                Layout.fillHeight: true
+            }
+            ColumnLayout {
                 PaintSpinBox {
                     id: sizeBox
                     objectName: "strokeSize"
@@ -392,8 +417,18 @@ ApplicationWindow {
                     Accessible.name: editor.tool === Editor.Fill ? qsTr("Fill tolerance") : qsTr("Stroke size in pixels")
                     implicitWidth: 104
                 }
+                PaintSpinBox {
+                    objectName: "brushOpacity"
+                    visible: editor.tool === Editor.Brush
+                    from: 0
+                    to: 100
+                    value: editor.opacity
+                    onValueModified: editor.opacity = value
+                    Accessible.name: qsTr("Brush opacity percent")
+                    implicitWidth: 104
+                }
                 Label {
-                    text: editor.tool === Editor.Fill ? qsTr("Tolerance") : qsTr("Size · px")
+                    text: editor.tool === Editor.Brush ? qsTr("Size / opacity %") : editor.tool === Editor.Fill ? qsTr("Tolerance") : qsTr("Size · px")
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
                 }

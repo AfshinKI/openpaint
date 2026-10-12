@@ -5,7 +5,7 @@
 #include <cmath>
 void Editor::setTool(Tool tool) {
     if (tool == tool_ || (tool != Tool::Pencil && tool != Tool::Eraser &&
-                          tool != Tool::ColorPicker && tool != Tool::Fill))
+                          tool != Tool::ColorPicker && tool != Tool::Fill && tool != Tool::Brush))
         return;
     if (filling_)
         cancelIo();
@@ -49,7 +49,9 @@ void Editor::begin(QPointF point, bool secondaryButton) {
     }
     const bool eraser = tool_ == Tool::Eraser;
     if (document.beginStroke(point, eraser ? secondary : (secondaryButton ? secondary : primary),
-                             brushSize, eraser && transparentEraser)) {
+                             brushSize, eraser && transparentEraser,
+                             tool_ == Tool::Brush ? brushStyle : -1,
+                             tool_ == Tool::Brush ? opacity : 100)) {
         emit pixelsChanged(QRect());
         emit changed();
     }

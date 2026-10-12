@@ -13,6 +13,8 @@ class Editor : public QObject {
     QML_ELEMENT
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(bool filling READ filling NOTIFY changed)
+    Q_PROPERTY(int brushStyle MEMBER brushStyle NOTIFY settingsChanged)
+    Q_PROPERTY(int opacity MEMBER opacity NOTIFY settingsChanged)
     Q_PROPERTY(int tolerance MEMBER tolerance NOTIFY settingsChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY changed)
     Q_PROPERTY(QString fileName READ fileName NOTIFY changed)
@@ -29,7 +31,7 @@ class Editor : public QObject {
     Q_PROPERTY(Tool tool READ tool WRITE setTool NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentEraser MEMBER transparentEraser NOTIFY settingsChanged)
   public:
-    enum class Tool { Pencil, Eraser, ColorPicker, Fill };
+    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush };
     Q_ENUM(Tool)
     Tool tool() const {
         return tool_;
@@ -81,7 +83,7 @@ class Editor : public QObject {
     Q_INVOKABLE void undo();
     Q_INVOKABLE void redo();
     QColor primary = Qt::black, secondary = Qt::white;
-    int brushSize = 3, tolerance = 0;
+    int brushSize = 3, tolerance = 0, brushStyle = 0, opacity = 100;
     bool transparentEraser = false;
   signals:
     void changed();
