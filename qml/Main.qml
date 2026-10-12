@@ -86,6 +86,11 @@ ApplicationWindow {
                 window.pendingAction = "";
         }
     }
+    Shortcut {
+        sequence: "Escape"
+        enabled: editor.filling
+        onActivated: editor.cancelIo()
+    }
     Action {
         id: newAction
         objectName: "newAction"
@@ -341,6 +346,16 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        symbol: "fill"
+                        objectName: "fillButton"
+                        text: qsTr("Fill")
+                        checkable: true
+                        autoExclusive: true
+                        checked: editor.tool === Editor.Fill
+                        onClicked: editor.tool = Editor.Fill
+                        Accessible.name: text
+                    }
+                    IconButton {
                         symbol: "eyedropper"
                         objectName: "pickerButton"
                         text: qsTr("Color picker")
@@ -365,15 +380,20 @@ ApplicationWindow {
                 PaintSpinBox {
                     id: sizeBox
                     objectName: "strokeSize"
-                    from: 1
-                    to: 128
-                    value: editor.brushSize
-                    onValueModified: editor.brushSize = value
-                    Accessible.name: qsTr("Stroke size in pixels")
+                    from: editor.tool === Editor.Fill ? 0 : 1
+                    to: editor.tool === Editor.Fill ? 255 : 128
+                    value: editor.tool === Editor.Fill ? editor.tolerance : editor.brushSize
+                    onValueModified: {
+                        if (editor.tool === Editor.Fill)
+                            editor.tolerance = value;
+                        else
+                            editor.brushSize = value;
+                    }
+                    Accessible.name: editor.tool === Editor.Fill ? qsTr("Fill tolerance") : qsTr("Stroke size in pixels")
                     implicitWidth: 104
                 }
                 Label {
-                    text: qsTr("Size · px")
+                    text: editor.tool === Editor.Fill ? qsTr("Tolerance") : qsTr("Size · px")
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -472,7 +492,7 @@ ApplicationWindow {
         objectName: "canvas"
         anchors.fill: parent
         editor: editor
-        enabled: !editor.loading
+        enabled: !editor.loading || editor.filling
         focus: true
         Accessible.name: qsTr("Drawing canvas")
         Accessible.role: Accessible.Canvas
@@ -494,7 +514,7 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }

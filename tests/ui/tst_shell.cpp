@@ -420,6 +420,20 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
+    void fillOptionsLayout() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        editor->setTool(Editor::Tool::Fill);
+        window->setWidth(1024);
+        window->setHeight(640);
+        QVERIFY(QMetaObject::invokeMethod(
+            window->findChild<QObject*>(QStringLiteral("lightThemeAction")), "trigger",
+            Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("fill-light-1024.png")));
+        QVERIFY(QMetaObject::invokeMethod(
+            window->findChild<QObject*>(QStringLiteral("darkThemeAction")), "trigger",
+            Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("fill-dark-1024.png")));
+    }
     void keyboardControlsAndAccessibility() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         QVERIFY(tabTo("pencilButton"));
@@ -444,6 +458,14 @@ class ShellTest : public QObject {
         const auto previousSize = editor->brushSize;
         keyClick(Qt::Key_Up);
         QCOMPARE(editor->brushSize, previousSize + 1);
+        QVERIFY(tabTo("fillButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->tool(), Editor::Tool::Fill);
+        QVERIFY(tabTo("strokeSize"));
+        keyClick(Qt::Key_Up);
+        QCOMPARE(editor->tolerance, 1);
+        QVERIFY(tabTo("pencilButton"));
+        keyClick(Qt::Key_Space);
         QVERIFY(tabTo("primaryButton"));
         keyClick(Qt::Key_Space);
         auto* colors = window->findChild<QObject*>(QStringLiteral("colorEditor"));
