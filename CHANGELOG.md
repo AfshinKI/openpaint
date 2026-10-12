@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add pixel/percentage resize, aspect lock, smooth/nearest resampling and bounded
+  horizontal/vertical skew for images and selected content.
+
 - Add crop, flips and right-angle rotation with dimension-aware undo and selected
   content previews; keep quick Save/Undo/Redo beside the menus.
 

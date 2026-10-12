@@ -75,6 +75,7 @@ class Editor : public QObject {
         return transforming_;
     }
     Q_INVOKABLE void transformImage(int kind);
+    Q_INVOKABLE void resizeImage(int width, int height, qreal skewX, qreal skewY, bool smooth);
     bool clipboardBusy() const {
         return clipboardBusy_;
     }
@@ -215,6 +216,8 @@ class Editor : public QObject {
   private:
     void fail(const QString& message);
     void finishTransform();
+    void startTransform(openpaint::TransformKind operation,
+                        const openpaint::TransformOptions& options = {});
     QFutureWatcher<openpaint::TransformResult> transformWatcher_;
     quint64 transformRevision_ = 0;
     bool transforming_ = false, transformSelection_ = false;

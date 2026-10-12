@@ -2,9 +2,17 @@
 #include "Editor.h"
 #include <QtConcurrent>
 void Editor::transformImage(int kind) {
-    if (busy_ || !canSelect() || kind < 0 || kind > int(openpaint::TransformKind::Crop))
+    if (kind < 0 || kind > int(openpaint::TransformKind::Crop))
         return;
-    const auto operation = openpaint::TransformKind(kind);
+    startTransform(openpaint::TransformKind(kind));
+}
+void Editor::resizeImage(int width, int height, qreal skewX, qreal skewY, bool smooth) {
+    startTransform(openpaint::TransformKind::ResizeSkew, {{width, height}, skewX, skewY, smooth});
+}
+void Editor::startTransform(openpaint::TransformKind operation,
+                            const openpaint::TransformOptions& options) {
+    if (busy_ || !canSelect())
+        return;
     if (operation == openpaint::TransformKind::Crop && !hasSelection())
         return;
     finish();
@@ -16,9 +24,10 @@ void Editor::transformImage(int kind) {
     cancellation_ = std::make_shared<std::atomic_bool>(false);
     busy_ = loading_ = transforming_ = true;
     emit changed();
-    transformWatcher_.setFuture(QtConcurrent::run([source, mask, operation, token = cancellation_] {
-        return openpaint::transformImage(source, mask, operation, token);
-    }));
+    transformWatcher_.setFuture(
+        QtConcurrent::run([source, mask, operation, options, token = cancellation_] {
+            return openpaint::transformImage(source, mask, operation, token, options);
+        }));
 }
 void Editor::finishTransform() {
     const auto result = transformWatcher_.result();
