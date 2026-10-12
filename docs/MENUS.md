@@ -1,0 +1,215 @@
+# Menu and control specification
+
+This is the visual and interaction contract for future implementation. It does not
+mark features as shipped; [FEATURES.md](FEATURES.md) remains the status ledger.
+Static layouts establish placement and visible choices, not runtime behavior,
+exact dimensions, hidden submenu contents or keyboard semantics. Items below
+remain planned unless the ledger says otherwise.
+
+## Shared layout
+
+Use a compact menu row above the grouped command toolbar. File, Edit and View sit
+on the left, followed by quick Save, Share, Undo and Redo actions with small
+separators. Place What's new and Settings at the far right. An OpenPaint Help
+entry is allowed for documentation and accessibility. Window controls remain
+native Linux decorations, separate from application actions. Core editing needs
+no account; an account/profile button is not an OpenPaint requirement.
+
+The command groups run left to right: Selection, Image, Tools, Brushes, Shapes,
+Colors, optional intelligent tools, Layers. Use thin vertical dividers and short
+captions below groups. Dense icon grids replace rows of text buttons. A selected
+tool has a rounded inset background and accent outline. Small chevrons identify
+menus; a toolbar-collapse chevron sits at the far right.
+
+Keep the current 112px toolbar, 20px icons in 32px buttons and 24px dense color
+targets as OpenPaint sizing tokens, not measurements of another application.
+Future groups must fit through deliberate overflow/collapse behavior rather than
+shrinking labels. Do not expose decorative buttons for unavailable features.
+
+Menus have rounded dark/light surfaces, a consistent left icon/check column,
+left-aligned labels, right-aligned shortcut hints, and submenu chevrons at the
+right edge. Separators divide related commands. Highlighted rows are rounded and
+inset from the panel border. Disabled actions retain their place with muted text
+and icons; they must not look selected. Keyboard focus remains visible.
+
+## File
+
+Preserve this grouping and order when the corresponding capabilities exist:
+
+| Group | Entries, in order | Layout and implementation notes |
+| --- | --- | --- |
+| Documents | New; Open; Import to canvas; Recent; Save; Save as; Save as project | Import, Recent and Save as are submenu entries. Use familiar document/folder/save icons. Recent is local and clearable. Import modifies the current document through undoable commands. |
+| Output | Print; Share | Print has a submenu affordance; its exact entries are not established. Linux output/sharing requires an explicit action and platform integration. |
+| Desktop | Set as desktop background | A separate, availability-dependent submenu. Defer until Linux desktop integration is scoped; do not add a dead placeholder. |
+| Information | Image properties | Separate from output commands. Ctrl+E is the target shortcut; dialog contents need a feature specification. |
+| Application | Exit | Bottom row with a close icon; uses the unsaved-document guard. |
+
+New/Open/Save use Ctrl+N/Ctrl+O/Ctrl+S. Current OpenPaint Ctrl+Shift+S remains Save
+As. The layered-project workflow must resolve its shortcut deliberately before
+adding Save as project: do not silently reassign the current shortcut or bind two
+commands to it. Editable project storage uses the architecture's .ora contract;
+this menu is not a promise of proprietary project-format support.
+
+Save-as formats, recent-file presentation, import choices, print options and
+properties fields still need individual behavior plans. Failed import/save must
+preserve artwork, and New/Open/Exit retain Save/Discard/Cancel handling.
+
+## Edit
+
+The compact clipboard menu orders Cut (Ctrl+X), Copy (Ctrl+C), Paste (Ctrl+V),
+then a separator and Copy visible layers (Ctrl+Shift+C). Each row has its own
+clipboard-related icon. Undo/Redo remain quick actions in the top row; retaining
+accessible menu equivalents in OpenPaint is allowed.
+
+Cut/Paste are undoable edits. Copy visible layers requires a defined compositing
+and selection contract in M3. Empty selection/clipboard states disable affected
+actions without hiding them. Normal text editing shortcuts continue to work in
+text fields. Clipboard ownership, transparency and external-app interchange need
+behavioral tests; menu labels alone do not establish those semantics.
+
+## View
+
+| Order | Entry | Presentation |
+| --- | --- | --- |
+| 1 | Zoom | Magnifier and submenu chevron; exact preset list remains unspecified. |
+| 2 | Rulers | Ctrl+R hint; toggle with visible state. |
+| 3 | Gridlines | Ctrl+G hint; toggle with visible state. |
+| 4 | Status bar | Checkmark when enabled. |
+| 5 | Always show toolbar | Checked persistent-toolbar mode, separated from display aids. |
+| 6 | Automatically hide toolbar | Alternative to persistent-toolbar mode. |
+| 7 | Full screen | Expansion icon and F11 hint, after a separator. |
+| 8 | Thumbnail | Small image icon; preview contents, docking and navigation need specification. |
+
+Toolbar modes are mutually exclusive. Auto-hide must retain menu/keyboard access,
+restore focus predictably and avoid moving the image in document coordinates.
+Do not infer auto-hide timing or thumbnail behavior until tested and specified.
+
+## Selection and image groups
+
+Selection uses a prominent dashed-rectangle icon with a dropdown below it. The
+menu order is Rectangle, Free-form, separator, Select all (Ctrl+A), Invert
+selection, Transparent selection, then Delete (Delete). Rectangle has a rounded
+selected row. Invert/Delete may be disabled when no suitable selection exists.
+Transparent selection must expose its on/off state when implemented; its pixel
+and background-color rules need explicit tests.
+
+The Image group uses a compact two-row arrangement of crop/transform-related
+icons, with chevrons for grouped operations. Plan Crop, Rotate, Flip, Resize/Skew
+and background removal against their existing feature IDs. Unlabeled glyphs do
+not prove exact commands, angle lists or enabled-state rules. Specify those in the
+feature plan before wiring an icon to a command. Background removal stays in M6.
+
+## Tools, brushes and shapes
+
+The Tools group is a two-row, three-column icon grid: Pencil, Fill, Text on the
+first row; Eraser, Color picker, Magnifier on the second. Use original symbols and
+accessible names/tooltips. Tool options should not force the whole toolbar to
+expand in height.
+
+Brushes use one brush icon and a dropdown. The menu is a tall rounded list with
+names at left and original sample strokes at right, in this order:
+
+1. Brush
+2. Calligraphy brush
+3. Calligraphy pen
+4. Airbrush
+5. Oil brush
+6. Crayon
+7. Marker
+8. Natural pencil
+9. Watercolor brush
+
+Samples communicate stroke character and share a common preview width. They must
+be generated by OpenPaint or independently authored. This list establishes UI
+inventory, not pressure response, blending equations, texture fidelity or default
+sizes. Implement each brush with its own input/undo/performance acceptance cases.
+
+Shapes occupy a compact outlined-icon matrix with small overflow/scroll cues and
+adjacent outline/fill/style controls. The visible vocabulary includes straight
+and curved lines, oval, rectangle, rounded rectangle, polygonal/triangular shapes,
+diamond, pentagon, hexagon, directional arrows, stars and speech bubbles. This is
+not an exhaustive shape catalog; partially visible items and unlabeled secondary
+controls need confirmation. Shape defaults, constrained drawing, stroke/fill
+options and preview commit/cancel belong in the implementation plan.
+
+## Colors
+
+Stack larger primary/secondary circles to the left of two rows of ten basic
+swatches. A third row always shows ten custom slots, with hollow circles for
+empty positions. A colorful edit-colors action sits beside the grid; the Colors
+caption is below. A filled swatch and an empty slot are distinct states, not
+missing UI. Empty toolbar slots open the editor without changing drawing color.
+
+The rounded Edit colors dialog has a large square hue/saturation spectrum on the
+left, a narrow tall selected-color preview, a vertical brightness slider, then a
+HEX field, RGB/HSV selector and three numeric channels with labels to their right.
+Below are a 12-by-4 Basic colors grid and a 6-by-4 Custom colors grid with an add
+button. A separate footer contains two broad side-by-side OK and Cancel buttons.
+Keep the dialog usable at the minimum window size without clipping its footer.
+
+OpenPaint additionally offers a compact custom-color management menu and a clear
+persistence hint. Its existing draft/accept/cancel and immediate palette-save
+semantics remain as defined in [DESIGN.md](DESIGN.md). Do not reinterpret static
+empty slots as evidence for insertion order, persistence or replacement behavior.
+
+## Workspace and status bar
+
+Use a broad neutral workspace around a rectangular, sharp-cornered image. Canvas
+resize handles are small squares at corners and edge midpoints when that feature
+is implemented. A left-side tool rail can hold two narrow rounded vertical
+slider panels with small identifying icons, tracks and accent thumbs. Size and
+opacity are the intended OpenPaint roles; exact source ranges and behavior are
+not established by icon appearance. Provide accessible names and numeric values.
+
+The bottom status strip separates cursor/selection information from image size.
+The right side groups fit-to-window, a percentage dropdown, zoom-out, a horizontal
+zoom slider and zoom-in. Fractional percentage display should remain readable.
+Current zoom/pan does not imply resize handles, these sliders or the dropdown
+already exist. Canvas operations still belong to undoable document commands;
+view-only changes never dirty the drawing.
+
+## Settings
+
+Settings is a full application page with a back arrow and heading, preserving the
+open document. Use a wide main settings column and a narrower About column on
+large windows, stacking them on smaller windows. Appearance contains an expandable
+rounded App theme card with Light, Dark and Use system setting radio choices.
+Only one choice is active; system mode follows desktop changes.
+
+The About column contains app name/version and links for license, privacy and
+third-party acknowledgements, plus an explicit feedback action. OpenPaint does
+not display or persist a session identifier. Feedback must not silently send logs,
+artwork or diagnostics. The product's Updates section follows [RELEASES.md](RELEASES.md).
+
+A separate generated-content settings card is a later M6 concern. Its intended
+role is a clearly explained watermark/export preference with a dropdown; the
+complete option list and export effects require a separate contract. Do not add
+an inactive AI settings card before the corresponding feature ships. Current
+session-only themes are not yet a complete Settings-page implementation.
+
+## What's new
+
+A small announcement/megaphone action near Settings opens an optional, dismissible
+feature-discovery surface. Use a rounded large dialog, heading at top left,
+close control at top right, a narrow vertical topic list on the left, and a large
+preview/detail card on the right. The active topic has a subtle filled row and
+accent edge. Each topic has a brief title/description; its detail card combines
+original demonstration media, explanation and an optional relevant action.
+
+Populate it only with shipped OpenPaint capabilities and local bundled content.
+No sign-in gate, marketing copy or external service dependency is required. AI
+creation/erase topics remain deferred; Layers is eligible when implemented.
+Do not open this surface automatically or initiate network requests. Treat it as
+optional discovery work after core editing/release readiness, not a new M1 gate.
+
+## Implementation review checklist
+
+Before adding a menu or group, record its feature IDs, command ownership, enabled
+states, keyboard/accessibility behavior, focus restoration and minimum-size
+layout. Test mutations for undo/cancel/save fidelity, use the shared rounded
+controls, and generate synthetic light/dark evidence from OpenPaint itself.
+
+Keep the visible inventory separate from assumptions. Unopened submenus, dynamic
+interactions, numeric limits, brush rendering, AI availability and exact parity
+remain unverified until their own acceptance cases pass. Update the ledger and
+this contract together when deliberate Linux-specific choices change the layout.
