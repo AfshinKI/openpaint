@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "color/ColorPalette.h"
-#include "color/ColorWheel.h"
+#include "color/ColorSpectrum.h"
 #include "render/CanvasItem.h"
 #include <QDir>
 #include <QElapsedTimer>
@@ -64,7 +64,7 @@ class ShellTest : public QObject {
         QTRY_COMPARE(window->size(), QSize(1024, 640));
         QVERIFY(!window->grabWindow().isNull());
         for (auto* swatch : visualItems(window->contentItem(), QStringLiteral("colorSwatch"))) {
-            QVERIFY(swatch->width() >= 32);
+            QVERIFY(swatch->width() >= 24);
             QVERIFY(swatch->mapToScene({swatch->width(), 0}).x() <= window->width());
         }
     }
@@ -238,17 +238,28 @@ class ShellTest : public QObject {
         auto* selection = window->findChild<ColorSelection*>(QStringLiteral("colorSelection"));
         auto* primary = window->findChild<QQuickItem*>(QStringLiteral("primaryButton"));
         auto* secondary = window->findChild<QQuickItem*>(QStringLiteral("secondaryButton"));
-        auto* wheel = window->findChild<ColorWheel*>(QStringLiteral("colorWheel"));
+        auto* spectrum = window->findChild<ColorSpectrum*>(QStringLiteral("colorSpectrum"));
         auto* palette = window->findChild<ColorPalette*>(QStringLiteral("customPalette"));
         auto click = [&](QQuickItem* item) {
             QTest::mouseClick(window, Qt::LeftButton, {},
                               item->mapToScene({item->width() / 2, item->height() / 2}).toPoint());
         };
-        QVERIFY(editor && dialog && selection && primary && secondary && wheel && palette);
+        QVERIFY(editor && dialog && selection && primary && secondary && spectrum && palette);
         const auto original = editor->primary;
         const auto pixels = editor->image();
-        click(primary);
+        const auto emptySlots =
+            visualItems(window->contentItem(), QStringLiteral("customToolbarSwatch"));
+        QCOMPARE(emptySlots.size(), 10);
+        for (auto* slot : emptySlots)
+            QVERIFY(slot->property("empty").toBool());
+        click(emptySlots.first());
         QTRY_VERIFY(dialog->property("visible").toBool());
+        QCOMPARE(editor->primary, original);
+        const auto dialogSlots =
+            visualItems(window->contentItem(), QStringLiteral("customDialogSwatch"));
+        QCOMPARE(dialogSlots.size(), 24);
+        for (auto* slot : dialogSlots)
+            QVERIFY(slot->property("empty").toBool());
         auto* hex = window->findChild<QQuickItem*>(QStringLiteral("hexField"));
         auto* accept = window->findChild<QQuickItem*>(QStringLiteral("acceptColor"));
         QVERIFY(hex && accept);
@@ -270,13 +281,49 @@ class ShellTest : public QObject {
         QVERIFY(capture(QStringLiteral("color-editor-dark-1024.png")));
         // Popup must fit even at the supported minimum size.
         QVERIFY(dialog->property("height").toReal() <= window->height());
-        const auto right = wheel->mapToScene({wheel->width() - 18, wheel->height() / 2}).toPoint();
-        QTest::mouseClick(window, Qt::LeftButton, {}, right);
-        QVERIFY(std::abs(selection->hue() - 90) < 2);
-        const auto square = wheel->svRect();
-        QTest::mouseClick(window, Qt::LeftButton, {}, wheel->mapToScene(square.center()).toPoint());
+        const auto center =
+            spectrum->mapToScene({spectrum->width() / 2, spectrum->height() / 2}).toPoint();
+        QTest::mouseClick(window, Qt::LeftButton, {}, center);
+        QVERIFY(std::abs(selection->hue() - 180) < 2);
         QVERIFY(std::abs(selection->saturation() - 50) < 2);
-        QVERIFY(std::abs(selection->value() - 50) < 2);
+        QCOMPARE(selection->value(), 90.0);
+        auto* brightness = window->findChild<QQuickItem*>(QStringLiteral("brightnessSlider"));
+        QVERIFY(brightness);
+        brightness->forceActiveFocus();
+        QTest::keyClick(window, Qt::Key_End);
+        QCOMPARE(selection->value(), 100.0);
+        QTest::keyClick(window, Qt::Key_Home);
+        QCOMPARE(selection->color(), QColor(Qt::black));
+        QTest::keyClick(window, Qt::Key_End);
+        const auto beforeMode = selection->color();
+        auto* mode = window->findChild<QQuickItem*>(QStringLiteral("colorMode"));
+        QVERIFY(mode);
+        click(mode);
+        auto* modePopup = qvariant_cast<QObject*>(mode->property("popup"));
+        QVERIFY(modePopup);
+        QTRY_VERIFY(modePopup->property("visible").toBool());
+        QVERIFY(capture(QStringLiteral("color-model-menu-dark.png")));
+        QTest::keyClick(window, Qt::Key_Down);
+        QTest::keyClick(window, Qt::Key_Return);
+        QTRY_VERIFY(!modePopup->property("visible").toBool());
+        QCOMPARE(mode->property("currentIndex").toInt(), 1);
+        QCOMPARE(selection->color(), beforeMode);
+        const auto channels = visualItems(window->contentItem(), QStringLiteral("channelInput0"));
+        QCOMPARE(channels.size(), 1);
+        auto* numericText = qvariant_cast<QQuickItem*>(channels.first()->property("contentItem"));
+        QVERIFY(numericText);
+        numericText->forceActiveFocus();
+        QTest::keyClick(window, Qt::Key_A, Qt::ControlModifier);
+        for (const char key : std::string("120"))
+            QTest::keyClick(window, key);
+        QTest::keyClick(window, Qt::Key_Return);
+        QCOMPARE(selection->hue(), 120.0);
+        const auto basic = visualItems(window->contentItem(), QStringLiteral("basicDialogSwatch"));
+        QCOMPARE(basic.size(), 48);
+        click(basic.last());
+        QCOMPARE(selection->color(), QColor(Qt::white));
+        click(dialogSlots.last());
+        QCOMPARE(palette->colors(), QStringList{"#ffffff"});
         QTest::keyClick(window, Qt::Key_Escape);
         QTRY_VERIFY(!dialog->property("visible").toBool());
         QCOMPARE(editor->primary, original);
@@ -298,8 +345,8 @@ class ShellTest : public QObject {
         QCOMPARE(editor->primary, original);
         QCOMPARE(editor->image(), pixels);
         QVERIFY(!editor->dirty());
-        for (int i = 1; i < 10; ++i)
-            QVERIFY(palette->add(QColor::fromHsv(i * 36, 180, 220)));
+        for (int i = 2; i < 24; ++i)
+            QVERIFY(palette->add(QColor::fromHsv(i * 15, 180, 220)));
         QTRY_COMPARE(
             visualItems(window->contentItem(), QStringLiteral("customToolbarSwatch")).size(), 10);
         QVERIFY(capture(QStringLiteral("custom-palette-dark-1024.png")));
@@ -308,6 +355,13 @@ class ShellTest : public QObject {
             const auto bounds = swatch->mapRectToScene(swatch->boundingRect());
             QVERIFY(QRectF(0, 0, window->width(), window->height()).contains(bounds));
         }
+        click(primary);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(capture(QStringLiteral("color-editor-full-dark-1024.png")));
+        for (auto* slot : dialogSlots)
+            QVERIFY(!slot->property("empty").toBool());
+        QVERIFY(!add->isEnabled());
+        QTest::keyClick(window, Qt::Key_Escape);
         QVERIFY(palette->clear());
     }
 

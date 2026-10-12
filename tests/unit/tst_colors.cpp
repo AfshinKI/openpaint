@@ -37,20 +37,35 @@ class ColorsTest : public QObject {
         const auto path = dir.filePath("palette.json");
         ColorPalette palette(nullptr, path);
         QVERIFY(palette.colors().isEmpty());
-        for (int i = 0; i < 10; ++i)
-            QVERIFY(palette.add(QColor(i * 20, 20, 200)));
+        for (int i = 0; i < 24; ++i)
+            QVERIFY(palette.add(QColor(i * 10, 20, 200)));
         QVERIFY(!palette.add(Qt::red));
         QVERIFY(palette.replace(2, Qt::yellow));
         ColorPalette restored(nullptr, path);
         QCOMPARE(restored.colors(), palette.colors());
         QCOMPARE(restored.colors().at(2), QString("#ffff00"));
         QVERIFY(!palette.replace(-1, Qt::red));
-        QVERIFY(!palette.remove(10));
+        QVERIFY(!palette.remove(24));
         QVERIFY(palette.remove(2));
-        QCOMPARE(palette.colors().size(), 9);
+        QCOMPARE(palette.colors().size(), 23);
         QVERIFY(palette.clear());
         ColorPalette empty(nullptr, path);
         QVERIFY(empty.colors().isEmpty());
+    }
+    void legacyTenColorPaletteLoads() {
+        QTemporaryDir dir;
+        const auto path = dir.filePath("palette.json");
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("{\"version\":1,\"colors\":[\"#000000\",\"#111111\",\"#222222\",\"#333333\",\"#"
+                   "444444\",\"#555555\",\"#666666\",\"#777777\",\"#888888\",\"#999999\"]}");
+        file.close();
+        ColorPalette palette(nullptr, path);
+        QCOMPARE(palette.colors().size(), 10);
+        QCOMPARE(palette.colors().last(), QString("#999999"));
+        QVERIFY(palette.add(Qt::red));
+        ColorPalette reopened(nullptr, path);
+        QCOMPARE(reopened.colors().size(), 11);
     }
     void failedWritesAndCorruptSettings() {
         QTemporaryDir dir;

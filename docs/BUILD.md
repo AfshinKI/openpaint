@@ -115,17 +115,23 @@ GPL-3.0-or-later; no external assets or embedded text/EXIF metadata):
 
 Color editor: [Light preview](assets/color-editor-light.png),
 [Dark minimum-size preview](assets/color-editor-dark-1024.png), and
-[Full custom palette](assets/custom-palette-dark-1024.png).
+[Toolbar custom slots](assets/custom-palette-dark-1024.png),
+[Full custom editor](assets/color-editor-full-dark-1024.png), and
+[Color model menu](assets/color-model-menu-dark.png).
 
 ## Use the basic editor
 
 Run `./build/dev/openpaint` after building. Draw with the left button; the right
 button uses the secondary color. Choose a palette color or click Primary for a
 custom color. Click the secondary swatch to edit it independently. The editor has a
-hue ring, saturation/value square and HEX/RGB/HSV fields. OK applies the draft;
-Cancel/Escape discard it. Add/Replace/Remove/Clear palette actions save up to ten
+rectangular hue/saturation spectrum, brightness slider and HEX/RGB/HSV fields.
+Choose RGB or HSV from the mode menu; changing modes preserves the color. OK applies the draft;
+Cancel/Escape discard it. Add/Replace/Remove/Clear palette actions save up to 24
 custom colors locally immediately, independently of OK/Cancel. Saved swatches
-appear in the toolbar on restart. Swap exchanges primary/secondary. Eraser uses the secondary color
+appear on restart. The toolbar shows the first ten, including hollow empty slots;
+all 24 are available in the editor. Empty toolbar slots open the editor, while +
+or an empty dialog slot saves the draft in the next free slot. The ⋯ menu offers
+replace/remove/clear; removal compacts the palette. Swap exchanges primary/secondary. Eraser uses the secondary color
 unless Transparent is checked. Each drag is one undo step; Escape cancels it.
 
 Ctrl+Z undoes; Ctrl+Y/Ctrl+Shift+Z redo. Ctrl+wheel zooms around the pointer;
