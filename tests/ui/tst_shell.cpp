@@ -332,6 +332,9 @@ class ShellTest : public QObject {
         QVERIFY(!editor->dirty());
         keyClick(Qt::Key_Z, Qt::ControlModifier | Qt::ShiftModifier);
         QCOMPARE(editor->image(), artwork);
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        keyClick(Qt::Key_Y, Qt::ControlModifier);
+        QCOMPARE(editor->image(), artwork);
         keyClick(Qt::Key_S, Qt::ControlModifier);
         QTRY_VERIFY(save->property("visible").toBool());
         QVERIFY(tabTo("fileNameTextField"));

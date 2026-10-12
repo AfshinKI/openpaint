@@ -134,7 +134,7 @@ ApplicationWindow {
     Action {
         id: redoAction
         text: qsTr("Redo")
-        shortcut: StandardKey.Redo
+        shortcut: "Ctrl+Y"
         enabled: editor.canRedo && !editor.loading
         onTriggered: editor.redo()
     }

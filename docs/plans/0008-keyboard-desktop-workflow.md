@@ -32,7 +32,8 @@ passed against the GNOME FileChooser portal version 3. Only temporary synthetic
 artwork and unique test dialog titles are used.
 
 Dialog focus is explicit, Ctrl+Q works even when the platform supplies no default
-Quit binding, and CLI help now describes PNG support. Keyboard tests wait for
+Quit binding, Ctrl+Y and Ctrl+Shift+Z both redo on every platform, and CLI help
+now describes PNG support. Keyboard tests wait for
 the unsaved prompt’s closed signal before opening another dialog; transient
 window activation alone is not sufficient during popup animations. Rapid popup
 handoffs remain a desktop polish follow-up.
