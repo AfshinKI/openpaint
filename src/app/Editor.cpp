@@ -43,7 +43,12 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         previousSelection_ = document.selection();
         selectionAnchor_ = QPoint(int(std::floor(point.x())), int(std::floor(point.y())));
         selecting_ = true;
-        document.setSelection(QRect(selectionAnchor_, QSize(1, 1)));
+        if (freeFormSelection) {
+            selectionPoints_ = {selectionAnchor_};
+            document.setSelection({});
+        } else {
+            document.setSelection(QRect(selectionAnchor_, QSize(1, 1)));
+        }
         emit pixelsChanged({});
         emit changed();
         return;
@@ -136,10 +141,21 @@ void Editor::extend(QPointF point, bool constrain) {
             const QPoint end(
                 int(std::clamp(std::floor(point.x()), 0.0, double(image().width() - 1))),
                 int(std::clamp(std::floor(point.y()), 0.0, double(image().height() - 1))));
-            document.setSelection(QRect(QPoint(std::min(selectionAnchor_.x(), end.x()),
-                                               std::min(selectionAnchor_.y(), end.y())),
-                                        QPoint(std::max(selectionAnchor_.x(), end.x()),
-                                               std::max(selectionAnchor_.y(), end.y()))));
+            if (!selectionPoints_.isEmpty()) {
+                if (selectionPoints_.last() != end) {
+                    if (selectionPoints_.size() >= 4096) {
+                        cancel();
+                        fail(tr("A selection path can contain at most 4096 points."));
+                        return;
+                    }
+                    selectionPoints_.append(end);
+                }
+            } else {
+                document.setSelection(QRect(QPoint(std::min(selectionAnchor_.x(), end.x()),
+                                                   std::min(selectionAnchor_.y(), end.y())),
+                                            QPoint(std::max(selectionAnchor_.x(), end.x()),
+                                                   std::max(selectionAnchor_.y(), end.y()))));
+            }
             emit pixelsChanged({});
             emit changed();
         }
@@ -193,9 +209,7 @@ void Editor::endGesture() {
         return;
     }
     if (selecting_) {
-        selecting_ = false;
-        previousSelection_ = {};
-        emit changed();
+        finishSelection();
         return;
     }
     if (textActive_) {
@@ -316,8 +330,7 @@ void Editor::commitPreview() {
     finish();
 }
 void Editor::finish() {
-    selecting_ = false;
-    previousSelection_ = {};
+    finishSelection();
     if (shapeActive_ && shapeKind == openpaint::PolygonShape && shapePoints_.size() < 3) {
         cancel();
         return;
@@ -329,7 +342,7 @@ void Editor::finish() {
     if (floatingActive_) {
         document.setSelection(selection().intersected(image().rect()));
         floatingActive_ = floatingDragging_ = false;
-        floatingImage_ = {};
+        floatingImage_ = floatingComposite_ = {};
         floatingRegion_ = floatingOriginalSelection_ = {};
     }
     emit pixelsChanged(QRect());
@@ -339,6 +352,7 @@ void Editor::cancel() {
     if (selecting_) {
         document.setSelection(previousSelection_);
         selecting_ = false;
+        selectionPoints_.clear();
         previousSelection_ = {};
     } else if (!document.active() && !loading()) {
         document.setSelection({});
@@ -350,7 +364,7 @@ void Editor::cancel() {
     if (floatingActive_) {
         document.setSelection(floatingOriginalSelection_);
         floatingActive_ = floatingDragging_ = false;
-        floatingImage_ = {};
+        floatingImage_ = floatingComposite_ = {};
         floatingRegion_ = floatingOriginalSelection_ = {};
     }
     emit pixelsChanged(QRect());
@@ -383,6 +397,7 @@ Editor::Editor(QObject* parent) : QObject(parent) {
     connect(&copyWatcher_, &QFutureWatcher<QByteArray>::finished, this, &Editor::finishCopy);
     connect(this, &Editor::settingsChanged, this, &Editor::refreshShape);
     connect(this, &Editor::settingsChanged, this, &Editor::refreshText);
+    connect(this, &Editor::settingsChanged, this, &Editor::refreshFloating);
     connect(&fillWatcher_, &QFutureWatcher<openpaint::FillResult>::finished, this, [this] {
         const auto result = fillWatcher_.result();
         busy_ = filling_ = false;

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include "app/Editor.h"
+#include <QPainterPath>
 #include <QPointer>
 #include <QQuickPaintedItem>
 
@@ -57,6 +58,8 @@ class CanvasItem : public QQuickPaintedItem {
     void finishGesture();
     void updateGesture(QPointF point, bool constrain = false);
     QPointer<Editor> editor_;
+    QRegion selectionCache_;
+    QPainterPath selectionBoundary_;
     Qt::MouseButton gestureButton_ = Qt::NoButton;
     qreal zoom_ = 1;
     QPointF origin_, last_, cursor_;

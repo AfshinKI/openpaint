@@ -7,6 +7,50 @@
 #include <QPainter>
 #include <QtConcurrent>
 
+namespace {
+QImage colorKeyImage(QImage image, QRgb key) {
+    for (int y = 0; y < image.height(); ++y) {
+        auto* pixels = reinterpret_cast<QRgb*>(image.scanLine(y));
+        if (!pixels)
+            return {};
+        for (int x = 0; x < image.width(); ++x)
+            if (pixels[x] == key)
+                pixels[x] = 0;
+    }
+    return image;
+}
+} // namespace
+void Editor::finishSelection() {
+    if (!selecting_)
+        return;
+    bool tooComplex = false;
+    if (!selectionPoints_.isEmpty()) {
+        const bool bounded =
+            qint64(selectionPoints_.size()) * selectionPoints_.boundingRect().height() <= 4000000;
+        const auto region =
+            bounded && selectionPoints_.size() >= 3
+                ? QRegion(selectionPoints_, Qt::OddEvenFill).intersected(image().rect())
+                : QRegion();
+        const bool complex = !bounded || region.rectCount() > 16384;
+        document.setSelection(region.isEmpty() || complex ? previousSelection_ : region);
+        tooComplex = complex;
+    }
+    selecting_ = false;
+    selectionPoints_.clear();
+    previousSelection_ = {};
+    if (tooComplex)
+        fail(tr("This selection path is too complex. Try a simpler outline."));
+    emit pixelsChanged({});
+    emit changed();
+}
+void Editor::invertSelection() {
+    if (!canSelect() || !hasSelection())
+        return;
+    finish();
+    document.setSelection(QRegion(image().rect()).subtracted(document.selection()));
+    emit pixelsChanged({});
+    emit changed();
+}
 QImage Editor::selectedImage() const {
     if (!hasSelection() || previewActive())
         return {};
@@ -40,14 +84,19 @@ bool Editor::startCopy(bool cut) {
     busy_ = loading_ = clipboardBusy_ = true;
     cancellation_ = std::make_shared<std::atomic_bool>(false);
     emit changed();
-    copyWatcher_.setFuture(QtConcurrent::run([selected, token = cancellation_] {
-        QByteArray png;
-        QBuffer buffer(&png);
-        buffer.open(QIODevice::WriteOnly);
-        if (token->load() || !openpaint::writePng(buffer, selected) || token->load())
-            return QByteArray();
-        return png;
-    }));
+    copyWatcher_.setFuture(
+        QtConcurrent::run([selected, token = cancellation_, transparent = transparentSelection,
+                           key = qPremultiply(secondary.rgba())] {
+            QByteArray png;
+            QBuffer buffer(&png);
+            buffer.open(QIODevice::WriteOnly);
+            if (token->load())
+                return QByteArray();
+            const auto pixels = transparent ? colorKeyImage(selected, key) : selected;
+            if (!openpaint::writePng(buffer, pixels) || token->load())
+                return QByteArray();
+            return png;
+        }));
     return true;
 }
 void Editor::finishCopy() {
@@ -91,6 +140,7 @@ bool Editor::pasteImage(const QImage& source) {
     if (!canSelect() || source.isNull() || !openpaint::Document::validSize(source.size()))
         return false;
     finish();
+    floatingComposite_ = {};
     floatingImage_ = source.convertToFormat(QImage::Format_ARGB32_Premultiplied);
     if (floatingImage_.isNull())
         return false;
@@ -110,6 +160,7 @@ bool Editor::pasteImage(const QImage& source) {
     return true;
 }
 void Editor::beginMove(QPoint point) {
+    floatingComposite_ = {};
     floatingImage_ = selectedImage();
     if (floatingImage_.isNull())
         return;
@@ -145,6 +196,21 @@ void Editor::moveFloating(int x, int y) {
     refreshFloating();
 }
 void Editor::refreshFloating() {
+    if (!floatingActive_)
+        return;
+    const auto key = qPremultiply(secondary.rgba());
+    if (floatingComposite_.isNull() || floatingTransparent_ != transparentSelection ||
+        (transparentSelection && key != floatingColorKey_)) {
+        floatingComposite_ =
+            transparentSelection ? colorKeyImage(floatingImage_, key) : floatingImage_;
+        if (floatingComposite_.isNull()) {
+            cancel();
+            fail(tr("There is not enough memory to preview this selection."));
+            return;
+        }
+        floatingTransparent_ = transparentSelection;
+        floatingColorKey_ = key;
+    }
     const auto destination = selection().intersected(image().rect());
     const auto affected =
         floatingMove_ ? destination.united(floatingOriginalSelection_) : destination;
@@ -162,7 +228,7 @@ void Editor::refreshFloating() {
         }
         painter.setClipRegion(destination);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.drawImage(floatingPosition_, floatingImage_);
+        painter.drawImage(floatingPosition_, floatingComposite_);
     }
     document.updatePreview(patch, rect);
     emit pixelsChanged({});

@@ -115,7 +115,10 @@ tested; text requires explicit commit/cancel before switching.
 Selection is currently a bounded binary QRegion mask owned by Document. It is
 transient state outside pixel history and cannot change during a document
 transaction. Fill workers receive an immutable copy; stroke, brush and preview
-paths apply the same boundary. Future feathering can extend it to an alpha mask. Cut/move/delete affect only the selected region
+paths apply the same boundary. Free-form input records a bounded polygon and builds the odd-even region once at
+gesture end; complexity limits reject excessive masks. The renderer caches a
+simplified outline independently of floating position. Future feathering can
+extend the mask to alpha coverage. Cut/move/delete affect only the selected region
 on the active layer unless an action explicitly says otherwise. Sampling merged
 colors is a separate, visible option. Erasing on a transparent layer clears alpha;
 an explicit opaque-background mode uses the secondary color. Do not guess based

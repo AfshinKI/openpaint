@@ -469,7 +469,7 @@ ApplicationWindow {
                 IconButton {
                     objectName: "selectionButton"
                     symbol: "selection"
-                    text: qsTr("Select rectangle")
+                    text: editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
                     Accessible.name: text
                     highlighted: editor.tool === Editor.Select
                     enabled: editor.canSelect
@@ -479,7 +479,7 @@ ApplicationWindow {
                 PaintButton {
                     objectName: "selectionMenuButton"
                     text: qsTr("Select ▾")
-                    enabled: editor.canSelect
+                    enabled: editor.canSelect || editor.floatingActive
                     onClicked: selectionMenu.open()
                     PaintMenu {
                         id: selectionMenu
@@ -488,18 +488,44 @@ ApplicationWindow {
                         PaintMenuItem {
                             text: qsTr("Rectangle")
                             checkable: true
-                            checked: editor.tool === Editor.Select
-                            onTriggered: editor.tool = Editor.Select
+                            checked: editor.tool === Editor.Select && !editor.freeFormSelection
+                            enabled: editor.canSelect
+                            onTriggered: {
+                                editor.freeFormSelection = false;
+                                editor.tool = Editor.Select;
+                            }
+                        }
+                        PaintMenuItem {
+                            objectName: "freeFormSelectionItem"
+                            text: qsTr("Free-form")
+                            checkable: true
+                            checked: editor.tool === Editor.Select && editor.freeFormSelection
+                            enabled: editor.canSelect
+                            onTriggered: {
+                                editor.freeFormSelection = true;
+                                editor.tool = Editor.Select;
+                            }
                         }
                         MenuSeparator {}
                         PaintMenuItem {
                             action: selectAllAction
                         }
                         PaintMenuItem {
+                            text: qsTr("Invert selection")
+                            enabled: editor.canSelect && editor.hasSelection
+                            onTriggered: editor.invertSelection()
+                        }
+                        PaintMenuItem {
+                            text: qsTr("Transparent selection")
+                            checkable: true
+                            checked: editor.transparentSelection
+                            onTriggered: editor.transparentSelection = !editor.transparentSelection
+                        }
+                        PaintMenuItem {
                             action: deselectAction
                         }
                         PaintMenuItem {
-                            text: qsTr("Selection bounds…")
+                            text: editor.floatingActive ? qsTr("Selection position…") : qsTr("Selection bounds…")
                             enabled: editor.hasSelection
                             onTriggered: selectionOptions.open()
                         }
