@@ -1,7 +1,7 @@
 # Privacy and public-repository hygiene
 
 These are product requirements. The current native editor has no network operations. It opens and saves local PNG
-files, strips text metadata and rejects unsupported EXIF-oriented PNG. Recovery
+files, normalizes EXIF orientation and strips text/EXIF metadata. Recovery
 and updates below are still planned.
 
 ## Current local settings

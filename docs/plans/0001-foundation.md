@@ -61,8 +61,9 @@ works from menu and keyboard. No QML pixel buffer owns the saved image.
 
 ## Step 4 — trustworthy PNG lifecycle
 
-- [ ] Decode/encode PNG with size limits, orientation/color-space normalization,
+- [x] Decode/encode PNG with size limits, orientation/color-space normalization,
   metadata stripping, and alpha preservation. Use a worker snapshot for saving.
+  Evidence: [PNG validation](0007-png-validation.md).
 - [x] Add native/Qt Open, Save and Save As, current filename, and dirty marker.
   Portal replacement behavior is still unverified.
 - [x] Implement New/Close Save–Discard–Cancel, and preserve originals on failure.

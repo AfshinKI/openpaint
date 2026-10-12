@@ -4,6 +4,8 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Normalize PNG EXIF orientation while stripping metadata; reject corrupt chunk checksums and structure.
+
 - Keep each canvas drag owned by its initiating button; prevent extra buttons and
   interrupted drags from switching modes or appending stray pixels. Include the
   final pan position and correct fractional image-edge hit testing.

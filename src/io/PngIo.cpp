@@ -9,8 +9,11 @@
 #include <QImageReader>
 #include <QImageWriter>
 #include <QSaveFile>
+#include <QTransform>
 #include <QtEndian>
 #include <cstring>
+#include <optional>
+#include <zlib.h>
 
 namespace openpaint {
 namespace {
@@ -19,6 +22,62 @@ QString tr(const char* text) {
 }
 bool cancelled(const Cancellation& token) {
     return token && token->load();
+}
+// Only IFD0 orientation affects the raster. Other EXIF data is never retained.
+std::optional<int> exifOrientation(const QByteArray& data) {
+    if (data.size() < 8 || (data.first(2) != "II" && data.first(2) != "MM"))
+        return {};
+    const bool little = data.first(2) == "II";
+    auto u16 = [&](qsizetype p) {
+        return little ? qFromLittleEndian<quint16>(data.constData() + p)
+                      : qFromBigEndian<quint16>(data.constData() + p);
+    };
+    auto u32 = [&](qsizetype p) {
+        return little ? qFromLittleEndian<quint32>(data.constData() + p)
+                      : qFromBigEndian<quint32>(data.constData() + p);
+    };
+    if (u16(2) != 42)
+        return {};
+    const quint64 offset = u32(4);
+    if (offset < 8 || offset + 2 > quint64(data.size()))
+        return {};
+    const quint64 count = u16(qsizetype(offset));
+    if (offset + 2 + count * 12 + 4 > quint64(data.size()))
+        return {};
+    int orientation = 1;
+    bool found = false;
+    for (quint64 i = 0; i < count; ++i) {
+        const auto p = qsizetype(offset + 2 + i * 12);
+        if (u16(p) != 0x0112)
+            continue;
+        if (found || u16(p + 2) != 3 || u32(p + 4) != 1)
+            return {};
+        found = true;
+        orientation = u16(p + 8);
+        if (orientation < 1 || orientation > 8)
+            return {};
+    }
+    return orientation;
+}
+QImage orientImage(QImage image, int orientation) {
+    switch (orientation) {
+    case 2:
+        return image.mirrored(true, false);
+    case 3:
+        return image.mirrored(true, true);
+    case 4:
+        return image.mirrored(false, true);
+    case 5:
+        return image.mirrored(false, true).transformed(QTransform().rotate(90));
+    case 6:
+        return image.transformed(QTransform().rotate(90));
+    case 7:
+        return image.mirrored(true, false).transformed(QTransform().rotate(90));
+    case 8:
+        return image.transformed(QTransform().rotate(270));
+    default:
+        return image;
+    }
 }
 QImage cleanImage(QImage image) {
     if (image.colorSpace().isValid() && image.colorSpace() != QColorSpace(QColorSpace::SRgb))
@@ -43,7 +102,9 @@ ImageResult loadPng(const QString& path, const Cancellation& cancellation) {
     if (file.read(8) != QByteArray::fromHex("89504e470d0a1a0a"))
         return {{}, tr("Only PNG images are supported in this version.")};
     QByteArray filtered = QByteArray::fromHex("89504e470d0a1a0a");
-    bool ended = false, removedMetadata = false;
+    bool ended = false, removedMetadata = false, seenHeader = false, seenData = false;
+    bool seenExif = false, dataEnded = false;
+    int orientation = 1;
     // Reject animations rather than silently replacing them with their first frame.
     while (file.pos() < encodedSize) {
         const auto header = file.read(8);
@@ -52,21 +113,51 @@ ImageResult loadPng(const QString& path, const Cancellation& cancellation) {
         const auto length = qFromBigEndian<quint32>(header.constData());
         if (qint64(length) + 4 > encodedSize - file.pos())
             return {{}, tr("The PNG contains an invalid chunk.")};
-        if (header.mid(4) == "acTL")
-            return {{}, tr("Animated PNG is not supported. Open a static PNG instead.")};
         const auto type = header.mid(4);
-        if (type == "IEND" && length != 0)
-            return {{}, tr("The PNG contains an invalid end chunk.")};
-        if (type == "eXIf")
-            return {
-                {},
-                tr("PNG EXIF orientation is not supported yet. Export a normalized PNG first.")};
-        if (type == "tEXt" || type == "iTXt" || type == "zTXt") {
+        const auto payload = file.read(qint64(length) + 4);
+        if (payload.size() != qint64(length) + 4)
+            return {{}, tr("The PNG is truncated.")};
+        auto crc = crc32(0, reinterpret_cast<const Bytef*>(type.constData()), 4);
+        crc = crc32(crc, reinterpret_cast<const Bytef*>(payload.constData()), length);
+        if (crc != qFromBigEndian<quint32>(payload.constData() + length))
+            return {{}, tr("The PNG contains a damaged chunk.")};
+        if ((!seenHeader && type != "IHDR") || (type == "IHDR" && (seenHeader || length != 13)) ||
+            (type == "IDAT" && dataEnded) || (type == "IEND" && (length != 0 || !seenData)))
+            return {{}, tr("The PNG contains an invalid chunk sequence.")};
+        if (type == "IHDR")
+            seenHeader = true;
+        if (type == "IDAT")
+            seenData = true;
+        else if (seenData)
+            dataEnded = true;
+        if (type == "acTL" || type == "fcTL" || type == "fdAT")
+            return {{}, tr("Animated PNG is not supported. Open a static PNG instead.")};
+        if (type == "iCCP") {
+            const auto nameEnd = payload.indexOf('\0');
+            if (nameEnd < 1 || nameEnd > 79 || nameEnd + 2 >= length || payload[nameEnd + 1] != 0)
+                return {{}, tr("The PNG contains an invalid color profile.")};
+            QByteArray profile(4 * 1024 * 1024, 0);
+            uLongf size = profile.size();
+            if (uncompress(reinterpret_cast<Bytef*>(profile.data()), &size,
+                           reinterpret_cast<const Bytef*>(payload.constData() + nameEnd + 2),
+                           length - nameEnd - 2) != Z_OK)
+                return {{}, tr("The PNG color profile is invalid or exceeds 4 MiB.")};
+            profile.resize(qsizetype(size));
+            if (!QColorSpace::fromIccProfile(profile).isValid())
+                return {{}, tr("The PNG color profile is unsupported or invalid.")};
+        }
+        if (type == "eXIf") {
+            const auto parsed = exifOrientation(payload.first(length));
+            if (seenExif || !parsed)
+                return {{}, tr("The PNG contains invalid EXIF orientation metadata.")};
+            seenExif = true;
+            orientation = *parsed;
             removedMetadata = true;
-            file.seek(file.pos() + length + 4);
+        } else if (type == "tEXt" || type == "iTXt" || type == "zTXt") {
+            removedMetadata = true;
         } else {
             filtered += header;
-            filtered += file.read(qint64(length) + 4);
+            filtered += payload;
         }
         if (type == "IEND") {
             ended = true;
@@ -75,12 +166,12 @@ ImageResult loadPng(const QString& path, const Cancellation& cancellation) {
         if (cancelled(cancellation))
             return {{}, {}, true};
     }
-    if (!ended)
+    if (!ended || file.pos() != encodedSize)
         return {{}, tr("The PNG is truncated.")};
     QBuffer buffer(&filtered);
     buffer.open(QIODevice::ReadOnly);
     QImageReader reader(&buffer, "png");
-    reader.setAutoTransform(true);
+    reader.setAutoTransform(false);
     if (!Document::validSize(reader.size()))
         return {{}, tr("Image exceeds the limit: 16,384 pixels per side and 32 million pixels.")};
     QImage image = reader.read();
@@ -88,7 +179,7 @@ ImageResult loadPng(const QString& path, const Cancellation& cancellation) {
         return {{}, tr("The PNG could not be decoded. The current drawing is unchanged.")};
     if (cancelled(cancellation))
         return {{}, {}, true};
-    image = cleanImage(std::move(image));
+    image = cleanImage(orientImage(std::move(image), orientation));
     if (image.isNull())
         return {{}, tr("There is not enough memory to open this image.")};
     if (cancelled(cancellation))
@@ -96,12 +187,40 @@ ImageResult loadPng(const QString& path, const Cancellation& cancellation) {
     return {image,
             {},
             false,
-            removedMetadata ? tr("Text metadata was removed for privacy. Saving will write pixels "
+            removedMetadata ? tr("Metadata was removed for privacy. Saving will write pixels "
                                  "and the sRGB profile only.")
                             : QString()};
 }
+bool writePng(QIODevice& device, const QImage& image) {
+    // libpng uses longjmp on device errors; Qt 6.8's profile temporary then leaks.
+    // Let the codec finish and unwind normally, but remember every failed write.
+    class CheckedDevice : public QIODevice {
+      public:
+        explicit CheckedDevice(QIODevice& destination) : destination(destination) {
+            open(WriteOnly);
+        }
+        bool failed = false;
+
+      protected:
+        qint64 readData(char*, qint64) override {
+            return -1;
+        }
+        qint64 writeData(const char* data, qint64 size) override {
+            if (!failed && destination.write(data, size) != size)
+                failed = true;
+            return size;
+        }
+
+      private:
+        QIODevice& destination;
+    } checked(device);
+    QImageWriter writer(&checked, "png");
+    const bool encoded = writer.write(image);
+    return encoded && !checked.failed;
+}
 ImageResult savePng(const QString& path, const QImage& image, const Cancellation& cancellation,
-                    const std::function<bool(QSaveFile&)>& commit) {
+                    const std::function<bool(QSaveFile&)>& commit,
+                    const std::function<bool(QIODevice&, const QImage&)>& encode) {
     if (cancelled(cancellation))
         return {{}, {}, true};
     if (!Document::validSize(image.size()) || image.isNull())
@@ -110,9 +229,8 @@ ImageResult savePng(const QString& path, const QImage& image, const Cancellation
     file.setDirectWriteFallback(false);
     if (!file.open(QIODevice::WriteOnly))
         return {{}, tr("Cannot create a safe temporary file here. Choose another destination.")};
-    QImageWriter writer(&file, "png");
     const auto clean = cleanImage(image);
-    if (clean.isNull() || !writer.write(clean)) {
+    if (clean.isNull() || !(encode ? encode(file, clean) : writePng(file, clean))) {
         file.cancelWriting();
         return {{}, tr("PNG writing failed. The original file has been preserved.")};
     }

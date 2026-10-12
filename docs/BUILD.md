@@ -24,7 +24,7 @@ From the repository root, install system prerequisites:
 ```sh
 sudo apt-get update
 sudo apt-get install -y g++-13 cmake ninja-build python3-venv \
-  libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
+  zlib1g-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
 ```
 
 Install development tools and Qt in the ignored build directory:
@@ -154,7 +154,7 @@ opens PNG, Ctrl+S saves and Ctrl+Shift+S chooses another PNG filename. Unsaved
 New/Open/Close offers Save, Discard and Cancel. Failed saves keep the drawing open.
 
 Only static PNG is supported, with a 32 MP limit. Text metadata is removed and
-colors normalize to sRGB; EXIF-oriented/animated PNG is rejected. Recovery after a
+colors normalize to sRGB; EXIF orientation is normalized; animated PNG is rejected. Recovery after a
 crash, layers, shapes, text, selection, packaged downloads and updates are not yet
 available. The developer build is useful for basic drawings, not a stable release.
 

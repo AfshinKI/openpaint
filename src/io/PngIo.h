@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 class QSaveFile;
+class QIODevice;
 namespace openpaint {
 using Cancellation = std::shared_ptr<std::atomic_bool>;
 struct ImageResult {
@@ -17,8 +18,11 @@ struct ImageResult {
         return error.isEmpty() && !cancelled;
     }
 };
+// Encode while deferring device errors until the codec has released its resources.
+bool writePng(QIODevice& device, const QImage& image);
 ImageResult loadPng(const QString& path, const Cancellation& cancellation = {});
 // Commit injection exercises replacement failures without special filesystem privileges.
 ImageResult savePng(const QString& path, const QImage& image, const Cancellation& cancellation = {},
-                    const std::function<bool(QSaveFile&)>& commit = {});
+                    const std::function<bool(QSaveFile&)>& commit = {},
+                    const std::function<bool(QIODevice&, const QImage&)>& encode = {});
 } // namespace openpaint
