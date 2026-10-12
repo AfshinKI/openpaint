@@ -8,5 +8,5 @@ qt_add_qml_module(openpaint_ui STATIC
         ../src/render/CanvasItem.h ../src/render/CanvasItem.cpp
     QML_FILES Main.qml Theme.qml
 )
-target_link_libraries(openpaint_ui PUBLIC openpaint_document Qt6::Quick Qt6::QuickControls2)
+target_link_libraries(openpaint_ui PUBLIC openpaint_document openpaint_io Qt6::Concurrent Qt6::Quick Qt6::QuickControls2)
 target_include_directories(openpaint_ui PRIVATE ../src/app ../src/render)

@@ -1,12 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include "document/Document.h"
+#include "io/PngIo.h"
+#include <QFutureWatcher>
 #include <QObject>
+#include <QUrl>
 #include <QtQml/qqmlregistration.h>
 
 class Editor : public QObject {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(bool busy READ busy NOTIFY changed)
+    Q_PROPERTY(bool loading READ loading NOTIFY changed)
+    Q_PROPERTY(QString fileName READ fileName NOTIFY changed)
+    Q_PROPERTY(QUrl fileUrl READ fileUrl NOTIFY changed)
+    Q_PROPERTY(QString notice READ notice NOTIFY noticeChanged)
+    Q_PROPERTY(QString error READ error NOTIFY errorChanged)
     Q_PROPERTY(bool dirty READ dirty NOTIFY changed)
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY changed)
     Q_PROPERTY(bool canRedo READ canRedo NOTIFY changed)
@@ -17,7 +26,27 @@ class Editor : public QObject {
     Q_PROPERTY(bool eraser MEMBER eraser NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentEraser MEMBER transparentEraser NOTIFY settingsChanged)
   public:
-    explicit Editor(QObject* parent = nullptr) : QObject(parent) {}
+    explicit Editor(QObject* parent = nullptr);
+    bool busy() const {
+        return busy_;
+    }
+    bool loading() const {
+        return loading_;
+    }
+    QString fileName() const;
+    QUrl fileUrl() const {
+        return fileUrl_;
+    }
+    QString notice() const {
+        return notice_;
+    }
+    QString error() const {
+        return error_;
+    }
+    Q_INVOKABLE void newDocument();
+    Q_INVOKABLE void openFile(const QUrl& url);
+    Q_INVOKABLE void saveFile(const QUrl& url);
+    Q_INVOKABLE void cancelIo();
     bool dirty() const {
         return document.dirty() || document.active();
     }
@@ -44,8 +73,22 @@ class Editor : public QObject {
     bool eraser = false, transparentEraser = false;
   signals:
     void changed();
+    void errorChanged();
+    void noticeChanged();
+    void documentReplaced();
+    void saved(bool success);
     void settingsChanged();
     void pixelsChanged(QRect rect);
+
+  private:
+    void fail(const QString& message);
+    bool busy_ = false, loading_ = false;
+    QUrl fileUrl_;
+    QString error_, notice_;
+    QFutureWatcher<openpaint::ImageResult> watcher_;
+    openpaint::Cancellation cancellation_;
+    QUrl operationUrl_;
+    quint64 savingRevision_ = 0;
 
   protected:
     openpaint::Document document;

@@ -8,6 +8,7 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QSignalSpy>
+#include <QTemporaryDir>
 #include <QTest>
 #include <algorithm>
 #include <memory>
@@ -44,6 +45,10 @@ class ShellTest : public QObject {
         window->resize(1024, 640);
         QTRY_COMPARE(window->size(), QSize(1024, 640));
         QVERIFY(!window->grabWindow().isNull());
+        for (auto* swatch : window->findChildren<QQuickItem*>(QStringLiteral("colorSwatch"))) {
+            QVERIFY(swatch->width() >= 32);
+            QVERIFY(swatch->mapToScene({swatch->width(), 0}).x() <= window->width());
+        }
     }
 
     void themeActions() {
@@ -133,6 +138,67 @@ class ShellTest : public QObject {
         editor->undo();
         QCOMPARE(editor->image(), first);
         editor->undo();
+    }
+
+    void unsavedCancelAndSaveClose() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* dialog = window->findChild<QObject*>(QStringLiteral("unsavedDialog"));
+        QTemporaryDir dir;
+        auto url = QUrl::fromLocalFile(dir.filePath("drawing.png"));
+        editor->begin({20, 20}, false);
+        editor->finish();
+        const auto drawing = editor->image();
+        QTest::keyClick(window, Qt::Key_N, Qt::ControlModifier);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(dialog, "reject"));
+        QCOMPARE(editor->image(), drawing);
+        QVERIFY(editor->dirty());
+        QVERIFY(window->isVisible());
+        editor->saveFile(url);
+        QTRY_VERIFY(!editor->busy());
+        editor->begin({40, 40}, false);
+        editor->finish();
+        const auto final = editor->image();
+        window->close();
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(window->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(dialog, "accept"));
+        QTRY_VERIFY(!editor->busy());
+        QTRY_VERIFY(!window->isVisible());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, final);
+    }
+
+    void failedSavePreventsClose() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* dialog = window->findChild<QObject*>(QStringLiteral("unsavedDialog"));
+        auto* error = window->findChild<QObject*>(QStringLiteral("errorDialog"));
+        QTemporaryDir dir;
+        QVERIFY(QDir(dir.path()).mkdir("gone"));
+        const auto path = dir.filePath("gone/drawing.png");
+        editor->saveFile(QUrl::fromLocalFile(path));
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(QFile::remove(path));
+        QVERIFY(QDir(dir.path()).rmdir("gone"));
+        editor->begin({30, 30}, false);
+        editor->finish();
+        const auto drawing = editor->image();
+        window->close();
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(dialog, "accept"));
+        QTRY_VERIFY(!editor->busy());
+        QTRY_VERIFY(error->property("visible").toBool());
+        QVERIFY(window->isVisible());
+        QVERIFY(editor->dirty());
+        QCOMPARE(editor->image(), drawing);
+    }
+
+    void fileDialogCancel() {
+        auto* dialog = window->findChild<QObject*>(QStringLiteral("openDialog"));
+        QTest::keyClick(window, Qt::Key_O, Qt::ControlModifier);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(dialog, "reject"));
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+        QVERIFY(window->isVisible());
     }
 
     void renderTiming() {

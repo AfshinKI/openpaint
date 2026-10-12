@@ -1,6 +1,6 @@
 # Architecture
 
-Status: native shell implemented; single-layer document/patch history implemented; drawing UI integrated; files pending.
+Status: native shell implemented; single-layer document/patch history implemented; drawing UI and background PNG lifecycle implemented.
 See [decision 0001](decisions/0001-native-stack.md) for alternatives and tradeoffs.
 
 ## Stack

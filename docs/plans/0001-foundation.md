@@ -1,6 +1,6 @@
 # M1: first working canvas
 
-Status: in progress; Step 1 merged; Steps 1–2 merged; Step 3 canvas implemented, under validation
+Status: in progress; Step 1 merged; Steps 1–3 merged; usable basic PNG editor implemented; platform validation remains open
 Feature IDs: F01, F02, F05, F11, F15, F16, F26 (initial subsets)
 Dependencies: M0 documentation and repository tooling
 
@@ -60,8 +60,9 @@ works from menu and keyboard. No QML pixel buffer owns the saved image.
 
 - [ ] Decode/encode PNG with size limits, orientation/color-space normalization,
   metadata stripping, and alpha preservation. Use a worker snapshot for saving.
-- [ ] Add native/portal Open, Save and Save As, current filename, and dirty marker.
-- [ ] Implement New/Close Save–Discard–Cancel, and preserve originals on failure.
+- [x] Add native/Qt Open, Save and Save As, current filename, and dirty marker.
+  Portal replacement behavior is still unverified.
+- [x] Implement New/Close Save–Discard–Cancel, and preserve originals on failure.
 - [ ] Test unwritable target, failed commit, malformed/oversized PNG, cancel, and
   editing while a snapshot is saving. Test portal behavior on a real desktop.
 
@@ -126,3 +127,7 @@ from subjective smoothness. Exact reference-build layout/behavior and GPU/Waylan
 parity remain later audit work; do not label the app an identical replica.
 
 Step 3 behavior and measured evidence: [drawing canvas plan](0002-drawing-canvas.md).
+
+Step 4 implemented subset and remaining codec/platform checks:
+[PNG lifecycle plan](0003-png-file-workflow.md). The basic source editor is usable;
+the full M1 validation gate is not declared complete while unchecked cases remain.
