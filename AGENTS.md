@@ -16,6 +16,21 @@ Read what the task needs. Keep small fixes small. For changes spanning subsystem
 use [the feature template](docs/templates/FEATURE.md); record architectural changes
 with [the decision template](docs/templates/DECISION.md).
 
+## Branches and scope
+
+- `main` is protected. Never commit or push directly to it, bypass protection, or
+  merge automatically. Publish changes on a branch and open a PR targeting `main`.
+- Start each branch from current `origin/main`. Name it only for the specific
+  feature or change, such as `feat/fill-tolerance` or `docs/branch-workflow`.
+  Never include `codex`, `claude`, another assistant/provider name, or an author name.
+- One branch and PR deliver one bounded, reviewable outcome, including its necessary
+  tests and docs. A milestone is several PRs, not one ever-growing branch.
+- Define acceptance cases before implementation. Once they pass, submit for review
+  and merge through the protected workflow before starting the next dependent slice.
+  Do not append another feature, unrelated fix, or opportunistic refactor.
+- If work expands beyond the original outcome, split it into smaller scoped PRs
+  before continuing. Track follow-up work separately; never reuse a merged branch.
+
 ## Engineering rules
 
 - Use C++20 and Qt 6/QML. Keep pixel operations and document mutations out of QML.

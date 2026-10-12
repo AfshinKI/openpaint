@@ -30,6 +30,9 @@ Packaging recipes pin their sources/checksums and document prerequisite setup.
    story plus observable acceptance cases. For nontrivial changes, copy
    [the feature template](templates/FEATURE.md) into `docs/plans/` with a numbered,
    descriptive name. A typo or small bug fix does not need a new design document.
+   Create a change-named branch from current `origin/main`, following the shared
+   [branch rules](../AGENTS.md#branches-and-scope). Select one reviewable slice of
+   a milestone, not the entire milestone. Keep assistant names out of branch names.
 2. **Read the relevant contract.** Use [DESIGN.md](DESIGN.md) for UI behavior,
    [ARCHITECTURE.md](ARCHITECTURE.md) for data and ownership, and
    [RELEASES.md](RELEASES.md) for install/update behavior. Record ambiguity in the
@@ -50,7 +53,11 @@ Packaging recipes pin their sources/checksums and document prerequisite setup.
    only with actual evidence; leave external/manual gates open when unverified.
 7. **Review and hand off.** Inspect the diff for private information, unnecessary
    dependencies, and unrelated edits. Open a focused PR with screenshots where
-   useful, validation, and material limits. Keep unfinished steps in the plan.
+   useful, validation, and material limits. Stop expanding the branch when its
+   acceptance cases pass. Merge through the protected workflow before beginning
+   the next dependent slice on a fresh branch; never push directly to `main`.
+   If scope grows, split out prerequisites/follow-ups before continuing, and keep
+   unfinished steps in the plan.
 
 ## Worked example: fill tolerance (M2 / F04)
 

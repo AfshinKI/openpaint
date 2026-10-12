@@ -14,6 +14,31 @@ issue and a short [feature plan](docs/templates/FEATURE.md) to avoid duplicate w
 Follow [the implementation workflow](docs/DEVELOPMENT.md). Every change should be
 small enough to review and leave the repository in a usable state.
 
+## Branches and pull requests
+
+Follow the shared [branch and scope rules](AGENTS.md#branches-and-scope). `main` is
+protected: all changes go through a branch and pull request, including docs and
+maintenance. Do not push directly to `main` or bypass its protections.
+
+Use `<type>/<specific-change>` with a short, lowercase, hyphenated description.
+Useful types are `feat`, `fix`, `docs`, `build`, and `test`. Examples:
+
+- `build/qt-cmake-shell`
+- `feat/stroke-undo`
+- `fix/png-save-failure`
+- `docs/branch-workflow`
+
+Branch names describe the work, never the person or assistant doing it. No `codex`,
+`claude`, or other assistant/provider names. Avoid broad names such as `m1`,
+`all-tools`, or `misc-improvements` that invite scope growth.
+
+Start from current `origin/main`, state one outcome and its acceptance cases, and
+open a PR when that slice is ready. Include only directly necessary implementation,
+tests, and docs. If a prerequisite or new requirement makes the change too broad
+to review as one outcome, split it before continuing. Put unrelated discoveries
+in separate issues/PRs. Merge through the protected workflow before the next
+dependent slice; after merge, start a fresh branch rather than extending the old one.
+
 ## Local checks
 
 Python 3.11+ and Git are required for the current checks and tooling tests:
