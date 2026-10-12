@@ -4,6 +4,14 @@ These are product requirements. The current native editor has no network operati
 files, strips text metadata and rejects unsupported EXIF-oriented PNG. Recovery
 and updates below are still planned.
 
+## Current local settings
+
+Explicit custom-color actions store at most ten opaque HEX colors and a schema
+version in `palette.json` under Qt's XDG application configuration directory. No
+artwork, filenames or identifiers are stored. Remove selected and Clear all are
+available in the color editor. Writes are atomic; failures retain the previous
+palette and show an error. Invalid settings are ignored until explicitly replaced.
+
 ## Product commitments
 
 Core editing works without a network connection, account, analytics, advertising,

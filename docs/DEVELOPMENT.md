@@ -109,3 +109,17 @@ A feature is complete when its observable acceptance cases pass, undo/save/cance
 semantics hold, relevant privacy/accessibility constraints are met, documentation
 matches behavior, and validation is recorded. Compiling is necessary but not
 sufficient. Maintain one honest status ledger rather than optimistic badges.
+
+## Extending the shared UI
+
+New controls must use the rounded family in `qml/` (`PaintButton`, `IconButton`,
+`PaintMenu`, `PaintDialog`, `PaintSpinBox`, `ColorSwatch`) and `Theme` tokens. Add
+original icons to `qml/icons` and register them in the QML module. Preserve named
+accessibility actions, shortcut tooltips, focus and disabled states. Keep controls
+within the minimum 1024×640 window and capture both themes after visible changes.
+
+Use `ColorSelection` for draft color conversions and `ColorPalette` for local
+custom swatches. Accept a drawing-color draft explicitly; palette actions persist
+immediately and never enter artwork history. Extend the color unit tests for
+conversion/storage behavior and the shell tests for keyboard/pointer interactions.
+The [UI polish plan](plans/0004-ui-polish.md) records the current contract and evidence.

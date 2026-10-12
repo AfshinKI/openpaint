@@ -91,7 +91,8 @@ QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software ./build/dev/openpaint_shell_tests
 QT_QPA_PLATFORM=wayland ./build/dev/openpaint_shell_tests
 ```
 
-Only X11/software and offscreen/software have been checked locally so far. These
+X11 with the default renderer at 125% scale and offscreen/software have been
+checked locally. These
 tests do not establish Wayland, GPU rendering, Orca, or packaged-app support.
 
 Generate synthetic captures of just the test window, excluding the desktop:
@@ -112,11 +113,19 @@ GPL-3.0-or-later; no external assets or embedded text/EXIF metadata):
 | 1024×640 | [Light preview](assets/shell-light-1024.png) | [Dark preview](assets/shell-dark-1024.png) |
 | 1280×800 | [Light preview](assets/shell-light-1280.png) | [Dark preview](assets/shell-dark-1280.png) |
 
+Color editor: [Light preview](assets/color-editor-light.png),
+[Dark minimum-size preview](assets/color-editor-dark-1024.png), and
+[Full custom palette](assets/custom-palette-dark-1024.png).
+
 ## Use the basic editor
 
 Run `./build/dev/openpaint` after building. Draw with the left button; the right
 button uses the secondary color. Choose a palette color or click Primary for a
-custom color; Swap exchanges primary/secondary. Eraser uses the secondary color
+custom color. Click the secondary swatch to edit it independently. The editor has a
+hue ring, saturation/value square and HEX/RGB/HSV fields. OK applies the draft;
+Cancel/Escape discard it. Add/Replace/Remove/Clear palette actions save up to ten
+custom colors locally immediately, independently of OK/Cancel. Saved swatches
+appear in the toolbar on restart. Swap exchanges primary/secondary. Eraser uses the secondary color
 unless Transparent is checked. Each drag is one undo step; Escape cancels it.
 
 Ctrl+Z undoes; Ctrl+Y/Ctrl+Shift+Z redo. Ctrl+wheel zooms around the pointer;

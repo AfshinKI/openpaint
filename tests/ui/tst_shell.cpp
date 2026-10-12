@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include "color/ColorPalette.h"
+#include "color/ColorWheel.h"
 #include "render/CanvasItem.h"
 #include <QDir>
 #include <QElapsedTimer>
@@ -12,6 +14,16 @@
 #include <QTest>
 #include <algorithm>
 #include <memory>
+
+static QList<QQuickItem*> visualItems(QQuickItem* root, const QString& name) {
+    QList<QQuickItem*> result;
+    for (auto* child : root->childItems()) {
+        if (child->objectName() == name)
+            result.append(child);
+        result.append(visualItems(child, name));
+    }
+    return result;
+}
 
 class ShellTest : public QObject {
     Q_OBJECT
@@ -35,6 +47,7 @@ class ShellTest : public QObject {
         QSignalSpy readyFrame(window, &QQuickWindow::frameSwapped);
         window->requestUpdate();
         QVERIFY(readyFrame.wait(1000));
+        QGuiApplication::sync();
     }
 
     void cleanup() {
@@ -50,7 +63,7 @@ class ShellTest : public QObject {
         window->resize(1024, 640);
         QTRY_COMPARE(window->size(), QSize(1024, 640));
         QVERIFY(!window->grabWindow().isNull());
-        for (auto* swatch : window->findChildren<QQuickItem*>(QStringLiteral("colorSwatch"))) {
+        for (auto* swatch : visualItems(window->contentItem(), QStringLiteral("colorSwatch"))) {
             QVERIFY(swatch->width() >= 32);
             QVERIFY(swatch->mapToScene({swatch->width(), 0}).x() <= window->width());
         }
@@ -219,6 +232,85 @@ class ShellTest : public QObject {
         QVERIFY(window->isVisible());
     }
 
+    void customColorEditor() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* dialog = window->findChild<QObject*>(QStringLiteral("colorEditor"));
+        auto* selection = window->findChild<ColorSelection*>(QStringLiteral("colorSelection"));
+        auto* primary = window->findChild<QQuickItem*>(QStringLiteral("primaryButton"));
+        auto* secondary = window->findChild<QQuickItem*>(QStringLiteral("secondaryButton"));
+        auto* wheel = window->findChild<ColorWheel*>(QStringLiteral("colorWheel"));
+        auto* palette = window->findChild<ColorPalette*>(QStringLiteral("customPalette"));
+        auto click = [&](QQuickItem* item) {
+            QTest::mouseClick(window, Qt::LeftButton, {},
+                              item->mapToScene({item->width() / 2, item->height() / 2}).toPoint());
+        };
+        QVERIFY(editor && dialog && selection && primary && secondary && wheel && palette);
+        const auto original = editor->primary;
+        const auto pixels = editor->image();
+        click(primary);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        auto* hex = window->findChild<QQuickItem*>(QStringLiteral("hexField"));
+        auto* accept = window->findChild<QQuickItem*>(QStringLiteral("acceptColor"));
+        QVERIFY(hex && accept);
+        hex->forceActiveFocus();
+        QTest::keyClick(window, Qt::Key_A, Qt::ControlModifier);
+        for (const char key : std::string("12"))
+            QTest::keyClick(window, key);
+        QVERIFY(!accept->isEnabled());
+        for (const char key : std::string("AB34"))
+            QTest::keyClick(window, key);
+        QVERIFY(accept->isEnabled());
+        QCOMPARE(selection->color(), QColor("#12AB34"));
+        selection->setHsv(210, 80, 90);
+        QCOMPARE(editor->primary, original);
+        QVERIFY(capture(QStringLiteral("color-editor-light.png")));
+        auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
+        window->resize(1024, 640);
+        QVERIFY(capture(QStringLiteral("color-editor-dark-1024.png")));
+        // Popup must fit even at the supported minimum size.
+        QVERIFY(dialog->property("height").toReal() <= window->height());
+        const auto right = wheel->mapToScene({wheel->width() - 18, wheel->height() / 2}).toPoint();
+        QTest::mouseClick(window, Qt::LeftButton, {}, right);
+        QVERIFY(std::abs(selection->hue() - 90) < 2);
+        const auto square = wheel->svRect();
+        QTest::mouseClick(window, Qt::LeftButton, {}, wheel->mapToScene(square.center()).toPoint());
+        QVERIFY(std::abs(selection->saturation() - 50) < 2);
+        QVERIFY(std::abs(selection->value() - 50) < 2);
+        QTest::keyClick(window, Qt::Key_Escape);
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+        QCOMPARE(editor->primary, original);
+        click(secondary);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(capture(QStringLiteral("color-secondary-dark-1024.png")));
+        QVERIFY(selection->setHex("#12AB34"));
+        auto* add = window->findChild<QQuickItem*>(QStringLiteral("addCustomColor"));
+        QVERIFY(add);
+        click(add);
+        QCOMPARE(palette->colors().last(), QString("#12ab34"));
+        auto* ok = window->findChild<QQuickItem*>(QStringLiteral("acceptColor"));
+        QVERIFY(ok);
+        QSignalSpy chosen(dialog, SIGNAL(colorChosen(QColor)));
+        click(ok);
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+        QCOMPARE(chosen.size(), 1);
+        QCOMPARE(editor->secondary, QColor("#12AB34"));
+        QCOMPARE(editor->primary, original);
+        QCOMPARE(editor->image(), pixels);
+        QVERIFY(!editor->dirty());
+        for (int i = 1; i < 10; ++i)
+            QVERIFY(palette->add(QColor::fromHsv(i * 36, 180, 220)));
+        QTRY_COMPARE(
+            visualItems(window->contentItem(), QStringLiteral("customToolbarSwatch")).size(), 10);
+        QVERIFY(capture(QStringLiteral("custom-palette-dark-1024.png")));
+        for (auto* swatch :
+             visualItems(window->contentItem(), QStringLiteral("customToolbarSwatch"))) {
+            const auto bounds = swatch->mapRectToScene(swatch->boundingRect());
+            QVERIFY(QRectF(0, 0, window->width(), window->height()).contains(bounds));
+        }
+        QVERIFY(palette->clear());
+    }
+
     void renderTiming() {
         if (!qEnvironmentVariableIsSet("OPENPAINT_BENCHMARK"))
             return;
@@ -262,15 +354,13 @@ class ShellTest : public QObject {
     // Optional synthetic evidence: capture only this test window, never the desktop.
     bool capture(const QString& name) {
         const auto directory = qEnvironmentVariable("OPENPAINT_CAPTURE_DIR");
-        if (directory.isEmpty())
-            return true;
-        if (!QDir().mkpath(directory))
+        if (!directory.isEmpty() && !QDir().mkpath(directory))
             return false;
         QSignalSpy frame(window, &QQuickWindow::frameSwapped);
         window->requestUpdate();
         if (!frame.wait(1000))
             return false;
-        return window->grabWindow().save(QDir(directory).filePath(name));
+        return directory.isEmpty() || window->grabWindow().save(QDir(directory).filePath(name));
     }
 
     std::unique_ptr<QQmlApplicationEngine> engine;
@@ -279,6 +369,10 @@ class ShellTest : public QObject {
 };
 
 int main(int argc, char* argv[]) {
+    QTemporaryDir settings;
+    if (!settings.isValid())
+        return 1;
+    qputenv("XDG_CONFIG_HOME", settings.path().toUtf8());
     QGuiApplication app(argc, argv);
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     ShellTest test;

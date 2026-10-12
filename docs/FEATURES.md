@@ -18,7 +18,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F02 | Pencil, eraser, basic brush, sizes | R1 | M1 | Implemented: round pencil, opaque/transparent eraser, 1–128 px size; advanced brushes pending. |
 | F03 | Additional brush styles, stroke opacity | R1, R2 | M2 | Planned |
 | F04 | Fill and adjustable tolerance | R1; tolerance announced as preview in R3 | M2 | Planned |
-| F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | In progress: palette, primary dialog, swap and right-button secondary drawing; dedicated color editor/custom swatches next in the [UI polish plan](plans/0004-ui-polish.md). |
+| F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | Implemented: primary/secondary hue ring, SV area, HEX/RGB/HSV, ten saved custom colors, swap and right-button secondary drawing. Behavioral and visual evidence in the [UI polish plan](plans/0004-ui-polish.md); canvas eyedropper remains planned. |
 | F06 | Lines, rectangles, ellipses, shape palette | R1; full palette needs observed inventory | M2 | Planned |
 | F07 | Text, font/style/size/alignment and background | R1; detailed control behavior needs observation | M2 | Planned |
 | F08 | Rectangle/free-form selection; copy/cut/paste | R1 | M2 | Planned |

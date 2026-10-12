@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add a rounded hue-ring color editor with synchronized HEX/RGB/HSV controls,
+  primary/secondary previews and ten locally saved custom swatches.
+
 - Replace temporary text toolbar actions with original icons and shared rounded
   buttons, inputs, menus, panels and dialogs; establish the custom-color UI gate.
 

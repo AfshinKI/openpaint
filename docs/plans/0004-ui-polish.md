@@ -1,6 +1,6 @@
 # Feature: Paint-inspired visual foundation and custom colors
 
-Status: in progress, before further drawing tools
+Status: implemented; merge requires all CI jobs to pass
 Feature IDs: F01, F05, F26
 
 ## Requirements
@@ -44,10 +44,10 @@ add fill, shapes, selection or other drawing tools to either branch.
 - [x] Existing actions use icons with tooltips/accessibility names and retain shortcuts.
 - [x] Rounded controls, menus and dialogs work in light/dark at both window sizes.
 - [x] Focus, hover, disabled and selected states are distinct; no toolbar clipping.
-- [ ] Color ring, SV area and numeric/HEX fields agree on the selected color.
-- [ ] OK applies to the chosen color; Cancel/Escape do not change it or artwork.
-- [ ] Custom colors survive restart; limits, replacement, removal and errors are tested.
-- [ ] Formatting, QML lint, relevant CTest, privacy checks and screenshots reviewed.
+- [x] Color ring, SV area and numeric/HEX fields agree on the selected color.
+- [x] OK applies to the chosen color; Cancel/Escape do not change it or artwork.
+- [x] Custom colors survive restart; limits, replacement, removal and errors are tested.
+- [x] Formatting, QML lint, relevant CTest, privacy checks and screenshots reviewed.
 
 ## Evidence and handoff
 
@@ -61,9 +61,31 @@ Debug CTest (five suites), formatting and zero-warning lint pass. Synthetic
 light/dark screenshots at 1024×640 and 1280×800 plus menu/dialog captures were
 reviewed. A menu-width regression assertion prevents collapsed popup surfaces.
 Icons in `qml/icons` are original project-authored GPL-3.0-or-later artwork.
-Slice 2 remains next after this branch passes CI and merges.
+Slice 1 merged as [PR #7](https://github.com/AfshinKI/openpaint/pull/7) after all four CI jobs passed.
 
 The X11/default-renderer suite also passes at 125% scale. Test startup now waits
 for window activation and a rendered frame, preventing late native pointer events
 from contaminating synthetic strokes. Pixel assertions and production input code
 remain unchanged. Offscreen checks pass with the same readiness requirement.
+
+Slice 2: ColorSelection keeps hue/HSV/RGB/HEX synchronized, ColorWheel handles the
+ring and SV surface, and ColorPalette atomically persists ten opaque colors. QML
+owns the draft/accept/cancel interaction. Explicit palette actions persist
+immediately; Cancel discards only the drawing-color draft. The UI states this.
+
+Debug and ASan/UBSan CTest pass all six suites with leak detection enabled.
+Color tests cover conversion, invalid input, grayscale hue, palette restart,
+bounds, replacement/removal, corrupt data and failed writes. UI tests cover typed
+HEX, disabled acceptance for incomplete input, ring/SV clicks, Escape, independent
+secondary acceptance, no artwork mutation, and a full ten-swatch toolbar at
+1024×640. Formatting and zero-warning QML lint pass. Updated synthetic light/dark
+captures are in `docs/assets`; no private images or desktop captures are included.
+
+Next unfinished step: complete M1 platform/accessibility and reference comparison
+gates from the foundation plan before expanding drawing tools. Wayland/Orca and
+versioned Windows comparison are still unverified; this change does not claim
+exact Windows parity or packaged releases.
+
+Native X11/default-renderer checks pass at 125% scale (13 cases). Tests synchronize
+window-system events after activation and wait for popup/resize frames before
+clicking; this also keeps screenshot-enabled and ordinary runs consistent.

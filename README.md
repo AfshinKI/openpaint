@@ -7,7 +7,8 @@ Microsoft Paint: quick sketches, easy image edits, and a canvas that gets out of
 your way.
 
 > **Usable development build.** Draw and erase, choose colors and sizes, undo/redo,
-> zoom/pan, and open/save PNG safely. Runs from source; packaged downloads come next.
+> zoom/pan, and open/save PNG safely. Rounded controls, a hue-wheel color editor,
+> and saved custom palettes. Runs from source; packaged downloads come next.
 
 [Build and run](docs/BUILD.md) · [Current capabilities](docs/FEATURES.md)
 
