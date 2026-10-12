@@ -181,6 +181,50 @@ class ShellTest : public QObject {
         editor->undo();
     }
 
+    void rectangularSelectionWorkflow() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        const auto base = editor->image();
+        QVERIFY(tabTo("selectionButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->tool(), Editor::Tool::Select);
+        auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
+        QTest::mousePress(window, Qt::LeftButton, {}, at({100, 100}));
+        QTest::mouseMove(window, at({240, 200}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({240, 200}));
+        QVERIFY(editor->hasSelection());
+        QVERIFY(!editor->dirty());
+        keyClick(Qt::Key_Delete);
+        QCOMPARE(editor->image().pixelColor(150, 150).alpha(), 0);
+        QCOMPARE(editor->image().pixelColor(50, 150), QColor(Qt::white));
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QCOMPARE(editor->image(), base);
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        QCOMPARE(editor->selectionRect(), base.rect());
+        keyClick(Qt::Key_D, Qt::ControlModifier);
+        QVERIFY(!editor->hasSelection());
+        editor->selectRect(100, 100, 240, 180);
+        window->resize(1024, 640);
+        auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("selection-light-1024.png")));
+        auto* menu = window->findChild<QObject*>(QStringLiteral("selectionMenu"));
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(capture(QStringLiteral("selection-menu-light.png")));
+        auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("selection-menu-dark.png")));
+        QSignalSpy closed(menu, SIGNAL(closed()));
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+        QTRY_COMPARE(closed.size(), 1);
+        auto* options = window->findChild<QObject*>(QStringLiteral("selectionOptions"));
+        QVERIFY(QMetaObject::invokeMethod(options, "open"));
+        QTRY_VERIFY(options->property("visible").toBool());
+        QVERIFY(capture(QStringLiteral("selection-bounds-dark.png")));
+        QVERIFY(QMetaObject::invokeMethod(options, "close"));
+    }
+
     void inlineTextWorkflow() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();

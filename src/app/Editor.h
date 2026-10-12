@@ -11,6 +11,9 @@
 class Editor : public QObject {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY changed)
+    Q_PROPERTY(QRect selectionRect READ selectionRect NOTIFY changed)
+    Q_PROPERTY(bool canSelect READ canSelect NOTIFY changed)
     Q_PROPERTY(bool textActive READ textActive NOTIFY changed)
     Q_PROPERTY(bool textReady READ textReady NOTIFY changed)
     Q_PROPERTY(QRect textRect READ textRect NOTIFY changed)
@@ -53,7 +56,7 @@ class Editor : public QObject {
     Q_PROPERTY(Tool tool READ tool WRITE setTool NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentEraser MEMBER transparentEraser NOTIFY settingsChanged)
   public:
-    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape, Text };
+    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape, Text, Select };
     Q_ENUM(Tool)
     Tool tool() const {
         return tool_;
@@ -99,8 +102,24 @@ class Editor : public QObject {
         return document.image();
     }
     const QImage& displayImage() const {
-        return textActive_ ? document.previewBase() : image();
+        return textActive_ && !hasSelection() ? document.previewBase() : image();
     }
+    bool hasSelection() const {
+        return !document.selection().isEmpty();
+    }
+    QRect selectionRect() const {
+        return document.selection().boundingRect();
+    }
+    const QRegion& selection() const {
+        return document.selection();
+    }
+    bool canSelect() const {
+        return !loading() && !previewActive();
+    }
+    Q_INVOKABLE void selectRect(int x, int y, int width, int height);
+    Q_INVOKABLE void selectAll();
+    Q_INVOKABLE void deselect();
+    Q_INVOKABLE void deleteSelection();
     bool textActive() const {
         return textActive_;
     }
@@ -163,6 +182,9 @@ class Editor : public QObject {
     void fail(const QString& message);
     void refreshShape();
     void refreshText();
+    bool selecting_ = false;
+    QPoint selectionAnchor_;
+    QRegion previousSelection_;
     bool textActive_ = false, textDrawing_ = false, textSecondary_ = false;
     QRect textRect_;
     QPointF textAnchor_;

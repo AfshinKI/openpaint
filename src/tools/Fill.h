@@ -3,6 +3,7 @@
 #include <QColor>
 #include <QImage>
 #include <QRect>
+#include <QRegion>
 #include <atomic>
 #include <memory>
 namespace openpaint {
@@ -12,5 +13,6 @@ struct FillResult {
     bool failed = false;
 };
 FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int tolerance,
-                      const std::shared_ptr<std::atomic_bool>& cancelled);
+                      const std::shared_ptr<std::atomic_bool>& cancelled,
+                      const QRegion& selection = {});
 } // namespace openpaint

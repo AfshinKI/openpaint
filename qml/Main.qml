@@ -8,6 +8,7 @@ import OpenPaint
 
 ApplicationWindow {
     id: window
+    readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
     readonly property CanvasItem canvasController: canvas
     objectName: "mainWindow"
@@ -78,6 +79,12 @@ ApplicationWindow {
             close.accepted = false;
             requestChange("close");
         }
+    }
+    SelectionOptions {
+        id: selectionOptions
+        objectName: "selectionOptions"
+        editor: window.editorController
+        parent: Overlay.overlay
     }
     TextOptions {
         id: textOptions
@@ -237,6 +244,28 @@ ApplicationWindow {
         onTriggered: canvas.zoomBy(0.8)
     }
     Action {
+        id: selectAllAction
+        objectName: "selectAllAction"
+        text: qsTr("Select all")
+        shortcut: "Ctrl+A"
+        enabled: editor.canSelect && !window.textInputFocused
+        onTriggered: editor.selectAll()
+    }
+    Action {
+        id: deselectAction
+        text: qsTr("Deselect")
+        shortcut: "Ctrl+D"
+        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused
+        onTriggered: editor.deselect()
+    }
+    Action {
+        id: deleteSelectionAction
+        text: qsTr("Delete selection")
+        shortcut: "Delete"
+        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused
+        onTriggered: editor.deleteSelection()
+    }
+    Action {
         id: aboutAction
         objectName: "aboutAction"
         text: qsTr("&About OpenPaint")
@@ -308,6 +337,16 @@ ApplicationWindow {
             }
             PaintMenuItem {
                 action: redoAction
+            }
+            MenuSeparator {}
+            PaintMenuItem {
+                action: selectAllAction
+            }
+            PaintMenuItem {
+                action: deselectAction
+            }
+            PaintMenuItem {
+                action: deleteSelectionAction
             }
         }
         PaintMenu {
@@ -390,6 +429,53 @@ ApplicationWindow {
                     text: qsTr("History")
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
+                }
+            }
+            ToolSeparator {
+                Layout.fillHeight: true
+            }
+            ColumnLayout {
+                IconButton {
+                    objectName: "selectionButton"
+                    symbol: "selection"
+                    text: qsTr("Select rectangle")
+                    Accessible.name: text
+                    highlighted: editor.tool === Editor.Select
+                    enabled: editor.canSelect
+                    onClicked: editor.tool = Editor.Select
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                PaintButton {
+                    objectName: "selectionMenuButton"
+                    text: qsTr("Select ▾")
+                    enabled: editor.canSelect
+                    onClicked: selectionMenu.open()
+                    PaintMenu {
+                        id: selectionMenu
+                        objectName: "selectionMenu"
+                        y: parent.height
+                        PaintMenuItem {
+                            text: qsTr("Rectangle")
+                            checkable: true
+                            checked: editor.tool === Editor.Select
+                            onTriggered: editor.tool = Editor.Select
+                        }
+                        MenuSeparator {}
+                        PaintMenuItem {
+                            action: selectAllAction
+                        }
+                        PaintMenuItem {
+                            action: deselectAction
+                        }
+                        PaintMenuItem {
+                            text: qsTr("Selection bounds…")
+                            enabled: editor.hasSelection
+                            onTriggered: selectionOptions.open()
+                        }
+                        PaintMenuItem {
+                            action: deleteSelectionAction
+                        }
+                    }
                 }
             }
             ToolSeparator {

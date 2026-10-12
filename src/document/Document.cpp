@@ -24,6 +24,7 @@ bool Document::reset(const QImage& image) {
     image_ = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
     image_.setColorSpace(QColorSpace::SRgb);
     original_ = {};
+    selection_ = {};
     brush_.clear();
     active_ = false;
     previewMode_ = false;
@@ -44,7 +45,8 @@ bool Document::beginStroke(QPointF point, QColor color, qreal width, bool clearA
         return false;
     previewMode_ = false;
     brushed_ = brushStyle >= 0;
-    if (brushed_ && !brush_.begin(image_.size(), point, color, width, brushStyle, opacity))
+    if (brushed_ &&
+        !brush_.begin(image_.size(), point, color, width, brushStyle, opacity, selection_))
         return false;
     original_ = image_;
     active_ = true;
@@ -75,6 +77,8 @@ QRect Document::extendStroke(QPointF point) {
     if (!rect.isEmpty()) {
         QPainter painter(&image_);
         painter.setRenderHint(QPainter::Antialiasing);
+        if (!selection_.isEmpty())
+            painter.setClipRegion(selection_);
         if (clearAlpha_)
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
         painter.setPen(QPen(color_, width_, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -139,6 +143,8 @@ bool Document::updatePreview(const QImage& patch, QRect rect) {
     painter.setCompositionMode(QPainter::CompositionMode_Source);
     if (!dirtyRect_.isEmpty())
         painter.drawImage(dirtyRect_, original_, dirtyRect_);
+    if (!selection_.isEmpty())
+        painter.setClipRegion(selection_);
     if (!rect.isEmpty())
         painter.drawImage(rect.topLeft(), patch);
     dirtyRect_ = dirtyRect_.united(rect);
@@ -157,6 +163,21 @@ bool Document::applyPatch(const QImage& candidate, QRect rect, quint64 sourceRev
         painter.setCompositionMode(QPainter::CompositionMode_Source);
         painter.drawImage(rect, candidate, rect);
     }
+    return commitStroke();
+}
+bool Document::setSelection(const QRegion& region) {
+    if (active_ || (!region.isEmpty() && !image_.rect().contains(region.boundingRect())))
+        return false;
+    selection_ = region;
+    return true;
+}
+bool Document::deleteSelection() {
+    if (selection_.isEmpty() || !beginPreview())
+        return false;
+    const auto rect = selection_.boundingRect();
+    QImage patch(rect.size(), image_.format());
+    patch.fill(Qt::transparent);
+    updatePreview(patch, rect);
     return commitStroke();
 }
 void Document::cancelStroke() {

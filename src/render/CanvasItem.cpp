@@ -4,6 +4,7 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPainterPath>
 #include <QWheelEvent>
 #include <algorithm>
 #include <cmath>
@@ -91,6 +92,19 @@ void CanvasItem::paint(QPainter* painter) {
     painter->drawImage(target, image);
     painter->setPen(QColor("#9299a3"));
     painter->drawRect(target.adjusted(-1, -1, 1, 1));
+    if (editor_->hasSelection()) {
+        QPainterPath boundary;
+        boundary.addRegion(editor_->selection());
+        QTransform transform;
+        transform.translate(origin_.x(), origin_.y());
+        transform.scale(zoom_, zoom_);
+        boundary = transform.map(boundary);
+        painter->setBrush(Qt::NoBrush);
+        painter->setPen(QPen(Qt::white, 1));
+        painter->drawPath(boundary);
+        painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
+        painter->drawPath(boundary);
+    }
 }
 void CanvasItem::mousePressEvent(QMouseEvent* event) {
     // A chord cannot steal an existing gesture or change its drawing color.

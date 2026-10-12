@@ -4,7 +4,8 @@
 #include <algorithm>
 #include <cmath>
 namespace openpaint {
-bool Brush::begin(QSize size, QPointF point, QColor color, qreal width, int style, int opacity) {
+bool Brush::begin(QSize size, QPointF point, QColor color, qreal width, int style, int opacity,
+                  const QRegion& selection) {
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || std::abs(point.x()) > 1000000 ||
         std::abs(point.y()) > 1000000 || !Document::validSize(size) || !color.isValid() ||
         style < 0 || style > 8 || opacity < 0 || opacity > 100 || !std::isfinite(width) ||
@@ -14,6 +15,7 @@ bool Brush::begin(QSize size, QPointF point, QColor color, qreal width, int styl
     if (coverage_.isNull())
         return false;
     coverage_.fill(0);
+    selection_ = selection;
     previous_ = point;
     color_ = color;
     width_ = width;
@@ -35,6 +37,8 @@ QRect Brush::dab(QImage& image, const QImage& original, QPointF point) {
         auto* output = reinterpret_cast<QRgb*>(image.scanLine(y));
         const auto* base = reinterpret_cast<const QRgb*>(original.constScanLine(y));
         for (int x = bounds.left(); x <= bounds.right(); ++x) {
+            if (!selection_.isEmpty() && !selection_.contains(QPoint(x, y)))
+                continue;
             const qreal dx = (x + 0.5 - point.x()) / radius, dy = (y + 0.5 - point.y()) / radius;
             qreal distance = std::hypot(dx, dy);
             const qreal along = (dx + dy) * 0.7071067811865476;
