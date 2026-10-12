@@ -96,6 +96,13 @@ QTextDocument; QML TextEdit owns keyboard input and local text undo. During edit
 the canvas displays the immutable base under the inline editor. Explicit commit
 flushes input-method composition before committing one raster history patch.
 
+Floating selection content uses an immutable source image and the same document
+preview transaction. Its original mask is retained for cancellation; the destination
+mask moves with the content. Move clears the source before source-over compositing,
+so overlap never samples earlier previews. Clipboard PNG decode shares the bounded
+file parser. Both encoding and decoding run on workers; only the GUI thread
+accesses the clipboard. Cut clears pixels after successful uncancelled encoding.
+
 ### Tool contract
 
 Each tool implements begin/update/commit/cancel over normalized input samples

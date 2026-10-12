@@ -181,6 +181,64 @@ class ShellTest : public QObject {
         editor->undo();
     }
 
+    void clipboardMoveWorkflow() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        editor->begin({110, 110}, false);
+        editor->extend({150, 150});
+        editor->finish();
+        const auto original = editor->image();
+        editor->selectRect(100, 100, 80, 80);
+        canvas->forceActiveFocus();
+        keyClick(Qt::Key_C, Qt::ControlModifier);
+        QTRY_VERIFY(!editor->busy());
+        keyClick(Qt::Key_V, Qt::ControlModifier);
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(editor->floatingActive());
+        keyClick(Qt::Key_Right, Qt::ShiftModifier);
+        QCOMPARE(editor->floatingPosition(), QPoint(10, 0));
+        keyClick(Qt::Key_Down);
+        QCOMPARE(editor->floatingPosition(), QPoint(10, 1));
+        editor->moveFloating(240, 120);
+        auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
+        QTest::mousePress(window, Qt::LeftButton, {}, at({260, 140}));
+        QTest::mouseMove(window, at({300, 170}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({300, 170}));
+        QVERIFY(editor->floatingActive());
+        QVERIFY(std::abs(editor->floatingPosition().x() - 280) <= 1);
+        window->resize(1024, 640);
+        auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("clipboard-light-1024.png")));
+        auto* options = window->findChild<QObject*>(QStringLiteral("selectionOptions"));
+        QVERIFY(QMetaObject::invokeMethod(options, "open"));
+        QTRY_VERIFY(options->property("visible").toBool());
+        auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("clipboard-position-dark.png")));
+        QSignalSpy closed(options, SIGNAL(closed()));
+        QVERIFY(QMetaObject::invokeMethod(options, "close"));
+        QTRY_COMPARE(closed.size(), 1);
+        canvas->forceActiveFocus();
+        const auto pasted = editor->image();
+        keyClick(Qt::Key_Return);
+        QVERIFY(!editor->floatingActive());
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QCOMPARE(editor->image(), original);
+        keyClick(Qt::Key_Y, Qt::ControlModifier);
+        QCOMPARE(editor->image(), pasted);
+        keyClick(Qt::Key_X, Qt::ControlModifier);
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(editor->image() != pasted);
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QCOMPARE(editor->image(), pasted);
+        keyClick(Qt::Key_V, Qt::ControlModifier);
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(editor->floatingActive());
+        keyClick(Qt::Key_Escape);
+        QCOMPARE(editor->image(), pasted);
+    }
+
     void rectangularSelectionWorkflow() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();
@@ -248,6 +306,13 @@ class ShellTest : public QObject {
         QVERIFY(editor->textActive());
         QVERIFY(editor->textDraft() != QStringLiteral("OpenPaint"));
         keyClick(Qt::Key_Y, Qt::ControlModifier);
+        QCOMPARE(editor->textDraft(), QStringLiteral("OpenPaint"));
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        keyClick(Qt::Key_C, Qt::ControlModifier);
+        keyClick(Qt::Key_End);
+        keyClick(Qt::Key_V, Qt::ControlModifier);
+        QCOMPARE(editor->textDraft(), QStringLiteral("OpenPaintOpenPaint"));
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
         QCOMPARE(editor->textDraft(), QStringLiteral("OpenPaint"));
         const auto draft = editor->image();
         keyClick(Qt::Key_N, Qt::ControlModifier);

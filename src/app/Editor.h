@@ -11,6 +11,9 @@
 class Editor : public QObject {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(bool clipboardBusy READ clipboardBusy NOTIFY changed)
+    Q_PROPERTY(bool floatingActive READ floatingActive NOTIFY changed)
+    Q_PROPERTY(QPoint floatingPosition READ floatingPosition NOTIFY changed)
     Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY changed)
     Q_PROPERTY(QRect selectionRect READ selectionRect NOTIFY changed)
     Q_PROPERTY(bool canSelect READ canSelect NOTIFY changed)
@@ -63,6 +66,9 @@ class Editor : public QObject {
     }
     void setTool(Tool tool);
     explicit Editor(QObject* parent = nullptr);
+    bool clipboardBusy() const {
+        return clipboardBusy_;
+    }
     bool busy() const {
         return busy_;
     }
@@ -90,10 +96,10 @@ class Editor : public QObject {
         return document.dirty() || document.active();
     }
     bool canUndo() const {
-        return document.canUndo() || shapeActive_ || textActive_;
+        return document.canUndo() || previewActive();
     }
     bool canRedo() const {
-        return document.canRedo() && !shapeActive_ && !textActive_;
+        return document.canRedo() && !previewActive();
     }
     QSize imageSize() const {
         return document.image().size();
@@ -105,14 +111,28 @@ class Editor : public QObject {
         return textActive_ && !hasSelection() ? document.previewBase() : image();
     }
     bool hasSelection() const {
-        return !document.selection().isEmpty();
+        return !selection().isEmpty();
     }
     QRect selectionRect() const {
-        return document.selection().boundingRect();
+        return selection().boundingRect();
     }
-    const QRegion& selection() const {
-        return document.selection();
+    QRegion selection() const {
+        return floatingActive_ ? floatingRegion_.translated(floatingPosition_)
+                               : document.selection();
     }
+    bool floatingActive() const {
+        return floatingActive_;
+    }
+    QPoint floatingPosition() const {
+        return floatingPosition_;
+    }
+    QImage selectedImage() const;
+    Q_INVOKABLE bool copySelection();
+    Q_INVOKABLE void cutSelection();
+    Q_INVOKABLE void pasteClipboard();
+    bool pasteImage(const QImage& image);
+    Q_INVOKABLE void moveFloating(int x, int y);
+    void nudgeSelection(int dx, int dy);
     bool canSelect() const {
         return !loading() && !previewActive();
     }
@@ -145,7 +165,7 @@ class Editor : public QObject {
     void removeShapePoint();
     void endGesture();
     bool previewActive() const {
-        return shapeActive_ || textActive_;
+        return shapeActive_ || textActive_ || floatingActive_;
     }
     QPointF shapeStart() const {
         return shapeStart_;
@@ -182,6 +202,16 @@ class Editor : public QObject {
     void fail(const QString& message);
     void refreshShape();
     void refreshText();
+    bool startCopy(bool cut);
+    void finishCopy();
+    QFutureWatcher<QByteArray> copyWatcher_;
+    bool cutAfterCopy_ = false, clipboardBusy_ = false;
+    void beginMove(QPoint point);
+    void refreshFloating();
+    bool floatingActive_ = false, floatingMove_ = false, floatingDragging_ = false;
+    QImage floatingImage_;
+    QRegion floatingRegion_, floatingOriginalSelection_;
+    QPoint floatingPosition_, floatingDragOffset_;
     bool selecting_ = false;
     QPoint selectionAnchor_;
     QRegion previousSelection_;
@@ -193,7 +223,7 @@ class Editor : public QObject {
     QList<QPointF> shapePoints_;
     bool shapeActive_ = false, shapeSecondary_ = false, shapeInputBlocked_ = false;
     Tool tool_ = Tool::Pencil;
-    bool busy_ = false, loading_ = false, filling_ = false;
+    bool busy_ = false, loading_ = false, filling_ = false, pasting_ = false;
     QFutureWatcher<openpaint::FillResult> fillWatcher_;
     quint64 fillRevision_ = 0;
     QUrl fileUrl_;

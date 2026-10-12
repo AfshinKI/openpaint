@@ -29,6 +29,16 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         point.x() >= image().width() || point.y() >= image().height())
         return;
     if (tool_ == Tool::Select) {
+        const QPoint pixel(int(std::floor(point.x())), int(std::floor(point.y())));
+        if (floatingActive_ && selection().contains(pixel)) {
+            floatingDragging_ = true;
+            floatingDragOffset_ = pixel - floatingPosition_;
+            return;
+        }
+        if (!floatingActive_ && document.selection().contains(pixel)) {
+            beginMove(pixel);
+            return;
+        }
         finish();
         previousSelection_ = document.selection();
         selectionAnchor_ = QPoint(int(std::floor(point.x())), int(std::floor(point.y())));
@@ -114,6 +124,13 @@ void Editor::begin(QPointF point, bool secondaryButton) {
     }
 }
 void Editor::extend(QPointF point, bool constrain) {
+    if (floatingActive_) {
+        if (floatingDragging_ && std::isfinite(point.x()) && std::isfinite(point.y()) &&
+            std::abs(point.x()) <= 1000000 && std::abs(point.y()) <= 1000000)
+            moveFloating(int(std::floor(point.x())) - floatingDragOffset_.x(),
+                         int(std::floor(point.y())) - floatingDragOffset_.y());
+        return;
+    }
     if (selecting_) {
         if (std::isfinite(point.x()) && std::isfinite(point.y())) {
             const QPoint end(
@@ -171,6 +188,10 @@ void Editor::extend(QPointF point, bool constrain) {
         emit pixelsChanged(rect);
 }
 void Editor::endGesture() {
+    if (floatingActive_) {
+        floatingDragging_ = false;
+        return;
+    }
     if (selecting_) {
         selecting_ = false;
         previousSelection_ = {};
@@ -305,6 +326,12 @@ void Editor::finish() {
         return;
     shapeActive_ = textActive_ = textDrawing_ = false;
     document.commitStroke();
+    if (floatingActive_) {
+        document.setSelection(selection().intersected(image().rect()));
+        floatingActive_ = floatingDragging_ = false;
+        floatingImage_ = {};
+        floatingRegion_ = floatingOriginalSelection_ = {};
+    }
     emit pixelsChanged(QRect());
     emit changed();
 }
@@ -316,17 +343,23 @@ void Editor::cancel() {
     } else if (!document.active() && !loading()) {
         document.setSelection({});
     }
-    if (filling_)
+    if (loading())
         cancelIo();
     shapeActive_ = textActive_ = textDrawing_ = false;
     document.cancelStroke();
+    if (floatingActive_) {
+        document.setSelection(floatingOriginalSelection_);
+        floatingActive_ = floatingDragging_ = false;
+        floatingImage_ = {};
+        floatingRegion_ = floatingOriginalSelection_ = {};
+    }
     emit pixelsChanged(QRect());
     emit changed();
 }
 void Editor::undo() {
     if (loading())
         return;
-    if (shapeActive_ || textActive_) {
+    if (previewActive()) {
         cancel();
         return;
     }
@@ -337,7 +370,7 @@ void Editor::undo() {
     }
 }
 void Editor::redo() {
-    if (loading() || shapeActive_ || textActive_)
+    if (loading() || previewActive())
         return;
     finish();
     if (document.redo()) {
@@ -347,6 +380,7 @@ void Editor::redo() {
 }
 
 Editor::Editor(QObject* parent) : QObject(parent) {
+    connect(&copyWatcher_, &QFutureWatcher<QByteArray>::finished, this, &Editor::finishCopy);
     connect(this, &Editor::settingsChanged, this, &Editor::refreshShape);
     connect(this, &Editor::settingsChanged, this, &Editor::refreshText);
     connect(&fillWatcher_, &QFutureWatcher<openpaint::FillResult>::finished, this, [this] {
@@ -368,9 +402,13 @@ Editor::Editor(QObject* parent) : QObject(parent) {
     connect(&watcher_, &QFutureWatcher<openpaint::ImageResult>::finished, this, [this] {
         const auto result = watcher_.result();
         const bool wasLoading = loading_;
-        busy_ = loading_ = false;
+        const bool wasPasting = pasting_;
+        busy_ = loading_ = pasting_ = clipboardBusy_ = false;
         if (result.ok()) {
-            if (wasLoading) {
+            if (wasPasting) {
+                if (!cancellation_ || !cancellation_->load())
+                    pasteImage(result.image);
+            } else if (wasLoading) {
                 document.reset(result.image);
                 fileUrl_ = operationUrl_;
                 notice_ = result.notice;
