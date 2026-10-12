@@ -1,7 +1,7 @@
 # Contributing to OpenPaint
 
 Thanks for helping bring a familiar painting experience to Linux.
-The app is not implemented yet; the next task is
+The native shell is implemented; drawing and file editing are next in
 [M1: the first working canvas](docs/plans/0001-foundation.md).
 
 ## Pick a change
@@ -52,9 +52,8 @@ The checks validate local documentation links, basic text hygiene, and selected
 privacy/secret patterns. They do not prove that a repository contains no secrets;
 review your staged diff and commit metadata as well.
 
-Once application development starts, M1 will introduce reproducible CMake presets
-and compiler/toolkit installation instructions. See the
-[development guide](docs/DEVELOPMENT.md) for the intended toolchain.
+For application work, use the checked-in CMake presets and compiler/toolkit setup
+in [the build guide](docs/BUILD.md). Run the shell tests and C++/QML checks as well.
 
 ## Working with assistants
 

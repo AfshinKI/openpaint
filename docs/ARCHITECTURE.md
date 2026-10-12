@@ -1,6 +1,6 @@
 # Architecture
 
-Status: accepted implementation direction; application code does not exist yet.
+Status: native shell implemented; document/raster architecture remains planned.
 See [decision 0001](decisions/0001-native-stack.md) for alternatives and tradeoffs.
 
 ## Stack
