@@ -51,7 +51,7 @@ class CanvasItem : public QQuickPaintedItem {
 
   private:
     void finishGesture();
-    void updateGesture(QPointF point);
+    void updateGesture(QPointF point, bool constrain = false);
     QPointer<Editor> editor_;
     Qt::MouseButton gestureButton_ = Qt::NoButton;
     qreal zoom_ = 1;

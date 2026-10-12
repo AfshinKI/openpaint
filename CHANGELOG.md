@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Expand Shapes to a 19-icon palette with curve bends, polygon point entry and
+  Shift constraints. Undo cancels a pending shape without undoing earlier artwork.
+
 - Add editable line, rectangle and ellipse previews with numeric geometry,
   outline/fill options and explicit Apply/Cancel.
 

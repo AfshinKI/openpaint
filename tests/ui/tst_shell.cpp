@@ -420,14 +420,37 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
+    void shapePaletteKeyboardAndLayout() {
+        QVERIFY(tabTo("shapesButton"));
+        keyClick(Qt::Key_Space);
+        auto* palette = window->findChild<QObject*>(QStringLiteral("shapesMenu"));
+        QTRY_VERIFY(palette->property("visible").toBool());
+        window->resize(1024, 640);
+        QVERIFY(QMetaObject::invokeMethod(
+            window->findChild<QObject*>(QStringLiteral("lightThemeAction")), "trigger",
+            Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("shape-palette-light.png")));
+        QVERIFY(QMetaObject::invokeMethod(
+            window->findChild<QObject*>(QStringLiteral("darkThemeAction")), "trigger",
+            Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("shape-palette-dark.png")));
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Down);
+        QCOMPARE(window->activeFocusItem()->objectName(), QString("shapeChoice15"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!palette->property("visible").toBool());
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        QCOMPARE(editor->shapeKind, 15);
+        QCOMPARE(editor->tool(), Editor::Tool::Shape);
+    }
     void shapeOptionsKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         const auto original = editor->image();
         QVERIFY(tabTo("shapesButton"));
         keyClick(Qt::Key_Space);
-        keyClick(Qt::Key_Down);
-        keyClick(Qt::Key_Down);
-        keyClick(Qt::Key_Return);
+        keyClick(Qt::Key_Right);
+        keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Shape);
         QCOMPARE(editor->shapeKind, 1);
         editor->begin({80, 80}, false);

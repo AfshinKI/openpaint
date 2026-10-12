@@ -118,7 +118,7 @@ void CanvasItem::mousePressEvent(QMouseEvent* event) {
         editor_->begin(toDocument(last_), gestureButton_ == Qt::RightButton);
     event->accept();
 }
-void CanvasItem::updateGesture(QPointF point) {
+void CanvasItem::updateGesture(QPointF point, bool constrain) {
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()))
         return;
     if (panning_) {
@@ -127,7 +127,7 @@ void CanvasItem::updateGesture(QPointF point) {
         emit viewportChanged();
         update();
     } else if (drawing_ && editor_) {
-        editor_->extend(toDocument(point));
+        editor_->extend(toDocument(point), constrain);
     }
     last_ = point;
     cursor_ = toDocument(point);
@@ -139,12 +139,12 @@ void CanvasItem::mouseMoveEvent(QMouseEvent* event) {
         finishGesture();
         return;
     }
-    updateGesture(event->position());
+    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier);
 }
 void CanvasItem::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() != gestureButton_)
         return;
-    updateGesture(event->position());
+    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier);
     finishGesture();
 }
 void CanvasItem::finishGesture() {
@@ -176,6 +176,9 @@ void CanvasItem::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Space) {
         space_ = true;
         setCursor(Qt::OpenHandCursor);
+        event->accept();
+    } else if (event->key() == Qt::Key_Backspace && editor_ && editor_->previewActive()) {
+        editor_->removeShapePoint();
         event->accept();
     } else if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && editor_ &&
                editor_->previewActive()) {

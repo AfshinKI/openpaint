@@ -415,34 +415,11 @@ ApplicationWindow {
                     text: qsTr("Shapes")
                     highlighted: editor.tool === Editor.Shape
                     onClicked: shapesMenu.open()
-                    PaintMenu {
+                    ShapePalette {
                         id: shapesMenu
                         objectName: "shapesMenu"
+                        editor: window.editorController
                         y: shapesButton.height
-                        PaintMenuItem {
-                            text: qsTr("Line")
-                            icon.source: "icons/line.svg"
-                            onTriggered: {
-                                editor.shapeKind = 0;
-                                editor.tool = Editor.Shape;
-                            }
-                        }
-                        PaintMenuItem {
-                            text: qsTr("Rectangle")
-                            icon.source: "icons/rectangle.svg"
-                            onTriggered: {
-                                editor.shapeKind = 1;
-                                editor.tool = Editor.Shape;
-                            }
-                        }
-                        PaintMenuItem {
-                            text: qsTr("Ellipse")
-                            icon.source: "icons/ellipse.svg"
-                            onTriggered: {
-                                editor.shapeKind = 2;
-                                editor.tool = Editor.Shape;
-                            }
-                        }
                     }
                 }
                 Label {
@@ -601,7 +578,7 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.previewActive ? qsTr("Enter to apply · Escape to cancel") : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }

@@ -1,20 +1,143 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Shape.h"
 #include <QPainter>
+#include <QPainterPath>
+#include <QTransform>
 #include <cmath>
+#include <numbers>
 namespace openpaint {
 ShapePatch renderShape(const QImage& base, QPointF start, QPointF end, int kind,
-                       QColor outlineColor, QColor fillColor, int width, bool outline, bool fill) {
-    if (base.isNull() || kind < 0 || kind > 2 || width < 1 || width > 128 ||
-        !outlineColor.isValid() || !fillColor.isValid())
+                       QColor outlineColor, QColor fillColor, int width, bool outline, bool fill,
+                       qreal bend1, qreal bend2, const QList<QPointF>& vertices) {
+    if (base.isNull() || kind < 0 || kind >= ShapeCount || width < 1 || width > 128 ||
+        !outlineColor.isValid() || !fillColor.isValid() || !std::isfinite(bend1) ||
+        !std::isfinite(bend2) || std::abs(bend1) > 200 || std::abs(bend2) > 200 ||
+        vertices.size() > 4096)
         return {};
-    for (qreal value : {start.x(), start.y(), end.x(), end.y()})
-        if (!std::isfinite(value) || std::abs(value) > 1000000)
+    auto valid = [](QPointF p) {
+        return std::isfinite(p.x()) && std::isfinite(p.y()) && std::abs(p.x()) <= 1000000 &&
+               std::abs(p.y()) <= 1000000;
+    };
+    if (!valid(start) || !valid(end))
+        return {};
+    for (auto p : vertices)
+        if (!valid(p))
             return {};
     const auto bounds = QRectF(start, end).normalized();
+    QPainterPath path;
+    bool closed = true;
+    auto polygon = [&](const QList<QPointF>& points) {
+        if (points.isEmpty())
+            return;
+        path.moveTo(points.first());
+        for (qsizetype i = 1; i < points.size(); ++i)
+            path.lineTo(points[i]);
+        path.closeSubpath();
+    };
+    auto normalizedPolygon = [&](const QList<QPointF>& points) {
+        QList<QPointF> mapped;
+        for (auto p : points)
+            mapped.append(
+                {bounds.x() + p.x() * bounds.width(), bounds.y() + p.y() * bounds.height()});
+        polygon(mapped);
+    };
+    auto radial = [&](int count, bool star) {
+        QList<QPointF> points;
+        const int total = star ? count * 2 : count;
+        for (int i = 0; i < total; ++i) {
+            const qreal angle = 2 * std::numbers::pi * i / total - std::numbers::pi / 2;
+            const qreal radius = star && i % 2 ? 0.22 : 0.5;
+            points.append({0.5 + radius * std::cos(angle), 0.5 + radius * std::sin(angle)});
+        }
+        normalizedPolygon(points);
+    };
+    switch (kind) {
+    case 0:
+        path.moveTo(start);
+        path.lineTo(end);
+        closed = false;
+        break;
+    case 1:
+        path.addRect(bounds);
+        break;
+    case 2:
+        path.addEllipse(bounds);
+        break;
+    case 3:
+        path.addRoundedRect(bounds, 20, 20, Qt::RelativeSize);
+        break;
+    case 4:
+        normalizedPolygon({{0.5, 0}, {1, 1}, {0, 1}});
+        break;
+    case 5:
+        normalizedPolygon({{0.5, 0}, {1, 0.5}, {0.5, 1}, {0, 0.5}});
+        break;
+    case 6:
+        radial(5, false);
+        break;
+    case 7:
+        radial(6, false);
+        break;
+    case 8:
+    case 9:
+    case 10:
+    case 11: {
+        QList<QPointF> points{{0, 0.3}, {0.6, 0.3}, {0.6, 0}, {1, 0.5},
+                              {0.6, 1}, {0.6, 0.7}, {0, 0.7}};
+        for (auto& p : points) {
+            if (kind == 9)
+                p.setX(1 - p.x());
+            else if (kind == 10)
+                p = {p.y(), 1 - p.x()};
+            else if (kind == 11)
+                p = {1 - p.y(), p.x()};
+        }
+        normalizedPolygon(points);
+        break;
+    }
+    case 12:
+        radial(5, true);
+        break;
+    case 13:
+        normalizedPolygon(
+            {{0, 0}, {1, 0}, {1, 0.75}, {0.5, 0.75}, {0.25, 1}, {0.3, 0.75}, {0, 0.75}});
+        break;
+    case CurveShape: {
+        const auto delta = end - start;
+        const QPointF normal(-delta.y(), delta.x());
+        path.moveTo(start);
+        path.cubicTo(start + delta / 3 + normal * (bend1 / 100),
+                     start + delta * (2.0 / 3) + normal * (bend2 / 100), end);
+        closed = false;
+        break;
+    }
+    case PolygonShape:
+        if (vertices.size() < 2)
+            return {};
+        polygon(vertices);
+        break;
+    case 16:
+        radial(4, true);
+        break;
+    case 17:
+        radial(6, true);
+        break;
+    case 18: {
+        QPainterPath oval, tail;
+        oval.addEllipse(QRectF(bounds.x(), bounds.y(), bounds.width(), bounds.height() * 0.8));
+        tail.moveTo(bounds.x() + bounds.width() * 0.3, bounds.y() + bounds.height() * 0.65);
+        tail.lineTo(bounds.x() + bounds.width() * 0.2, bounds.bottom());
+        tail.lineTo(bounds.x() + bounds.width() * 0.6, bounds.y() + bounds.height() * 0.65);
+        tail.closeSubpath();
+        path = oval.united(tail);
+        break;
+    }
+    }
     const qreal margin = width / 2.0 + 2;
-    const auto rect =
-        bounds.adjusted(-margin, -margin, margin, margin).toAlignedRect().intersected(base.rect());
+    const auto rect = path.boundingRect()
+                          .adjusted(-margin, -margin, margin, margin)
+                          .toAlignedRect()
+                          .intersected(base.rect());
     if (rect.isEmpty())
         return {};
     QImage image = base.copy(rect);
@@ -23,14 +146,8 @@ ShapePatch renderShape(const QImage& base, QPointF start, QPointF end, int kind,
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(outline ? QPen(outlineColor, width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin)
                            : QPen(Qt::NoPen));
-    painter.setBrush(fill ? QBrush(fillColor) : Qt::NoBrush);
-    if (kind == 0) {
-        if (outline)
-            painter.drawLine(start, end);
-    } else if (kind == 1)
-        painter.drawRect(bounds);
-    else
-        painter.drawEllipse(bounds);
+    painter.setBrush(fill && closed ? QBrush(fillColor) : Qt::NoBrush);
+    painter.drawPath(path);
     painter.end();
     return {image, rect};
 }

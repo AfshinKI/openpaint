@@ -17,8 +17,9 @@ class InputCanvas : public CanvasItem {
     InputCanvas() {
         setSize({1200, 696});
     }
-    void mouse(QEvent::Type type, QPointF point, Qt::MouseButton button, Qt::MouseButtons buttons) {
-        QMouseEvent event(type, point, point, button, buttons, Qt::NoModifier);
+    void mouse(QEvent::Type type, QPointF point, Qt::MouseButton button, Qt::MouseButtons buttons,
+               Qt::KeyboardModifiers modifiers = Qt::NoModifier) {
+        QMouseEvent event(type, point, point, button, buttons, modifiers);
         if (type == QEvent::MouseButtonPress)
             mousePressEvent(&event);
         else if (type == QEvent::MouseButtonRelease)
@@ -53,6 +54,22 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void shapeShiftInputAtZoom() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        canvas.zoomAt(1.75, {400, 300});
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 2;
+        canvas.press({100, 100});
+        canvas.mouse(QEvent::MouseButtonRelease, canvas.fromDocument({150, 130}), Qt::LeftButton,
+                     Qt::NoButton, Qt::ShiftModifier);
+        QVERIFY(QLineF(editor.shapeEnd(), QPointF(150, 150)).length() < 1e-8);
+        QVERIFY(editor.previewActive());
+        canvas.key(Qt::Key_Escape);
+        QVERIFY(!editor.dirty());
+    }
+
     void retainedShapePreview() {
         TestEditor editor;
         InputCanvas canvas;
@@ -64,7 +81,7 @@ class CanvasTest : public QObject {
         canvas.release({200, 200});
         QVERIFY(editor.previewActive());
         QVERIFY(editor.active());
-        QVERIFY(!editor.canUndo());
+        QVERIFY(editor.canUndo()); // Undo cancels the retained preview.
         canvas.loseFocus();
         canvas.zoomAt(1.5, {300, 300});
         QVERIFY(editor.previewActive());
