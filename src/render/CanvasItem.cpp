@@ -93,17 +93,33 @@ void CanvasItem::paint(QPainter* painter) {
     painter->setPen(QColor("#9299a3"));
     painter->drawRect(target.adjusted(-1, -1, 1, 1));
     if (editor_->hasSelection()) {
-        QPainterPath boundary;
-        boundary.addRegion(editor_->selection());
+        const auto offset = editor_->floatingActive() ? editor_->floatingPosition() : QPoint();
+        const auto localRegion = editor_->selection().translated(-offset);
+        if (selectionCache_ != localRegion) {
+            selectionCache_ = localRegion;
+            QPainterPath path;
+            path.addRegion(localRegion);
+            selectionBoundary_ = path.simplified();
+        }
         QTransform transform;
         transform.translate(origin_.x(), origin_.y());
         transform.scale(zoom_, zoom_);
-        boundary = transform.map(boundary);
+        transform.translate(offset.x(), offset.y());
+        const auto boundary = transform.map(selectionBoundary_);
         painter->setBrush(Qt::NoBrush);
         painter->setPen(QPen(Qt::white, 1));
         painter->drawPath(boundary);
         painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
         painter->drawPath(boundary);
+    }
+    if (!editor_->selectionDraft().isEmpty()) {
+        QPolygonF path;
+        for (const auto point : editor_->selectionDraft())
+            path.append(fromDocument(point));
+        painter->setPen(QPen(Qt::white, 1));
+        painter->drawPolyline(path);
+        painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
+        painter->drawPolyline(path);
     }
 }
 void CanvasItem::mousePressEvent(QMouseEvent* event) {

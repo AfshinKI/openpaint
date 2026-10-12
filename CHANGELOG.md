@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add free-form lasso selection, inversion and exact secondary-color transparency
+  for copied/floating content, with reversible preview toggling.
+
 - Add PNG copy/cut/paste and movable selection previews with drag, numeric position,
   arrow nudging, explicit Apply/Cancel and one-step undo.
 

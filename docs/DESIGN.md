@@ -85,7 +85,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
 | Escape | Cancel active preview/transform; otherwise dismiss the topmost transient UI |
 | Pan / zoom | Space+drag pans outside text entry; Ctrl+wheel zooms around pointer; plain wheel scrolls |
-| Selection | Rectangle marquee, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Resize handles follow with transforms. |
+| Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Resize handles follow with transforms. |
 | Transform | Shift constrains proportions or rotation increments; numeric inputs provide keyboard precision |
 | Text | Inline editor with font, size, alignment, style, foreground and optional background; Ctrl+Enter commits, Escape cancels |
 | Shape | 19-item icon palette; Shift constrains geometry, polygon clicks add vertices and Backspace removes the last; drag/release retains preview; numeric start/end and outline/fill options; Enter/Apply commits and Escape/Cancel restores original; new drawing/tool switch commits current preview; Undo cancels the preview |

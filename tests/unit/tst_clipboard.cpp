@@ -22,6 +22,110 @@ class ClipboardTest : public QObject {
     void cleanup() {
         QGuiApplication::clipboard()->clear();
     }
+    void freeFormAndInversion() {
+        ClipboardEditor editor;
+        editor.selectRect(5, 5, 10, 10);
+        const auto prior = editor.selection();
+        editor.setTool(Editor::Tool::Select);
+        editor.freeFormSelection = true;
+        editor.begin({100, 100}, false);
+        editor.extend({200, 100});
+        editor.extend({100, 200});
+        QVERIFY(!editor.hasSelection()); // Mask is built once at release.
+        QVERIFY(!editor.selectionDraft().isEmpty());
+        editor.endGesture();
+        const auto triangle = editor.selection();
+        QVERIFY(triangle.contains(QPoint(120, 120)));
+        QVERIFY(!triangle.contains(QPoint(180, 180)));
+        editor.deselect();
+        editor.begin({100, 100}, false);
+        editor.extend({100, 200});
+        editor.extend({200, 100});
+        editor.endGesture();
+        QCOMPARE(editor.selection(), triangle);
+        QVERIFY(!editor.dirty());
+        editor.invertSelection();
+        QVERIFY(!editor.selection().contains(QPoint(120, 120)));
+        QVERIFY(editor.selection().contains(QPoint(180, 180)));
+        editor.invertSelection();
+        QCOMPARE(editor.selection(), triangle);
+        editor.begin({400, 100}, false);
+        editor.extend({410, 110});
+        editor.endGesture();
+        QCOMPARE(editor.selection(), triangle); // Degenerate path restores prior selection.
+        editor.begin({400, 100}, false);
+        editor.extend({450, 100});
+        editor.extend({450, 160});
+        editor.cancel();
+        QCOMPARE(editor.selection(), triangle);
+        editor.select(prior);
+        editor.begin({400, 100}, false);
+        for (int i = 0; i < 4097; ++i)
+            editor.extend({400.0 + (i % 2), 100.0 + (i % 3)});
+        editor.endGesture();
+        QCOMPARE(editor.selection(), prior);
+        QVERIFY(!editor.error().isEmpty());
+        editor.begin({400, 100}, false);
+        editor.extend({500, 200});
+        editor.extend({500, 100});
+        editor.extend({400, 200});
+        editor.endGesture();
+        QVERIFY(editor.hasSelection()); // Odd-even self-crossing path.
+        editor.selectAll();
+        editor.invertSelection();
+        QVERIFY(!editor.hasSelection());
+        QVERIFY(!editor.dirty());
+    }
+    void irregularMovePreservesHole() {
+        ClipboardEditor editor;
+        QImage base(100, 60, QImage::Format_ARGB32_Premultiplied);
+        base.fill(Qt::green);
+        editor.reset(base);
+        const auto original = editor.image();
+        const QRegion ring = QRegion(QRect(10, 10, 30, 30)) - QRect(20, 20, 10, 10);
+        editor.select(ring);
+        editor.setTool(Editor::Tool::Select);
+        editor.begin({12, 12}, false);
+        editor.extend({52, 12});
+        editor.endGesture();
+        QCOMPARE(editor.image().pixelColor(12, 12).alpha(), 0);
+        QCOMPARE(editor.image().pixelColor(25, 25), QColor(Qt::green));
+        QCOMPARE(editor.image().pixelColor(52, 12), QColor(Qt::green));
+        editor.finish();
+        QCOMPARE(editor.selection(), ring.translated(40, 0));
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+    }
+    void transparentKeyCanBeReversed() {
+        ClipboardEditor editor;
+        QImage source(3, 1, QImage::Format_ARGB32_Premultiplied);
+        source.fill(Qt::white);
+        source.setPixelColor(1, 0, QColor(254, 255, 255));
+        source.setPixelColor(2, 0, QColor(255, 255, 255, 128));
+        QImage base(20, 20, source.format());
+        base.fill(Qt::blue);
+        editor.reset(base);
+        QVERIFY(editor.pasteImage(source));
+        const auto opaque = editor.image();
+        editor.setProperty("transparentSelection", true);
+        QCOMPARE(editor.image().pixelColor(0, 0), QColor(Qt::blue));
+        QCOMPARE(editor.image().pixelColor(1, 0), source.pixelColor(1, 0));
+        QCOMPARE(editor.image().pixelColor(2, 0), opaque.pixelColor(2, 0));
+        editor.setProperty("transparentSelection", false);
+        QCOMPARE(editor.image(), opaque);
+        editor.cancel();
+        editor.reset(source);
+        editor.selectAll();
+        editor.transparentSelection = true;
+        QVERIFY(editor.copySelection());
+        QTRY_VERIFY(!editor.busy());
+        const auto copied =
+            openpaint::decodePng(QGuiApplication::clipboard()->mimeData()->data("image/png"));
+        QVERIFY(copied.ok());
+        QCOMPARE(copied.image.pixelColor(0, 0).alpha(), 0);
+        QCOMPARE(copied.image.pixelColor(1, 0), source.pixelColor(1, 0));
+        QCOMPARE(copied.image.pixelColor(2, 0), source.pixelColor(2, 0));
+    }
     void selectedAlphaAndClipboardRoundTrip() {
         QImage source(80, 60, QImage::Format_ARGB32_Premultiplied);
         source.fill(Qt::transparent);

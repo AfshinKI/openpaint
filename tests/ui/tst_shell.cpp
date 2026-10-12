@@ -181,6 +181,38 @@ class ShellTest : public QObject {
         editor->undo();
     }
 
+    void freeFormSelectionWorkflow() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        QVERIFY(tabTo("selectionMenuButton"));
+        keyClick(Qt::Key_Space);
+        auto* menu = window->findChild<QObject*>(QStringLiteral("selectionMenu"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Return);
+        QTRY_VERIFY(editor->freeFormSelection);
+        QCOMPARE(editor->tool(), Editor::Tool::Select);
+        auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
+        QTest::mousePress(window, Qt::LeftButton, {}, at({100, 100}));
+        QTest::mouseMove(window, at({320, 120}));
+        QTest::mouseMove(window, at({220, 180}));
+        QTest::mouseMove(window, at({320, 300}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({100, 300}));
+        QVERIFY(editor->hasSelection());
+        QVERIFY(!editor->selection().contains(QPoint(310, 200)));
+        window->resize(1024, 640);
+        auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("lasso-light-1024.png")));
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("lasso-menu-dark.png")));
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+    }
+
     void clipboardMoveWorkflow() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();

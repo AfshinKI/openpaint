@@ -5,12 +5,15 @@
 #include "tools/Fill.h"
 #include <QFutureWatcher>
 #include <QObject>
+#include <QPolygon>
 #include <QUrl>
 #include <QtQml/qqmlregistration.h>
 
 class Editor : public QObject {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(bool freeFormSelection MEMBER freeFormSelection NOTIFY settingsChanged)
+    Q_PROPERTY(bool transparentSelection MEMBER transparentSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool clipboardBusy READ clipboardBusy NOTIFY changed)
     Q_PROPERTY(bool floatingActive READ floatingActive NOTIFY changed)
     Q_PROPERTY(QPoint floatingPosition READ floatingPosition NOTIFY changed)
@@ -138,6 +141,10 @@ class Editor : public QObject {
     }
     Q_INVOKABLE void selectRect(int x, int y, int width, int height);
     Q_INVOKABLE void selectAll();
+    Q_INVOKABLE void invertSelection();
+    const QPolygon& selectionDraft() const {
+        return selectionPoints_;
+    }
     Q_INVOKABLE void deselect();
     Q_INVOKABLE void deleteSelection();
     bool textActive() const {
@@ -181,6 +188,7 @@ class Editor : public QObject {
     Q_INVOKABLE void redo();
     QColor primary = Qt::black, secondary = Qt::white;
     int brushSize = 3, tolerance = 0, brushStyle = 0, opacity = 100;
+    bool freeFormSelection = false, transparentSelection = false;
     bool transparentEraser = false, shapeOutline = true, shapeFill = false;
     int shapeKind = 0, curveBend1 = 30, curveBend2 = -30;
     QString textFamily = QStringLiteral("Sans Serif");
@@ -206,10 +214,14 @@ class Editor : public QObject {
     void finishCopy();
     QFutureWatcher<QByteArray> copyWatcher_;
     bool cutAfterCopy_ = false, clipboardBusy_ = false;
+    void finishSelection();
+    QPolygon selectionPoints_;
     void beginMove(QPoint point);
     void refreshFloating();
     bool floatingActive_ = false, floatingMove_ = false, floatingDragging_ = false;
-    QImage floatingImage_;
+    QImage floatingImage_, floatingComposite_;
+    QRgb floatingColorKey_ = 0;
+    bool floatingTransparent_ = false;
     QRegion floatingRegion_, floatingOriginalSelection_;
     QPoint floatingPosition_, floatingDragOffset_;
     bool selecting_ = false;
