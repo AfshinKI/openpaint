@@ -5,6 +5,54 @@ using openpaint::Document;
 class DocumentTest : public QObject {
     Q_OBJECT
   private slots:
+    void brushStylesAndOpacity() {
+        using namespace openpaint;
+        QList<QImage> previews;
+        for (int style = 0; style < 9; ++style) {
+            const auto preview = Brush::preview(style, Qt::black);
+            QVERIFY(!previews.contains(preview));
+            QCOMPARE(preview, Brush::preview(style, Qt::black));
+            previews.append(preview);
+            Document one({128, 64}), split({128, 64});
+            const auto original = one.image();
+            QVERIFY(one.beginStroke({10, 32}, Qt::red, 18, false, style, 50));
+            one.extendStroke({110, 32});
+            QVERIFY(one.commitStroke());
+            QVERIFY(split.beginStroke({10, 32}, Qt::red, 18, false, style, 50));
+            for (int x = 11; x <= 110; ++x)
+                split.extendStroke({qreal(x), 32});
+            QVERIFY(split.commitStroke());
+            QCOMPARE(one.image(), split.image());
+            const auto painted = one.image();
+            QVERIFY(one.undo());
+            QCOMPARE(one.image(), original);
+            QVERIFY(one.redo());
+            QCOMPARE(one.image(), painted);
+            QVERIFY(one.beginStroke({5, 5}, Qt::blue, 12, false, style, 100));
+            one.extendStroke({-1000000, -1000000});
+            one.extendStroke({1000000, 1000000});
+            one.cancelStroke();
+            QCOMPARE(one.image(), painted);
+        }
+        Document opacity({32, 32});
+        const auto original = opacity.image();
+        QVERIFY(opacity.beginStroke({16, 16}, Qt::black, 12, false, 0, 50));
+        opacity.extendStroke({17, 16});
+        opacity.extendStroke({16, 16});
+        QVERIFY(opacity.commitStroke());
+        QCOMPARE(opacity.image().pixelColor(16, 16), QColor(127, 127, 127));
+        opacity.undo();
+        QVERIFY(opacity.beginStroke({16, 16}, QColor(0, 0, 0, 128), 12, false, 0, 50));
+        QVERIFY(opacity.commitStroke());
+        QCOMPARE(opacity.image().pixelColor(16, 16), QColor(191, 191, 191));
+        opacity.undo();
+        QVERIFY(opacity.beginStroke({16, 16}, Qt::red, 12, false, 0, 0));
+        QVERIFY(!opacity.commitStroke());
+        QCOMPARE(opacity.image(), original);
+        QVERIFY(opacity.canRedo());
+        QVERIFY(!opacity.beginStroke({16, 16}, Qt::red, 12, false, 9, 100));
+    }
+
     void fillConnectivityToleranceAndHistory() {
         using namespace openpaint;
         Document doc({5, 3});

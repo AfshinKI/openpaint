@@ -13,6 +13,32 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void secondaryBrushOpacityAndSave() {
+        Editor editor;
+        editor.setTool(Editor::Tool::Brush);
+        editor.brushSize = 18;
+        editor.opacity = 50;
+        editor.secondary = Qt::blue;
+        const auto original = editor.image();
+        editor.begin({50, 50}, true);
+        QCOMPARE(editor.image().pixelColor(50, 50), QColor(127, 127, 255));
+        editor.cancel();
+        QCOMPARE(editor.image(), original);
+        editor.begin({50, 50}, true);
+        editor.extend({100, 50});
+        editor.finish();
+        const auto painted = editor.image();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), painted);
+        QTemporaryDir dir;
+        const auto url = QUrl::fromLocalFile(dir.filePath("brush.png"));
+        editor.saveFile(url);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, painted);
+    }
+
     void fillCancelAndSave() {
         Editor editor;
         editor.setTool(Editor::Tool::Fill);

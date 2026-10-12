@@ -24,6 +24,7 @@ bool Document::reset(const QImage& image) {
     image_ = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
     image_.setColorSpace(QColorSpace::SRgb);
     original_ = {};
+    brush_.clear();
     active_ = false;
     history_.clear();
     cursor_ = 0;
@@ -32,10 +33,16 @@ bool Document::reset(const QImage& image) {
     savedRevision_ = revision_;
     return true;
 }
-bool Document::beginStroke(QPointF point, QColor color, qreal width, bool clearAlpha) {
+bool Document::beginStroke(QPointF point, QColor color, qreal width, bool clearAlpha,
+                           int brushStyle, int opacity) {
     if (active_ || !std::isfinite(point.x()) || !std::isfinite(point.y()) ||
         std::abs(point.x()) > 1000000 || std::abs(point.y()) > 1000000 || !std::isfinite(width) ||
         width <= 0 || width > 256 || !color.isValid())
+        return false;
+    if (brushStyle < -1 || brushStyle > 8 || opacity < 0 || opacity > 100)
+        return false;
+    brushed_ = brushStyle >= 0;
+    if (brushed_ && !brush_.begin(image_.size(), point, color, width, brushStyle, opacity))
         return false;
     original_ = image_;
     active_ = true;
@@ -51,6 +58,12 @@ QRect Document::extendStroke(QPointF point) {
     if (!active_ || !std::isfinite(point.x()) || !std::isfinite(point.y()) ||
         std::abs(point.x()) > 1000000 || std::abs(point.y()) > 1000000)
         return {};
+    if (brushed_) {
+        const auto rect = brush_.extend(image_, original_, point);
+        dirtyRect_ = dirtyRect_.united(rect);
+        previous_ = point;
+        return rect;
+    }
     const qreal margin = width_ / 2 + 2;
     QRect rect = QRectF(previous_, point)
                      .normalized()
@@ -76,6 +89,7 @@ bool Document::commitStroke() {
     if (!active_)
         return false;
     active_ = false;
+    brush_.clear();
     if (dirtyRect_.isEmpty() || original_.copy(dirtyRect_) == image_.copy(dirtyRect_)) {
         original_ = {};
         return false;
@@ -119,6 +133,7 @@ bool Document::applyPatch(const QImage& candidate, QRect rect, quint64 sourceRev
     return commitStroke();
 }
 void Document::cancelStroke() {
+    brush_.clear();
     if (active_)
         image_ = original_;
     original_ = {};

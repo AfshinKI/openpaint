@@ -4,6 +4,8 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add nine original brush styles, generated stroke previews and per-stroke opacity.
+
 - Add cancellable contiguous fill with adjustable tolerance and one-step undo.
 
 - Add a canvas color picker for primary/secondary colors, including transparency,

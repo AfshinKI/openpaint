@@ -420,6 +420,42 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
+    void brushMenuKeyboardAndLayout() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        QVERIFY(QMetaObject::invokeMethod(
+            window->findChild<QObject*>(QStringLiteral("lightThemeAction")), "trigger",
+            Q_ARG(QObject*, nullptr)));
+        QVERIFY(tabTo("brushesButton"));
+        keyClick(Qt::Key_Space);
+        auto* menu = window->findChild<QObject*>(QStringLiteral("brushesMenu"));
+        QVERIFY(menu);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QCOMPARE(menu->property("count").toInt(), 9);
+        window->resize(1024, 640);
+        QVERIFY(capture(QStringLiteral("brush-menu-light.png")));
+        window->resize(1280, 800);
+        QVERIFY(capture(QStringLiteral("brush-menu-light-1280.png")));
+        window->resize(1024, 640);
+        keyClick(Qt::Key_Down);
+        QCOMPARE(menu->property("currentIndex").toInt(), 0);
+        keyClick(Qt::Key_Down);
+        QCOMPARE(menu->property("currentIndex").toInt(), 1);
+        keyClick(Qt::Key_Return);
+        QTRY_VERIFY(!menu->property("visible").toBool());
+        QCOMPARE(editor->tool(), Editor::Tool::Brush);
+        QCOMPARE(editor->brushStyle, 1);
+        QVERIFY(tabTo("brushOpacity"));
+        keyClick(Qt::Key_Down);
+        QCOMPARE(editor->opacity, 99);
+        QVERIFY(QMetaObject::invokeMethod(
+            window->findChild<QObject*>(QStringLiteral("darkThemeAction")), "trigger",
+            Q_ARG(QObject*, nullptr)));
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QVERIFY(capture(QStringLiteral("brush-menu-dark.png")));
+        window->resize(1280, 800);
+        QVERIFY(capture(QStringLiteral("brush-menu-dark-1280.png")));
+        keyClick(Qt::Key_Escape);
+    }
     void fillOptionsLayout() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         editor->setTool(Editor::Tool::Fill);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tools/Brush.h"
 #include <QColor>
 #include <QImage>
 #include <QPointF>
@@ -37,7 +38,8 @@ class Document {
         savedRevision_ = revision;
     }
     bool reset(const QImage& image);
-    bool beginStroke(QPointF point, QColor color, qreal width, bool clearAlpha = false);
+    bool beginStroke(QPointF point, QColor color, qreal width, bool clearAlpha = false,
+                     int brushStyle = -1, int opacity = 100);
     QRect extendStroke(QPointF point);
     bool commitStroke();
     void cancelStroke();
@@ -56,6 +58,8 @@ class Document {
     };
     void apply(const Patch& patch, bool forward);
     QImage image_, original_;
+    Brush brush_;
+    bool brushed_ = false;
     std::vector<Patch> history_;
     size_t cursor_ = 0;
     qsizetype budget_, historyBytes_ = 0;
