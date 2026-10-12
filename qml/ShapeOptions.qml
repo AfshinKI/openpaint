@@ -79,6 +79,27 @@ PaintDialog {
                 implicitWidth: 160
             }
         }
+        RowLayout {
+            visible: dialog.editor.shapeKind === 14
+            Label {
+                text: qsTr("Curve bends %")
+                color: Theme.text
+            }
+            PaintSpinBox {
+                from: -200
+                to: 200
+                value: dialog.editor.curveBend1
+                onValueModified: dialog.editor.curveBend1 = value
+                Accessible.name: qsTr("First curve bend percent")
+            }
+            PaintSpinBox {
+                from: -200
+                to: 200
+                value: dialog.editor.curveBend2
+                onValueModified: dialog.editor.curveBend2 = value
+                Accessible.name: qsTr("Second curve bend percent")
+            }
+        }
         PaintCheckBox {
             text: qsTr("Outline")
             checked: dialog.editor.shapeOutline

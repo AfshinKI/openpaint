@@ -6,6 +6,38 @@ using openpaint::Document;
 class DocumentTest : public QObject {
     Q_OBJECT
   private slots:
+    void expandedShapeGeometry() {
+        using namespace openpaint;
+        Document doc({160, 160});
+        QList<QImage> images;
+        for (int kind = 0; kind < ShapeCount; ++kind) {
+            const auto shape =
+                renderShape(doc.image(), {20, 20}, {130, 130}, kind, Qt::black, Qt::red, 2, true,
+                            true, 30, -30, {{20, 20}, {130, 45}, {80, 80}, {130, 130}, {20, 130}});
+            QVERIFY(!shape.image.isNull());
+            QVERIFY(doc.image().rect().contains(shape.rect));
+            QImage full = doc.image();
+            QVERIFY(doc.beginPreview());
+            QVERIFY(doc.updatePreview(shape.image, shape.rect));
+            full = doc.image();
+            QVERIFY(!images.contains(full));
+            images.append(full);
+            doc.cancelStroke();
+        }
+        const auto a = renderShape(doc.image(), {20, 40}, {130, 120}, CurveShape, Qt::black,
+                                   Qt::white, 2, true, false, 10, 20);
+        const auto b = renderShape(doc.image(), {20, 40}, {130, 120}, CurveShape, Qt::black,
+                                   Qt::white, 2, true, false, 50, -30);
+        QVERIFY(a.image != b.image);
+        QVERIFY(renderShape(doc.image(), {0, 0}, {50, 50}, ShapeCount, Qt::black, Qt::white, 2,
+                            true, true)
+                    .image.isNull());
+        QList<QPointF> excessive(4097, {10, 10});
+        QVERIFY(renderShape(doc.image(), {0, 0}, {50, 50}, PolygonShape, Qt::black, Qt::white, 2,
+                            true, true, 30, -30, excessive)
+                    .image.isNull());
+    }
+
     void shapePreviewReplacementAndHistory() {
         using namespace openpaint;
         for (int kind = 0; kind < 3; ++kind) {

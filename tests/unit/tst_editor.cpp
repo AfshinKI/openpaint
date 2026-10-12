@@ -13,6 +13,46 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void polygonAndConstraints() {
+        Editor editor;
+        const auto original = editor.image();
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 15;
+        editor.begin({20, 20}, false);
+        editor.extend({100, 20});
+        editor.endGesture();
+        editor.finish();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        editor.begin({20, 20}, false);
+        editor.extend({100, 20});
+        editor.endGesture();
+        editor.begin({100, 100}, false);
+        editor.endGesture();
+        const auto triangle = editor.image();
+        editor.begin({20, 100}, false);
+        editor.endGesture();
+        QVERIFY(editor.image() != triangle);
+        editor.removeShapePoint();
+        QCOMPARE(editor.image(), triangle);
+        editor.finish();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), triangle);
+        editor.shapeKind = 1;
+        editor.begin({200, 200}, false);
+        editor.extend({230, 220}, true);
+        QCOMPARE(editor.shapeEnd(), QPointF(230, 230));
+        editor.undo();
+        QCOMPARE(editor.image(), triangle); // Cancels only the draft.
+        editor.shapeKind = 0;
+        editor.begin({200, 200}, false);
+        editor.extend({230, 204}, true);
+        QCOMPARE(editor.shapeEnd().y(), 200.0);
+        editor.cancel();
+    }
+
     void shapeSaveCommitsPreview() {
         Editor editor;
         editor.setTool(Editor::Tool::Shape);

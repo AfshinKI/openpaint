@@ -4,6 +4,7 @@
 #include <QFileInfo>
 #include <QtConcurrent>
 #include <cmath>
+#include <numbers>
 void Editor::setTool(Tool tool) {
     if (tool == tool_ ||
         (tool != Tool::Pencil && tool != Tool::Eraser && tool != Tool::ColorPicker &&
@@ -16,6 +17,7 @@ void Editor::setTool(Tool tool) {
     emit settingsChanged();
 }
 void Editor::begin(QPointF point, bool secondaryButton) {
+    shapeInputBlocked_ = false;
     if (loading())
         return;
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || point.x() < 0 || point.y() < 0 ||
@@ -50,10 +52,22 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         return;
     }
     if (tool_ == Tool::Shape) {
+        if (shapeActive_ && shapeKind == openpaint::PolygonShape) {
+            if (shapePoints_.size() >= 4096) {
+                shapeInputBlocked_ = true;
+                fail(tr("A polygon can contain at most 4096 points."));
+                return;
+            }
+            shapePoints_.append(point);
+            shapeEnd_ = point;
+            refreshShape();
+            return;
+        }
         finish();
         if (!document.beginPreview())
             return;
         shapeStart_ = shapeEnd_ = point;
+        shapePoints_ = {point, point};
         shapeActive_ = true;
         shapeSecondary_ = secondaryButton;
         refreshShape();
@@ -68,8 +82,30 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         emit changed();
     }
 }
-void Editor::extend(QPointF point) {
+void Editor::extend(QPointF point, bool constrain) {
+    if (shapeInputBlocked_)
+        return;
     if (shapeActive_) {
+        if (!std::isfinite(point.x()) || !std::isfinite(point.y()))
+            return;
+        if (constrain) {
+            const QPointF anchor = shapeKind == openpaint::PolygonShape && shapePoints_.size() >= 2
+                                       ? shapePoints_[shapePoints_.size() - 2]
+                                       : shapeStart_;
+            auto delta = point - anchor;
+            if (shapeKind == 0 || shapeKind == openpaint::CurveShape ||
+                shapeKind == openpaint::PolygonShape) {
+                const auto angle =
+                    std::round(std::atan2(delta.y(), delta.x()) / (std::numbers::pi / 4)) *
+                    (std::numbers::pi / 4);
+                const auto length = std::hypot(delta.x(), delta.y());
+                point = anchor + QPointF(std::cos(angle) * length, std::sin(angle) * length);
+            } else {
+                const auto side = std::max(std::abs(delta.x()), std::abs(delta.y()));
+                point = anchor +
+                        QPointF(std::copysign(side, delta.x()), std::copysign(side, delta.y()));
+            }
+        }
         setShapeGeometry(shapeStart_.x(), shapeStart_.y(), point.x(), point.y());
         return;
     }
@@ -78,8 +114,16 @@ void Editor::extend(QPointF point) {
         emit pixelsChanged(rect);
 }
 void Editor::endGesture() {
+    shapeInputBlocked_ = false;
     if (!shapeActive_)
         finish();
+}
+void Editor::removeShapePoint() {
+    if (!shapeActive_ || shapeKind != openpaint::PolygonShape || shapePoints_.size() <= 2)
+        return;
+    shapePoints_.removeLast();
+    shapeEnd_ = shapePoints_.last();
+    refreshShape();
 }
 void Editor::setShapeGeometry(qreal x1, qreal y1, qreal x2, qreal y2) {
     if (!shapeActive_)
@@ -89,20 +133,28 @@ void Editor::setShapeGeometry(qreal x1, qreal y1, qreal x2, qreal y2) {
             return;
     shapeStart_ = {x1, y1};
     shapeEnd_ = {x2, y2};
+    if (!shapePoints_.isEmpty()) {
+        shapePoints_.first() = shapeStart_;
+        shapePoints_.last() = shapeEnd_;
+    }
     refreshShape();
 }
 void Editor::refreshShape() {
     if (!shapeActive_)
         return;
-    const auto patch = openpaint::renderShape(document.previewBase(), shapeStart_, shapeEnd_,
-                                              shapeKind, shapeSecondary_ ? secondary : primary,
-                                              shapeSecondary_ ? primary : secondary, brushSize,
-                                              shapeOutline, shapeFill);
+    const auto patch = openpaint::renderShape(
+        document.previewBase(), shapeStart_, shapeEnd_, shapeKind,
+        shapeSecondary_ ? secondary : primary, shapeSecondary_ ? primary : secondary, brushSize,
+        shapeOutline, shapeFill, curveBend1, curveBend2, shapePoints_);
     document.updatePreview(patch.image, patch.rect);
     emit pixelsChanged({});
     emit changed();
 }
 void Editor::finish() {
+    if (shapeActive_ && shapeKind == openpaint::PolygonShape && shapePoints_.size() < 3) {
+        cancel();
+        return;
+    }
     if (!document.active())
         return;
     shapeActive_ = false;
@@ -121,6 +173,10 @@ void Editor::cancel() {
 void Editor::undo() {
     if (loading())
         return;
+    if (shapeActive_) {
+        cancel();
+        return;
+    }
     finish();
     if (document.undo()) {
         emit pixelsChanged(QRect());
@@ -128,7 +184,7 @@ void Editor::undo() {
     }
 }
 void Editor::redo() {
-    if (loading())
+    if (loading() || shapeActive_)
         return;
     finish();
     if (document.redo()) {

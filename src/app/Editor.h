@@ -18,6 +18,8 @@ class Editor : public QObject {
     Q_PROPERTY(QPointF shapeEnd READ shapeEnd NOTIFY changed)
     Q_PROPERTY(int shapeKind MEMBER shapeKind NOTIFY settingsChanged)
     Q_PROPERTY(bool shapeOutline MEMBER shapeOutline NOTIFY settingsChanged)
+    Q_PROPERTY(int curveBend1 MEMBER curveBend1 NOTIFY settingsChanged)
+    Q_PROPERTY(int curveBend2 MEMBER curveBend2 NOTIFY settingsChanged)
     Q_PROPERTY(bool shapeFill MEMBER shapeFill NOTIFY settingsChanged)
     Q_PROPERTY(int brushStyle MEMBER brushStyle NOTIFY settingsChanged)
     Q_PROPERTY(int opacity MEMBER opacity NOTIFY settingsChanged)
@@ -71,10 +73,10 @@ class Editor : public QObject {
         return document.dirty() || document.active();
     }
     bool canUndo() const {
-        return document.canUndo();
+        return document.canUndo() || shapeActive_;
     }
     bool canRedo() const {
-        return document.canRedo();
+        return document.canRedo() && !shapeActive_;
     }
     QSize imageSize() const {
         return document.image().size();
@@ -83,7 +85,8 @@ class Editor : public QObject {
         return document.image();
     }
     void begin(QPointF point, bool secondaryButton);
-    void extend(QPointF point);
+    void extend(QPointF point, bool constrain = false);
+    void removeShapePoint();
     void endGesture();
     bool previewActive() const {
         return shapeActive_;
@@ -102,7 +105,7 @@ class Editor : public QObject {
     QColor primary = Qt::black, secondary = Qt::white;
     int brushSize = 3, tolerance = 0, brushStyle = 0, opacity = 100;
     bool transparentEraser = false, shapeOutline = true, shapeFill = false;
-    int shapeKind = 0;
+    int shapeKind = 0, curveBend1 = 30, curveBend2 = -30;
   signals:
     void changed();
     void errorChanged();
@@ -116,7 +119,8 @@ class Editor : public QObject {
     void fail(const QString& message);
     void refreshShape();
     QPointF shapeStart_, shapeEnd_;
-    bool shapeActive_ = false, shapeSecondary_ = false;
+    QList<QPointF> shapePoints_;
+    bool shapeActive_ = false, shapeSecondary_ = false, shapeInputBlocked_ = false;
     Tool tool_ = Tool::Pencil;
     bool busy_ = false, loading_ = false, filling_ = false;
     QFutureWatcher<openpaint::FillResult> fillWatcher_;
