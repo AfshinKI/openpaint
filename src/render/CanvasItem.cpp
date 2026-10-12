@@ -168,6 +168,7 @@ void CanvasItem::wheelEvent(QWheelEvent* event) {
         origin_ += event->pixelDelta().isNull() ? QPointF(event->angleDelta()) / 3
                                                 : QPointF(event->pixelDelta());
         fitted_ = false;
+        emit viewportChanged();
         update();
     }
     event->accept();
