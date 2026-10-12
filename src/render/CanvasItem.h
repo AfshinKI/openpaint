@@ -8,6 +8,7 @@ class CanvasItem : public QQuickPaintedItem {
     Q_OBJECT
     QML_ELEMENT
     Q_PROPERTY(Editor* editor READ editor WRITE setEditor NOTIFY editorChanged)
+    Q_PROPERTY(QPointF origin READ origin NOTIFY viewportChanged)
     Q_PROPERTY(qreal zoom READ zoom NOTIFY viewportChanged)
     Q_PROPERTY(QPointF cursorPosition READ cursorPosition NOTIFY cursorPositionChanged)
   public:
@@ -16,6 +17,9 @@ class CanvasItem : public QQuickPaintedItem {
         return editor_;
     }
     void setEditor(Editor* editor);
+    QPointF origin() const {
+        return origin_;
+    }
     qreal zoom() const {
         return zoom_;
     }

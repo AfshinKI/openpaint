@@ -181,6 +181,104 @@ class ShellTest : public QObject {
         editor->undo();
     }
 
+    void inlineTextWorkflow() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        auto* input = window->findChild<QQuickItem*>(QStringLiteral("inlineTextInput"));
+        auto* transition = window->findChild<QObject*>(QStringLiteral("textTransition"));
+        auto* options = window->findChild<QObject*>(QStringLiteral("textOptions"));
+        QVERIFY(input && transition && options);
+        const auto original = editor->image();
+        editor->setTool(Editor::Tool::Text);
+        auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
+        QTest::mousePress(window, Qt::LeftButton, {}, at({80, 60}));
+        QTest::mouseMove(window, at({400, 180}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({400, 180}));
+        QTRY_VERIFY(editor->textReady());
+        QTRY_VERIFY(input->hasActiveFocus());
+        QVERIFY(editor->textRect().width() >= 319);
+        for (char c : std::string("OpenPaint"))
+            keyClick(c);
+        QCOMPARE(editor->textDraft(), QStringLiteral("OpenPaint"));
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QVERIFY(editor->textActive());
+        QVERIFY(editor->textDraft() != QStringLiteral("OpenPaint"));
+        keyClick(Qt::Key_Y, Qt::ControlModifier);
+        QCOMPARE(editor->textDraft(), QStringLiteral("OpenPaint"));
+        const auto draft = editor->image();
+        keyClick(Qt::Key_N, Qt::ControlModifier);
+        QTRY_VERIFY(transition->property("visible").toBool());
+        QSignalSpy closed(transition, SIGNAL(closed()));
+        QVERIFY(QMetaObject::invokeMethod(transition, "reject"));
+        QTRY_COMPARE(closed.size(), 1);
+        QTRY_VERIFY(input->hasActiveFocus());
+        QCOMPARE(editor->image(), draft);
+        QVERIFY(editor->textActive());
+        auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
+        window->resize(1024, 640);
+        QVERIFY(capture(QStringLiteral("text-light-1024.png")));
+        QVERIFY(QMetaObject::invokeMethod(options, "open"));
+        QTRY_VERIFY(options->property("visible").toBool());
+        QVERIFY(capture(QStringLiteral("text-options-light.png")));
+        auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("text-options-dark.png")));
+        QSignalSpy optionsClosed(options, SIGNAL(closed()));
+        QVERIFY(QMetaObject::invokeMethod(options, "close"));
+        QTRY_COMPARE(optionsClosed.size(), 1);
+        QTRY_VERIFY(input->hasActiveFocus());
+        keyClick(Qt::Key_Return, Qt::ControlModifier);
+        QVERIFY(!editor->textActive());
+        QCOMPARE(editor->image(), draft);
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image(), draft);
+        editor->begin({30, 30}, false);
+        editor->endGesture();
+        QTRY_VERIFY(input->hasActiveFocus());
+        keyClick('x');
+        keyClick(Qt::Key_Escape);
+        QVERIFY(!editor->textActive());
+        QCOMPARE(editor->image(), draft);
+        editor->begin({30, 30}, false);
+        editor->endGesture();
+        keyClick('x');
+        keyClick(Qt::Key_N, Qt::ControlModifier);
+        QTRY_VERIFY(transition->property("visible").toBool());
+        QQmlExpression discard(qmlContext(transition), transition,
+                               "footer.standardButton(Dialog.Discard)");
+        auto* discardButton = qvariant_cast<QObject*>(discard.evaluate());
+        QVERIFY(discardButton && !discard.hasError());
+        QVERIFY(QMetaObject::invokeMethod(discardButton, "click"));
+        auto* unsaved = window->findChild<QObject*>(QStringLiteral("unsavedDialog"));
+        QTRY_VERIFY(unsaved->property("visible").toBool());
+        QVERIFY(!editor->textActive());
+        QCOMPARE(editor->image(), draft);
+        QSignalSpy unsavedClosed(unsaved, SIGNAL(closed()));
+        QVERIFY(QMetaObject::invokeMethod(unsaved, "reject"));
+        QTRY_COMPARE(unsavedClosed.size(), 1);
+        editor->begin({30, 30}, false);
+        editor->endGesture();
+        keyClick('y');
+        const auto applied = editor->image();
+        keyClick(Qt::Key_N, Qt::ControlModifier);
+        QTRY_VERIFY(transition->property("visible").toBool());
+        QQmlExpression apply(qmlContext(transition), transition,
+                             "footer.standardButton(Dialog.Apply)");
+        auto* applyButton = qvariant_cast<QObject*>(apply.evaluate());
+        QVERIFY(applyButton && !apply.hasError());
+        QVERIFY(QMetaObject::invokeMethod(applyButton, "click"));
+        QTRY_VERIFY(unsaved->property("visible").toBool());
+        QVERIFY(!editor->textActive());
+        QCOMPARE(editor->image(), applied);
+        QVERIFY(QMetaObject::invokeMethod(unsaved, "reject"));
+        QTRY_COMPARE(unsavedClosed.size(), 2);
+        editor->undo();
+        QCOMPARE(editor->image(), draft);
+    }
+
     void chordAndPanLifecycle() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();
@@ -546,7 +644,7 @@ class ShellTest : public QObject {
         QVERIFY(accessible);
         QCOMPARE(accessible->text(QAccessible::Name), QString("Pencil"));
         QVERIFY(accessible->state().focusable);
-        keyClick(Qt::Key_Tab);
+        QVERIFY(tabTo("eraserButton"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Eraser);
         QVERIFY(tabTo("pickerButton"));

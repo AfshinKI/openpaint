@@ -78,7 +78,7 @@ void CanvasItem::paint(QPainter* painter) {
         return;
     // Qt calls paint during scene-graph synchronization while the GUI thread is blocked.
     // No worker mutates the document; do not retain a snapshot between pointer events.
-    const auto& image = editor_->image();
+    const auto& image = editor_->displayImage();
     const QRectF target(origin_, QSizeF(image.size()) * zoom_);
     QImage checks(16, 16, QImage::Format_RGB32);
     checks.fill(QColor("#ffffff"));
@@ -168,6 +168,7 @@ void CanvasItem::wheelEvent(QWheelEvent* event) {
         origin_ += event->pixelDelta().isNull() ? QPointF(event->angleDelta()) / 3
                                                 : QPointF(event->pixelDelta());
         fitted_ = false;
+        emit viewportChanged();
         update();
     }
     event->accept();
@@ -181,7 +182,8 @@ void CanvasItem::keyPressEvent(QKeyEvent* event) {
         editor_->removeShapePoint();
         event->accept();
     } else if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && editor_ &&
-               editor_->previewActive()) {
+               editor_->previewActive() &&
+               (!editor_->textActive() || (event->modifiers() & Qt::ControlModifier))) {
         editor_->finish();
         drawing_ = panning_ = false;
         gestureButton_ = Qt::NoButton;

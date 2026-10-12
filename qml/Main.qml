@@ -9,6 +9,7 @@ import OpenPaint
 ApplicationWindow {
     id: window
     readonly property Editor editorController: editor
+    readonly property CanvasItem canvasController: canvas
     objectName: "mainWindow"
     width: 1280
     height: 800
@@ -41,6 +42,11 @@ ApplicationWindow {
     function requestChange(action: string) {
         if (editor.busy)
             return;
+        if (editor.textActive) {
+            pendingAction = action;
+            textTransition.open();
+            return;
+        }
         editor.finish();
         pendingAction = action;
         if (editor.dirty)
@@ -49,19 +55,73 @@ ApplicationWindow {
             performPending();
     }
     function saveDrawing() {
-        editor.finish();
+        editor.commitPreview();
         if (editor.fileUrl.toString() === "")
             saveDialog.open();
         else
             editor.saveFile(editor.fileUrl);
     }
     onClosing: function (close) {
+        if (editor.busy) {
+            close.accepted = false;
+            return;
+        }
+        if (editor.textActive) {
+            close.accepted = false;
+            window.requestChange("close");
+            return;
+        }
         editor.finish();
         if (editor.busy)
             close.accepted = false;
         else if (editor.dirty && !discardClose) {
             close.accepted = false;
             requestChange("close");
+        }
+    }
+    TextOptions {
+        id: textOptions
+        objectName: "textOptions"
+        editor: window.editorController
+        parent: Overlay.overlay
+        onClosed: {
+            if (editor.textActive)
+                textOverlay.focusInput();
+        }
+    }
+    PaintDialog {
+        id: textTransition
+        objectName: "textTransition"
+        title: qsTr("Finish editing text?")
+        anchors.centerIn: parent
+        modal: true
+        property bool resumeAction: false
+        standardButtons: Dialog.Apply | Dialog.Discard | Dialog.Cancel
+        onApplied: {
+            editor.commitPreview();
+            resumeAction = true;
+            close();
+        }
+        onDiscarded: {
+            editor.cancel();
+            resumeAction = true;
+        }
+        onRejected: {
+            resumeAction = false;
+            window.pendingAction = "";
+        }
+        onClosed: {
+            if (resumeAction) {
+                resumeAction = false;
+                const action = window.pendingAction;
+                window.pendingAction = "";
+                window.requestChange(action);
+            } else if (editor.textActive)
+                textOverlay.focusInput();
+        }
+        Label {
+            text: qsTr("Apply text, discard this text box, or keep editing.")
+            color: Theme.text
         }
     }
     ShapeOptions {
@@ -127,7 +187,10 @@ ApplicationWindow {
         text: qsTr("Save &As…")
         shortcut: StandardKey.SaveAs
         enabled: !editor.busy
-        onTriggered: saveDialog.open()
+        onTriggered: {
+            editor.commitPreview();
+            saveDialog.open();
+        }
     }
     Action {
         id: quitAction
@@ -140,18 +203,19 @@ ApplicationWindow {
         id: undoAction
         text: qsTr("Undo")
         shortcut: StandardKey.Undo
-        enabled: editor.canUndo && !editor.loading
+        enabled: editor.canUndo && !editor.loading && !editor.textActive
         onTriggered: editor.undo()
     }
     Action {
         id: redoAction
         text: qsTr("Redo")
         shortcut: "Ctrl+Y"
-        enabled: editor.canRedo && !editor.loading
+        enabled: editor.canRedo && !editor.loading && !editor.textActive
         onTriggered: editor.redo()
     }
     Shortcut {
         sequence: "Ctrl+Shift+Z"
+        enabled: !editor.textActive
         onActivated: editor.redo()
     }
     Action {
@@ -332,11 +396,13 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                RowLayout {
+                GridLayout {
+                    columns: 3
                     IconButton {
                         symbol: "pencil"
                         objectName: "pencilButton"
                         text: qsTr("Pencil")
+                        enabled: !editor.textActive
                         checkable: true
                         autoExclusive: true
                         checked: editor.tool === Editor.Pencil
@@ -344,18 +410,10 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
-                        symbol: "eraser"
-                        text: qsTr("Eraser")
-                        checkable: true
-                        autoExclusive: true
-                        checked: editor.tool === Editor.Eraser
-                        onClicked: editor.tool = Editor.Eraser
-                        Accessible.name: text
-                    }
-                    IconButton {
                         symbol: "fill"
                         objectName: "fillButton"
                         text: qsTr("Fill")
+                        enabled: !editor.textActive
                         checkable: true
                         autoExclusive: true
                         checked: editor.tool === Editor.Fill
@@ -363,9 +421,32 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        symbol: "text"
+                        objectName: "textButton"
+                        text: qsTr("Text")
+                        enabled: !editor.textActive
+                        checkable: true
+                        autoExclusive: true
+                        checked: editor.tool === Editor.Text
+                        onClicked: editor.tool = Editor.Text
+                        Accessible.name: text
+                    }
+                    IconButton {
+                        symbol: "eraser"
+                        objectName: "eraserButton"
+                        text: qsTr("Eraser")
+                        enabled: !editor.textActive
+                        checkable: true
+                        autoExclusive: true
+                        checked: editor.tool === Editor.Eraser
+                        onClicked: editor.tool = Editor.Eraser
+                        Accessible.name: text
+                    }
+                    IconButton {
                         symbol: "eyedropper"
                         objectName: "pickerButton"
                         text: qsTr("Color picker")
+                        enabled: !editor.textActive
                         checkable: true
                         autoExclusive: true
                         checked: editor.tool === Editor.ColorPicker
@@ -373,11 +454,10 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                 }
-                PaintCheckBox {
-                    text: qsTr("Transparent")
-                    checked: editor.transparentEraser
-                    onToggled: editor.transparentEraser = checked
-                    Accessible.name: text
+                Label {
+                    text: qsTr("Tools")
+                    color: Theme.secondaryText
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
             ToolSeparator {
@@ -387,6 +467,7 @@ ApplicationWindow {
                 IconButton {
                     id: brushesButton
                     objectName: "brushesButton"
+                    enabled: !editor.textActive
                     symbol: "brush"
                     text: qsTr("Brushes")
                     highlighted: editor.tool === Editor.Brush
@@ -411,6 +492,7 @@ ApplicationWindow {
                 IconButton {
                     id: shapesButton
                     objectName: "shapesButton"
+                    enabled: !editor.textActive
                     symbol: "rectangle"
                     text: qsTr("Shapes")
                     highlighted: editor.tool === Editor.Shape
@@ -445,6 +527,12 @@ ApplicationWindow {
                     }
                     Accessible.name: editor.tool === Editor.Fill ? qsTr("Fill tolerance") : qsTr("Stroke size in pixels")
                     implicitWidth: 104
+                }
+                PaintCheckBox {
+                    text: qsTr("Transparent")
+                    visible: editor.tool === Editor.Eraser
+                    checked: editor.transparentEraser
+                    onToggled: editor.transparentEraser = checked
                 }
                 PaintSpinBox {
                     objectName: "brushOpacity"
@@ -560,6 +648,11 @@ ApplicationWindow {
         focus: true
         Accessible.name: qsTr("Drawing canvas")
         Accessible.role: Accessible.Canvas
+        InlineText {
+            id: textOverlay
+            editor: window.editorController
+            canvas: window.canvasController
+        }
     }
     footer: ToolBar {
         height: 36
@@ -578,7 +671,7 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }
@@ -586,13 +679,15 @@ ApplicationWindow {
                 objectName: "shapeOptionsButton"
                 text: qsTr("Options")
                 visible: editor.previewActive
-                onClicked: shapeOptions.open()
+                onClicked: editor.textActive ? textOptions.open() : shapeOptions.open()
             }
             PaintButton {
                 objectName: "applyPreviewButton"
                 text: qsTr("Apply")
                 visible: editor.previewActive
-                onClicked: editor.finish()
+                onClicked: {
+                    editor.commitPreview();
+                }
             }
             PaintButton {
                 text: qsTr("Cancel")

@@ -3,6 +3,7 @@
 #include <QFocusEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QWheelEvent>
 #include <QtTest>
 #include <limits>
 
@@ -43,6 +44,11 @@ class InputCanvas : public CanvasItem {
         else
             keyReleaseEvent(&event);
     }
+    void scroll() {
+        QWheelEvent event({100, 100}, {100, 100}, {0, 30}, {}, Qt::NoButton, Qt::NoModifier,
+                          Qt::ScrollUpdate, false);
+        wheelEvent(&event);
+    }
     void loseFocus() {
         QFocusEvent event(QEvent::FocusOut);
         focusOutEvent(&event);
@@ -54,6 +60,16 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void scrollNotifiesInlineOverlay() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        QSignalSpy changed(&canvas, &CanvasItem::viewportChanged);
+        const auto origin = canvas.origin();
+        canvas.scroll();
+        QCOMPARE(changed.size(), 1);
+        QCOMPARE(canvas.origin(), origin + QPointF(0, 30));
+    }
     void shapeShiftInputAtZoom() {
         TestEditor editor;
         InputCanvas canvas;

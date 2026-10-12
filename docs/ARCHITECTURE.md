@@ -91,6 +91,11 @@ update restores the old dirty rectangle from the original snapshot before placin
 the new clipped patch. Ending a pointer gesture can retain the preview; explicit
 commit uses the same one-command history boundary as strokes.
 
+Text uses the same preview transaction. C++ renders bounded plain text with
+QTextDocument; QML TextEdit owns keyboard input and local text undo. During editing
+the canvas displays the immutable base under the inline editor. Explicit commit
+flushes input-method composition before committing one raster history patch.
+
 ### Tool contract
 
 Each tool implements begin/update/commit/cancel over normalized input samples
