@@ -20,6 +20,8 @@ void CanvasItem::setEditor(Editor* editor) {
         return;
     finishGesture();
     if (editor_)
+        editor_->finish();
+    if (editor_)
         disconnect(editor_, nullptr, this, nullptr);
     editor_ = editor;
     if (editor_) {
@@ -147,7 +149,7 @@ void CanvasItem::mouseReleaseEvent(QMouseEvent* event) {
 }
 void CanvasItem::finishGesture() {
     if (editor_)
-        editor_->finish();
+        editor_->endGesture();
     drawing_ = panning_ = false;
     gestureButton_ = Qt::NoButton;
 }
@@ -174,6 +176,12 @@ void CanvasItem::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Space) {
         space_ = true;
         setCursor(Qt::OpenHandCursor);
+        event->accept();
+    } else if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) && editor_ &&
+               editor_->previewActive()) {
+        editor_->finish();
+        drawing_ = panning_ = false;
+        gestureButton_ = Qt::NoButton;
         event->accept();
     } else if (event->key() == Qt::Key_Escape && editor_) {
         editor_->cancel();

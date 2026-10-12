@@ -86,6 +86,11 @@ Fill workers return a candidate raster and changed rectangle. `Document::applyPa
 checks source revision, bounds and history budget before committing one patch.
 Cancellation is rechecked on the GUI thread before application.
 
+Shape previews use `beginPreview`/`updatePreview` on the GUI-owned document. Each
+update restores the old dirty rectangle from the original snapshot before placing
+the new clipped patch. Ending a pointer gesture can retain the preview; explicit
+commit uses the same one-command history boundary as strokes.
+
 ### Tool contract
 
 Each tool implements begin/update/commit/cancel over normalized input samples

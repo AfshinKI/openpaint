@@ -420,6 +420,51 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
+    void shapeOptionsKeyboard() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        const auto original = editor->image();
+        QVERIFY(tabTo("shapesButton"));
+        keyClick(Qt::Key_Space);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Return);
+        QCOMPARE(editor->tool(), Editor::Tool::Shape);
+        QCOMPARE(editor->shapeKind, 1);
+        editor->begin({80, 80}, false);
+        editor->extend({400, 300});
+        editor->endGesture();
+        QVERIFY(tabTo("shapeOptionsButton"));
+        keyClick(Qt::Key_Space);
+        auto* options = window->findChild<QObject*>(QStringLiteral("shapeOptions"));
+        QTRY_VERIFY(options->property("visible").toBool());
+        QVERIFY(tabTo("shapeStartX"));
+        keyClick(Qt::Key_Up);
+        QCOMPARE(editor->shapeStart().x(), 81.0);
+        window->resize(1024, 640);
+        QVERIFY(QMetaObject::invokeMethod(
+            window->findChild<QObject*>(QStringLiteral("lightThemeAction")), "trigger",
+            Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("shape-options-light.png")));
+        QVERIFY(QMetaObject::invokeMethod(
+            window->findChild<QObject*>(QStringLiteral("darkThemeAction")), "trigger",
+            Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("shape-options-dark.png")));
+        QVERIFY(tabToButton(QStringLiteral("Apply")));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!options->property("visible").toBool());
+        QVERIFY(!editor->previewActive());
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->begin({80, 80}, false);
+        editor->extend({400, 300});
+        editor->endGesture();
+        QVERIFY(QMetaObject::invokeMethod(options, "open"));
+        QTRY_VERIFY(options->property("visible").toBool());
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!options->property("visible").toBool());
+        QVERIFY(!editor->previewActive());
+        QCOMPARE(editor->image(), original);
+    }
     void brushMenuKeyboardAndLayout() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         QVERIFY(QMetaObject::invokeMethod(

@@ -1,10 +1,59 @@
 #include "document/Document.h"
 #include "tools/Fill.h"
+#include "tools/Shape.h"
 #include <QtTest>
 using openpaint::Document;
 class DocumentTest : public QObject {
     Q_OBJECT
   private slots:
+    void shapePreviewReplacementAndHistory() {
+        using namespace openpaint;
+        for (int kind = 0; kind < 3; ++kind) {
+            Document doc({100, 100});
+            const auto original = doc.image();
+            QVERIFY(doc.beginPreview());
+            const auto first = renderShape(doc.previewBase(), {10, 10}, {50, 50}, kind, Qt::black,
+                                           Qt::red, 3, true, true);
+            QVERIFY(doc.updatePreview(first.image, first.rect));
+            QVERIFY(doc.image() != original);
+            const auto next = renderShape(doc.previewBase(), {60, 60}, {95, 95}, kind, Qt::black,
+                                          Qt::red, 3, true, true);
+            QVERIFY(doc.updatePreview(next.image, next.rect));
+            QCOMPARE(doc.image().pixelColor(10, 10), QColor(Qt::white));
+            const auto painted = doc.image();
+            QVERIFY(doc.commitStroke());
+            QVERIFY(doc.undo());
+            QCOMPARE(doc.image(), original);
+            QVERIFY(!doc.canUndo());
+            QVERIFY(doc.redo());
+            QCOMPARE(doc.image(), painted);
+            QVERIFY(doc.beginPreview());
+            QVERIFY(doc.updatePreview(first.image, first.rect));
+            QVERIFY(!doc.updatePreview(first.image, QRect(-1, 0, 20, 20)));
+            doc.cancelStroke();
+            QCOMPARE(doc.image(), painted);
+        }
+        Document drawing({100, 100});
+        QVERIFY(drawing.beginStroke({10, 10}, Qt::black, 3));
+        QVERIFY(!drawing.updatePreview({}, {}));
+        drawing.cancelStroke();
+        Document tiny({100, 100}, 1);
+        const auto original = tiny.image();
+        QVERIFY(tiny.beginPreview());
+        auto patch = renderShape(tiny.previewBase(), {-20, -20}, {60, 60}, 1, Qt::black, Qt::red, 3,
+                                 false, true);
+        QVERIFY(tiny.updatePreview(patch.image, patch.rect));
+        QCOMPARE(tiny.image().pixelColor(0, 0), QColor(Qt::red));
+        QVERIFY(!tiny.commitStroke());
+        QCOMPARE(tiny.image(), original);
+        QVERIFY(tiny.beginPreview());
+        patch = renderShape(tiny.previewBase(), {10, 10}, {60, 60}, 2, Qt::black, Qt::red, 3, false,
+                            false);
+        QVERIFY(tiny.updatePreview(patch.image, patch.rect));
+        QVERIFY(!tiny.commitStroke());
+        QVERIFY(!tiny.dirty());
+    }
+
     void brushStylesAndOpacity() {
         using namespace openpaint;
         QList<QImage> previews;

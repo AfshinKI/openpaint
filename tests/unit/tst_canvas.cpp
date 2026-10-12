@@ -53,6 +53,45 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void retainedShapePreview() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 1;
+        const auto original = editor.image();
+        canvas.press({100, 100});
+        canvas.release({200, 200});
+        QVERIFY(editor.previewActive());
+        QVERIFY(editor.active());
+        QVERIFY(!editor.canUndo());
+        canvas.loseFocus();
+        canvas.zoomAt(1.5, {300, 300});
+        QVERIFY(editor.previewActive());
+        editor.setProperty("secondary", QColor(Qt::red));
+        editor.setProperty("shapeFill", true);
+        QCOMPARE(editor.image().pixelColor(150, 150), QColor(Qt::red));
+        canvas.key(Qt::Key_Escape);
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.previewActive());
+        canvas.press({100, 100});
+        canvas.release({200, 200});
+        const auto shape = editor.image();
+        canvas.key(Qt::Key_Return);
+        QVERIFY(!editor.previewActive());
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), shape);
+        canvas.press({300, 300}, Qt::RightButton);
+        canvas.release({400, 400}, Qt::RightButton);
+        QCOMPARE(editor.image().pixelColor(350, 350), QColor(Qt::black));
+        editor.setTool(Editor::Tool::Pencil);
+        QVERIFY(!editor.previewActive());
+        editor.undo();
+        QCOMPARE(editor.image(), shape);
+    }
+
     void pickerGestureAndToolSwitch() {
         TestEditor editor;
         InputCanvas canvas;

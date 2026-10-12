@@ -1,0 +1,93 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import OpenPaint
+
+PaintDialog {
+    id: dialog
+    required property Editor editor
+    title: qsTr("Shape options")
+    modal: true
+    width: 440
+    anchors.centerIn: parent
+    standardButtons: Dialog.Apply | Dialog.Cancel
+    onApplied: {
+        editor.finish();
+        close();
+    }
+    onRejected: editor.cancel()
+    contentItem: ColumnLayout {
+        spacing: 12
+        Label {
+            text: qsTr("Adjust the preview, then Apply or Cancel.")
+            color: Theme.text
+        }
+        GridLayout {
+            columns: 2
+            Label {
+                text: qsTr("Start X")
+                color: Theme.text
+            }
+            PaintSpinBox {
+                objectName: "shapeStartX"
+                from: -1000000
+                to: 1000000
+                editable: true
+                value: dialog.editor.shapeStart.x
+                onValueModified: dialog.editor.setShapeGeometry(value, dialog.editor.shapeStart.y, dialog.editor.shapeEnd.x, dialog.editor.shapeEnd.y)
+                Accessible.name: qsTr("Shape start X")
+                implicitWidth: 160
+            }
+            Label {
+                text: qsTr("Start Y")
+                color: Theme.text
+            }
+            PaintSpinBox {
+                from: -1000000
+                to: 1000000
+                editable: true
+                value: dialog.editor.shapeStart.y
+                onValueModified: dialog.editor.setShapeGeometry(dialog.editor.shapeStart.x, value, dialog.editor.shapeEnd.x, dialog.editor.shapeEnd.y)
+                Accessible.name: qsTr("Shape start Y")
+                implicitWidth: 160
+            }
+            Label {
+                text: qsTr("End X")
+                color: Theme.text
+            }
+            PaintSpinBox {
+                from: -1000000
+                to: 1000000
+                editable: true
+                value: dialog.editor.shapeEnd.x
+                onValueModified: dialog.editor.setShapeGeometry(dialog.editor.shapeStart.x, dialog.editor.shapeStart.y, value, dialog.editor.shapeEnd.y)
+                Accessible.name: qsTr("Shape end X")
+                implicitWidth: 160
+            }
+            Label {
+                text: qsTr("End Y")
+                color: Theme.text
+            }
+            PaintSpinBox {
+                from: -1000000
+                to: 1000000
+                editable: true
+                value: dialog.editor.shapeEnd.y
+                onValueModified: dialog.editor.setShapeGeometry(dialog.editor.shapeStart.x, dialog.editor.shapeStart.y, dialog.editor.shapeEnd.x, value)
+                Accessible.name: qsTr("Shape end Y")
+                implicitWidth: 160
+            }
+        }
+        PaintCheckBox {
+            text: qsTr("Outline")
+            checked: dialog.editor.shapeOutline
+            onToggled: dialog.editor.shapeOutline = checked
+        }
+        PaintCheckBox {
+            text: qsTr("Fill")
+            checked: dialog.editor.shapeFill
+            onToggled: dialog.editor.shapeFill = checked
+        }
+    }
+}

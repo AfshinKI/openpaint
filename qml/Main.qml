@@ -64,6 +64,12 @@ ApplicationWindow {
             requestChange("close");
         }
     }
+    ShapeOptions {
+        id: shapeOptions
+        objectName: "shapeOptions"
+        editor: window.editorController
+        parent: Overlay.overlay
+    }
     ColorPalette {
         id: customPalette
         objectName: "customPalette"
@@ -402,6 +408,52 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
+                IconButton {
+                    id: shapesButton
+                    objectName: "shapesButton"
+                    symbol: "rectangle"
+                    text: qsTr("Shapes")
+                    highlighted: editor.tool === Editor.Shape
+                    onClicked: shapesMenu.open()
+                    PaintMenu {
+                        id: shapesMenu
+                        objectName: "shapesMenu"
+                        y: shapesButton.height
+                        PaintMenuItem {
+                            text: qsTr("Line")
+                            icon.source: "icons/line.svg"
+                            onTriggered: {
+                                editor.shapeKind = 0;
+                                editor.tool = Editor.Shape;
+                            }
+                        }
+                        PaintMenuItem {
+                            text: qsTr("Rectangle")
+                            icon.source: "icons/rectangle.svg"
+                            onTriggered: {
+                                editor.shapeKind = 1;
+                                editor.tool = Editor.Shape;
+                            }
+                        }
+                        PaintMenuItem {
+                            text: qsTr("Ellipse")
+                            icon.source: "icons/ellipse.svg"
+                            onTriggered: {
+                                editor.shapeKind = 2;
+                                editor.tool = Editor.Shape;
+                            }
+                        }
+                    }
+                }
+                Label {
+                    text: qsTr("Shapes")
+                    color: Theme.secondaryText
+                }
+            }
+            ToolSeparator {
+                Layout.fillHeight: true
+            }
+            ColumnLayout {
                 PaintSpinBox {
                     id: sizeBox
                     objectName: "strokeSize"
@@ -549,9 +601,26 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.previewActive ? qsTr("Enter to apply · Escape to cancel") : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
+            }
+            PaintButton {
+                objectName: "shapeOptionsButton"
+                text: qsTr("Options")
+                visible: editor.previewActive
+                onClicked: shapeOptions.open()
+            }
+            PaintButton {
+                objectName: "applyPreviewButton"
+                text: qsTr("Apply")
+                visible: editor.previewActive
+                onClicked: editor.finish()
+            }
+            PaintButton {
+                text: qsTr("Cancel")
+                visible: editor.previewActive
+                onClicked: editor.cancel()
             }
             BusyIndicator {
                 running: editor.busy

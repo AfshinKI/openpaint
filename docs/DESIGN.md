@@ -88,7 +88,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Selection | Visible marquee, handles, numeric bounds, active-layer scope; dragging previews until commit |
 | Transform | Shift constrains proportions or rotation increments; numeric inputs provide keyboard precision |
 | Text | Inline editor with font, size, alignment, style, foreground and optional background; Ctrl+Enter commits, Escape cancels |
-| Shape | Adjustable before commit; outline/fill choices explicit; Enter commits and Escape cancels |
+| Shape | Drag/release retains preview; numeric start/end and outline/fill options; Enter/Apply commits and Escape/Cancel restores original; new drawing/tool switch commits current preview |
 | Resize image | Pixel/percent inputs, aspect lock, interpolation; one undoable operation |
 | Resize canvas | Anchor and dimensions; warn when reducing clips content; undo restores it |
 | Save / close | Dirty window offers Save, Discard, Cancel; a failed save leaves the window open |
