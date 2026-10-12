@@ -24,7 +24,7 @@ From the repository root, install system prerequisites:
 ```sh
 sudo apt-get update
 sudo apt-get install -y g++-13 cmake ninja-build python3-venv \
-  libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxkbcommon-x11-0
+  libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxkbcommon-x11-0
 ```
 
 Install development tools and Qt in the ignored build directory:
