@@ -28,6 +28,7 @@ void CanvasItem::setEditor(Editor* editor) {
                            .adjusted(-2, -2, 2, 2)
                            .toAlignedRect());
         });
+        connect(editor_, &Editor::documentReplaced, this, &CanvasItem::fit);
         connect(editor_, &Editor::settingsChanged, this, &CanvasItem::finishGesture);
     }
     emit editorChanged();

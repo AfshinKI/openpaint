@@ -1,7 +1,7 @@
 # Delivery plan
 
-The native canvas supports drawing and history. M1 is in progress; PNG file
-editing is the next slice. See [the build guide](BUILD.md) to run the preview.
+A usable basic source editor supports drawing, history and safe PNG files.
+M1 platform/quality validation remains in progress; M2 tools and packages come next. See [the build guide](BUILD.md) to run the preview.
 Milestones are exit gates, not promised dates. Complete thin, usable slices before
 adding breadth. [FEATURES.md](FEATURES.md) is the implementation status ledger.
 

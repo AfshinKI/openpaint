@@ -1,7 +1,8 @@
 # Privacy and public-repository hygiene
 
-These are product requirements. The current native editor has no network operations
-or document storage. Recovery, exports, and updates below are still planned.
+These are product requirements. The current native editor has no network operations. It opens and saves local PNG
+files, strips text metadata and rejects unsupported EXIF-oriented PNG. Recovery
+and updates below are still planned.
 
 ## Product commitments
 

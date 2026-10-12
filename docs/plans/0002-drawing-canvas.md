@@ -1,6 +1,6 @@
 # Feature: a responsive single-layer drawing canvas
 
-Status: implemented; CI review pending
+Status: merged in [PR #5](https://github.com/AfshinKI/openpaint/pull/5)
 Feature IDs: F01, F02, F05, F11, F16
 Milestone: M1 Step 3
 
@@ -51,6 +51,7 @@ GPU/Wayland and the full 16.7 ms frame budget still need separate measurements.
 
 ## Handoff
 
-Merge this bounded slice after every CI job passes. Start `feat/png-file-workflow`
+[CI run 38291376923](https://github.com/AfshinKI/openpaint/actions/runs/38291376923)
+passed all four jobs before this slice merged. Start `feat/png-file-workflow`
 from merged main. That slice must finish PNG worker snapshots, atomic replacement,
 and Save/Discard/Cancel before calling this a usable basic editor.

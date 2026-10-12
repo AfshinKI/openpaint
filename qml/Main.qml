@@ -14,7 +14,7 @@ ApplicationWindow {
     minimumWidth: 1024
     minimumHeight: 640
     visible: true
-    title: (editor.dirty ? "* " : "") + qsTr("Untitled — OpenPaint")
+    title: (editor.dirty ? "* " : "") + editor.fileName + qsTr(" — OpenPaint")
     color: Theme.workspace
     palette.window: Theme.window
     palette.windowText: Theme.text
@@ -25,16 +25,93 @@ ApplicationWindow {
     palette.highlight: Theme.accent
     palette.highlightedText: Theme.accentText
     property bool discardClose: false
+    property string pendingAction: ""
+    function performPending() {
+        const action = pendingAction;
+        pendingAction = "";
+        if (action === "close") {
+            discardClose = true;
+            close();
+        } else if (action === "new")
+            editor.newDocument();
+        else if (action === "open")
+            openDialog.open();
+    }
+    function requestChange(action: string) {
+        if (editor.busy)
+            return;
+        editor.finish();
+        pendingAction = action;
+        if (editor.dirty)
+            closeDialog.open();
+        else
+            performPending();
+    }
+    function saveDrawing() {
+        editor.finish();
+        if (editor.fileUrl.toString() === "")
+            saveDialog.open();
+        else
+            editor.saveFile(editor.fileUrl);
+    }
     onClosing: function (close) {
         editor.finish();
-        if (editor.dirty && !discardClose) {
+        if (editor.busy)
             close.accepted = false;
-            closeDialog.open();
+        else if (editor.dirty && !discardClose) {
+            close.accepted = false;
+            requestChange("close");
         }
     }
     Editor {
         id: editor
         objectName: "editor"
+    }
+    Connections {
+        target: editor
+        function onNoticeChanged() {
+            noticeDialog.open();
+        }
+        function onErrorChanged() {
+            errorDialog.open();
+        }
+        function onSaved(success: bool) {
+            if (success && !editor.dirty)
+                window.performPending();
+            else
+                window.pendingAction = "";
+        }
+    }
+    Action {
+        id: newAction
+        objectName: "newAction"
+        text: qsTr("&New")
+        shortcut: StandardKey.New
+        enabled: !editor.busy
+        onTriggered: window.requestChange("new")
+    }
+    Action {
+        id: openAction
+        objectName: "openAction"
+        text: qsTr("&Open…")
+        shortcut: StandardKey.Open
+        enabled: !editor.busy
+        onTriggered: window.requestChange("open")
+    }
+    Action {
+        id: saveAction
+        objectName: "saveAction"
+        text: qsTr("&Save")
+        shortcut: StandardKey.Save
+        enabled: !editor.busy
+        onTriggered: window.saveDrawing()
+    }
+    Action {
+        id: saveAsAction
+        text: qsTr("Save &As…")
+        shortcut: StandardKey.SaveAs
+        enabled: !editor.busy
+        onTriggered: saveDialog.open()
     }
     Action {
         id: quitAction
@@ -47,14 +124,14 @@ ApplicationWindow {
         id: undoAction
         text: qsTr("Undo")
         shortcut: StandardKey.Undo
-        enabled: editor.canUndo
+        enabled: editor.canUndo && !editor.loading
         onTriggered: editor.undo()
     }
     Action {
         id: redoAction
         text: qsTr("Redo")
         shortcut: StandardKey.Redo
-        enabled: editor.canRedo
+        enabled: editor.canRedo && !editor.loading
         onTriggered: editor.redo()
     }
     Shortcut {
@@ -117,6 +194,19 @@ ApplicationWindow {
         Menu {
             title: qsTr("&File")
             MenuItem {
+                action: newAction
+            }
+            MenuItem {
+                action: openAction
+            }
+            MenuItem {
+                action: saveAction
+            }
+            MenuItem {
+                action: saveAsAction
+            }
+            MenuSeparator {}
+            MenuItem {
                 action: quitAction
             }
         }
@@ -170,6 +260,20 @@ ApplicationWindow {
             anchors.fill: parent
             anchors.margins: 8
             spacing: 8
+            ColumnLayout {
+                ToolButton {
+                    action: saveAction
+                    Accessible.name: qsTr("Save drawing")
+                }
+                Label {
+                    text: qsTr("File")
+                    color: Theme.secondaryText
+                    Layout.alignment: Qt.AlignHCenter
+                }
+            }
+            ToolSeparator {
+                Layout.fillHeight: true
+            }
             ColumnLayout {
                 RowLayout {
                     ToolButton {
@@ -291,17 +395,22 @@ ApplicationWindow {
             ColumnLayout {
                 GridLayout {
                     columns: 10
-                    rowSpacing: 4
-                    columnSpacing: 4
+                    rowSpacing: 0
+                    columnSpacing: 0
                     Repeater {
                         model: ["#000000", "#6b7280", "#8b4513", "#e53935", "#ff8c00", "#ffd600", "#2e9b46", "#00a6a6", "#1976d2", "#7b1fa2", "#ffffff", "#d1d5db", "#d7a47b", "#ff9aa2", "#ffc777", "#fff59d", "#a5d6a7", "#80deea", "#90caf9", "#ce93d8"]
                         delegate: Button {
                             id: swatch
+                            objectName: "colorSwatch"
                             required property string modelData
-                            implicitWidth: 24
-                            implicitHeight: 24
+                            implicitWidth: 32
+                            implicitHeight: 32
                             onClicked: editor.primary = modelData
                             background: Rectangle {
+                                x: 4
+                                y: 4
+                                width: 24
+                                height: 24
                                 radius: 12
                                 color: swatch.modelData
                                 border.width: swatch.activeFocus || editor.primary.toString() === swatch.modelData ? 3 : 1
@@ -329,6 +438,7 @@ ApplicationWindow {
         objectName: "canvas"
         anchors.fill: parent
         editor: editor
+        enabled: !editor.loading
         focus: true
         Accessible.name: qsTr("Drawing canvas")
         Accessible.role: Accessible.Canvas
@@ -350,9 +460,20 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: qsTr("Space+drag to pan")
+                text: editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
+            }
+            BusyIndicator {
+                running: editor.busy
+                visible: editor.busy
+                implicitWidth: 24
+                implicitHeight: 24
+            }
+            ToolButton {
+                text: qsTr("Cancel")
+                visible: editor.busy
+                onClicked: editor.cancelIo()
             }
             ToolButton {
                 action: fitAction
@@ -374,6 +495,53 @@ ApplicationWindow {
             }
         }
     }
+    FileDialog {
+        id: openDialog
+        objectName: "openDialog"
+        title: qsTr("Open PNG")
+        fileMode: FileDialog.OpenFile
+        nameFilters: [qsTr("PNG images (*.png)")]
+        onAccepted: editor.openFile(selectedFile)
+    }
+    FileDialog {
+        id: saveDialog
+        objectName: "saveDialog"
+        title: qsTr("Save PNG")
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: "png"
+        nameFilters: [qsTr("PNG images (*.png)")]
+        onAccepted: editor.saveFile(selectedFile)
+        onRejected: window.pendingAction = ""
+    }
+    Dialog {
+        id: errorDialog
+        objectName: "errorDialog"
+        title: qsTr("File operation failed")
+        anchors.centerIn: parent
+        width: Math.min(window.width - 64, 480)
+        modal: true
+        standardButtons: Dialog.Ok
+        Label {
+            width: parent.width
+            text: editor.error
+            wrapMode: Text.WordWrap
+            color: Theme.text
+        }
+    }
+    Dialog {
+        id: noticeDialog
+        title: qsTr("PNG metadata")
+        anchors.centerIn: parent
+        width: Math.min(window.width - 64, 480)
+        modal: true
+        standardButtons: Dialog.Ok
+        Label {
+            width: parent.width
+            text: editor.notice
+            wrapMode: Text.WordWrap
+            color: Theme.text
+        }
+    }
     ColorDialog {
         id: colorDialog
         title: qsTr("Primary color")
@@ -381,16 +549,16 @@ ApplicationWindow {
     }
     Dialog {
         id: closeDialog
-        title: qsTr("Discard this drawing?")
+        title: qsTr("Save changes?")
+        objectName: "unsavedDialog"
         anchors.centerIn: parent
         modal: true
-        standardButtons: Dialog.Discard | Dialog.Cancel
-        onDiscarded: {
-            window.discardClose = true;
-            window.close();
-        }
+        standardButtons: Dialog.Save | Dialog.Discard | Dialog.Cancel
+        onAccepted: window.saveDrawing()
+        onDiscarded: window.performPending()
+        onRejected: window.pendingAction = ""
         Label {
-            text: qsTr("PNG saving arrives in the next development slice.\nThis drawing has unsaved changes.")
+            text: qsTr("Save your changes before continuing?")
             color: Theme.text
         }
     }
@@ -405,7 +573,7 @@ ApplicationWindow {
         closePolicy: Popup.CloseOnEscape
         Label {
             width: parent.width
-            text: qsTr("Open-source painting for Linux.\n\nDevelopment build: pencil, eraser, colors and undo. PNG files are the next slice.\n\nGPL-3.0-or-later. Independent of Microsoft.")
+            text: qsTr("Open-source painting for Linux.\n\nDevelopment build: drawing, erasing, colors, undo and PNG files.\n\nGPL-3.0-or-later. Independent of Microsoft.")
             wrapMode: Text.WordWrap
             color: Theme.text
         }

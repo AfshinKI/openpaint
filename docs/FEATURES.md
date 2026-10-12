@@ -1,7 +1,7 @@
 # Feature checklist and reference audit
 
 Audit date: 2026-10-12. **The first single-layer drawing canvas is implemented.**
-PNG files and remaining capabilities are still planned.
+Safe PNG files are implemented; remaining capabilities stay planned.
 The reference is modern Windows 11 Paint, including separately identified preview
 features. This is a research baseline, not an exhaustive test of today's installed
 Paint. No Windows binary was available for a hands-on comparison.
@@ -28,8 +28,8 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F12 | Add/delete/rename/reorder/duplicate/merge layers | R1 covers layers/reorder/merge; other operations are product choices pending audit | M3 | Planned |
 | F13 | Transparent canvas, layer visibility/opacity | R1 plus OpenPaint contract; detailed parity needs observation | M3 | Planned |
 | F14 | Editable layered project save/reopen | R2; OpenPaint uses .ora initially | M3 | Planned |
-| F15 | PNG, JPEG, BMP, WebP interchange; static GIF import | R1 documents some formats; exact supported subset is our choice | M1–M4 | Planned |
-| F16 | Undo/redo, crash recovery, atomic saves | Product choice; reference workflow requires hands-on audit | M1–M3 | In progress: headless stroke history tested; files/recovery pending. |
+| F15 | PNG, JPEG, BMP, WebP interchange; static GIF import | R1 documents some formats; exact supported subset is our choice | M1–M4 | In progress: static PNG open/save implemented and tested; other formats pending. |
+| F16 | Undo/redo, crash recovery, atomic saves | Product choice; reference workflow requires hands-on audit | M1–M3 | In progress: stroke history and atomic PNG saves tested; crash recovery pending. |
 | F17 | Stylus pressure, touch and fractional scaling | R1 confirms stylus; precise pressure behavior needs observation | M4 | Planned |
 | F18 | One-click background removal | R1 | M6 | Planned |
 | F19 | Object selection | R5, hardware-dependent in reference | M6 | Planned |
@@ -39,7 +39,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F23 | Coloring-page generation | R3 preview, hardware/account restrictions in reference | M6 | Planned |
 | F24 | Collapsible command toolbar | Observed-reference task still open; OpenPaint product choice | M4 | Planned |
 | F25 | Flatpak/AppImage downloads and Updates screen | Linux-specific product choice | M2–M5 | Planned |
-| F26 | Privacy controls, metadata removal, accessible keyboard UI | Product choice | M1–M5 | Planned |
+| F26 | Privacy controls, metadata removal, accessible keyboard UI | Product choice | M1–M5 | In progress: offline PNG metadata removal and keyboard lifecycle tested; Orca audit pending. |
 | F27 | Printing through the Linux print dialog | Product choice; reference details need observation | M4 | Planned |
 
 No percentage-complete claim until each row has a finite acceptance checklist.
@@ -71,3 +71,6 @@ small task, list controls/defaults/shortcuts, test cancel/undo/save, and disting
 observed behavior from our improvements. Add acceptance cases to a feature plan.
 Re-audit before a parity-focused release; do not silently expand a milestone when
 Microsoft ships another preview. Record the gap and prioritize it explicitly.
+
+Implemented subset evidence: [canvas](plans/0002-drawing-canvas.md) and
+[PNG lifecycle](plans/0003-png-file-workflow.md).

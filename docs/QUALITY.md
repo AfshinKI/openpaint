@@ -1,7 +1,7 @@
 # Quality and validation
 
-Current checks cover repository content and the native application shell. Engine,
-codec, and updater suites become required as the corresponding code lands.
+Current checks cover repository content, document/history, PNG codecs, controller
+lifecycle and the native editor UI. Updater suites become required when it lands.
 
 ## Check selection
 

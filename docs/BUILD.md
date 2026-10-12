@@ -1,7 +1,7 @@
 # Build OpenPaint
 
 The current development app supports pencil/eraser, colors and size, undo/redo,
-zoom/pan and System/Light/Dark themes. PNG open/save is the next slice. There are no packaged
+zoom/pan, PNG open/save, guarded close and System/Light/Dark themes. There are no packaged
 downloads. This guide builds from source and does not install the app system-wide.
 
 ## Tested baseline
@@ -111,3 +111,24 @@ GPL-3.0-or-later; no external assets or embedded text/EXIF metadata):
 | --- | --- | --- |
 | 1024×640 | [Light preview](assets/shell-light-1024.png) | [Dark preview](assets/shell-dark-1024.png) |
 | 1280×800 | [Light preview](assets/shell-light-1280.png) | [Dark preview](assets/shell-dark-1280.png) |
+
+## Use the basic editor
+
+Run `./build/dev/openpaint` after building. Draw with the left button; the right
+button uses the secondary color. Choose a palette color or click Primary for a
+custom color; Swap exchanges primary/secondary. Eraser uses the secondary color
+unless Transparent is checked. Each drag is one undo step; Escape cancels it.
+
+Ctrl+Z undoes; Ctrl+Y/Ctrl+Shift+Z redo. Ctrl+wheel zooms around the pointer;
+Space+drag or middle-drag pans; Ctrl+0 fits. Ctrl+N creates a blank image, Ctrl+O
+opens PNG, Ctrl+S saves and Ctrl+Shift+S chooses another PNG filename. Unsaved
+New/Open/Close offers Save, Discard and Cancel. Failed saves keep the drawing open.
+
+Only static PNG is supported, with a 32 MP limit. Text metadata is removed and
+colors normalize to sRGB; EXIF-oriented/animated PNG is rejected. Recovery after a
+crash, layers, shapes, text, selection, packaged downloads and updates are not yet
+available. The developer build is useful for basic drawings, not a stable release.
+
+Controller/codec tests verify snapshot saves, errors and lossless reopen. Optional
+`OPENPAINT_BENCHMARK=1` enables a 2048px render probe in the shell test. See the
+[PNG lifecycle plan](plans/0003-png-file-workflow.md) for evidence and open gates.
