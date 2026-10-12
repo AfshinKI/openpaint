@@ -1,0 +1,28 @@
+name: Feature request
+description: Propose an observable improvement.
+title: "[Feature]: "
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User outcome
+      description: What task should someone be able to accomplish?
+    validations:
+      required: true
+  - type: input
+    id: scope
+    attributes:
+      label: Related feature ID or milestone
+      placeholder: F04 / M2, or a new proposal
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance cases
+      description: Describe successful behavior, cancellation, and important edge cases.
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: Reference or tradeoffs
+      description: Public evidence, alternatives, and impact on privacy or dependencies.

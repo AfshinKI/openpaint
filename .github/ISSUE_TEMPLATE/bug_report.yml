@@ -1,0 +1,31 @@
+name: Bug report
+description: Report a reproducible OpenPaint problem.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "Use synthetic files. Remove personal paths, images, and credentials. The repository is currently at the planning stage; docs/tooling bugs are welcome."
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: Version, commit, or documentation-only
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Distribution, desktop, Wayland/X11, installation format; no private machine names.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Include expected and actual behavior and a minimal synthetic example.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Sanitized logs, screenshots, or relevant test output. Do not post vulnerability details here.

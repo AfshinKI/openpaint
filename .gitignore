@@ -1,0 +1,47 @@
+# Generated build and packaging output
+/build/
+/out/
+/dist/
+/artifacts/
+/CMakeUserPresets.json
+compile_commands.json
+*.user
+*.AppImage
+*.flatpak
+*.deb
+*.rpm
+
+# Personal configuration, agent sessions, and editor state
+/.codex/
+/.agents/
+/.claude/
+CLAUDE.local.md
+AGENTS.local.md
+/.idea/
+/.vscode/
+.DS_Store
+*~
+*.swp
+
+# Credentials and local-only data
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+/private/
+/scratch/
+/tmp/
+/logs/
+*.log
+*.dmp
+core
+core.*
+
+# Python tooling
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
