@@ -16,6 +16,9 @@ CanvasItem::CanvasItem(QQuickItem* parent) : QQuickPaintedItem(parent) {
     setCursor(Qt::CrossCursor);
 }
 void CanvasItem::setEditor(Editor* editor) {
+    if (editor_ == editor)
+        return;
+    finishGesture();
     if (editor_)
         disconnect(editor_, nullptr, this, nullptr);
     editor_ = editor;
@@ -51,7 +54,8 @@ void CanvasItem::zoomBy(qreal factor) {
     zoomAt(factor, {width() / 2, height() / 2});
 }
 void CanvasItem::zoomAt(qreal factor, QPointF anchor) {
-    if (!std::isfinite(factor) || factor <= 0)
+    if (!std::isfinite(factor) || factor <= 0 || !std::isfinite(anchor.x()) ||
+        !std::isfinite(anchor.y()))
         return;
     finishGesture();
     const auto documentPoint = toDocument(anchor);
@@ -63,6 +67,7 @@ void CanvasItem::zoomAt(qreal factor, QPointF anchor) {
 }
 void CanvasItem::geometryChange(const QRectF& now, const QRectF& before) {
     QQuickPaintedItem::geometryChange(now, before);
+    finishGesture();
     if (fitted_)
         fit();
 }
@@ -86,19 +91,32 @@ void CanvasItem::paint(QPainter* painter) {
     painter->drawRect(target.adjusted(-1, -1, 1, 1));
 }
 void CanvasItem::mousePressEvent(QMouseEvent* event) {
+    // A chord cannot steal an existing gesture or change its drawing color.
+    if (gestureButton_ != Qt::NoButton) {
+        event->accept();
+        return;
+    }
+    if (!(acceptedMouseButtons() & event->button()) || !std::isfinite(event->position().x()) ||
+        !std::isfinite(event->position().y())) {
+        event->ignore();
+        return;
+    }
     forceActiveFocus();
+    gestureButton_ = event->button();
     last_ = event->position();
-    panning_ = space_ || event->button() == Qt::MiddleButton;
+    panning_ = space_ || gestureButton_ == Qt::MiddleButton;
     drawing_ = !panning_ && editor_;
     if (drawing_)
-        editor_->begin(toDocument(last_), event->button() == Qt::RightButton);
+        editor_->begin(toDocument(last_), gestureButton_ == Qt::RightButton);
     event->accept();
 }
-void CanvasItem::mouseMoveEvent(QMouseEvent* event) {
-    const auto point = event->position();
+void CanvasItem::updateGesture(QPointF point) {
+    if (!std::isfinite(point.x()) || !std::isfinite(point.y()))
+        return;
     if (panning_) {
         origin_ += point - last_;
         fitted_ = false;
+        emit viewportChanged();
         update();
     } else if (drawing_ && editor_) {
         editor_->extend(toDocument(point));
@@ -107,15 +125,25 @@ void CanvasItem::mouseMoveEvent(QMouseEvent* event) {
     cursor_ = toDocument(point);
     emit cursorPositionChanged();
 }
+void CanvasItem::mouseMoveEvent(QMouseEvent* event) {
+    if (gestureButton_ != Qt::NoButton && !(event->buttons() & gestureButton_)) {
+        // A missing release must not connect the stroke to a later hover position.
+        finishGesture();
+        return;
+    }
+    updateGesture(event->position());
+}
 void CanvasItem::mouseReleaseEvent(QMouseEvent* event) {
-    if (drawing_ && editor_)
-        editor_->extend(toDocument(event->position()));
+    if (event->button() != gestureButton_)
+        return;
+    updateGesture(event->position());
     finishGesture();
 }
 void CanvasItem::finishGesture() {
     if (editor_)
         editor_->finish();
     drawing_ = panning_ = false;
+    gestureButton_ = Qt::NoButton;
 }
 void CanvasItem::mouseUngrabEvent() {
     finishGesture();
@@ -144,6 +172,7 @@ void CanvasItem::keyPressEvent(QKeyEvent* event) {
     } else if (event->key() == Qt::Key_Escape && editor_) {
         editor_->cancel();
         drawing_ = panning_ = false;
+        gestureButton_ = Qt::NoButton;
         event->accept();
     } else {
         QQuickPaintedItem::keyPressEvent(event);

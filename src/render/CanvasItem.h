@@ -51,7 +51,9 @@ class CanvasItem : public QQuickPaintedItem {
 
   private:
     void finishGesture();
+    void updateGesture(QPointF point);
     QPointer<Editor> editor_;
+    Qt::MouseButton gestureButton_ = Qt::NoButton;
     qreal zoom_ = 1;
     QPointF origin_, last_, cursor_;
     bool space_ = false, panning_ = false, drawing_ = false, fitted_ = true;

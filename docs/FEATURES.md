@@ -17,7 +17,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | ID | Capability | Evidence / distinction | Target | Status |
 | --- | --- | --- | --- | --- |
 | F01 | Familiar toolbar, light/dark, responsive canvas | R1; visual layout in the menu/control specification; interaction audit pending | M1–M4 | In progress: original icon toolbar, shared rounded surfaces, canvas and themes implemented; exact parity audit pending. See [M1 evidence](plans/0001-foundation.md#evidence-and-handoff). |
-| F02 | Pencil, eraser, basic brush, sizes | R1 | M1 | Implemented: round pencil, opaque/transparent eraser, 1–128 px size; advanced brushes pending. |
+| F02 | Pencil, eraser, basic brush, sizes | R1 | M1 | Implemented: round pencil, opaque/transparent eraser, 1–128 px size; mouse gesture/edge regression coverage in [plan 0006](plans/0006-canvas-gesture-lifecycle.md); advanced brushes pending. |
 | F03 | Additional brush styles, stroke opacity | R1, R2; nine-style inventory in the menu/control specification | M2 | Planned |
 | F04 | Fill and adjustable tolerance | R1; tolerance announced as preview in R3 | M2 | Planned |
 | F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | Implemented: primary/secondary rectangular spectrum, brightness, HEX/RGB/HSV, 24 saved custom colors, swap and right-button secondary drawing. Behavioral and visual evidence in the [reference layout plan](plans/0005-reference-color-layout.md); canvas eyedropper remains planned. |

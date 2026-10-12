@@ -44,10 +44,8 @@ class ShellTest : public QObject {
         QVERIFY(QTest::qWaitForWindowExposed(window));
         window->requestActivate();
         QVERIFY(QTest::qWaitForWindowActive(window));
-        QSignalSpy readyFrame(window, &QQuickWindow::frameSwapped);
-        window->requestUpdate();
-        QVERIFY(readyFrame.wait(1000));
         QGuiApplication::sync();
+        QVERIFY(!window->grabWindow().isNull());
     }
 
     void cleanup() {
@@ -169,6 +167,35 @@ class ShellTest : public QObject {
         editor->undo();
         QCOMPARE(editor->image(), first);
         editor->undo();
+    }
+
+    void chordAndPanLifecycle() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        const auto original = editor->image();
+        auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
+        const auto start = at({100, 100});
+        const auto middle = at({200, 100});
+        const auto end = at({300, 100});
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, middle);
+        QTest::mousePress(window, Qt::MiddleButton, {}, middle);
+        QTest::mouseRelease(window, Qt::MiddleButton, {}, middle);
+        QTest::mouseMove(window, end);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QCOMPARE(editor->image().pixelColor(250, 100), QColor(Qt::black));
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->canUndo());
+        const auto origin = canvas->fromDocument({0, 0});
+        QTest::keyPress(window, Qt::Key_Space);
+        QTest::mousePress(window, Qt::LeftButton, {}, middle);
+        QTest::mouseMove(window, middle + QPoint(20, 10));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, middle + QPoint(40, 30));
+        QTest::keyRelease(window, Qt::Key_Space);
+        QVERIFY(QLineF(canvas->fromDocument({0, 0}), origin + QPointF(40, 30)).length() < 0.01);
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->dirty());
     }
 
     void unsavedCancelAndSaveClose() {
@@ -410,11 +437,12 @@ class ShellTest : public QObject {
         const auto directory = qEnvironmentVariable("OPENPAINT_CAPTURE_DIR");
         if (!directory.isEmpty() && !QDir().mkpath(directory))
             return false;
-        QSignalSpy frame(window, &QQuickWindow::frameSwapped);
-        window->requestUpdate();
-        if (!frame.wait(1000))
-            return false;
-        return directory.isEmpty() || window->grabWindow().save(QDir(directory).filePath(name));
+        // Synchronize layout/rendering even when no capture is requested. Waiting
+        // for an extra frame can time out when the requested state already rendered.
+        QGuiApplication::sync();
+        const auto frame = window->grabWindow();
+        return !frame.isNull() &&
+               (directory.isEmpty() || frame.save(QDir(directory).filePath(name)));
     }
 
     std::unique_ptr<QQmlApplicationEngine> engine;

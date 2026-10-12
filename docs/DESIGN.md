@@ -79,7 +79,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Action | Behavior |
 | --- | --- |
 | Draw | Capture pointer, show preview immediately, commit one undo step on release |
-| Interrupted stroke | On device loss/focus interruption, finish at last valid sample; never bridge to a later pointer |
+| Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
 | Escape | Cancel active preview/transform; otherwise dismiss the topmost transient UI |
 | Pan / zoom | Space+drag pans outside text entry; Ctrl+wheel zooms around pointer; plain wheel scrolls |
 | Selection | Visible marquee, handles, numeric bounds, active-layer scope; dragging previews until commit |
@@ -90,6 +90,12 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Resize canvas | Anchor and dimensions; warn when reducing clips content; undo restores it |
 | Save / close | Dirty window offers Save, Discard, Cancel; a failed save leaves the window open |
 | Long operation | Progress and cancellation; never leave partially edited pixels after cancellation |
+
+The initiating mouse button owns the gesture. Extra button presses/releases cannot
+change its mode/color or end it early. Pan consumes the release position as well
+as move events. Stroke starts use continuous half-open image bounds; fractional
+positions inside the final pixel are valid and positions just outside are ignored.
+Qt logical pointer coordinates are converted once through the canvas transform.
 
 Before any action that would invalidate text/shape/selection previews, resolve
 them explicitly. Clicking another canvas location commits shape/text only when

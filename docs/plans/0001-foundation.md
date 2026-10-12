@@ -1,6 +1,6 @@
 # M1: first working canvas
 
-Status: in progress; Step 1 merged; Steps 1–3 merged; usable basic PNG editor implemented; platform validation remains open
+Status: in progress; basic PNG editor and mouse input reliability implemented; remaining platform/codec validation stays open
 Feature IDs: F01, F02, F05, F11, F15, F16, F26 (initial subsets)
 Dependencies: M0 documentation and repository tooling
 
@@ -45,10 +45,13 @@ Each stroke yields one history step; undo to the saved state clears the dirty fl
 ## Step 3 — canvas and input
 
 - [x] Implement the initial QQuickPaintedItem adapter over document snapshots.
-- [ ] Normalize pointer coordinates/pressure and centralize viewport transforms.
+- [x] Centralize mouse viewport transforms using Qt logical coordinates, including
+  fractional zoom and continuous image-edge bounds.
+- [ ] Validate physical pen pressure/device behavior separately; full support is M4.
 - [x] Connect pencil, eraser, size, primary/secondary color, zoom/pan and status UI.
-- [ ] Cover Escape cancellation, pointer capture/loss, out-of-bounds movement,
-  tool changes, keyboard focus, and fractional device scaling.
+- [x] Cover mouse Escape cancellation, pointer capture/loss, out-of-bounds movement,
+  tool changes, keyboard focus, and fractional device scaling in isolated X11.
+  Evidence: [gesture lifecycle plan](0006-canvas-gesture-lifecycle.md).
 - [ ] Record stroke/viewport timing and memory on the quality baseline; log a
   renderer follow-up if the adapter cannot meet the target.
 
@@ -131,3 +134,8 @@ Step 3 behavior and measured evidence: [drawing canvas plan](0002-drawing-canvas
 Step 4 implemented subset and remaining codec/platform checks:
 [PNG lifecycle plan](0003-png-file-workflow.md). The basic source editor is usable;
 the full M1 validation gate is not declared complete while unchecked cases remain.
+
+Mouse input hardening: [plan 0006](0006-canvas-gesture-lifecycle.md) covers initiating
+button ownership, interruption, viewport/editor changes, fractional edge starts
+and isolated X11 scaling. These automated checks do not close physical-device,
+Wayland, Orca, file-portal or remaining codec validation gates.
