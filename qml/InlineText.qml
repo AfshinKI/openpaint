@@ -1,0 +1,79 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma ComponentBehavior: Bound
+import QtQuick
+import OpenPaint
+
+Rectangle {
+    id: box
+    required property Editor editor
+    required property CanvasItem canvas
+    function focusInput() {
+        input.forceActiveFocus();
+    }
+    x: canvas.origin.x + editor.textRect.x * canvas.zoom
+    y: canvas.origin.y + editor.textRect.y * canvas.zoom
+    width: editor.textRect.width * canvas.zoom
+    height: editor.textRect.height * canvas.zoom
+    visible: editor.textActive
+    color: editor.textBackground && editor.textDraft.length > 0 ? editor.textBackgroundColor : "transparent"
+    TextEdit {
+        id: input
+        objectName: "inlineTextInput"
+        anchors.fill: parent
+        clip: true
+        enabled: box.editor.textReady
+        text: box.editor.textDraft
+        textFormat: TextEdit.PlainText
+        wrapMode: TextEdit.Wrap
+        selectByMouse: true
+        persistentSelection: true
+        color: box.editor.textColor
+        selectionColor: Theme.accent
+        selectedTextColor: Theme.accentText
+        font.family: box.editor.textFamily
+        font.pixelSize: box.editor.textSize * box.canvas.zoom
+        font.bold: box.editor.textBold
+        font.italic: box.editor.textItalic
+        font.underline: box.editor.textUnderline
+        font.strikeout: box.editor.textStrikeout
+        horizontalAlignment: box.editor.textAlignment === 1 ? TextEdit.AlignHCenter : box.editor.textAlignment === 2 ? TextEdit.AlignRight : TextEdit.AlignLeft
+        renderType: Text.NativeRendering
+        onTextChanged: {
+            if (box.editor.textReady && text !== box.editor.textDraft && !box.editor.setTextDraft(text))
+                text = box.editor.textDraft;
+        }
+        Keys.onEscapePressed: event => {
+            box.editor.cancel();
+            event.accepted = true;
+        }
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Y && (event.modifiers & Qt.ControlModifier)) {
+                input.redo();
+                event.accepted = true;
+            } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && (event.modifiers & Qt.ControlModifier)) {
+                box.editor.commitPreview();
+                event.accepted = true;
+            }
+        }
+        Accessible.name: qsTr("Text on canvas")
+        cursorDelegate: Rectangle {
+            width: 1
+            height: input.cursorRectangle.height
+            color: Theme.accent
+            visible: input.cursorVisible
+        }
+    }
+    Rectangle {
+        anchors.fill: parent
+        color: "transparent"
+        border.width: 1
+        border.color: Theme.accent
+    }
+    Connections {
+        target: box.editor
+        function onTextEditingReady() {
+            input.text = box.editor.textDraft;
+            input.forceActiveFocus();
+        }
+    }
+}

@@ -1,14 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Editor.h"
 #include "tools/Shape.h"
+#include "tools/Text.h"
 #include <QFileInfo>
+#include <QGuiApplication>
+#include <QInputMethod>
 #include <QtConcurrent>
 #include <cmath>
 #include <numbers>
 void Editor::setTool(Tool tool) {
+    if (textActive_)
+        return;
     if (tool == tool_ ||
         (tool != Tool::Pencil && tool != Tool::Eraser && tool != Tool::ColorPicker &&
-         tool != Tool::Fill && tool != Tool::Brush && tool != Tool::Shape))
+         tool != Tool::Fill && tool != Tool::Brush && tool != Tool::Shape && tool != Tool::Text))
         return;
     if (filling_)
         cancelIo();
@@ -18,7 +23,7 @@ void Editor::setTool(Tool tool) {
 }
 void Editor::begin(QPointF point, bool secondaryButton) {
     shapeInputBlocked_ = false;
-    if (loading())
+    if (loading() || textActive_)
         return;
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || point.x() < 0 || point.y() < 0 ||
         point.x() >= image().width() || point.y() >= image().height())
@@ -49,6 +54,21 @@ void Editor::begin(QPointF point, bool secondaryButton) {
                     snapshot, QPoint(int(std::floor(point.x())), int(std::floor(point.y()))), color,
                     tolerance, token);
             }));
+        return;
+    }
+    if (tool_ == Tool::Text) {
+        finish();
+        if (!document.beginPreview())
+            return;
+        textAnchor_ = point;
+        textActive_ = textDrawing_ = true;
+        textSecondary_ = secondaryButton;
+        textDraft_.clear();
+        textRect_ =
+            QRect(QPoint(int(std::floor(point.x())), int(std::floor(point.y()))), QSize(300, 120))
+                .intersected(image().rect());
+        emit textDraftChanged();
+        refreshText();
         return;
     }
     if (tool_ == Tool::Shape) {
@@ -83,6 +103,18 @@ void Editor::begin(QPointF point, bool secondaryButton) {
     }
 }
 void Editor::extend(QPointF point, bool constrain) {
+    if (textActive_) {
+        if (textDrawing_ && std::isfinite(point.x()) && std::isfinite(point.y()) &&
+            std::abs(point.x()) <= 1000000 && std::abs(point.y()) <= 1000000) {
+            const auto rect =
+                QRectF(textAnchor_, point).normalized().toAlignedRect().intersected(image().rect());
+            if (rect.width() >= 8 && rect.height() >= 8) {
+                textRect_ = rect;
+                refreshText();
+            }
+        }
+        return;
+    }
     if (shapeInputBlocked_)
         return;
     if (shapeActive_) {
@@ -114,6 +146,14 @@ void Editor::extend(QPointF point, bool constrain) {
         emit pixelsChanged(rect);
 }
 void Editor::endGesture() {
+    if (textActive_) {
+        if (textDrawing_) {
+            textDrawing_ = false;
+            emit changed();
+            emit textEditingReady();
+        }
+        return;
+    }
     shapeInputBlocked_ = false;
     if (!shapeActive_)
         finish();
@@ -150,6 +190,50 @@ void Editor::refreshShape() {
     emit pixelsChanged({});
     emit changed();
 }
+bool Editor::setTextDraft(const QString& text) {
+    if (!textActive_)
+        return false;
+    if (text.size() > 10000) {
+        fail(tr("A text box can contain at most 10,000 characters."));
+        emit textDraftChanged();
+        return false;
+    }
+    if (textDraft_ == text)
+        return true;
+    textDraft_ = text;
+    emit textDraftChanged();
+    refreshText();
+    return true;
+}
+void Editor::setTextBounds(int x, int y, int width, int height) {
+    if (!textActive_ || width < 1 || height < 1 || width > 16384 || height > 16384 || x < 0 ||
+        y < 0 || x >= image().width() || y >= image().height())
+        return;
+    textRect_ = QRect(x, y, width, height).intersected(image().rect());
+    refreshText();
+}
+void Editor::refreshText() {
+    if (!textActive_ || textSize < 1 || textSize > 512 || textFamily.size() > 128)
+        return;
+    QFont font(textFamily);
+    font.setPixelSize(textSize);
+    font.setBold(textBold);
+    font.setItalic(textItalic);
+    font.setUnderline(textUnderline);
+    font.setStrikeOut(textStrikeout);
+    const auto patch = openpaint::renderText(
+        document.previewBase(), textRect_, textDraft_,
+        {font, textColor(), textBackgroundColor(), textBackground, textAlignment});
+    if (!patch.rect.isEmpty())
+        document.updatePreview(patch.image, patch.rect);
+    emit pixelsChanged({});
+    emit changed();
+}
+void Editor::commitPreview() {
+    if (textActive_)
+        QGuiApplication::inputMethod()->commit();
+    finish();
+}
 void Editor::finish() {
     if (shapeActive_ && shapeKind == openpaint::PolygonShape && shapePoints_.size() < 3) {
         cancel();
@@ -157,7 +241,7 @@ void Editor::finish() {
     }
     if (!document.active())
         return;
-    shapeActive_ = false;
+    shapeActive_ = textActive_ = textDrawing_ = false;
     document.commitStroke();
     emit pixelsChanged(QRect());
     emit changed();
@@ -165,7 +249,7 @@ void Editor::finish() {
 void Editor::cancel() {
     if (filling_)
         cancelIo();
-    shapeActive_ = false;
+    shapeActive_ = textActive_ = textDrawing_ = false;
     document.cancelStroke();
     emit pixelsChanged(QRect());
     emit changed();
@@ -173,7 +257,7 @@ void Editor::cancel() {
 void Editor::undo() {
     if (loading())
         return;
-    if (shapeActive_) {
+    if (shapeActive_ || textActive_) {
         cancel();
         return;
     }
@@ -184,7 +268,7 @@ void Editor::undo() {
     }
 }
 void Editor::redo() {
-    if (loading() || shapeActive_)
+    if (loading() || shapeActive_ || textActive_)
         return;
     finish();
     if (document.redo()) {
@@ -195,6 +279,7 @@ void Editor::redo() {
 
 Editor::Editor(QObject* parent) : QObject(parent) {
     connect(this, &Editor::settingsChanged, this, &Editor::refreshShape);
+    connect(this, &Editor::settingsChanged, this, &Editor::refreshText);
     connect(&fillWatcher_, &QFutureWatcher<openpaint::FillResult>::finished, this, [this] {
         const auto result = fillWatcher_.result();
         busy_ = filling_ = false;

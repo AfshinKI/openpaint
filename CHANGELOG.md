@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add inline text boxes with system fonts, style/alignment/background controls,
+  local text undo, explicit raster commit and guarded file transitions.
+
 - Expand Shapes to a 19-icon palette with curve bends, polygon point entry and
   Shift constraints. Undo cancels a pending shape without undoing earlier artwork.
 

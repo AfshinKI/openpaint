@@ -11,6 +11,20 @@
 class Editor : public QObject {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(bool textActive READ textActive NOTIFY changed)
+    Q_PROPERTY(bool textReady READ textReady NOTIFY changed)
+    Q_PROPERTY(QRect textRect READ textRect NOTIFY changed)
+    Q_PROPERTY(QString textDraft READ textDraft NOTIFY textDraftChanged)
+    Q_PROPERTY(QColor textColor READ textColor NOTIFY changed)
+    Q_PROPERTY(QColor textBackgroundColor READ textBackgroundColor NOTIFY changed)
+    Q_PROPERTY(QString textFamily MEMBER textFamily NOTIFY settingsChanged)
+    Q_PROPERTY(int textSize MEMBER textSize NOTIFY settingsChanged)
+    Q_PROPERTY(int textAlignment MEMBER textAlignment NOTIFY settingsChanged)
+    Q_PROPERTY(bool textBold MEMBER textBold NOTIFY settingsChanged)
+    Q_PROPERTY(bool textItalic MEMBER textItalic NOTIFY settingsChanged)
+    Q_PROPERTY(bool textUnderline MEMBER textUnderline NOTIFY settingsChanged)
+    Q_PROPERTY(bool textStrikeout MEMBER textStrikeout NOTIFY settingsChanged)
+    Q_PROPERTY(bool textBackground MEMBER textBackground NOTIFY settingsChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(bool filling READ filling NOTIFY changed)
     Q_PROPERTY(bool previewActive READ previewActive NOTIFY changed)
@@ -39,7 +53,7 @@ class Editor : public QObject {
     Q_PROPERTY(Tool tool READ tool WRITE setTool NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentEraser MEMBER transparentEraser NOTIFY settingsChanged)
   public:
-    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape };
+    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape, Text };
     Q_ENUM(Tool)
     Tool tool() const {
         return tool_;
@@ -73,10 +87,10 @@ class Editor : public QObject {
         return document.dirty() || document.active();
     }
     bool canUndo() const {
-        return document.canUndo() || shapeActive_;
+        return document.canUndo() || shapeActive_ || textActive_;
     }
     bool canRedo() const {
-        return document.canRedo() && !shapeActive_;
+        return document.canRedo() && !shapeActive_ && !textActive_;
     }
     QSize imageSize() const {
         return document.image().size();
@@ -84,12 +98,35 @@ class Editor : public QObject {
     const QImage& image() const {
         return document.image();
     }
+    const QImage& displayImage() const {
+        return textActive_ ? document.previewBase() : image();
+    }
+    bool textActive() const {
+        return textActive_;
+    }
+    bool textReady() const {
+        return textActive_ && !textDrawing_;
+    }
+    QRect textRect() const {
+        return textRect_;
+    }
+    QString textDraft() const {
+        return textDraft_;
+    }
+    QColor textColor() const {
+        return textSecondary_ ? secondary : primary;
+    }
+    QColor textBackgroundColor() const {
+        return textSecondary_ ? primary : secondary;
+    }
+    Q_INVOKABLE bool setTextDraft(const QString& text);
+    Q_INVOKABLE void setTextBounds(int x, int y, int width, int height);
     void begin(QPointF point, bool secondaryButton);
     void extend(QPointF point, bool constrain = false);
     void removeShapePoint();
     void endGesture();
     bool previewActive() const {
-        return shapeActive_;
+        return shapeActive_ || textActive_;
     }
     QPointF shapeStart() const {
         return shapeStart_;
@@ -98,6 +135,7 @@ class Editor : public QObject {
         return shapeEnd_;
     }
     Q_INVOKABLE void setShapeGeometry(qreal x1, qreal y1, qreal x2, qreal y2);
+    Q_INVOKABLE void commitPreview();
     Q_INVOKABLE void finish();
     Q_INVOKABLE void cancel();
     Q_INVOKABLE void undo();
@@ -106,8 +144,14 @@ class Editor : public QObject {
     int brushSize = 3, tolerance = 0, brushStyle = 0, opacity = 100;
     bool transparentEraser = false, shapeOutline = true, shapeFill = false;
     int shapeKind = 0, curveBend1 = 30, curveBend2 = -30;
+    QString textFamily = QStringLiteral("Sans Serif");
+    int textSize = 20, textAlignment = 0;
+    bool textBold = false, textItalic = false, textUnderline = false, textStrikeout = false,
+         textBackground = false;
   signals:
     void changed();
+    void textDraftChanged();
+    void textEditingReady();
     void errorChanged();
     void noticeChanged();
     void documentReplaced();
@@ -118,6 +162,11 @@ class Editor : public QObject {
   private:
     void fail(const QString& message);
     void refreshShape();
+    void refreshText();
+    bool textActive_ = false, textDrawing_ = false, textSecondary_ = false;
+    QRect textRect_;
+    QPointF textAnchor_;
+    QString textDraft_;
     QPointF shapeStart_, shapeEnd_;
     QList<QPointF> shapePoints_;
     bool shapeActive_ = false, shapeSecondary_ = false, shapeInputBlocked_ = false;
