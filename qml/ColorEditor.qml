@@ -9,22 +9,24 @@ PaintDialog {
     id: dialog
     objectName: "colorEditor"
     required property ColorPalette paletteStore
-    property color originalColor: "black"
     property string colorTarget: "primary"
     property int selectedSlot: -1
     signal colorChosen(color chosen)
     function begin(color, target: string) {
-        originalColor = color;
         colorTarget = target;
         selection.color = color;
         hexField.text = selection.hex;
         selectedSlot = -1;
         open();
     }
+    function addColor() {
+        if (paletteStore.add(selection.color))
+            selectedSlot = paletteStore.colors.length - 1;
+    }
     parent: Overlay.overlay
     anchors.centerIn: parent
-    width: Math.min(720, parent.width - 32)
-    title: colorTarget === "primary" ? qsTr("Edit primary color") : qsTr("Edit secondary color")
+    width: Math.min(664, parent.width - 32)
+    title: qsTr("Edit colors")
     modal: true
     closePolicy: Popup.CloseOnEscape
     onAccepted: colorChosen(selection.color)
@@ -40,245 +42,322 @@ PaintDialog {
         }
     }
     contentItem: ColumnLayout {
+        Accessible.name: dialog.colorTarget === "primary" ? qsTr("Edit primary color") : qsTr("Edit secondary color")
         spacing: 12
         RowLayout {
-            spacing: 24
-            ColorWheel {
-                id: wheel
-                objectName: "colorWheel"
+            spacing: 12
+            ColorSpectrum {
+                objectName: "colorSpectrum"
                 selection: selection
                 Layout.preferredWidth: 256
                 Layout.preferredHeight: 256
                 Accessible.role: Accessible.Pane
-                Accessible.name: qsTr("Hue ring and saturation/value square. Numeric controls are available alongside.")
+                Accessible.name: qsTr("Hue and saturation spectrum. Use the numeric controls for keyboard selection.")
+            }
+            Rectangle {
+                Layout.preferredWidth: 36
+                Layout.preferredHeight: 256
+                radius: 4
+                color: selection.color
+                border.color: Theme.divider
+                Accessible.role: Accessible.Indicator
+                Accessible.name: qsTr("Selected color %1").arg(selection.hex)
+            }
+            Slider {
+                id: brightness
+                objectName: "brightnessSlider"
+                orientation: Qt.Vertical
+                from: 0
+                to: 100
+                stepSize: 1
+                Keys.onPressed: function (event) {
+                    if (event.key === Qt.Key_Home || event.key === Qt.Key_End) {
+                        selection.setHsv(selection.hue, selection.saturation, event.key === Qt.Key_End ? 100 : 0);
+                        event.accepted = true;
+                    }
+                }
+                value: selection.value
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 256
+                Accessible.name: qsTr("Brightness, 0 to 100")
+                onMoved: selection.setHsv(selection.hue, selection.saturation, value)
+                background: Rectangle {
+                    x: (brightness.width - width) / 2
+                    y: brightness.topPadding
+                    width: 10
+                    height: brightness.availableHeight
+                    radius: 5
+                    gradient: Gradient {
+                        GradientStop {
+                            position: 0
+                            color: "white"
+                        }
+                        GradientStop {
+                            position: 1
+                            color: "black"
+                        }
+                    }
+                }
+                handle: Rectangle {
+                    x: (brightness.width - width) / 2
+                    y: brightness.topPadding + brightness.visualPosition * (brightness.availableHeight - height)
+                    width: 16
+                    height: 16
+                    radius: 8
+                    color: "white"
+                    border.width: 3
+                    border.color: brightness.visualFocus ? Theme.accent : Theme.divider
+                }
             }
             ColumnLayout {
-                spacing: 12
+                Layout.alignment: Qt.AlignTop
                 Layout.fillWidth: true
-                RowLayout {
-                    Label {
-                        text: qsTr("HEX")
-                        color: Theme.secondaryText
+                spacing: 10
+                TextField {
+                    id: hexField
+                    objectName: "hexField"
+                    Layout.preferredWidth: 140
+                    implicitHeight: 32
+                    maximumLength: 7
+                    selectByMouse: true
+                    color: Theme.text
+                    validator: RegularExpressionValidator {
+                        regularExpression: /#?[0-9a-fA-F]{6}/
                     }
-                    TextField {
-                        id: hexField
-                        objectName: "hexField"
-                        Layout.fillWidth: true
-                        maximumLength: 7
-                        selectByMouse: true
-                        validator: RegularExpressionValidator {
-                            regularExpression: /#?[0-9a-fA-F]{6}/
-                        }
-                        Accessible.name: qsTr("Hexadecimal color")
-                        onTextEdited: if (acceptableInput)
-                            selection.setHex(text)
+                    Accessible.name: qsTr("Hexadecimal color")
+                    onTextEdited: if (acceptableInput)
+                        selection.setHex(text)
+                    background: Rectangle {
+                        radius: Theme.controlRadius
+                        color: Theme.hover
+                        border.width: hexField.activeFocus ? 2 : 1
+                        border.color: hexField.activeFocus ? Theme.accent : Theme.divider
+                    }
+                }
+                ComboBox {
+                    id: colorMode
+                    objectName: "colorMode"
+                    model: ["RGB", "HSV"]
+                    implicitHeight: 32
+                    Layout.preferredWidth: 140
+                    Accessible.name: qsTr("Color model")
+                    palette.buttonText: Theme.text
+                    palette.text: Theme.text
+                    background: Rectangle {
+                        radius: Theme.controlRadius
+                        color: Theme.hover
+                        border.color: colorMode.visualFocus ? Theme.accent : Theme.divider
+                    }
+                    indicator: Label {
+                        x: colorMode.width - width - 12
+                        y: (colorMode.height - height) / 2
+                        text: "⌄"
+                        color: Theme.text
+                    }
+                    delegate: PaintMenuItem {
+                        required property int index
+                        highlighted: colorMode.highlightedIndex === index
+                        required property string modelData
+                        text: modelData
+                        width: colorMode.popup.availableWidth
+                    }
+                    popup: Popup {
+                        padding: 6
+                        implicitHeight: contentItem.implicitHeight + topPadding + bottomPadding
                         background: Rectangle {
-                            radius: Theme.controlRadius
+                            radius: Theme.surfaceRadius
                             color: Theme.panel
-                            border.width: hexField.activeFocus ? 2 : 1
-                            border.color: hexField.activeFocus ? Theme.accent : Theme.divider
+                            border.color: Theme.divider
+                        }
+                        y: colorMode.height
+                        width: colorMode.width
+                        contentItem: ListView {
+                            implicitHeight: contentHeight
+                            model: colorMode.popup.visible ? colorMode.delegateModel : null
+                            currentIndex: colorMode.highlightedIndex
                         }
                     }
                 }
-                RowLayout {
-                    spacing: 8
-                    ColumnLayout {
-                        Label {
-                            text: qsTr("Red")
-                            color: Theme.secondaryText
-                        }
+                Repeater {
+                    model: 3
+                    delegate: RowLayout {
+                        id: channel
+                        required property int index
+                        readonly property bool rgb: colorMode.currentIndex === 0
+                        readonly property string channelName: rgb ? [qsTr("Red"), qsTr("Green"), qsTr("Blue")][index] : [qsTr("Hue °"), qsTr("Saturation %"), qsTr("Value %")][index]
                         PaintSpinBox {
-                            objectName: "redInput"
+                            id: channelInput
+                            objectName: "channelInput" + channel.index
+                            implicitWidth: 120
+                            up.indicator: Item {}
+                            down.indicator: Item {}
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                color: Theme.hover
+                                border.color: channelInput.activeFocus ? Theme.accent : Theme.divider
+                            }
+                            implicitHeight: 32
                             from: 0
-                            to: 255
+                            to: channel.rgb ? 255 : channel.index === 0 ? 359 : 100
                             editable: true
-                            value: selection.red
-                            onValueModified: selection.setRgb(value, selection.green, selection.blue)
-                            Accessible.name: qsTr("Red, 0 to 255")
+                            value: channel.rgb ? [selection.red, selection.green, selection.blue][channel.index] : Math.round([selection.hue, selection.saturation, selection.value][channel.index]) % (channel.index === 0 ? 360 : 101)
+                            Accessible.name: channel.channelName
+                            onValueModified: {
+                                if (channel.rgb) {
+                                    let values = [selection.red, selection.green, selection.blue];
+                                    values[channel.index] = value;
+                                    selection.setRgb(values[0], values[1], values[2]);
+                                } else {
+                                    let values = [selection.hue, selection.saturation, selection.value];
+                                    values[channel.index] = value;
+                                    selection.setHsv(values[0], values[1], values[2]);
+                                }
+                            }
                         }
-                    }
-                    ColumnLayout {
                         Label {
-                            text: qsTr("Green")
-                            color: Theme.secondaryText
+                            text: channel.channelName
+                            color: Theme.text
+                            Layout.fillWidth: true
                         }
-                        PaintSpinBox {
-                            from: 0
-                            to: 255
-                            editable: true
-                            value: selection.green
-                            onValueModified: selection.setRgb(selection.red, value, selection.blue)
-                            Accessible.name: qsTr("Green, 0 to 255")
-                        }
-                    }
-                    ColumnLayout {
-                        Label {
-                            text: qsTr("Blue")
-                            color: Theme.secondaryText
-                        }
-                        PaintSpinBox {
-                            from: 0
-                            to: 255
-                            editable: true
-                            value: selection.blue
-                            onValueModified: selection.setRgb(selection.red, selection.green, value)
-                            Accessible.name: qsTr("Blue, 0 to 255")
-                        }
-                    }
-                }
-                RowLayout {
-                    spacing: 8
-                    ColumnLayout {
-                        Label {
-                            text: qsTr("Hue °")
-                            color: Theme.secondaryText
-                        }
-                        PaintSpinBox {
-                            from: 0
-                            to: 359
-                            editable: true
-                            value: Math.round(selection.hue) % 360
-                            onValueModified: selection.setHsv(value, selection.saturation, selection.value)
-                            Accessible.name: qsTr("Hue in degrees")
-                        }
-                    }
-                    ColumnLayout {
-                        Label {
-                            text: qsTr("Saturation %")
-                            color: Theme.secondaryText
-                        }
-                        PaintSpinBox {
-                            from: 0
-                            to: 100
-                            editable: true
-                            value: Math.round(selection.saturation)
-                            onValueModified: selection.setHsv(selection.hue, value, selection.value)
-                            Accessible.name: qsTr("Saturation percent")
-                        }
-                    }
-                    ColumnLayout {
-                        Label {
-                            text: qsTr("Value %")
-                            color: Theme.secondaryText
-                        }
-                        PaintSpinBox {
-                            from: 0
-                            to: 100
-                            editable: true
-                            value: Math.round(selection.value)
-                            onValueModified: selection.setHsv(selection.hue, selection.saturation, value)
-                            Accessible.name: qsTr("Value percent")
-                        }
-                    }
-                }
-                RowLayout {
-                    spacing: 12
-                    Rectangle {
-                        implicitWidth: 64
-                        implicitHeight: 36
-                        radius: Theme.controlRadius
-                        color: dialog.originalColor
-                        border.color: Theme.divider
-                    }
-                    Label {
-                        text: qsTr("Original")
-                        color: Theme.secondaryText
-                    }
-                    Rectangle {
-                        implicitWidth: 64
-                        implicitHeight: 36
-                        radius: Theme.controlRadius
-                        color: selection.color
-                        border.color: Theme.divider
-                    }
-                    Label {
-                        text: qsTr("New")
-                        color: Theme.secondaryText
                     }
                 }
             }
-        }
-        Rectangle {
-            Layout.fillWidth: true
-            implicitHeight: 1
-            color: Theme.divider
-        }
-        Label {
-            text: qsTr("Custom colors · %1 / 10").arg(dialog.paletteStore.colors.length)
-            font.bold: true
-            color: Theme.text
         }
         RowLayout {
-            spacing: 4
-            Repeater {
-                model: dialog.paletteStore.colors
-                delegate: ColorSwatch {
-                    required property string modelData
-                    required property int index
-                    swatchColor: modelData
-                    checked: dialog.selectedSlot === index
-                    text: qsTr("Custom color %1: %2").arg(index + 1).arg(modelData)
-                    onClicked: {
-                        dialog.selectedSlot = index;
-                        selection.color = modelData;
+            spacing: 24
+            ColumnLayout {
+                spacing: 8
+                Label {
+                    text: qsTr("Basic colors")
+                    color: Theme.text
+                    Layout.preferredHeight: 32
+                    verticalAlignment: Text.AlignVCenter
+                }
+                GridLayout {
+                    columns: 12
+                    columnSpacing: 0
+                    rowSpacing: 2
+                    Repeater {
+                        model: ["#f08080", "#ef3030", "#774444", "#994444", "#641414", "#a6f5f5", "#72efef", "#3388ee", "#2445cc", "#10109c", "#224477", "#151580", "#ffff99", "#ffff22", "#ffaa55", "#e07a33", "#995b22", "#8b852f", "#9278ed", "#5233bf", "#249cbb", "#103b55", "#144238", "#53105b", "#b3ff88", "#7cfa48", "#55b51e", "#22e435", "#57ad29", "#809b67", "#efa0ef", "#eb69d3", "#e323e3", "#a513ad", "#8880bb", "#da3589", "#357e25", "#347867", "#428a95", "#396c71", "#18391b", "#3c4526", "#73247a", "#502094", "#000000", "#888888", "#cccccc", "#ffffff"]
+                        delegate: ColorSwatch {
+                            required property string modelData
+                            objectName: "basicDialogSwatch"
+                            implicitWidth: 30
+                            implicitHeight: 30
+                            diameter: 20
+                            swatchColor: modelData
+                            checked: selection.hex.toLowerCase() === modelData
+                            onClicked: selection.color = modelData
+                        }
                     }
                 }
             }
-            Label {
-                visible: dialog.paletteStore.colors.length === 0
-                text: qsTr("Add colors here to keep them for your next drawing.")
-                color: Theme.secondaryText
+            ColumnLayout {
+                Layout.maximumWidth: 180
+                spacing: 8
+                RowLayout {
+                    Label {
+                        text: qsTr("Custom colors")
+                        color: Theme.text
+                        Layout.fillWidth: true
+                    }
+                    PaintButton {
+                        objectName: "addCustomColor"
+                        text: "+"
+                        implicitWidth: 32
+                        implicitHeight: 32
+                        Accessible.name: qsTr("Add custom color")
+                        enabled: dialog.paletteStore.colors.length < 24 && hexField.acceptableInput
+                        onClicked: dialog.addColor()
+                    }
+                    PaintButton {
+                        id: managePalette
+                        text: "⋯"
+                        implicitWidth: 28
+                        implicitHeight: 32
+                        Accessible.name: qsTr("Manage custom colors")
+                        onClicked: paletteMenu.open()
+                        PaintMenu {
+                            id: paletteMenu
+                            y: managePalette.height
+                            PaintMenuItem {
+                                text: qsTr("Replace selected")
+                                enabled: dialog.selectedSlot >= 0 && hexField.acceptableInput
+                                onTriggered: dialog.paletteStore.replace(dialog.selectedSlot, selection.color)
+                            }
+                            PaintMenuItem {
+                                text: qsTr("Remove selected")
+                                enabled: dialog.selectedSlot >= 0
+                                onTriggered: if (dialog.paletteStore.remove(dialog.selectedSlot))
+                                    dialog.selectedSlot = -1
+                            }
+                            PaintMenuItem {
+                                text: qsTr("Clear all")
+                                enabled: dialog.paletteStore.colors.length > 0
+                                onTriggered: if (dialog.paletteStore.clear())
+                                    dialog.selectedSlot = -1
+                            }
+                        }
+                    }
+                }
+                GridLayout {
+                    columns: 6
+                    columnSpacing: 2
+                    rowSpacing: 2
+                    Repeater {
+                        model: 24
+                        delegate: ColorSwatch {
+                            required property int index
+                            objectName: "customDialogSwatch"
+                            implicitWidth: 28
+                            implicitHeight: 30
+                            diameter: 20
+                            empty: index >= dialog.paletteStore.colors.length
+                            swatchColor: empty ? "transparent" : dialog.paletteStore.colors[index]
+                            checked: !empty && dialog.selectedSlot === index
+                            text: empty ? qsTr("Empty custom slot %1. Save current color in next free slot.").arg(index + 1) : qsTr("Custom color %1: %2").arg(index + 1).arg(swatchColor.toString())
+                            onClicked: {
+                                if (empty) {
+                                    if (hexField.acceptableInput)
+                                        dialog.addColor();
+                                } else {
+                                    dialog.selectedSlot = index;
+                                    selection.color = swatchColor;
+                                }
+                            }
+                        }
+                    }
+                }
             }
             Item {
                 Layout.fillWidth: true
             }
         }
-        RowLayout {
-            PaintButton {
-                objectName: "addCustomColor"
-                text: qsTr("Add color")
-                enabled: dialog.paletteStore.colors.length < 10 && hexField.acceptableInput
-                onClicked: if (dialog.paletteStore.add(selection.color))
-                    dialog.selectedSlot = dialog.paletteStore.colors.length - 1
-            }
-            PaintButton {
-                text: qsTr("Replace selected")
-                enabled: dialog.selectedSlot >= 0 && hexField.acceptableInput
-                onClicked: dialog.paletteStore.replace(dialog.selectedSlot, selection.color)
-            }
-            PaintButton {
-                text: qsTr("Remove selected")
-                enabled: dialog.selectedSlot >= 0
-                onClicked: {
-                    dialog.paletteStore.remove(dialog.selectedSlot);
-                    dialog.selectedSlot = -1;
-                }
-            }
-            PaintButton {
-                text: qsTr("Clear all")
-                enabled: dialog.paletteStore.colors.length > 0
-                onClicked: {
-                    dialog.paletteStore.clear();
-                    dialog.selectedSlot = -1;
-                }
-            }
-        }
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            text: dialog.paletteStore.error.length ? dialog.paletteStore.error : qsTr("Palette buttons save locally immediately. Cancel only discards the drawing-color change.")
+            text: dialog.paletteStore.error.length ? dialog.paletteStore.error : qsTr("Custom colors save immediately. Cancel discards only the drawing-color change.")
             color: Theme.secondaryText
         }
     }
     footer: DialogButtonBox {
-        alignment: Qt.AlignRight
         padding: 12
         spacing: 8
-        background: Item {}
+        background: Rectangle {
+            color: Theme.window
+            radius: Theme.dialogRadius
+        }
         PaintButton {
+            id: acceptButton
             objectName: "acceptColor"
             text: qsTr("OK")
             enabled: hexField.acceptableInput
+            palette.buttonText: Theme.accentText
+            background: Rectangle {
+                radius: Theme.controlRadius
+                color: acceptButton.down ? Theme.pressed : Theme.accent
+                border.color: acceptButton.visualFocus ? Theme.text : Theme.accent
+            }
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
         PaintButton {

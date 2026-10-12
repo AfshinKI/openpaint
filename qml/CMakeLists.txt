@@ -8,7 +8,7 @@ qt_add_qml_module(openpaint_ui STATIC
         ../src/render/CanvasItem.h ../src/render/CanvasItem.cpp
         ../src/color/ColorSelection.h ../src/color/ColorSelection.cpp
         ../src/color/ColorPalette.h ../src/color/ColorPalette.cpp
-        ../src/color/ColorWheel.h ../src/color/ColorWheel.cpp
+        ../src/color/ColorSpectrum.h ../src/color/ColorSpectrum.cpp
     QML_FILES ColorEditor.qml ColorSwatch.qml Main.qml Theme.qml PaintButton.qml IconButton.qml PaintMenu.qml PaintMenuItem.qml PaintDialog.qml PaintSpinBox.qml PaintCheckBox.qml
     RESOURCES icons/save.svg icons/palette.svg icons/redo.svg icons/fit.svg icons/undo.svg icons/swap.svg icons/pencil.svg icons/zoom-in.svg icons/zoom-out.svg icons/eraser.svg
 )

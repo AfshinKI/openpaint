@@ -266,7 +266,8 @@ ApplicationWindow {
         }
     }
     header: ToolBar {
-        height: 144
+        objectName: "mainToolbar"
+        height: 112
         background: Rectangle {
             anchors.fill: parent
             anchors.margins: 4
@@ -368,49 +369,25 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                RowLayout {
-                    PaintButton {
-                        id: primaryButton
-                        objectName: "primaryButton"
-                        text: qsTr("Primary")
-                        implicitWidth: 72
-                        onClicked: {
-                            colorDialog.begin(editor.primary, "primary");
-                        }
-                        background: Rectangle {
-                            color: editor.primary
-                            radius: Theme.controlRadius
-                            border.color: primaryButton.activeFocus ? Theme.accent : Theme.divider
-                            border.width: 2
-                        }
-                        contentItem: Label {
-                            text: primaryButton.text
-                            color: editor.primary.hslLightness > 0.5 ? "black" : "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        Accessible.name: qsTr("Choose primary color")
-                    }
-                    IconButton {
-                        symbol: "swap"
-                        text: qsTr("Swap")
-                        onClicked: {
-                            const old = editor.primary;
-                            editor.primary = editor.secondary;
-                            editor.secondary = old;
-                        }
-                        Accessible.name: qsTr("Swap primary and secondary colors")
-                    }
-                    ColorSwatch {
-                        objectName: "secondaryButton"
-                        swatchColor: editor.secondary
-                        text: qsTr("Edit secondary color · right-click to draw")
-                        onClicked: colorDialog.begin(editor.secondary, "secondary")
-                    }
+                spacing: 2
+                ColorSwatch {
+                    objectName: "primaryButton"
+                    implicitWidth: 32
+                    implicitHeight: 32
+                    diameter: 26
+                    swatchColor: editor.primary
+                    checked: true
+                    text: qsTr("Edit primary color")
+                    onClicked: colorDialog.begin(editor.primary, "primary")
                 }
-                Label {
-                    text: qsTr("Primary / secondary")
-                    color: Theme.secondaryText
+                ColorSwatch {
+                    objectName: "secondaryButton"
+                    implicitWidth: 32
+                    implicitHeight: 32
+                    diameter: 24
+                    swatchColor: editor.secondary
+                    text: qsTr("Edit secondary color · right-click to draw")
+                    onClicked: colorDialog.begin(editor.secondary, "secondary")
                 }
             }
             ColumnLayout {
@@ -432,31 +409,44 @@ ApplicationWindow {
                 RowLayout {
                     spacing: 0
                     Repeater {
-                        model: customPalette.colors
+                        model: 10
                         delegate: ColorSwatch {
                             objectName: "customToolbarSwatch"
-                            required property string modelData
-                            swatchColor: modelData
-                            text: qsTr("Custom color %1").arg(modelData)
-                            onClicked: editor.primary = modelData
+                            required property int index
+                            empty: index >= customPalette.colors.length
+                            swatchColor: empty ? "transparent" : customPalette.colors[index]
+                            checked: !empty && editor.primary.toString() === swatchColor.toString()
+                            text: empty ? qsTr("Empty custom slot %1 · edit colors").arg(index + 1) : qsTr("Custom color %1").arg(swatchColor.toString())
+                            onClicked: {
+                                if (empty)
+                                    colorDialog.begin(editor.primary, "primary");
+                                else
+                                    editor.primary = swatchColor;
+                            }
                         }
-                    }
-                    IconButton {
-                        visible: customPalette.colors.length < 10
-                        symbol: "palette"
-                        text: qsTr("Edit and save custom colors")
-                        implicitWidth: 32
-                        implicitHeight: 32
-                        onClicked: colorDialog.begin(editor.primary, "primary")
-                    }
-                    Item {
-                        Layout.fillWidth: true
                     }
                 }
                 Label {
                     text: qsTr("Colors")
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
+                }
+            }
+            ColumnLayout {
+                IconButton {
+                    symbol: "palette"
+                    icon.color: "transparent"
+                    text: qsTr("Edit colors")
+                    onClicked: colorDialog.begin(editor.primary, "primary")
+                }
+                IconButton {
+                    symbol: "swap"
+                    text: qsTr("Swap primary and secondary colors")
+                    onClicked: {
+                        const old = editor.primary;
+                        editor.primary = editor.secondary;
+                        editor.secondary = old;
+                    }
                 }
             }
             Item {

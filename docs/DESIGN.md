@@ -41,7 +41,8 @@ screen. Files, settings, and update controls are available without an account.
 Use original, consistent 20/24-unit vector icons with accessible text labels and
 tooltips. System UI font; no bundled proprietary fonts. Keep controls compact
 without making them difficult to hit. Spacing uses 4, 8, 12, 16, 24, and 32 logical
-pixels. Standard targets are at least 32×32; touch mode targets 44×44 where possible.
+pixels. Standard targets are at least 32×32; dense color palettes may use 24×24
+with keyboard focus and tooltips. Touch mode targets 44×44 where possible.
 Panels use 8-unit corner radii; avoid decorative shadows inside the editor.
 
 | Token | Light | Dark |
@@ -155,17 +156,27 @@ an observed, versioned comparison. The layout above is the initial design contra
 ## Required polish before additional tools
 
 The shared UI foundation uses original
-24-unit toolbar icons, hover tooltips with shortcut labels, and a common rounded
+20-unit toolbar icons inside 32 px buttons, hover tooltips with shortcut labels, and a common rounded
 control family: 6 px buttons/inputs, 8 px toolbar/menu surfaces, 12 px dialogs.
-Circular swatches retain at least 32 px hit areas. Rounded menu rows are inset;
+Toolbar swatches use 16 px circles inside 24 px hit areas. Rounded menu rows are inset;
 focus must remain visible independently of hover or selection. Native window
 frames and file dialogs follow the desktop. The artwork itself remains rectangular.
 
-Use the app-owned color chooser with a hue ring and saturation/value
-area, synchronized HEX/RGB/HSV inputs, original/current previews and explicit
-accept/cancel. Both primary and secondary colors are editable. Ten local custom
+Use the app-owned color chooser with a rectangular hue/saturation spectrum,
+vertical brightness slider and color preview, HEX input and switchable RGB/HSV
+fields, basic/custom grids and explicit accept/cancel. Both primary and secondary
+colors are editable. Twenty-four local custom
 swatches support add, replace, remove and clear. These explicit palette actions save
 immediately, even if the drawing-color draft is later canceled; the dialog explains
 this distinction. Palette changes are settings, not undoable
 artwork edits, and never dirty the document. See the [UI polish plan](plans/0004-ui-polish.md)
 for the two focused implementation slices and acceptance cases.
+
+The [reference layout refinement](plans/0005-reference-color-layout.md) supersedes
+the earlier inferred hue-ring design. Toolbar height is 112 logical pixels;
+primary/secondary circles stack beside two rows of basic colors and a third row
+of ten custom slots. Empty slots remain visible as hollow circles and open the
+editor. The color editor always exposes all 24 custom slots. Plus/empty-slot
+activation appends the draft to the next free slot; Manage custom colors offers
+replace/remove/clear. Removal compacts the slots. Native window frames remain
+under desktop control. User-provided reference screenshots are not redistributed.

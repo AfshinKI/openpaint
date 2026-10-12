@@ -1,6 +1,6 @@
 # Feature: Paint-inspired visual foundation and custom colors
 
-Status: implemented; merge requires all CI jobs to pass
+Status: merged in PRs #7 and #8; reference layout superseded by [plan 0005](0005-reference-color-layout.md)
 Feature IDs: F01, F05, F26
 
 ## Requirements

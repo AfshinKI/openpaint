@@ -30,7 +30,7 @@ ColorPalette::ColorPalette(QObject* parent, const QString& path) : QObject(paren
     const auto object = data.object();
     const auto entries = object.value("colors");
     if (object.value("version").toInt() != 1 || !entries.isArray() ||
-        entries.toArray().size() > 10) {
+        entries.toArray().size() > 24) {
         fail(tr("Custom colors are invalid. You can save a new palette."));
         return;
     }
@@ -69,8 +69,8 @@ bool ColorPalette::write(const QStringList& colors) {
     return true;
 }
 bool ColorPalette::add(QColor color) {
-    if (!color.isValid() || colors_.size() >= 10)
-        return fail(tr("Choose a valid color. At most ten custom colors can be saved."));
+    if (!color.isValid() || colors_.size() >= 24)
+        return fail(tr("Choose a valid color. At most 24 custom colors can be saved."));
     auto next = colors_;
     next.append(color.name());
     return write(next);

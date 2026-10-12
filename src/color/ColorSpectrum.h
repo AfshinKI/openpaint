@@ -4,18 +4,17 @@
 #include <QPointer>
 #include <QQuickPaintedItem>
 
-class ColorWheel : public QQuickPaintedItem {
+class ColorSpectrum : public QQuickPaintedItem {
     Q_OBJECT
     QML_ELEMENT
     Q_PROPERTY(ColorSelection* selection READ selection WRITE setSelection NOTIFY selectionChanged)
   public:
-    explicit ColorWheel(QQuickItem* parent = nullptr);
+    explicit ColorSpectrum(QQuickItem* parent = nullptr);
     ColorSelection* selection() const {
         return selection_;
     }
     void setSelection(ColorSelection* selection);
     void paint(QPainter* painter) override;
-    QRectF svRect() const;
 
   protected:
     void mousePressEvent(QMouseEvent* event) override;
@@ -28,5 +27,5 @@ class ColorWheel : public QQuickPaintedItem {
   private:
     void selectAt(QPointF point);
     QPointer<ColorSelection> selection_;
-    enum class Drag { None, Hue, SV } drag_ = Drag::None;
+    bool dragging_ = false;
 };

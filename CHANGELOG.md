@@ -4,8 +4,10 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
-- Add a rounded hue-ring color editor with synchronized HEX/RGB/HSV controls,
-  primary/secondary previews and ten locally saved custom swatches.
+- Refine the color editor from supplied visual references: rectangular spectrum,
+  brightness slider, RGB/HSV mode selector, basic grid and 24 custom slots. Show
+  ten hollow custom slots in the compact toolbar, with smaller icons and stacked
+  primary/secondary circles. Existing saved palettes remain compatible.
 
 - Replace temporary text toolbar actions with original icons and shared rounded
   buttons, inputs, menus, panels and dialogs; establish the custom-color UI gate.
