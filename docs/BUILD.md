@@ -100,7 +100,9 @@ QT_QPA_PLATFORM=wayland ./build/dev/openpaint_shell_tests
 
 X11 with the default renderer at 125% scale and offscreen/software have been
 checked locally. These
-tests do not establish Wayland, GPU rendering, Orca, or packaged-app support.
+tests do not establish Wayland, Orca or packaged-app support. The
+[M1 baseline](plans/0009-m1-closure.md) additionally records actual GNOME/X11
+OpenGL, keyboard and unpackaged portal validation on one machine.
 
 For repeatable X11 input checks without live-desktop pointer interference, install
 `xvfb` and `xauth` using the distribution package manager, then run:
@@ -165,6 +167,13 @@ colors normalize to sRGB; EXIF orientation is normalized; animated PNG is reject
 crash, layers, shapes, text, selection, packaged downloads and updates are not yet
 available. The developer build is useful for basic drawings, not a stable release.
 
-Controller/codec tests verify snapshot saves, errors and lossless reopen. Optional
-`OPENPAINT_BENCHMARK=1` enables a 2048px render probe in the shell test. See the
-[PNG lifecycle plan](plans/0003-png-file-workflow.md) for evidence and open gates.
+Controller/codec tests verify snapshot saves, errors and lossless reopen. After a
+Release build, measure startup, strokes, viewport updates, worker-save responsiveness
+and memory:
+
+```sh
+QT_QPA_PLATFORM=xcb QSG_RHI_BACKEND=opengl QT_SCALE_FACTOR=1 python3 tools/benchmark_m1.py
+```
+
+The probe opens short-lived test windows and uses temporary generated artwork. See [M1 closure](plans/0009-m1-closure.md)
+for the measured baseline, target misses and remaining later gates.

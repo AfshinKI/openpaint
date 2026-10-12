@@ -39,7 +39,8 @@ tests. Prefer public control interfaces and stable test IDs to coordinate clicki
 
 ## Initial limits and performance targets
 
-These are targets, not measured results. At M1, record a reproducible machine
+These are targets. [M1 measurements and limitations](plans/0009-m1-closure.md)
+record actual results, including the strict frame-budget miss. At M1, record a reproducible machine
 profile (CPU, RAM, GPU/driver, compositor, Qt version, scale) without serials,
 private names, or paths. Baseline: contemporary 4-core x86_64, 8 GiB RAM, integrated
 graphics, SSD, 1920×1080 display at 60 Hz. Name exact hardware when measured.

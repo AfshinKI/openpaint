@@ -1,6 +1,7 @@
 # Feature checklist and reference audit
 
 Audit date: 2026-10-12. **The first single-layer drawing canvas is implemented.**
+The M1 source-editor checkpoint is complete; see [validation and limits](plans/0009-m1-closure.md).
 Safe PNG files are implemented; remaining capabilities stay planned.
 The reference is modern Windows 11 Paint, including separately identified preview
 features. This is a research baseline, not an exhaustive test of today's installed

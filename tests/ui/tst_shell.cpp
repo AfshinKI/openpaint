@@ -3,6 +3,7 @@
 #include "color/ColorSpectrum.h"
 #include "render/CanvasItem.h"
 #include <QAccessible>
+#include <QColorSpace>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QGuiApplication>
@@ -11,12 +12,18 @@
 #include <QQmlExpression>
 #include <QQuickStyle>
 #include <QQuickWindow>
+#include <QScopeGuard>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QTimer>
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <memory>
+#include <sys/resource.h>
+
+static QElapsedTimer startupTimer;
 
 static QList<QQuickItem*> visualItems(QQuickItem* root, const QString& name) {
     QList<QQuickItem*> result;
@@ -49,6 +56,8 @@ class ShellTest : public QObject {
         QVERIFY(QTest::qWaitForWindowActive(window));
         QGuiApplication::sync();
         QVERIFY(!window->grabWindow().isNull());
+        if (qEnvironmentVariableIsSet("OPENPAINT_BENCHMARK_STARTUP"))
+            qInfo("M1 startup_ms %.3f", startupTimer.nsecsElapsed() / 1000000.0);
     }
 
     void cleanup() {
@@ -577,31 +586,114 @@ class ShellTest : public QObject {
             return;
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         struct BenchmarkEditor : Editor {
-            BenchmarkEditor() {
-                QImage image(2048, 2048, QImage::Format_ARGB32_Premultiplied);
+            void resetSize(int size, bool noise = false) {
+                QImage image(size, size, QImage::Format_ARGB32_Premultiplied);
                 image.fill(Qt::white);
+                image.setColorSpace(QColorSpace::SRgb);
+                quint32 seed = 42;
+                if (noise)
+                    for (int y = 0; y < size; ++y) {
+                        auto* row = reinterpret_cast<QRgb*>(image.scanLine(y));
+                        for (int x = 0; x < size; ++x) {
+                            seed = seed * 1664525U + 1013904223U;
+                            row[x] = 0xff000000U | (seed & 0xffffffU);
+                        }
+                    }
                 document.reset(image);
             }
-        } benchmarkEditor;
-        auto* previousEditor = canvas->editor();
-        canvas->setEditor(&benchmarkEditor);
-        QList<double> timings;
-        benchmarkEditor.begin({100, 100}, false);
-        for (int i = 0; i < 65; ++i) {
-            QSignalSpy frame(window, &QQuickWindow::frameSwapped);
-            QElapsedTimer timer;
-            timer.start();
-            benchmarkEditor.extend({100.0 + i * 20, 100.0 + i * 10});
-            window->requestUpdate();
-            QVERIFY(frame.wait(1000));
-            if (i >= 5)
-                timings.append(timer.nsecsElapsed() / 1000000.0);
+            qsizetype historyBytes() const {
+                return document.historyBytes();
+            }
+        } benchmark;
+        benchmark.resetSize(2048);
+        auto* previous = canvas->editor();
+        canvas->setEditor(&benchmark);
+        const auto restore = qScopeGuard([&] { canvas->setEditor(previous); });
+        auto report = [](const char* name, QList<double> values) {
+            std::sort(values.begin(), values.end());
+            const auto p95 = qsizetype(std::ceil(values.size() * 0.95)) - 1;
+            qInfo("M1 %s p50_ms %.3f p95_ms %.3f max_ms %.3f samples %lld", name,
+                  values[values.size() / 2], values[p95], values.last(), qlonglong(values.size()));
+        };
+        auto measure = [&](const std::function<void(int)>& operation, QList<double>& samples,
+                           QList<double>& intervals) {
+            QElapsedTimer clock;
+            clock.start();
+            double lastFrame = 0;
+            for (int i = 0; i < 65; ++i) {
+                QSignalSpy frame(window, &QQuickWindow::frameSwapped);
+                QElapsedTimer timer;
+                timer.start();
+                operation(i);
+                window->requestUpdate();
+                if (!frame.wait(1000))
+                    return false;
+                const double now = clock.nsecsElapsed() / 1000000.0;
+                if (i >= 5) {
+                    samples.append(timer.nsecsElapsed() / 1000000.0);
+                    intervals.append(now - lastFrame);
+                }
+                lastFrame = now;
+            }
+            return true;
+        };
+        QList<double> samples, intervals;
+        benchmark.begin({100, 100}, false);
+        QVERIFY(measure([&](int i) { benchmark.extend({100.0 + i * 20, 100.0 + i * 10}); }, samples,
+                        intervals));
+        benchmark.finish();
+        report("stroke_update_to_frame", samples);
+        report("stroke_frame_interval", intervals);
+        benchmark.resetSize(4096, true);
+        canvas->fit();
+        samples.clear();
+        intervals.clear();
+        QVERIFY(
+            measure([&](int i) { canvas->zoomBy(i % 2 ? 1.01 : 1.0 / 1.01); }, samples, intervals));
+        report("viewport_update_to_frame", samples);
+        report("viewport_frame_interval", intervals);
+        // Four large commands exercise trimming at the default 256 MiB budget.
+        qsizetype peakHistory = 0;
+        for (int i = 0; i < 4; ++i) {
+            benchmark.primary = i % 2 ? Qt::red : Qt::blue;
+            benchmark.begin({0, 0}, false);
+            benchmark.extend({4095, 4095});
+            benchmark.finish();
+            QVERIFY(benchmark.historyBytes() <= 256 * 1024 * 1024);
+            peakHistory = std::max(peakHistory, benchmark.historyBytes());
         }
-        benchmarkEditor.finish();
-        std::sort(timings.begin(), timings.end());
-        qInfo("2048px sample-to-frame p50 %.2f ms, p95 %.2f ms (60 samples)", timings[30],
-              timings[56]);
-        canvas->setEditor(previousEditor);
+        QTemporaryDir dir;
+        const auto path = dir.filePath("benchmark.png");
+        const auto snapshot = benchmark.image();
+        QList<double> heartbeats;
+        QElapsedTimer elapsed;
+        elapsed.start();
+        double last = 0;
+        QTimer heartbeat;
+        heartbeat.setInterval(5);
+        connect(&heartbeat, &QTimer::timeout, window, [&] {
+            const auto now = elapsed.nsecsElapsed() / 1000000.0;
+            heartbeats.append(now - last);
+            last = now;
+        });
+        heartbeat.start();
+        benchmark.saveFile(QUrl::fromLocalFile(path));
+        QVERIFY(benchmark.busy());
+        benchmark.begin({200, 300}, false);
+        benchmark.finish();
+        QTRY_VERIFY_WITH_TIMEOUT(!benchmark.busy(), 30000);
+        heartbeat.stop();
+        QVERIFY(benchmark.dirty());
+        QVERIFY(heartbeats.size() >= 30);
+        report("save_gui_heartbeat", heartbeats);
+        qInfo("M1 save_elapsed_ms %.3f", elapsed.nsecsElapsed() / 1000000.0);
+        const auto loaded = openpaint::loadPng(path);
+        QVERIFY2(loaded.ok(), qPrintable(loaded.error));
+        QCOMPARE(loaded.image, snapshot);
+        rusage usage{};
+        QVERIFY(getrusage(RUSAGE_SELF, &usage) == 0);
+        qInfo("M1 peak_rss_mib %.3f peak_history_mib %.3f", usage.ru_maxrss / 1024.0,
+              peakHistory / (1024.0 * 1024.0));
     }
 
     void quitClosesWindow() {
@@ -677,6 +769,7 @@ class ShellTest : public QObject {
 };
 
 int main(int argc, char* argv[]) {
+    startupTimer.start();
     QTemporaryDir settings;
     if (!settings.isValid())
         return 1;
