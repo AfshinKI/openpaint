@@ -21,7 +21,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F02 | Pencil, eraser, basic brush, sizes | R1 | M1 | Implemented: round pencil, opaque/transparent eraser, 1–128 px size; mouse gesture/edge regression coverage in [plan 0006](plans/0006-canvas-gesture-lifecycle.md); advanced brushes pending. |
 | F03 | Additional brush styles, stroke opacity | R1, R2; nine-style inventory in the menu/control specification | M2 | Planned |
 | F04 | Fill and adjustable tolerance | R1; tolerance announced as preview in R3 | M2 | Planned |
-| F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | Implemented: primary/secondary rectangular spectrum, brightness, HEX/RGB/HSV, 24 saved custom colors, swap and right-button secondary drawing. Behavioral and visual evidence in the [reference layout plan](plans/0005-reference-color-layout.md); canvas eyedropper remains planned. |
+| F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | Implemented: primary/secondary rectangular spectrum, brightness, HEX/RGB/HSV, 24 saved custom colors, swap and right-button secondary drawing. Behavioral and visual evidence in the [reference layout plan](plans/0005-reference-color-layout.md); canvas eyedropper implemented with alpha-preserving primary/secondary sampling; see [plan 0010](plans/0010-canvas-eyedropper.md). |
 | F06 | Lines, rectangles, ellipses, shape palette | R1; partial visible shape inventory specified, full palette still unverified | M2 | Planned |
 | F07 | Text, font/style/size/alignment and background | R1; detailed control behavior needs observation | M2 | Planned |
 | F08 | Rectangle/free-form selection; copy/cut/paste | R1 | M2 | Planned |

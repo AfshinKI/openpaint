@@ -430,7 +430,16 @@ class ShellTest : public QObject {
         QVERIFY(accessible->state().focusable);
         keyClick(Qt::Key_Tab);
         keyClick(Qt::Key_Space);
-        QVERIFY(editor->eraser);
+        QCOMPARE(editor->tool(), Editor::Tool::Eraser);
+        QVERIFY(tabTo("pickerButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->tool(), Editor::Tool::ColorPicker);
+        accessible = QAccessible::queryAccessibleInterface(window->activeFocusItem());
+        QVERIFY(accessible);
+        QCOMPARE(accessible->text(QAccessible::Name), QString("Color picker"));
+        QVERIFY(accessible->state().checked);
+        keyClick(Qt::Key_Space);
+        QVERIFY(accessible->state().checked);
         QVERIFY(tabTo("strokeSize"));
         const auto previousSize = editor->brushSize;
         keyClick(Qt::Key_Up);

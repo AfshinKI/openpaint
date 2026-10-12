@@ -1,10 +1,72 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "app/Editor.h"
+#include <QColorSpace>
 #include <QTemporaryDir>
 #include <QtTest>
+#include <limits>
+class SampleEditor : public Editor {
+  public:
+    void reset(const QImage& image) {
+        document.reset(image);
+    }
+};
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void pickerSamplesWithoutEditing() {
+        SampleEditor editor;
+        QImage fixture(3, 2, QImage::Format_ARGB32_Premultiplied);
+        fixture.fill(Qt::white);
+        fixture.setColorSpace(QColorSpace::SRgb);
+        fixture.setPixelColor(0, 0, QColor(40, 80, 120, 128));
+        fixture.setPixelColor(2, 1, Qt::transparent);
+        editor.reset(fixture);
+        editor.begin({1, 1}, false);
+        editor.finish();
+        editor.undo();
+        QVERIFY(editor.canRedo());
+        editor.setTool(Editor::Tool::ColorPicker);
+        editor.begin({0.75, 0.75}, false);
+        QCOMPARE(editor.primary, fixture.pixelColor(0, 0));
+        editor.begin({2.99, 1.99}, true);
+        QCOMPARE(editor.secondary, QColor(Qt::transparent));
+        editor.extend({1, 1});
+        editor.finish();
+        editor.cancel();
+        QCOMPARE(editor.image(), fixture);
+        QVERIFY(!editor.dirty());
+        QVERIFY(!editor.canUndo());
+        QVERIFY(editor.canRedo());
+        const auto primary = editor.primary;
+        for (const auto point : {QPointF(-0.01, 0), QPointF(3, 0), QPointF(0, 2),
+                                 QPointF(std::numeric_limits<double>::quiet_NaN(), 0),
+                                 QPointF(0, std::numeric_limits<double>::infinity())})
+            editor.begin(point, false);
+        QCOMPARE(editor.primary, primary);
+        editor.redo();
+        QVERIFY(editor.dirty());
+        const auto changed = editor.image();
+        editor.begin({0, 0}, false);
+        QCOMPARE(editor.image(), changed);
+        QVERIFY(editor.dirty());
+        editor.undo();
+        QCOMPARE(editor.image(), fixture);
+    }
+    void pickerDuringLoadIsIgnored() {
+        QTemporaryDir dir;
+        const auto url = QUrl::fromLocalFile(dir.filePath("sample.png"));
+        Editor editor;
+        QVERIFY(openpaint::savePng(url.toLocalFile(), editor.image()).ok());
+        editor.setTool(Editor::Tool::ColorPicker);
+        editor.openFile(url);
+        QVERIFY(editor.loading());
+        editor.begin({0, 0}, false);
+        QCOMPARE(editor.primary, QColor(Qt::black));
+        QTRY_VERIFY(!editor.busy());
+        editor.begin({0, 0}, false);
+        QCOMPARE(editor.primary, QColor(Qt::white));
+        QVERIFY(!editor.dirty());
+    }
     void snapshotSaveAndReopen() {
         QTemporaryDir dir;
         const auto url = QUrl::fromLocalFile(dir.filePath("drawing.png"));

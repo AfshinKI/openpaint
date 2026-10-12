@@ -79,6 +79,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Action | Behavior |
 | --- | --- |
 | Draw | Capture pointer, show preview immediately, commit one undo step on release |
+| Color picker | Select once per press: left sets primary, right sets secondary; exact containing artwork pixel including alpha; stays selected, never paints or changes history |
 | Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
 | Escape | Cancel active preview/transform; otherwise dismiss the topmost transient UI |
 | Pan / zoom | Space+drag pans outside text entry; Ctrl+wheel zooms around pointer; plain wheel scrolls |

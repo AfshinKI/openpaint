@@ -3,12 +3,31 @@
 #include <QFileInfo>
 #include <QtConcurrent>
 #include <cmath>
+void Editor::setTool(Tool tool) {
+    if (tool == tool_ ||
+        (tool != Tool::Pencil && tool != Tool::Eraser && tool != Tool::ColorPicker))
+        return;
+    finish();
+    tool_ = tool;
+    emit settingsChanged();
+}
 void Editor::begin(QPointF point, bool secondaryButton) {
     if (loading_)
         return;
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || point.x() < 0 || point.y() < 0 ||
         point.x() >= image().width() || point.y() >= image().height())
         return;
+    if (tool_ == Tool::ColorPicker) {
+        const auto color =
+            image().pixelColor(int(std::floor(point.x())), int(std::floor(point.y())));
+        auto& target = secondaryButton ? secondary : primary;
+        if (target != color) {
+            target = color;
+            emit settingsChanged();
+        }
+        return;
+    }
+    const bool eraser = tool_ == Tool::Eraser;
     if (document.beginStroke(point, eraser ? secondary : (secondaryButton ? secondary : primary),
                              brushSize, eraser && transparentEraser)) {
         emit pixelsChanged(QRect());
