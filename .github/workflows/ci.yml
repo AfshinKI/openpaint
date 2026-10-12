@@ -52,7 +52,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y g++-13 clang-18 ninja-build python3-venv \
-            libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxkbcommon-x11-0 xvfb xauth
+            libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0 xvfb xauth
       - name: Install pinned development tools and Qt
         run: |
           python3 -m venv build/tooling
@@ -75,5 +75,5 @@ jobs:
           ldd "$CMAKE_PREFIX_PATH/plugins/platforms/libqxcb.so"
           for scale in 1 1.25 1.5 2; do
             QT_SCALE_FACTOR="$scale" xvfb-run -a -s '-screen 0 3200x2000x24 -nolisten tcp' \
-              env QT_DEBUG_PLUGINS=1 QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software ./build/dev/openpaint_shell_tests
+              env QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=software ./build/dev/openpaint_shell_tests
           done
