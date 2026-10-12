@@ -41,6 +41,7 @@ class Document {
     QRect extendStroke(QPointF point);
     bool commitStroke();
     void cancelStroke();
+    bool applyPatch(const QImage& candidate, QRect rect, quint64 sourceRevision);
     bool undo();
     bool redo();
 

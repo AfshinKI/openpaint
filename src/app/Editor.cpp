@@ -4,15 +4,17 @@
 #include <QtConcurrent>
 #include <cmath>
 void Editor::setTool(Tool tool) {
-    if (tool == tool_ ||
-        (tool != Tool::Pencil && tool != Tool::Eraser && tool != Tool::ColorPicker))
+    if (tool == tool_ || (tool != Tool::Pencil && tool != Tool::Eraser &&
+                          tool != Tool::ColorPicker && tool != Tool::Fill))
         return;
+    if (filling_)
+        cancelIo();
     finish();
     tool_ = tool;
     emit settingsChanged();
 }
 void Editor::begin(QPointF point, bool secondaryButton) {
-    if (loading_)
+    if (loading())
         return;
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || point.x() < 0 || point.y() < 0 ||
         point.x() >= image().width() || point.y() >= image().height())
@@ -25,6 +27,24 @@ void Editor::begin(QPointF point, bool secondaryButton) {
             target = color;
             emit settingsChanged();
         }
+        return;
+    }
+    if (tool_ == Tool::Fill) {
+        if (busy_)
+            return;
+        finish();
+        fillRevision_ = document.revision();
+        const QImage snapshot = image();
+        const auto color = secondaryButton ? secondary : primary;
+        cancellation_ = std::make_shared<std::atomic_bool>(false);
+        busy_ = filling_ = true;
+        emit changed();
+        fillWatcher_.setFuture(QtConcurrent::run(
+            [snapshot, color, point, tolerance = tolerance, token = cancellation_] {
+                return openpaint::fillRegion(
+                    snapshot, QPoint(int(std::floor(point.x())), int(std::floor(point.y()))), color,
+                    tolerance, token);
+            }));
         return;
     }
     const bool eraser = tool_ == Tool::Eraser;
@@ -47,12 +67,14 @@ void Editor::finish() {
     emit changed();
 }
 void Editor::cancel() {
+    if (filling_)
+        cancelIo();
     document.cancelStroke();
     emit pixelsChanged(QRect());
     emit changed();
 }
 void Editor::undo() {
-    if (loading_)
+    if (loading())
         return;
     finish();
     if (document.undo()) {
@@ -61,7 +83,7 @@ void Editor::undo() {
     }
 }
 void Editor::redo() {
-    if (loading_)
+    if (loading())
         return;
     finish();
     if (document.redo()) {
@@ -71,6 +93,22 @@ void Editor::redo() {
 }
 
 Editor::Editor(QObject* parent) : QObject(parent) {
+    connect(&fillWatcher_, &QFutureWatcher<openpaint::FillResult>::finished, this, [this] {
+        const auto result = fillWatcher_.result();
+        busy_ = filling_ = false;
+        if (!cancellation_->load()) {
+            if (result.failed)
+                fail(tr("Fill could not be completed within the image limits."));
+            else if (!result.rect.isEmpty()) {
+                if (document.applyPatch(result.image, result.rect, fillRevision_))
+                    emit pixelsChanged(result.rect);
+                else
+                    fail(tr("Fill was not applied because the document changed or undo memory was "
+                            "exceeded."));
+            }
+        }
+        emit changed();
+    });
     connect(&watcher_, &QFutureWatcher<openpaint::ImageResult>::finished, this, [this] {
         const auto result = watcher_.result();
         const bool wasLoading = loading_;

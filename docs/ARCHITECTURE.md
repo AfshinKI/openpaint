@@ -82,6 +82,10 @@ QML, network access, GitHub, installation format, or AI providers.
   on commit. Persistent vector objects and later re-editable text are outside 1.0.
   This avoids pretending OpenRaster preserves an object model it does not store.
 
+Fill workers return a candidate raster and changed rectangle. `Document::applyPatch`
+checks source revision, bounds and history budget before committing one patch.
+Cancellation is rechecked on the GUI thread before application.
+
 ### Tool contract
 
 Each tool implements begin/update/commit/cancel over normalized input samples

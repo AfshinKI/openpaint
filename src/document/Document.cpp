@@ -103,6 +103,21 @@ bool Document::commitStroke() {
     }
     return true;
 }
+bool Document::applyPatch(const QImage& candidate, QRect rect, quint64 sourceRevision) {
+    if (active_ || sourceRevision != revision_ || candidate.size() != image_.size() ||
+        candidate.format() != image_.format() || rect.isEmpty() || !image_.rect().contains(rect) ||
+        qint64(rect.width()) * rect.height() * 8 > budget_)
+        return false;
+    original_ = image_;
+    active_ = true;
+    dirtyRect_ = rect;
+    {
+        QPainter painter(&image_);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.drawImage(rect, candidate, rect);
+    }
+    return commitStroke();
+}
 void Document::cancelStroke() {
     if (active_)
         image_ = original_;

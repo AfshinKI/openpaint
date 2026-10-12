@@ -1,9 +1,60 @@
 #include "document/Document.h"
+#include "tools/Fill.h"
 #include <QtTest>
 using openpaint::Document;
 class DocumentTest : public QObject {
     Q_OBJECT
   private slots:
+    void fillConnectivityToleranceAndHistory() {
+        using namespace openpaint;
+        Document doc({5, 3});
+        QImage source = doc.image();
+        source.setPixelColor(1, 0, QColor(250, 250, 250));
+        for (int y = 0; y < 3; ++y)
+            source.setPixelColor(2, y, Qt::black);
+        QVERIFY(doc.reset(source));
+        auto token = std::make_shared<std::atomic_bool>(false);
+        const auto exact = fillRegion(source, {0, 0}, Qt::red, 0, token);
+        QCOMPARE(exact.image.pixelColor(1, 0), QColor(250, 250, 250));
+        QCOMPARE(exact.image.pixelColor(1, 1), QColor(Qt::red));
+        QCOMPARE(exact.image.pixelColor(3, 1), QColor(Qt::white));
+        const auto tolerant = fillRegion(source, {0, 0}, Qt::red, 5, token);
+        QCOMPARE(tolerant.image.pixelColor(1, 0), QColor(Qt::red));
+        QVERIFY(doc.applyPatch(tolerant.image, tolerant.rect, doc.revision()));
+        const auto revision = doc.revision();
+        QVERIFY(doc.undo());
+        QCOMPARE(doc.image(), source);
+        QVERIFY(!doc.dirty());
+        QVERIFY(!doc.applyPatch(tolerant.image, tolerant.rect, revision));
+        QVERIFY(doc.canRedo());
+        QVERIFY(doc.redo());
+        QCOMPARE(doc.image(), tolerant.image);
+        auto all = fillRegion(source, {0, 0}, QColor(0, 0, 255, 128), 255, token);
+        QCOMPARE(all.rect, source.rect());
+        QCOMPARE(all.image.pixelColor(4, 2), QColor(0, 0, 255, 128));
+        Document tiny({5, 3}, 1);
+        QVERIFY(!tiny.applyPatch(all.image, all.rect, tiny.revision()));
+        QVERIFY(!tiny.dirty());
+        token->store(true);
+        QVERIFY(fillRegion(source, {0, 0}, Qt::red, 255, token).image.isNull());
+        token->store(false);
+        QVERIFY(fillRegion(source, {-1, 0}, Qt::red, 0, token).failed);
+        QVERIFY(fillRegion(source, {0, 0}, Qt::red, 256, token).failed);
+        QVERIFY(fillRegion(source, {0, 0}, Qt::white, 0, token).rect.isEmpty());
+        QImage diagonal(2, 2, QImage::Format_ARGB32_Premultiplied);
+        diagonal.fill(Qt::black);
+        diagonal.setPixelColor(0, 0, Qt::white);
+        diagonal.setPixelColor(1, 1, Qt::white);
+        const auto island = fillRegion(diagonal, {0, 0}, Qt::red, 0, token);
+        QCOMPARE(island.image.pixelColor(1, 1), QColor(Qt::white));
+        source.fill(Qt::transparent);
+        source.setPixelColor(1, 0, QColor(0, 0, 0, 10));
+        all = fillRegion(source, {0, 0}, Qt::red, 9, token);
+        QCOMPARE(all.image.pixelColor(1, 0), QColor(0, 0, 0, 10));
+        all = fillRegion(source, {0, 0}, Qt::red, 10, token);
+        QCOMPARE(all.image.pixelColor(1, 0), QColor(Qt::red));
+    }
+
     void history() {
         Document doc({64, 64});
         const QImage original = doc.image();

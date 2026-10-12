@@ -13,6 +13,38 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void fillCancelAndSave() {
+        Editor editor;
+        editor.setTool(Editor::Tool::Fill);
+        const auto original = editor.image();
+        editor.begin({0, 0}, false);
+        QVERIFY(editor.filling());
+        editor.cancel();
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.dirty());
+        editor.begin({0, 0}, false);
+        editor.setTool(Editor::Tool::Pencil);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image(), original);
+        editor.setTool(Editor::Tool::Fill);
+        editor.secondary = Qt::red;
+        editor.begin({0, 0}, true);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image().pixelColor(500, 500), QColor(Qt::red));
+        const auto filled = editor.image();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), filled);
+        QTemporaryDir dir;
+        const auto url = QUrl::fromLocalFile(dir.filePath("fill.png"));
+        editor.saveFile(url);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, filled);
+        QVERIFY(!editor.dirty());
+    }
+
     void pickerSamplesWithoutEditing() {
         SampleEditor editor;
         QImage fixture(3, 2, QImage::Format_ARGB32_Premultiplied);

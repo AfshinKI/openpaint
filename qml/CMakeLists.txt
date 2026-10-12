@@ -10,7 +10,7 @@ qt_add_qml_module(openpaint_ui STATIC
         ../src/color/ColorPalette.h ../src/color/ColorPalette.cpp
         ../src/color/ColorSpectrum.h ../src/color/ColorSpectrum.cpp
     QML_FILES ColorEditor.qml ColorSwatch.qml Main.qml Theme.qml PaintButton.qml IconButton.qml PaintMenu.qml PaintMenuItem.qml PaintDialog.qml PaintSpinBox.qml PaintCheckBox.qml
-    RESOURCES icons/eyedropper.svg icons/save.svg icons/palette.svg icons/redo.svg icons/fit.svg icons/undo.svg icons/swap.svg icons/pencil.svg icons/zoom-in.svg icons/zoom-out.svg icons/eraser.svg
+    RESOURCES icons/fill.svg icons/eyedropper.svg icons/save.svg icons/palette.svg icons/redo.svg icons/fit.svg icons/undo.svg icons/swap.svg icons/pencil.svg icons/zoom-in.svg icons/zoom-out.svg icons/eraser.svg
 )
 target_link_libraries(openpaint_ui PUBLIC openpaint_document openpaint_io Qt6::Concurrent Qt6::Quick Qt6::QuickControls2)
 target_include_directories(openpaint_ui PRIVATE ../src/app ../src/render ../src/color)

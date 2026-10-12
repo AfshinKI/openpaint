@@ -2,6 +2,7 @@
 #pragma once
 #include "document/Document.h"
 #include "io/PngIo.h"
+#include "tools/Fill.h"
 #include <QFutureWatcher>
 #include <QObject>
 #include <QUrl>
@@ -11,6 +12,8 @@ class Editor : public QObject {
     Q_OBJECT
     QML_ELEMENT
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
+    Q_PROPERTY(bool filling READ filling NOTIFY changed)
+    Q_PROPERTY(int tolerance MEMBER tolerance NOTIFY settingsChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY changed)
     Q_PROPERTY(QString fileName READ fileName NOTIFY changed)
     Q_PROPERTY(QUrl fileUrl READ fileUrl NOTIFY changed)
@@ -26,7 +29,7 @@ class Editor : public QObject {
     Q_PROPERTY(Tool tool READ tool WRITE setTool NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentEraser MEMBER transparentEraser NOTIFY settingsChanged)
   public:
-    enum class Tool { Pencil, Eraser, ColorPicker };
+    enum class Tool { Pencil, Eraser, ColorPicker, Fill };
     Q_ENUM(Tool)
     Tool tool() const {
         return tool_;
@@ -36,8 +39,11 @@ class Editor : public QObject {
     bool busy() const {
         return busy_;
     }
+    bool filling() const {
+        return filling_;
+    }
     bool loading() const {
-        return loading_;
+        return loading_ || filling_;
     }
     QString fileName() const;
     QUrl fileUrl() const {
@@ -75,7 +81,7 @@ class Editor : public QObject {
     Q_INVOKABLE void undo();
     Q_INVOKABLE void redo();
     QColor primary = Qt::black, secondary = Qt::white;
-    int brushSize = 3;
+    int brushSize = 3, tolerance = 0;
     bool transparentEraser = false;
   signals:
     void changed();
@@ -89,7 +95,9 @@ class Editor : public QObject {
   private:
     void fail(const QString& message);
     Tool tool_ = Tool::Pencil;
-    bool busy_ = false, loading_ = false;
+    bool busy_ = false, loading_ = false, filling_ = false;
+    QFutureWatcher<openpaint::FillResult> fillWatcher_;
+    quint64 fillRevision_ = 0;
     QUrl fileUrl_;
     QString error_, notice_;
     QFutureWatcher<openpaint::ImageResult> watcher_;
