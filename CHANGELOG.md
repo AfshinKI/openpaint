@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add a canvas color picker for primary/secondary colors, including transparency,
+  without modifying artwork or undo history.
+
 - Complete the M1 source-editor checkpoint with reproducible startup/render/save/memory measurements and documented platform limits.
 
 - Give dialogs keyboard focus, provide a consistent Ctrl+Q shortcut, and correct PNG CLI help.

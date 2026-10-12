@@ -326,16 +326,28 @@ ApplicationWindow {
                         objectName: "pencilButton"
                         text: qsTr("Pencil")
                         checkable: true
-                        checked: !editor.eraser
-                        onClicked: editor.eraser = false
+                        autoExclusive: true
+                        checked: editor.tool === Editor.Pencil
+                        onClicked: editor.tool = Editor.Pencil
                         Accessible.name: text
                     }
                     IconButton {
                         symbol: "eraser"
                         text: qsTr("Eraser")
                         checkable: true
-                        checked: editor.eraser
-                        onClicked: editor.eraser = true
+                        autoExclusive: true
+                        checked: editor.tool === Editor.Eraser
+                        onClicked: editor.tool = Editor.Eraser
+                        Accessible.name: text
+                    }
+                    IconButton {
+                        symbol: "eyedropper"
+                        objectName: "pickerButton"
+                        text: qsTr("Color picker")
+                        checkable: true
+                        autoExclusive: true
+                        checked: editor.tool === Editor.ColorPicker
+                        onClicked: editor.tool = Editor.ColorPicker
                         Accessible.name: text
                     }
                 }

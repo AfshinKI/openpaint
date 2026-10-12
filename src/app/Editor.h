@@ -23,9 +23,15 @@ class Editor : public QObject {
     Q_PROPERTY(QColor primary MEMBER primary NOTIFY settingsChanged)
     Q_PROPERTY(QColor secondary MEMBER secondary NOTIFY settingsChanged)
     Q_PROPERTY(int brushSize MEMBER brushSize NOTIFY settingsChanged)
-    Q_PROPERTY(bool eraser MEMBER eraser NOTIFY settingsChanged)
+    Q_PROPERTY(Tool tool READ tool WRITE setTool NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentEraser MEMBER transparentEraser NOTIFY settingsChanged)
   public:
+    enum class Tool { Pencil, Eraser, ColorPicker };
+    Q_ENUM(Tool)
+    Tool tool() const {
+        return tool_;
+    }
+    void setTool(Tool tool);
     explicit Editor(QObject* parent = nullptr);
     bool busy() const {
         return busy_;
@@ -70,7 +76,7 @@ class Editor : public QObject {
     Q_INVOKABLE void redo();
     QColor primary = Qt::black, secondary = Qt::white;
     int brushSize = 3;
-    bool eraser = false, transparentEraser = false;
+    bool transparentEraser = false;
   signals:
     void changed();
     void errorChanged();
@@ -82,6 +88,7 @@ class Editor : public QObject {
 
   private:
     void fail(const QString& message);
+    Tool tool_ = Tool::Pencil;
     bool busy_ = false, loading_ = false;
     QUrl fileUrl_;
     QString error_, notice_;

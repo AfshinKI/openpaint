@@ -41,6 +41,30 @@ matrix based on installed-artifact tests, not only the distribution used to comp
 4. Implement PNG open/save and data-loss prevention.
 5. Measure, document, and close M1 acceptance cases before adding M2 tools.
 
+## M2 implementation sequence
+
+Each item is a bounded outcome delivered through a fresh branch and checked PR.
+Split larger items into independently usable slices with acceptance plans before
+implementation; do not accumulate all M2 work on one branch.
+
+1. Canvas eyedropper ([plan 0010](plans/0010-canvas-eyedropper.md)).
+2. Contiguous fill with tolerance, worker cancellation and undoable patches.
+3. Brush styles and stroke opacity, with deterministic saved raster output.
+4. Lines/rectangles/ellipses, then the remaining scoped shape palette; previews,
+   outline/fill options and commit/cancel behavior.
+5. Raster text with font/style/alignment/background controls and explicit commit.
+6. Rectangular selection and clipboard, followed by free-form selection; bounded
+   import, transparent pixels and one undo step per committed edit.
+7. Crop, resize/skew, flip and right-angle rotation, with clipping/quality choices.
+8. JPEG/BMP/WebP interchange and lossy/alpha export choices, preserving PNG safety.
+9. Install identity, manual Updates/release link screen, then AppImage and Flatpak
+   builds in separate packaging PRs. No automatic install or restart in M2.
+10. Alpha closure: complete workflow tests and clean-VM installation evidence,
+    publish source/licenses/checksums alongside downloads, and only then assign
+    `0.1.0-alpha.1`. Record incomplete desktop certification as explicit limits.
+
+The M2 gate stays open until all required outcomes and release evidence pass.
+
 ## Risks to retire early
 
 | Risk | Mitigation / decision point |

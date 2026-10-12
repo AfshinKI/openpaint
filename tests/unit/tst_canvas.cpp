@@ -53,6 +53,48 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void pickerGestureAndToolSwitch() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        editor.primary = Qt::red;
+        editor.brushSize = 12;
+        canvas.press({100, 100});
+        canvas.move({200, 100});
+        editor.setTool(Editor::Tool::ColorPicker);
+        QVERIFY(!editor.active());
+        QVERIFY(editor.canUndo());
+        canvas.release({300, 100});
+        const auto painted = editor.image();
+        editor.setProperty("primary", QColor(Qt::black));
+        canvas.zoomAt(2.5, {413.25, 312.75});
+        canvas.press({100.75, 100.25});
+        QCOMPARE(editor.primary, QColor(Qt::red));
+        canvas.mouse(QEvent::MouseButtonPress, canvas.fromDocument({400, 400}), Qt::RightButton,
+                     Qt::LeftButton | Qt::RightButton);
+        QCOMPARE(editor.secondary, QColor(Qt::white));
+        canvas.move({400, 400});
+        canvas.release({400, 400});
+        QCOMPARE(editor.primary, QColor(Qt::red));
+        QCOMPARE(editor.image(), painted);
+        canvas.press({100, 100}, Qt::RightButton);
+        canvas.release({100, 100}, Qt::RightButton);
+        QCOMPARE(editor.secondary, QColor(Qt::red));
+        canvas.key(Qt::Key_Space);
+        canvas.press({400, 400});
+        canvas.release({450, 450});
+        canvas.key(Qt::Key_Space, false);
+        QCOMPARE(editor.primary, QColor(Qt::red));
+        editor.undo();
+        QVERIFY(!editor.canUndo());
+        QVERIFY(!editor.dirty());
+        editor.redo();
+        QCOMPARE(editor.image(), painted);
+        editor.setTool(Editor::Tool::Pencil);
+        canvas.press({400, 400});
+        canvas.release({400, 400});
+        QCOMPARE(editor.image().pixelColor(400, 400), QColor(Qt::red));
+    }
     void extraButtonsKeepOriginalGesture_data() {
         QTest::addColumn<int>("extra");
         QTest::newRow("right") << int(Qt::RightButton);

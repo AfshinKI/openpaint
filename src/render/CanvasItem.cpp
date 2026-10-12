@@ -102,10 +102,16 @@ void CanvasItem::mousePressEvent(QMouseEvent* event) {
         return;
     }
     forceActiveFocus();
+    // Sampling emits settingsChanged synchronously. Do it before establishing the
+    // gesture so the settings handler cannot release ownership of this press.
+    const bool picking = editor_ && editor_->tool() == Editor::Tool::ColorPicker && !space_ &&
+                         event->button() != Qt::MiddleButton;
+    if (picking)
+        editor_->begin(toDocument(event->position()), event->button() == Qt::RightButton);
     gestureButton_ = event->button();
     last_ = event->position();
     panning_ = space_ || gestureButton_ == Qt::MiddleButton;
-    drawing_ = !panning_ && editor_;
+    drawing_ = !panning_ && !picking && editor_;
     if (drawing_)
         editor_->begin(toDocument(last_), gestureButton_ == Qt::RightButton);
     event->accept();
