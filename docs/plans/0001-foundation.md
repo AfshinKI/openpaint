@@ -65,10 +65,11 @@ works from menu and keyboard. No QML pixel buffer owns the saved image.
   metadata stripping, and alpha preservation. Use a worker snapshot for saving.
   Evidence: [PNG validation](0007-png-validation.md).
 - [x] Add native/Qt Open, Save and Save As, current filename, and dirty marker.
-  Portal replacement behavior is still unverified.
+  GNOME portal save/reopen/replacement/cancel is covered by [plan 0008](0008-keyboard-desktop-workflow.md); sandbox grants remain a packaging gate.
 - [x] Implement New/Close Save–Discard–Cancel, and preserve originals on failure.
-- [ ] Test unwritable target, failed commit, malformed/oversized PNG, cancel, and
+- [x] Test unwritable target, failed commit, malformed/oversized PNG, cancel, and
   editing while a snapshot is saving. Test portal behavior on a real desktop.
+  Evidence: plans [0007](0007-png-validation.md) and [0008](0008-keyboard-desktop-workflow.md).
 
 Acceptance: draw → save → reopen is pixel-equivalent for a lossless sRGB fixture.
 A failed save keeps both the original file and unsaved document intact. A save of

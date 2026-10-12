@@ -121,7 +121,7 @@ ApplicationWindow {
         id: quitAction
         objectName: "quitAction"
         text: qsTr("&Quit")
-        shortcut: StandardKey.Quit
+        shortcut: "Ctrl+Q"
         onTriggered: window.close()
     }
     Action {
@@ -352,6 +352,7 @@ ApplicationWindow {
             ColumnLayout {
                 PaintSpinBox {
                     id: sizeBox
+                    objectName: "strokeSize"
                     from: 1
                     to: 128
                     value: editor.brushSize

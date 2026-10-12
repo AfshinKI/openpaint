@@ -5,6 +5,7 @@ import OpenPaint
 
 Dialog {
     id: control
+    focus: true
     header: Label {
         text: control.title
         visible: control.title.length > 0
