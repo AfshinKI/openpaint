@@ -14,11 +14,11 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 
 | ID | Capability | Evidence / distinction | Target | Status |
 | --- | --- | --- | --- | --- |
-| F01 | Familiar toolbar, light/dark, responsive canvas | R1; exact visual baseline still needs observation | M1–M4 | In progress: grouped toolbar, canvas and themes tested; exact parity audit pending. See [M1 evidence](plans/0001-foundation.md#evidence-and-handoff). |
+| F01 | Familiar toolbar, light/dark, responsive canvas | R1; exact visual baseline still needs observation | M1–M4 | In progress: original icon toolbar, shared rounded surfaces, canvas and themes implemented; exact parity audit pending. See [M1 evidence](plans/0001-foundation.md#evidence-and-handoff). |
 | F02 | Pencil, eraser, basic brush, sizes | R1 | M1 | Implemented: round pencil, opaque/transparent eraser, 1–128 px size; advanced brushes pending. |
 | F03 | Additional brush styles, stroke opacity | R1, R2 | M2 | Planned |
 | F04 | Fill and adjustable tolerance | R1; tolerance announced as preview in R3 | M2 | Planned |
-| F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | In progress: palette, primary dialog, swap and right-button secondary drawing. |
+| F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | In progress: palette, primary dialog, swap and right-button secondary drawing; dedicated color editor/custom swatches next in the [UI polish plan](plans/0004-ui-polish.md). |
 | F06 | Lines, rectangles, ellipses, shape palette | R1; full palette needs observed inventory | M2 | Planned |
 | F07 | Text, font/style/size/alignment and background | R1; detailed control behavior needs observation | M2 | Planned |
 | F08 | Rectangle/free-form selection; copy/cut/paste | R1 | M2 | Planned |

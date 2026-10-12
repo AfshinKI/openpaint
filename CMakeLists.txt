@@ -61,9 +61,11 @@ add_custom_target(format-check
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     VERBATIM)
 
+file(GLOB OPENPAINT_QML_FILES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/qml/*.qml")
+
 # Unlike the generated all_qmllint target, this explicitly fails on warnings.
 add_custom_target(qml-lint
     COMMAND Qt6::qmllint --max-warnings 0 -I "${CMAKE_BINARY_DIR}/qml"
-        "${CMAKE_SOURCE_DIR}/qml/Main.qml" "${CMAKE_SOURCE_DIR}/qml/Theme.qml"
+        ${OPENPAINT_QML_FILES}
     DEPENDS openpaint_ui
     VERBATIM)
