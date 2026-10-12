@@ -12,8 +12,9 @@ int main(int argc, char* argv[]) {
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
     QCommandLineParser parser;
-    parser.setApplicationDescription(QCoreApplication::translate(
-        "main", "OpenPaint development preview. Drawing and file editing are not available yet."));
+    parser.setApplicationDescription(
+        QCoreApplication::translate("main", "OpenPaint development preview. Pencil, eraser and "
+                                            "undo; PNG files are not available yet."));
     parser.addHelpOption();
     parser.addVersionOption();
     parser.process(app);

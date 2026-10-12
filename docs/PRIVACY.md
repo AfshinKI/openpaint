@@ -1,7 +1,7 @@
 # Privacy and public-repository hygiene
 
-These are product requirements. The current native shell has no network operations
-or document storage. Editing, recovery, exports, and updates below are still planned.
+These are product requirements. The current native editor has no network operations
+or document storage. Recovery, exports, and updates below are still planned.
 
 ## Product commitments
 

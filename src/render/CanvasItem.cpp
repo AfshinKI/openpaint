@@ -1,0 +1,164 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+#include "CanvasItem.h"
+#include <QCursor>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QWheelEvent>
+#include <algorithm>
+#include <cmath>
+
+CanvasItem::CanvasItem(QQuickItem* parent) : QQuickPaintedItem(parent) {
+    setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton | Qt::MiddleButton);
+    setAcceptHoverEvents(true);
+    setFlag(ItemIsFocusScope);
+    setClip(true);
+    setCursor(Qt::CrossCursor);
+}
+void CanvasItem::setEditor(Editor* editor) {
+    if (editor_)
+        disconnect(editor_, nullptr, this, nullptr);
+    editor_ = editor;
+    if (editor_) {
+        connect(editor_, &Editor::pixelsChanged, this, [this](QRect rect) {
+            if (rect.isEmpty())
+                update();
+            else
+                update(QRectF(fromDocument(rect.topLeft()), QSizeF(rect.size()) * zoom_)
+                           .adjusted(-2, -2, 2, 2)
+                           .toAlignedRect());
+        });
+        connect(editor_, &Editor::settingsChanged, this, &CanvasItem::finishGesture);
+    }
+    emit editorChanged();
+    fit();
+}
+void CanvasItem::fit() {
+    if (!editor_ || width() <= 48 || height() <= 48)
+        return;
+    finishGesture();
+    zoom_ = std::clamp(std::min((width() - 48) / editor_->imageSize().width(),
+                                (height() - 48) / editor_->imageSize().height()),
+                       0.01, 1.0);
+    origin_ = {(width() - editor_->imageSize().width() * zoom_) / 2,
+               (height() - editor_->imageSize().height() * zoom_) / 2};
+    fitted_ = true;
+    emit viewportChanged();
+    update();
+}
+void CanvasItem::zoomBy(qreal factor) {
+    zoomAt(factor, {width() / 2, height() / 2});
+}
+void CanvasItem::zoomAt(qreal factor, QPointF anchor) {
+    if (!std::isfinite(factor) || factor <= 0)
+        return;
+    finishGesture();
+    const auto documentPoint = toDocument(anchor);
+    zoom_ = std::clamp(zoom_ * factor, 0.01, 32.0);
+    origin_ = anchor - documentPoint * zoom_;
+    fitted_ = false;
+    emit viewportChanged();
+    update();
+}
+void CanvasItem::geometryChange(const QRectF& now, const QRectF& before) {
+    QQuickPaintedItem::geometryChange(now, before);
+    if (fitted_)
+        fit();
+}
+void CanvasItem::paint(QPainter* painter) {
+    if (!editor_)
+        return;
+    // Qt calls paint during scene-graph synchronization while the GUI thread is blocked.
+    // No worker mutates the document; do not retain a snapshot between pointer events.
+    const auto& image = editor_->image();
+    const QRectF target(origin_, QSizeF(image.size()) * zoom_);
+    QImage checks(16, 16, QImage::Format_RGB32);
+    checks.fill(QColor("#ffffff"));
+    QPainter tile(&checks);
+    tile.fillRect(0, 0, 8, 8, QColor("#d9d9d9"));
+    tile.fillRect(8, 8, 8, 8, QColor("#d9d9d9"));
+    tile.end();
+    painter->fillRect(target, QBrush(checks));
+    painter->setRenderHint(QPainter::SmoothPixmapTransform, zoom_ < 1);
+    painter->drawImage(target, image);
+    painter->setPen(QColor("#9299a3"));
+    painter->drawRect(target.adjusted(-1, -1, 1, 1));
+}
+void CanvasItem::mousePressEvent(QMouseEvent* event) {
+    forceActiveFocus();
+    last_ = event->position();
+    panning_ = space_ || event->button() == Qt::MiddleButton;
+    drawing_ = !panning_ && editor_;
+    if (drawing_)
+        editor_->begin(toDocument(last_), event->button() == Qt::RightButton);
+    event->accept();
+}
+void CanvasItem::mouseMoveEvent(QMouseEvent* event) {
+    const auto point = event->position();
+    if (panning_) {
+        origin_ += point - last_;
+        fitted_ = false;
+        update();
+    } else if (drawing_ && editor_) {
+        editor_->extend(toDocument(point));
+    }
+    last_ = point;
+    cursor_ = toDocument(point);
+    emit cursorPositionChanged();
+}
+void CanvasItem::mouseReleaseEvent(QMouseEvent* event) {
+    if (drawing_ && editor_)
+        editor_->extend(toDocument(event->position()));
+    finishGesture();
+}
+void CanvasItem::finishGesture() {
+    if (editor_)
+        editor_->finish();
+    drawing_ = panning_ = false;
+}
+void CanvasItem::mouseUngrabEvent() {
+    finishGesture();
+}
+void CanvasItem::hoverMoveEvent(QHoverEvent* event) {
+    cursor_ = toDocument(event->position());
+    emit cursorPositionChanged();
+}
+void CanvasItem::wheelEvent(QWheelEvent* event) {
+    if (event->modifiers() & Qt::ControlModifier) {
+        zoomAt(std::pow(1.2, event->angleDelta().y() / 120.0), event->position());
+    } else {
+        finishGesture();
+        origin_ += event->pixelDelta().isNull() ? QPointF(event->angleDelta()) / 3
+                                                : QPointF(event->pixelDelta());
+        fitted_ = false;
+        update();
+    }
+    event->accept();
+}
+void CanvasItem::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Space) {
+        space_ = true;
+        setCursor(Qt::OpenHandCursor);
+        event->accept();
+    } else if (event->key() == Qt::Key_Escape && editor_) {
+        editor_->cancel();
+        drawing_ = panning_ = false;
+        event->accept();
+    } else {
+        QQuickPaintedItem::keyPressEvent(event);
+    }
+}
+void CanvasItem::keyReleaseEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Space && !event->isAutoRepeat()) {
+        space_ = false;
+        setCursor(Qt::CrossCursor);
+    } else {
+        QQuickPaintedItem::keyReleaseEvent(event);
+    }
+}
+void CanvasItem::focusOutEvent(QFocusEvent* event) {
+    finishGesture();
+    space_ = false;
+    setCursor(Qt::CrossCursor);
+    QQuickPaintedItem::focusOutEvent(event);
+}

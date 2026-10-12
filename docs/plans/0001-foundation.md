@@ -1,6 +1,6 @@
 # M1: first working canvas
 
-Status: in progress; Step 1 merged; Step 2 document/history implemented, under validation
+Status: in progress; Step 1 merged; Steps 1–2 merged; Step 3 canvas implemented, under validation
 Feature IDs: F01, F02, F05, F11, F15, F16, F26 (initial subsets)
 Dependencies: M0 documentation and repository tooling
 
@@ -44,9 +44,9 @@ Each stroke yields one history step; undo to the saved state clears the dirty fl
 
 ## Step 3 — canvas and input
 
-- [ ] Implement the initial QQuickPaintedItem adapter over document snapshots.
+- [x] Implement the initial QQuickPaintedItem adapter over document snapshots.
 - [ ] Normalize pointer coordinates/pressure and centralize viewport transforms.
-- [ ] Connect pencil, eraser, size, primary/secondary color, zoom/pan and status UI.
+- [x] Connect pencil, eraser, size, primary/secondary color, zoom/pan and status UI.
 - [ ] Cover Escape cancellation, pointer capture/loss, out-of-bounds movement,
   tool changes, keyboard focus, and fractional device scaling.
 - [ ] Record stroke/viewport timing and memory on the quality baseline; log a
@@ -124,3 +124,5 @@ a neutral workspace, visible color/size choices, bottom status/zoom, interpolate
 continuous strokes and pointer-anchored zoom. Record actual performance separately
 from subjective smoothness. Exact reference-build layout/behavior and GPU/Wayland
 parity remain later audit work; do not label the app an identical replica.
+
+Step 3 behavior and measured evidence: [drawing canvas plan](0002-drawing-canvas.md).
