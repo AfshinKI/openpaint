@@ -191,68 +191,82 @@ ApplicationWindow {
     }
 
     menuBar: MenuBar {
-        Menu {
+        background: Rectangle {
+            color: Theme.window
+        }
+        delegate: MenuBarItem {
+            id: menuEntry
+            background: Rectangle {
+                radius: Theme.controlRadius
+                color: menuEntry.highlighted ? Theme.hover : "transparent"
+            }
+        }
+        PaintMenu {
+            objectName: "fileMenu"
             title: qsTr("&File")
-            MenuItem {
+            PaintMenuItem {
                 action: newAction
             }
-            MenuItem {
+            PaintMenuItem {
                 action: openAction
             }
-            MenuItem {
+            PaintMenuItem {
                 action: saveAction
             }
-            MenuItem {
+            PaintMenuItem {
                 action: saveAsAction
             }
             MenuSeparator {}
-            MenuItem {
+            PaintMenuItem {
                 action: quitAction
             }
         }
-        Menu {
+        PaintMenu {
             title: qsTr("&Edit")
-            MenuItem {
+            PaintMenuItem {
                 action: undoAction
             }
-            MenuItem {
+            PaintMenuItem {
                 action: redoAction
             }
         }
-        Menu {
+        PaintMenu {
             title: qsTr("&View")
-            MenuItem {
+            PaintMenuItem {
                 action: fitAction
             }
-            MenuItem {
+            PaintMenuItem {
                 action: zoomInAction
             }
-            MenuItem {
+            PaintMenuItem {
                 action: zoomOutAction
             }
-            Menu {
+            PaintMenu {
                 title: qsTr("&Theme")
-                MenuItem {
+                PaintMenuItem {
                     action: systemThemeAction
                 }
-                MenuItem {
+                PaintMenuItem {
                     action: lightThemeAction
                 }
-                MenuItem {
+                PaintMenuItem {
                     action: darkThemeAction
                 }
             }
         }
-        Menu {
+        PaintMenu {
             title: qsTr("&Help")
-            MenuItem {
+            PaintMenuItem {
                 action: aboutAction
             }
         }
     }
     header: ToolBar {
-        height: 116
+        height: 112
         background: Rectangle {
+            anchors.fill: parent
+            anchors.margins: 4
+            radius: Theme.surfaceRadius
             color: Theme.panel
             border.color: Theme.divider
         }
@@ -261,7 +275,9 @@ ApplicationWindow {
             anchors.margins: 8
             spacing: 8
             ColumnLayout {
-                ToolButton {
+                IconButton {
+                    symbol: "save"
+                    shortcutLabel: "Ctrl+S"
                     action: saveAction
                     Accessible.name: qsTr("Save drawing")
                 }
@@ -276,11 +292,15 @@ ApplicationWindow {
             }
             ColumnLayout {
                 RowLayout {
-                    ToolButton {
+                    IconButton {
+                        symbol: "undo"
+                        shortcutLabel: "Ctrl+Z"
                         action: undoAction
                         Accessible.name: text
                     }
-                    ToolButton {
+                    IconButton {
+                        symbol: "redo"
+                        shortcutLabel: "Ctrl+Y"
                         action: redoAction
                         Accessible.name: text
                     }
@@ -296,17 +316,17 @@ ApplicationWindow {
             }
             ColumnLayout {
                 RowLayout {
-                    Button {
+                    IconButton {
+                        symbol: "pencil"
                         objectName: "pencilButton"
-                        implicitWidth: 72
                         text: qsTr("Pencil")
                         checkable: true
                         checked: !editor.eraser
                         onClicked: editor.eraser = false
                         Accessible.name: text
                     }
-                    Button {
-                        implicitWidth: 72
+                    IconButton {
+                        symbol: "eraser"
                         text: qsTr("Eraser")
                         checkable: true
                         checked: editor.eraser
@@ -314,7 +334,7 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                 }
-                CheckBox {
+                PaintCheckBox {
                     text: qsTr("Transparent")
                     checked: editor.transparentEraser
                     onToggled: editor.transparentEraser = checked
@@ -325,14 +345,14 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                SpinBox {
+                PaintSpinBox {
                     id: sizeBox
                     from: 1
                     to: 128
                     value: editor.brushSize
                     onValueModified: editor.brushSize = value
                     Accessible.name: qsTr("Stroke size in pixels")
-                    implicitWidth: 96
+                    implicitWidth: 104
                 }
                 Label {
                     text: qsTr("Size · px")
@@ -345,7 +365,7 @@ ApplicationWindow {
             }
             ColumnLayout {
                 RowLayout {
-                    Button {
+                    PaintButton {
                         id: primaryButton
                         objectName: "primaryButton"
                         text: qsTr("Primary")
@@ -356,7 +376,7 @@ ApplicationWindow {
                         }
                         background: Rectangle {
                             color: editor.primary
-                            radius: 4
+                            radius: Theme.controlRadius
                             border.color: primaryButton.activeFocus ? Theme.accent : Theme.divider
                             border.width: 2
                         }
@@ -368,8 +388,8 @@ ApplicationWindow {
                         }
                         Accessible.name: qsTr("Choose primary color")
                     }
-                    Button {
-                        implicitWidth: 56
+                    IconButton {
+                        symbol: "swap"
                         text: qsTr("Swap")
                         onClicked: {
                             const old = editor.primary;
@@ -475,11 +495,14 @@ ApplicationWindow {
                 visible: editor.busy
                 onClicked: editor.cancelIo()
             }
-            ToolButton {
+            IconButton {
+                symbol: "fit"
+                shortcutLabel: "Ctrl+0"
                 action: fitAction
             }
-            ToolButton {
-                text: "−"
+            IconButton {
+                symbol: "zoom-out"
+                shortcutLabel: "Ctrl+-"
                 action: zoomOutAction
                 Accessible.name: qsTr("Zoom out")
             }
@@ -488,8 +511,9 @@ ApplicationWindow {
                 Layout.preferredWidth: 44
                 horizontalAlignment: Text.AlignHCenter
             }
-            ToolButton {
-                text: "+"
+            IconButton {
+                symbol: "zoom-in"
+                shortcutLabel: "Ctrl++"
                 action: zoomInAction
                 Accessible.name: qsTr("Zoom in")
             }
@@ -513,7 +537,7 @@ ApplicationWindow {
         onAccepted: editor.saveFile(selectedFile)
         onRejected: window.pendingAction = ""
     }
-    Dialog {
+    PaintDialog {
         id: errorDialog
         objectName: "errorDialog"
         title: qsTr("File operation failed")
@@ -528,7 +552,7 @@ ApplicationWindow {
             color: Theme.text
         }
     }
-    Dialog {
+    PaintDialog {
         id: noticeDialog
         title: qsTr("PNG metadata")
         anchors.centerIn: parent
@@ -547,7 +571,7 @@ ApplicationWindow {
         title: qsTr("Primary color")
         onAccepted: editor.primary = selectedColor
     }
-    Dialog {
+    PaintDialog {
         id: closeDialog
         title: qsTr("Save changes?")
         objectName: "unsavedDialog"
@@ -562,7 +586,7 @@ ApplicationWindow {
             color: Theme.text
         }
     }
-    Dialog {
+    PaintDialog {
         id: aboutDialog
         objectName: "aboutDialog"
         anchors.centerIn: parent

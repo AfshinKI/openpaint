@@ -151,3 +151,19 @@ For each visible feature, submit synthetic light/dark screenshots at the minimum
 and typical window size, keyboard checks, and failure/disabled states. Compare
 workflow placement with the reference audit; do not claim pixel parity without
 an observed, versioned comparison. The layout above is the initial design contract.
+
+## Required polish before additional tools
+
+The initial text-button shell is temporary. The next UI gate requires original
+24-unit toolbar icons, hover tooltips with shortcut labels, and a common rounded
+control family: 6 px buttons/inputs, 8 px toolbar/menu surfaces, 12 px dialogs.
+Circular swatches retain at least 32 px hit areas. Rounded menu rows are inset;
+focus must remain visible independently of hover or selection. Native window
+frames and file dialogs follow the desktop. The artwork itself remains rectangular.
+
+Replace the platform color chooser with an app-owned hue ring and saturation/value
+area, synchronized HEX/RGB/HSV inputs, original/current previews and explicit
+accept/cancel. Both primary and secondary colors are editable. Ten local custom
+swatches support add, replace and clear. Palette changes are settings, not undoable
+artwork edits, and never dirty the document. See the [UI polish plan](plans/0004-ui-polish.md)
+for the two focused implementation slices and acceptance cases.

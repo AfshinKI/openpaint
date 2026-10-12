@@ -30,6 +30,11 @@ class ShellTest : public QObject {
         window = qobject_cast<QQuickWindow*>(engine->rootObjects().first());
         QVERIFY(window);
         QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(window));
+        QSignalSpy readyFrame(window, &QQuickWindow::frameSwapped);
+        window->requestUpdate();
+        QVERIFY(readyFrame.wait(1000));
     }
 
     void cleanup() {
@@ -61,6 +66,13 @@ class ShellTest : public QObject {
         QVERIFY(dark->property("checked").toBool());
         QVERIFY(!light->property("checked").toBool());
         QVERIFY(capture(QStringLiteral("shell-dark-1280.png")));
+        auto* menu = window->findChild<QObject*>(QStringLiteral("fileMenu"));
+        QVERIFY(menu);
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(menu->property("width").toReal() >= 240);
+        QVERIFY(capture(QStringLiteral("menu-dark.png")));
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
         window->resize(1024, 640);
         QVERIFY(capture(QStringLiteral("shell-dark-1024.png")));
         QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
@@ -70,6 +82,11 @@ class ShellTest : public QObject {
         QVERIFY(capture(QStringLiteral("shell-light-1024.png")));
         window->resize(1280, 800);
         QVERIFY(capture(QStringLiteral("shell-light-1280.png")));
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(menu->property("width").toReal() >= 240);
+        QVERIFY(capture(QStringLiteral("menu-light.png")));
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
         QVERIFY(QMetaObject::invokeMethod(system, "trigger", Q_ARG(QObject*, nullptr)));
         QVERIFY(system->property("checked").toBool());
         QVERIFY(!light->property("checked").toBool());
@@ -82,6 +99,7 @@ class ShellTest : public QObject {
         QVERIFY(QTest::qWaitForWindowActive(window));
         QTest::keyClick(window, Qt::Key_F1);
         QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(capture(QStringLiteral("dialog-light.png")));
         QTest::keyClick(window, Qt::Key_Escape);
         QTRY_VERIFY(!dialog->property("visible").toBool());
         QVERIFY(window->isVisible());
