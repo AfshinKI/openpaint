@@ -378,7 +378,10 @@ void Editor::undo() {
         return;
     }
     finish();
+    const auto size = imageSize();
     if (document.undo()) {
+        if (imageSize() != size)
+            emit documentReplaced();
         emit pixelsChanged(QRect());
         emit changed();
     }
@@ -387,13 +390,18 @@ void Editor::redo() {
     if (loading() || previewActive())
         return;
     finish();
+    const auto size = imageSize();
     if (document.redo()) {
+        if (imageSize() != size)
+            emit documentReplaced();
         emit pixelsChanged(QRect());
         emit changed();
     }
 }
 
 Editor::Editor(QObject* parent) : QObject(parent) {
+    connect(&transformWatcher_, &QFutureWatcher<openpaint::TransformResult>::finished, this,
+            &Editor::finishTransform);
     connect(&copyWatcher_, &QFutureWatcher<QByteArray>::finished, this, &Editor::finishCopy);
     connect(this, &Editor::settingsChanged, this, &Editor::refreshShape);
     connect(this, &Editor::settingsChanged, this, &Editor::refreshText);

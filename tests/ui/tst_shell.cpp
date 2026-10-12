@@ -181,6 +181,53 @@ class ShellTest : public QObject {
         editor->undo();
     }
 
+    void imageTransformWorkflow() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        editor->begin({100, 100}, false);
+        editor->extend({240, 160});
+        editor->finish();
+        const auto original = editor->image();
+        QVERIFY(tabTo("imageMenuButton"));
+        editor->transformImage(0);
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->image(), original);
+        keyClick(Qt::Key_Space);
+        auto* menu = window->findChild<QObject*>(QStringLiteral("imageMenu"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QSignalSpy closed(menu, SIGNAL(closed()));
+        keyClick(Qt::Key_Down); // Crop is disabled; Rotate right is first enabled.
+        keyClick(Qt::Key_Return);
+        QTRY_COMPARE(closed.size(), 1);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->imageSize(), QSize(648, 1152));
+        QCOMPARE(editor->image(), original.transformed(QTransform().rotate(90)));
+        canvas->forceActiveFocus();
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QCOMPARE(editor->image(), original);
+        editor->selectRect(60, 60, 240, 140);
+        window->resize(1024, 640);
+        auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("image-controls-light-1024.png")));
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture(QStringLiteral("image-menu-dark.png")));
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+        QTRY_COMPARE(closed.size(), 2);
+        const auto crop = editor->selectedImage();
+        QVERIFY(tabTo("cropButton"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->image(), crop);
+        canvas->forceActiveFocus();
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QCOMPARE(editor->image(), original);
+    }
+
     void freeFormSelectionWorkflow() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();

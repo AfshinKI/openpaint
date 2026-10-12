@@ -162,7 +162,7 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: "Escape"
-        enabled: editor.filling
+        enabled: editor.loading
         onActivated: editor.cancelIo()
     }
     Action {
@@ -244,6 +244,42 @@ ApplicationWindow {
         onTriggered: canvas.zoomBy(0.8)
     }
     Action {
+        id: rotateRightAction
+        text: editor.hasSelection ? qsTr("Rotate selection right 90°") : qsTr("Rotate image right 90°")
+        enabled: editor.canSelect && !editor.busy
+        onTriggered: editor.transformImage(0)
+    }
+    Action {
+        id: rotateLeftAction
+        text: editor.hasSelection ? qsTr("Rotate selection left 90°") : qsTr("Rotate image left 90°")
+        enabled: editor.canSelect && !editor.busy
+        onTriggered: editor.transformImage(1)
+    }
+    Action {
+        id: rotateHalfAction
+        text: editor.hasSelection ? qsTr("Rotate selection 180°") : qsTr("Rotate image 180°")
+        enabled: editor.canSelect && !editor.busy
+        onTriggered: editor.transformImage(2)
+    }
+    Action {
+        id: flipHorizontalAction
+        text: editor.hasSelection ? qsTr("Flip selection horizontally") : qsTr("Flip image horizontally")
+        enabled: editor.canSelect && !editor.busy
+        onTriggered: editor.transformImage(3)
+    }
+    Action {
+        id: flipVerticalAction
+        text: editor.hasSelection ? qsTr("Flip selection vertically") : qsTr("Flip image vertically")
+        enabled: editor.canSelect && !editor.busy
+        onTriggered: editor.transformImage(4)
+    }
+    Action {
+        id: cropAction
+        text: qsTr("Crop to selection")
+        enabled: editor.canSelect && editor.hasSelection && !editor.busy
+        onTriggered: editor.transformImage(5)
+    }
+    Action {
         id: copyAction
         text: qsTr("Copy")
         shortcut: "Ctrl+C"
@@ -320,94 +356,146 @@ ApplicationWindow {
         }
     }
 
-    menuBar: MenuBar {
+    menuBar: ToolBar {
+        leftPadding: 4
+        rightPadding: 4
+        topPadding: 2
+        bottomPadding: 2
         background: Rectangle {
             color: Theme.window
         }
-        delegate: MenuBarItem {
-            id: menuEntry
-            background: Rectangle {
-                radius: Theme.controlRadius
-                color: menuEntry.highlighted ? Theme.hover : "transparent"
+        contentItem: RowLayout {
+            spacing: 4
+            MenuBar {
+                Layout.fillWidth: true
+                background: Rectangle {
+                    color: Theme.window
+                }
+                delegate: MenuBarItem {
+                    id: menuEntry
+                    background: Rectangle {
+                        radius: Theme.controlRadius
+                        color: menuEntry.highlighted ? Theme.hover : "transparent"
+                    }
+                }
+                PaintMenu {
+                    objectName: "fileMenu"
+                    title: qsTr("&File")
+                    PaintMenuItem {
+                        action: newAction
+                    }
+                    PaintMenuItem {
+                        action: openAction
+                    }
+                    PaintMenuItem {
+                        action: saveAction
+                    }
+                    PaintMenuItem {
+                        action: saveAsAction
+                    }
+                    MenuSeparator {}
+                    PaintMenuItem {
+                        action: quitAction
+                    }
+                }
+                PaintMenu {
+                    title: qsTr("&Edit")
+                    PaintMenuItem {
+                        action: undoAction
+                    }
+                    PaintMenuItem {
+                        action: redoAction
+                    }
+                    MenuSeparator {}
+                    PaintMenuItem {
+                        action: cutAction
+                    }
+                    PaintMenuItem {
+                        action: copyAction
+                    }
+                    PaintMenuItem {
+                        action: pasteAction
+                    }
+                    MenuSeparator {}
+                    PaintMenuItem {
+                        action: selectAllAction
+                    }
+                    PaintMenuItem {
+                        action: deselectAction
+                    }
+                    PaintMenuItem {
+                        action: deleteSelectionAction
+                    }
+                }
+                PaintMenu {
+                    title: qsTr("&Image")
+                    PaintMenuItem {
+                        action: cropAction
+                    }
+                    PaintMenuItem {
+                        action: rotateRightAction
+                    }
+                    PaintMenuItem {
+                        action: rotateLeftAction
+                    }
+                    PaintMenuItem {
+                        action: rotateHalfAction
+                    }
+                    PaintMenuItem {
+                        action: flipHorizontalAction
+                    }
+                    PaintMenuItem {
+                        action: flipVerticalAction
+                    }
+                }
+                PaintMenu {
+                    title: qsTr("&View")
+                    PaintMenuItem {
+                        action: fitAction
+                    }
+                    PaintMenuItem {
+                        action: zoomInAction
+                    }
+                    PaintMenuItem {
+                        action: zoomOutAction
+                    }
+                    PaintMenu {
+                        title: qsTr("&Theme")
+                        PaintMenuItem {
+                            action: systemThemeAction
+                        }
+                        PaintMenuItem {
+                            action: lightThemeAction
+                        }
+                        PaintMenuItem {
+                            action: darkThemeAction
+                        }
+                    }
+                }
+                PaintMenu {
+                    title: qsTr("&Help")
+                    PaintMenuItem {
+                        action: aboutAction
+                    }
+                }
             }
-        }
-        PaintMenu {
-            objectName: "fileMenu"
-            title: qsTr("&File")
-            PaintMenuItem {
-                action: newAction
-            }
-            PaintMenuItem {
-                action: openAction
-            }
-            PaintMenuItem {
+            IconButton {
+                symbol: "save"
+                shortcutLabel: "Ctrl+S"
                 action: saveAction
+                Accessible.name: text
             }
-            PaintMenuItem {
-                action: saveAsAction
-            }
-            MenuSeparator {}
-            PaintMenuItem {
-                action: quitAction
-            }
-        }
-        PaintMenu {
-            title: qsTr("&Edit")
-            PaintMenuItem {
+            IconButton {
+                symbol: "undo"
+                shortcutLabel: "Ctrl+Z"
                 action: undoAction
+                Accessible.name: text
             }
-            PaintMenuItem {
+            IconButton {
+                symbol: "redo"
+                shortcutLabel: "Ctrl+Y"
                 action: redoAction
-            }
-            MenuSeparator {}
-            PaintMenuItem {
-                action: cutAction
-            }
-            PaintMenuItem {
-                action: copyAction
-            }
-            PaintMenuItem {
-                action: pasteAction
-            }
-            MenuSeparator {}
-            PaintMenuItem {
-                action: selectAllAction
-            }
-            PaintMenuItem {
-                action: deselectAction
-            }
-            PaintMenuItem {
-                action: deleteSelectionAction
-            }
-        }
-        PaintMenu {
-            title: qsTr("&View")
-            PaintMenuItem {
-                action: fitAction
-            }
-            PaintMenuItem {
-                action: zoomInAction
-            }
-            PaintMenuItem {
-                action: zoomOutAction
-            }
-            PaintMenu {
-                title: qsTr("&Theme")
-                PaintMenuItem {
-                    action: systemThemeAction
-                }
-                PaintMenuItem {
-                    action: lightThemeAction
-                }
-                PaintMenuItem {
-                    action: darkThemeAction
-                }
-            }
-        }
-        PaintMenu {
-            title: qsTr("&Help")
-            PaintMenuItem {
-                action: aboutAction
+                Accessible.name: text
             }
         }
     }
@@ -425,46 +513,6 @@ ApplicationWindow {
             anchors.fill: parent
             anchors.margins: 8
             spacing: 8
-            ColumnLayout {
-                IconButton {
-                    symbol: "save"
-                    shortcutLabel: "Ctrl+S"
-                    action: saveAction
-                    Accessible.name: qsTr("Save drawing")
-                }
-                Label {
-                    text: qsTr("File")
-                    color: Theme.secondaryText
-                    Layout.alignment: Qt.AlignHCenter
-                }
-            }
-            ToolSeparator {
-                Layout.fillHeight: true
-            }
-            ColumnLayout {
-                RowLayout {
-                    IconButton {
-                        symbol: "undo"
-                        shortcutLabel: "Ctrl+Z"
-                        action: undoAction
-                        Accessible.name: text
-                    }
-                    IconButton {
-                        symbol: "redo"
-                        shortcutLabel: "Ctrl+Y"
-                        action: redoAction
-                        Accessible.name: text
-                    }
-                }
-                Label {
-                    text: qsTr("History")
-                    color: Theme.secondaryText
-                    Layout.alignment: Qt.AlignHCenter
-                }
-            }
-            ToolSeparator {
-                Layout.fillHeight: true
-            }
             ColumnLayout {
                 IconButton {
                     objectName: "selectionButton"
@@ -531,6 +579,47 @@ ApplicationWindow {
                         }
                         PaintMenuItem {
                             action: deleteSelectionAction
+                        }
+                    }
+                }
+            }
+            ToolSeparator {
+                Layout.fillHeight: true
+            }
+            ColumnLayout {
+                IconButton {
+                    symbol: "crop"
+                    objectName: "cropButton"
+                    action: cropAction
+                    Accessible.name: text
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                PaintButton {
+                    objectName: "imageMenuButton"
+                    text: qsTr("Image ▾")
+                    enabled: editor.canSelect && !editor.busy
+                    onClicked: imageMenu.open()
+                    PaintMenu {
+                        id: imageMenu
+                        objectName: "imageMenu"
+                        y: parent.height
+                        PaintMenuItem {
+                            action: cropAction
+                        }
+                        PaintMenuItem {
+                            action: rotateRightAction
+                        }
+                        PaintMenuItem {
+                            action: rotateLeftAction
+                        }
+                        PaintMenuItem {
+                            action: rotateHalfAction
+                        }
+                        PaintMenuItem {
+                            action: flipHorizontalAction
+                        }
+                        PaintMenuItem {
+                            action: flipVerticalAction
                         }
                     }
                 }
@@ -814,7 +903,7 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }

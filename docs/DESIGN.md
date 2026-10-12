@@ -85,7 +85,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
 | Escape | Cancel active preview/transform; otherwise dismiss the topmost transient UI |
 | Pan / zoom | Space+drag pans outside text entry; Ctrl+wheel zooms around pointer; plain wheel scrolls |
-| Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Resize handles follow with transforms. |
+| Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Selected-image resizing follows in M2. |
 | Transform | Shift constrains proportions or rotation increments; numeric inputs provide keyboard precision |
 | Text | Inline editor with font, size, alignment, style, foreground and optional background; Ctrl+Enter commits, Escape cancels |
 | Shape | 19-item icon palette; Shift constrains geometry, polygon clicks add vertices and Backspace removes the last; drag/release retains preview; numeric start/end and outline/fill options; Enter/Apply commits and Escape/Cancel restores original; new drawing/tool switch commits current preview; Undo cancels the preview |
@@ -199,3 +199,12 @@ under desktop control. User-provided reference screenshots are not redistributed
 M1 keyboard evidence: [desktop workflow](plans/0008-keyboard-desktop-workflow.md).
 Dialogs take keyboard focus; Escape cancels unsaved changes without mutating pixels.
 Ctrl+Q is an explicit Quit binding, independent of the desktop theme’s defaults.
+
+### Image transform controls
+
+Save/Undo/Redo share the menu row as compact quick actions. The toolbar starts
+with Selection and Image groups so commands fit the minimum window. Image actions
+name image/selection scope explicitly. Crop uses selected bounds and clears
+unselected interior pixels; rotations and flips preserve alpha. Selected-content
+transforms retain a movable Apply/Cancel preview, while whole-image commands commit
+one undo step and refit when dimensions change. Resize/skew follows separately.
