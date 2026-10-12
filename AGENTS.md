@@ -19,7 +19,9 @@ with [the decision template](docs/templates/DECISION.md).
 ## Branches and scope
 
 - `main` is protected. Never commit or push directly to it, bypass protection, or
-  merge automatically. Publish changes on a branch and open a PR targeting `main`.
+  bypass required checks. Publish changes on a branch and open a PR targeting `main`.
+- Until stable v1, the maintainer authorizes auto-merge after all CI jobs pass.
+  Respect required reviews and branch protection; never bypass them.
 - Start each branch from current `origin/main`. Name it only for the specific
   feature or change, such as `feat/fill-tolerance` or `docs/branch-workflow`.
   Never include `codex`, `claude`, another assistant/provider name, or an author name.

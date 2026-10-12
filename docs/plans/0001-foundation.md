@@ -1,6 +1,6 @@
 # M1: first working canvas
 
-Status: in progress; Step 1 native shell implemented, awaiting PR review/merge
+Status: in progress; Step 1 merged; Step 2 document/history implemented, under validation
 Feature IDs: F01, F02, F05, F11, F15, F16, F26 (initial subsets)
 Dependencies: M0 documentation and repository tooling
 
@@ -32,11 +32,11 @@ intentional broken smoke assertion. Record exact environment and commands below.
 
 ## Step 2 — headless document and history
 
-- [ ] Introduce single-layer Document, raster surface abstraction, stable revision,
+- [x] Introduce single-layer Document, raster surface abstraction, stable revision,
   saved revision, and undo stack with a memory budget.
-- [ ] Implement stroke pixel patches and clear-alpha eraser commands; opaque
+- [x] Implement stroke pixel patches and clear-alpha eraser commands; opaque
   eraser mode is explicit. Deterministically generate fixtures in tests.
-- [ ] Test apply/undo/redo equivalence, redo invalidation, history trimming, saved
+- [x] Test apply/undo/redo equivalence, redo invalidation, history trimming, saved
   revision tracking, and invalid image dimensions/overflow.
 
 Acceptance: engine tests run without loading QML or making network requests.
@@ -101,7 +101,26 @@ engine or document operations.
 - Synthetic light/dark captures at minimum and typical sizes were reviewed. They
   contain only the app's own preview content; no user documents or desktop capture.
 
-Remaining Step 1 gate: review and merge [PR #3](https://github.com/AfshinKI/openpaint/pull/3)
-through protected main. Wayland, GPU rendering, Orca, and packaging are not verified here.
-After merge, start Step 2 on a fresh document/history branch; do not append it to
-the shell branch. Steps 2–5 and the overall M1 gate remain incomplete.
+[PR #3](https://github.com/AfshinKI/openpaint/pull/3) is merged. Wayland, GPU
+rendering, Orca, and packaging remain unverified.
+
+Step 2: the headless QImage document supports round antialiased stroke segments,
+alpha erasing, cancel, bounded patch history, saved revisions and redo branching.
+M1 temporarily caps images at 32 MP so full-image transaction and codec snapshots
+fit the working-set contract. Operations larger than the history budget roll back.
+Document Qt tests cover pixel equivalence, cancellation, alpha, branching,
+trimming and invalid dimensions. Debug CTest passed locally on the Step 1 setup.
+Next: merge this slice after CI, then implement canvas/input on a new branch.
+
+## Usable basic editor delivery
+
+The maintainer authorizes checked auto-merge through stable v1. Each step remains
+a focused PR; all CI jobs must pass and required reviews/protection still apply.
+After document/history, deliver drawing-canvas and PNG-file-workflow separately.
+The basic usability gate is draw/erase → undo/redo → save/reopen → safe close.
+
+Paint-like feel is an explicit acceptance target: compact grouped toolbar above
+a neutral workspace, visible color/size choices, bottom status/zoom, interpolated
+continuous strokes and pointer-anchored zoom. Record actual performance separately
+from subjective smoothness. Exact reference-build layout/behavior and GPU/Wayland
+parity remain later audit work; do not label the app an identical replica.

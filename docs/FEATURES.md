@@ -1,7 +1,7 @@
 # Feature checklist and reference audit
 
 Audit date: 2026-10-12. **Only the native shell subset of F01 is implemented.**
-Drawing, documents, and the remaining capabilities below are still planned.
+The document/history engine now exists; drawing UI and files are still planned.
 The reference is modern Windows 11 Paint, including separately identified preview
 features. This is a research baseline, not an exhaustive test of today's installed
 Paint. No Windows binary was available for a hands-on comparison.
@@ -29,7 +29,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F13 | Transparent canvas, layer visibility/opacity | R1 plus OpenPaint contract; detailed parity needs observation | M3 | Planned |
 | F14 | Editable layered project save/reopen | R2; OpenPaint uses .ora initially | M3 | Planned |
 | F15 | PNG, JPEG, BMP, WebP interchange; static GIF import | R1 documents some formats; exact supported subset is our choice | M1–M4 | Planned |
-| F16 | Undo/redo, crash recovery, atomic saves | Product choice; reference workflow requires hands-on audit | M1–M3 | Planned |
+| F16 | Undo/redo, crash recovery, atomic saves | Product choice; reference workflow requires hands-on audit | M1–M3 | In progress: headless stroke history tested; files/recovery pending. |
 | F17 | Stylus pressure, touch and fractional scaling | R1 confirms stylus; precise pressure behavior needs observation | M4 | Planned |
 | F18 | One-click background removal | R1 | M6 | Planned |
 | F19 | Object selection | R5, hardware-dependent in reference | M6 | Planned |

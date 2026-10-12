@@ -56,7 +56,7 @@ Use monotonic instrumentation and at least 30 measured repetitions after warm-up
 for discrete operations. Record frame/input traces for sustained strokes; report
 percentiles and environment. Document regressions, rather than tuning tests to pass.
 
-Initial import limits: 16,384 pixels per dimension, 100 million pixels total, and a
+Initial import limits: 16,384 pixels per dimension, 32 million pixels total in M1 (100 million is a later target), and a
 1 GiB estimated document working-set budget including decoded layers. Estimate
 before allocation, account for temporary buffers and undo, and allow stricter
 limits on low-memory systems. A single operation larger than the undo budget
