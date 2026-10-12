@@ -189,6 +189,10 @@ class ShellTest : public QObject {
         editor->finish();
         const auto original = editor->image();
         QVERIFY(tabTo("imageMenuButton"));
+        editor->transformImage(0);
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->image(), original);
         keyClick(Qt::Key_Space);
         auto* menu = window->findChild<QObject*>(QStringLiteral("imageMenu"));
         QTRY_VERIFY(menu->property("visible").toBool());

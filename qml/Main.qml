@@ -162,7 +162,7 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: "Escape"
-        enabled: editor.filling
+        enabled: editor.loading
         onActivated: editor.cancelIo()
     }
     Action {
