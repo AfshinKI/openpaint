@@ -2,17 +2,20 @@
 #include "color/ColorPalette.h"
 #include "color/ColorSpectrum.h"
 #include "render/CanvasItem.h"
+#include <QAccessible>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlError>
+#include <QQmlExpression>
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
 #include <algorithm>
+#include <functional>
 #include <memory>
 
 static QList<QQuickItem*> visualItems(QQuickItem* root, const QString& name) {
@@ -259,6 +262,183 @@ class ShellTest : public QObject {
         QVERIFY(window->isVisible());
     }
 
+    void nativePortalWorkflow() {
+        const auto directory = qEnvironmentVariable("OPENPAINT_PORTAL_DIR");
+        if (directory.isEmpty())
+            return;
+        const auto token = qEnvironmentVariable("OPENPAINT_PORTAL_TOKEN");
+        QVERIFY(!token.isEmpty());
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* save = window->findChild<QObject*>(QStringLiteral("saveDialog"));
+        auto* open = window->findChild<QObject*>(QStringLiteral("openDialog"));
+        const auto url = QUrl::fromLocalFile(QDir(directory).filePath("portal.png"));
+        QVERIFY(save->setProperty("title", "OpenPaint validation save " + token));
+        QVERIFY(open->setProperty("title", "OpenPaint validation open " + token));
+        QVERIFY(save->setProperty("currentFolder", QUrl::fromLocalFile(directory)));
+        QVERIFY(save->setProperty("selectedFile", url));
+        QVERIFY(open->setProperty("currentFolder", QUrl::fromLocalFile(directory)));
+        editor->begin({50, 50}, false);
+        editor->extend({160, 140});
+        editor->finish();
+        keyClick(Qt::Key_S, Qt::ControlModifier);
+        QTRY_VERIFY_WITH_TIMEOUT(!editor->fileUrl().isEmpty(), 30000);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->fileUrl(), url);
+        QVERIFY(!editor->dirty());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, editor->image());
+        // Replace the selected destination through the same safe save path.
+        editor->begin({220, 220}, false);
+        editor->finish();
+        const auto artwork = editor->image();
+        keyClick(Qt::Key_S, Qt::ControlModifier);
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(!editor->dirty());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, artwork);
+        keyClick(Qt::Key_N, Qt::ControlModifier);
+        keyClick(Qt::Key_O, Qt::ControlModifier);
+        QTRY_COMPARE_WITH_TIMEOUT(editor->fileUrl(), url, 30000);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->image(), artwork);
+        QTRY_VERIFY(window->isActive());
+        QVERIFY(open->setProperty("title", "OpenPaint validation cancel " + token));
+        keyClick(Qt::Key_O, Qt::ControlModifier);
+        QTRY_VERIFY(open->property("visible").toBool());
+        QTRY_VERIFY_WITH_TIMEOUT(!open->property("visible").toBool(), 30000);
+        QCOMPARE(editor->image(), artwork);
+        QVERIFY(!editor->dirty());
+    }
+
+    void keyboardFileWorkflow() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* save = window->findChild<QObject*>(QStringLiteral("saveDialog"));
+        auto* open = window->findChild<QObject*>(QStringLiteral("openDialog"));
+        auto* unsaved = window->findChild<QObject*>(QStringLiteral("unsavedDialog"));
+        QVERIFY(editor && save && open && unsaved);
+        QTemporaryDir dir;
+        const auto url = QUrl::fromLocalFile(dir.filePath("keyboard.png"));
+        // Select the documented Qt fallback for repeatable keyboard tests.
+        QQmlExpression options(qmlContext(save), save, "FileDialog.DontUseNativeDialog");
+        const auto flag = options.evaluate();
+        QVERIFY(!options.hasError());
+        QVERIFY(save->setProperty("options", flag));
+        QVERIFY(open->setProperty("options", flag));
+        QVERIFY(save->setProperty("currentFolder", QUrl::fromLocalFile(dir.path())));
+        QVERIFY(open->setProperty("currentFolder", QUrl::fromLocalFile(dir.path())));
+        editor->begin({40, 40}, false);
+        editor->extend({180, 120});
+        editor->finish();
+        const auto artwork = editor->image();
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QVERIFY(!editor->dirty());
+        keyClick(Qt::Key_Z, Qt::ControlModifier | Qt::ShiftModifier);
+        QCOMPARE(editor->image(), artwork);
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        keyClick(Qt::Key_Y, Qt::ControlModifier);
+        QCOMPARE(editor->image(), artwork);
+        keyClick(Qt::Key_S, Qt::ControlModifier);
+        QTRY_VERIFY(save->property("visible").toBool());
+        QVERIFY(tabTo("fileNameTextField"));
+        for (char key : std::string("keyboard.png"))
+            keyClick(key);
+        QVERIFY(tabToButton("Save"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!save->property("visible").toBool());
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->fileUrl(), url);
+        QVERIFY(!editor->dirty());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, artwork);
+        keyClick(Qt::Key_N, Qt::ControlModifier);
+        QVERIFY(editor->fileUrl().isEmpty());
+        keyClick(Qt::Key_O, Qt::ControlModifier);
+        QTRY_VERIFY(open->property("visible").toBool());
+        QVERIFY(tabTo("fileDialogListView"));
+        auto* chooserWindow = qobject_cast<QQuickWindow*>(QGuiApplication::focusWindow());
+        QVERIFY(chooserWindow);
+        auto* list = chooserWindow->activeFocusItem();
+        while (list && list->objectName() != "fileDialogListView")
+            list = list->parentItem();
+        QVERIFY(list);
+        QTRY_COMPARE(list->property("count").toInt(), 1);
+        keyClick(Qt::Key_Home);
+        keyClick(Qt::Key_Down);
+        QVERIFY(tabToButton("Open"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!open->property("visible").toBool());
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->image(), artwork);
+        editor->begin({220, 220}, false);
+        editor->finish();
+        const auto changed = editor->image();
+        keyClick(Qt::Key_N, Qt::ControlModifier);
+        QTRY_VERIFY(unsaved->property("visible").toBool());
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!unsaved->property("visible").toBool());
+        QCOMPARE(editor->image(), changed);
+        keyClick(Qt::Key_S, Qt::ControlModifier);
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(!editor->dirty());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, changed);
+        editor->begin({280, 280}, false);
+        editor->finish();
+        const auto savedFromPrompt = editor->image();
+        keyClick(Qt::Key_N, Qt::ControlModifier);
+        QTRY_VERIFY(unsaved->property("visible").toBool());
+        QVERIFY(tabToButton("Save"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!editor->busy());
+        QTRY_VERIFY(editor->fileUrl().isEmpty());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, savedFromPrompt);
+        editor->begin({30, 30}, false);
+        editor->finish();
+        keyClick(Qt::Key_N, Qt::ControlModifier);
+        QTRY_VERIFY(unsaved->property("visible").toBool());
+        QQmlExpression discard(qmlContext(unsaved), unsaved,
+                               "footer.standardButton(Dialog.Discard)");
+        auto* discardButton = qvariant_cast<QQuickItem*>(discard.evaluate());
+        QVERIFY(!discard.hasError() && discardButton);
+        QVERIFY(tabToItem(discardButton));
+        QSignalSpy closed(unsaved, SIGNAL(closed()));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!unsaved->property("visible").toBool());
+        QVERIFY(!editor->dirty());
+        QCOMPARE(openpaint::loadPng(url.toLocalFile()).image, savedFromPrompt);
+        QTRY_COMPARE(closed.size(), 1);
+        keyClick(Qt::Key_O, Qt::ControlModifier);
+        QTRY_VERIFY(open->property("visible").toBool());
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!open->property("visible").toBool());
+        keyClick(Qt::Key_Q, Qt::ControlModifier);
+        QTRY_VERIFY(!window->isVisible());
+    }
+
+    void keyboardControlsAndAccessibility() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        QVERIFY(tabTo("pencilButton"));
+        auto* focused = window->activeFocusItem();
+        auto* accessible = QAccessible::queryAccessibleInterface(focused);
+        QVERIFY(accessible);
+        QCOMPARE(accessible->text(QAccessible::Name), QString("Pencil"));
+        QVERIFY(accessible->state().focusable);
+        keyClick(Qt::Key_Tab);
+        keyClick(Qt::Key_Space);
+        QVERIFY(editor->eraser);
+        QVERIFY(tabTo("strokeSize"));
+        const auto previousSize = editor->brushSize;
+        keyClick(Qt::Key_Up);
+        QCOMPARE(editor->brushSize, previousSize + 1);
+        QVERIFY(tabTo("primaryButton"));
+        keyClick(Qt::Key_Space);
+        auto* colors = window->findChild<QObject*>(QStringLiteral("colorEditor"));
+        QTRY_VERIFY(colors->property("visible").toBool());
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!colors->property("visible").toBool());
+        auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));
+        accessible = QAccessible::queryAccessibleInterface(canvas);
+        QVERIFY(accessible);
+        QCOMPARE(accessible->text(QAccessible::Name), QString("Drawing canvas"));
+        QCOMPARE(accessible->role(), QAccessible::Canvas);
+    }
+
     void customColorEditor() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         auto* dialog = window->findChild<QObject*>(QStringLiteral("colorEditor"));
@@ -432,6 +612,52 @@ class ShellTest : public QObject {
     }
 
   private:
+    QWindow* keyWindow() {
+        QTest::qWait(10);
+        QWindow* target = window;
+        for (auto* candidate : QGuiApplication::topLevelWindows()) {
+            if (candidate != window && candidate->isVisible() &&
+                candidate->transientParent() == window)
+                target = candidate;
+        }
+        // Xvfb has no window manager; offscreen can retain a hidden popup as focus.
+        // Activate the visible test dialog, never another application's window.
+        if (QGuiApplication::focusWindow() != target) {
+            target->requestActivate();
+            if (!QTest::qWaitFor([&] { return QGuiApplication::focusWindow() == target; }))
+                QTest::qFail("Test window did not activate", __FILE__, __LINE__);
+        }
+        return target;
+    }
+    void keyClick(Qt::Key key, Qt::KeyboardModifiers modifiers = {}) {
+        QTest::keyClick(keyWindow(), key, modifiers);
+    }
+    void keyClick(char key) {
+        QTest::keyClick(keyWindow(), key);
+    }
+    bool tabUntil(const std::function<bool(QQuickItem*)>& matches) {
+        for (int i = 0; i < 100; ++i) {
+            auto* target = qobject_cast<QQuickWindow*>(keyWindow());
+            for (auto* item = target ? target->activeFocusItem() : nullptr; item;
+                 item = item->parentItem()) {
+                if (matches(item))
+                    return true;
+            }
+            keyClick(Qt::Key_Tab);
+        }
+        return false;
+    }
+    bool tabToItem(QQuickItem* item) {
+        return tabUntil([&](QQuickItem* candidate) { return candidate == item; });
+    }
+    bool tabToButton(const QString& text) {
+        return tabUntil([&](QQuickItem* candidate) {
+            return candidate->property("text").toString().remove('&') == text;
+        });
+    }
+    bool tabTo(const QString& name) {
+        return tabUntil([&](QQuickItem* candidate) { return candidate->objectName() == name; });
+    }
     // Optional synthetic evidence: capture only this test window, never the desktop.
     bool capture(const QString& name) {
         const auto directory = qEnvironmentVariable("OPENPAINT_CAPTURE_DIR");

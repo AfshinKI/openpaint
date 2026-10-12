@@ -84,6 +84,13 @@ configure; do not change the compiler in an existing CMake build directory.
 
 ## Native desktop and visual checks
 
+To validate the real GNOME file portal, install `python3-gi` and
+`gir1.2-atspi-2.0`, then run `python3 tools/validate_portal.py` in an active
+desktop session. It launches a separate test process, handles only uniquely named
+test dialogs, and removes generated artwork afterward. It tests an unpackaged
+application; Flatpak document grants still require packaged-app validation.
+
+
 From an actual desktop session, run either applicable command:
 
 ```sh

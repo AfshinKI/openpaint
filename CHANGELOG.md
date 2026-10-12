@@ -4,6 +4,8 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Give dialogs keyboard focus, provide a consistent Ctrl+Q shortcut, and correct PNG CLI help.
+
 - Normalize PNG EXIF orientation while stripping metadata; reject corrupt chunk checksums and structure.
 
 - Keep each canvas drag owned by its initiating button; prevent extra buttons and

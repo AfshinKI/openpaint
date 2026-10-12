@@ -192,3 +192,7 @@ editor. The color editor always exposes all 24 custom slots. Plus/empty-slot
 activation appends the draft to the next free slot; Manage custom colors offers
 replace/remove/clear. Removal compacts the slots. Native window frames remain
 under desktop control. User-provided reference screenshots are not redistributed.
+
+M1 keyboard evidence: [desktop workflow](plans/0008-keyboard-desktop-workflow.md).
+Dialogs take keyboard focus; Escape cancels unsaved changes without mutating pixels.
+Ctrl+Q is an explicit Quit binding, independent of the desktop theme’s defaults.

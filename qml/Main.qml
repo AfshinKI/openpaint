@@ -121,7 +121,7 @@ ApplicationWindow {
         id: quitAction
         objectName: "quitAction"
         text: qsTr("&Quit")
-        shortcut: StandardKey.Quit
+        shortcut: "Ctrl+Q"
         onTriggered: window.close()
     }
     Action {
@@ -134,7 +134,7 @@ ApplicationWindow {
     Action {
         id: redoAction
         text: qsTr("Redo")
-        shortcut: StandardKey.Redo
+        shortcut: "Ctrl+Y"
         enabled: editor.canRedo && !editor.loading
         onTriggered: editor.redo()
     }
@@ -352,6 +352,7 @@ ApplicationWindow {
             ColumnLayout {
                 PaintSpinBox {
                     id: sizeBox
+                    objectName: "strokeSize"
                     from: 1
                     to: 128
                     value: editor.brushSize
