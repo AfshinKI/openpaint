@@ -54,10 +54,12 @@ PaintDialog {
                 id: units
                 y: parent.height
                 PaintMenuItem {
+                    symbol: "resize"
                     text: qsTr("Pixels")
                     onTriggered: dialog.setPercent(false)
                 }
                 PaintMenuItem {
+                    symbol: "percent"
                     text: qsTr("Percentage")
                     onTriggered: dialog.setPercent(true)
                 }

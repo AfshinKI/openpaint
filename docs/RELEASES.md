@@ -58,7 +58,7 @@ Installed version, source, and channel come from trusted build/package metadata.
 Do not infer write authority merely because a file is writable. An unrecognized
 installation gets a release-page link and manual instructions.
 
-All builds provide Help/Settings → Updates with a manual Check action and release
+All builds provide File → Updates with a manual Check action and release
 notes. Initial alpha builds use a clearly labeled “View releases” action and report
 that automatic checking/installation is not implemented. Do not show simulated
 network results or claim “up to date” without a successful authoritative check.

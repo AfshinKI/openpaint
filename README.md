@@ -13,7 +13,7 @@ your way.
 
 Draw with brushes and fill, add shapes and text, select/copy/paste, crop and resize.
 Open and export PNG, JPEG, BMP and WebP. Undo/redo, zoom/pan, light/dark themes,
-and saved custom colors are included. Editing works offline without an account.
+and session custom colors are included. Editing works offline without an account.
 
 This is an early alpha. Layers, project files, crash recovery and automatic updates
 come later. Keep copies of important originals. See [capabilities and limits](docs/FEATURES.md)

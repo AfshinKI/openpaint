@@ -25,6 +25,82 @@ class TransformTest : public QObject {
         return image;
     }
   private slots:
+    void canvasResizeHistory() {
+        TransformEditor editor;
+        const auto original = fixture();
+        editor.reset(original);
+        editor.secondary = QColor(10, 20, 30, 120);
+        editor.resizeCanvas(-2, -1, 9, 6);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.imageSize(), QSize(9, 6));
+        QCOMPARE(editor.image().pixel(2, 1), original.pixel(0, 0));
+        QCOMPARE(editor.image().pixel(7, 4), original.pixel(5, 3));
+        QImage fill(1, 1, original.format());
+        fill.fill(editor.secondary);
+        QCOMPARE(editor.image().pixel(0, 0), fill.pixel(0, 0));
+        const auto expanded = editor.image();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        editor.redo();
+        QCOMPARE(editor.image(), expanded);
+        editor.undo();
+        editor.resizeCanvas(1, 1, 3, 2);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image(), original.copy(1, 1, 3, 2));
+        editor.undo();
+        editor.resizeCanvas(0, 0, 16384, 16384);
+        editor.resizeCanvas(std::numeric_limits<int>::min(), 0, 10, 10);
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.busy());
+    }
+    void selectionHandlesKeepOnePreview() {
+        TransformEditor editor;
+        const auto original = fixture();
+        editor.reset(original);
+        editor.selectRect(1, 1, 2, 2);
+        editor.resizeActiveBounds(0, 0, 4, 3);
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(editor.floatingActive());
+        QCOMPARE(editor.resizeBounds(), QRectF(0, 0, 4, 3));
+        editor.resizeActiveBounds(1, 1, 3, 2);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.resizeBounds(), QRectF(1, 1, 3, 2));
+        const auto resized = editor.image();
+        editor.commitPreview();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        editor.redo();
+        QCOMPARE(editor.image(), resized);
+        editor.undo();
+        editor.selectRect(1, 1, 2, 2);
+        editor.resizeActiveBounds(0, 0, 4, 3);
+        QTRY_VERIFY(!editor.busy());
+        editor.resizeActiveBounds(1, 1, 3, 2);
+        QTRY_VERIFY(!editor.busy());
+        editor.cancel();
+        QCOMPARE(editor.image(), original);
+        QCOMPARE(editor.selectionRect(), QRect(1, 1, 2, 2));
+    }
+    void pasteHandlesAndInvalidBounds() {
+        TransformEditor editor;
+        const auto original = editor.image();
+        QVERIFY(editor.pasteImage(fixture()));
+        const auto before = editor.image();
+        editor.resizeActiveBounds(-1, 0, 10, 10);
+        editor.resizeActiveBounds(std::numeric_limits<int>::max(), 0, 10, 10);
+        editor.resizeActiveBounds(0, 0, 0, 10);
+        QCOMPARE(editor.image(), before);
+        QVERIFY(!editor.busy());
+        editor.resizeActiveBounds(10, 10, 12, 8);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.resizeBounds(), QRectF(10, 10, 12, 8));
+        editor.commitPreview();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+    }
     void resizeSkewBoundsAndFiltering() {
         using namespace openpaint;
         const auto source = fixture();

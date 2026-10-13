@@ -1,5 +1,9 @@
 # Interface design
 
+Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
+It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
+current shipped behavior remains unchanged until implementation is verified.
+
 Status: design specification, not an implemented or pixel-verified replica.
 Goal: someone familiar with modern Paint should find the same everyday workflows
 quickly, with Linux window conventions and original OpenPaint assets.
@@ -14,7 +18,7 @@ adding or rearranging visible controls; planned entries are not shipped features
 ┌────────────────────────────────────────────────────────────────────────┐
 │ OpenPaint     Untitled •                              window controls   │
 ├────────────────────────────────────────────────────────────────────────┤
-│ File Edit View │ Save Share Undo Redo             What’s new Settings  │
+│ File Edit View │ Save Undo Redo                                      │
 ├────────────────────────────────────────────────────────────────────────┤
 │ Selection │ Image │ Tools │ Brushes │ Shapes │ Colors │ AI* │ Layers   │
 ├───────────┬───────────────────────────────────────────────┬────────────┤
@@ -44,7 +48,8 @@ screen. Files, settings, and update controls are available without an account.
 
 ## Visual system
 
-Use original, consistent 20/24-unit vector icons with accessible text labels and
+Use original vector icons on a 24-unit grid, with a consistent 1.6-unit stroke,
+rounded line endings/joins and 20px rendered toolbar glyphs, with accessible text labels and
 tooltips. System UI font; no bundled proprietary fonts. Keep controls compact
 without making them difficult to hit. Spacing uses 4, 8, 12, 16, 24, and 32 logical
 pixels. Standard targets are at least 32×32; dense color palettes may use 24×24
@@ -79,7 +84,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Action | Behavior |
 | --- | --- |
 | Draw | Capture pointer, show preview immediately, commit one undo step on release |
-| Brushes | Nine named styles with generated previews; size and 0–100% stroke opacity; fixed-distance path sampling, one undo step |
+| Brushes | Nine named styles with generated previews; floating size and 0–100% stroke opacity; fixed-distance path sampling, one undo step |
 | Fill | Left/right press fills with primary/secondary; tolerance 0–255 replaces the size input; busy indicator and Cancel/Escape leave original pixels intact |
 | Color picker | Select once per press: left sets primary, right sets secondary; exact containing artwork pixel including alpha; stays selected, never paints or changes history |
 | Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
@@ -87,7 +92,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Pan / zoom | Space+drag pans outside text entry; Ctrl+wheel zooms around pointer; plain wheel scrolls |
 | Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Resize/skew supports selected content or the whole image. |
 | Transform | Shift constrains proportions or rotation increments; numeric inputs provide keyboard precision |
-| Text | Inline editor with font, size, alignment, style, foreground and optional background; Ctrl+Enter commits, Escape cancels |
+| Text | Inline editor and floating formatting toolbar below ribbon; outside-box canvas click or Ctrl+Enter commits, Escape cancels; top color is foreground and bottom is background |
 | Shape | 19-item icon palette; Shift constrains geometry, polygon clicks add vertices and Backspace removes the last; drag/release retains preview; numeric start/end and outline/fill options; Enter/Apply commits and Escape/Cancel restores original; new drawing/tool switch commits current preview; Undo cancels the preview |
 | Resize image | Pixel/percent inputs, aspect lock, interpolation; one undoable operation |
 | Resize canvas | Anchor and dimensions; warn when reducing clips content; undo restores it |
@@ -184,17 +189,20 @@ frames and file dialogs follow the desktop. The artwork itself remains rectangul
 Use the app-owned color chooser with a rectangular hue/saturation spectrum,
 vertical brightness slider and color preview, HEX input and switchable RGB/HSV
 fields, basic/custom grids and explicit accept/cancel. Both primary and secondary
-colors are editable. Twenty-four local custom
-swatches support add, replace, remove and clear. These explicit palette actions save
-immediately, even if the drawing-color draft is later canceled; the dialog explains
-this distinction. Palette changes are settings, not undoable
-artwork edits, and never dirty the document. See the [UI polish plan](plans/0004-ui-polish.md)
-for the two focused implementation slices and acceptance cases.
+colors are editable. The top circle always controls foreground drawing color;
+the bottom always controls background/fill and right-button drawing. Selecting
+a circle changes only the color-editing target. Applying a new chooser color
+fills the first empty slot in each custom palette: 10 on the ribbon, 24 in the
+editor. Skip full palettes and existing duplicates. Both palettes are session-only
+and start empty on launch. Explicit editor Add/Replace/Remove/Clear affects its
+own list immediately for this session; Cancel discards only the pending color
+draft. Palette changes never dirty artwork or enter its undo history. See the
+[current alpha plan](plans/0028-alpha-ui-polish.md) for the superseding contract.
 
 The [reference layout refinement](plans/0005-reference-color-layout.md) supersedes
 the earlier inferred hue-ring design. Toolbar height is 112 logical pixels;
-primary/secondary circles stack beside two rows of basic colors and a third row
-of ten custom slots. Empty slots remain visible as hollow circles and open the
+two fixed-role color circles stack beside two rows of basic colors and a
+third row of ten independently editable toolbar slots. Empty slots remain visible as hollow circles and open the
 editor. The color editor always exposes all 24 custom slots. Plus/empty-slot
 activation appends the draft to the next free slot; Manage custom colors offers
 replace/remove/clear. Removal compacts the slots. Native window frames remain
@@ -214,3 +222,17 @@ transforms retain a movable Apply/Cancel preview, while whole-image commands com
 one undo step and refit when dimensions change. Resize/skew offers pixel/percent
 size, aspect lock, smooth/nearest resampling and bounded horizontal/vertical skew.
 Its local dialog draft is accepted after closing; Cancel preserves all pixels.
+
+### Alpha floating controls and menu icons
+
+Size/opacity moved out of the ribbon into a left-side floating rail. Tool-specific
+visibility, numeric limits and input isolation are defined in [MENUS.md](MENUS.md).
+The rail overlays workspace without changing canvas coordinates. Shared menu rows
+use original 18px icons, theme-aware disabled colors, shortcut hints, check
+indicators and submenu arrows. Brush choices retain generated stroke previews.
+
+Active shapes, text boxes and selections have four square corner resize handles.
+Their hit areas remain fixed at screen scale. Resizing preserves the active
+preview until committed; cancellation restores the original artwork. See the
+[control specification](MENUS.md#workspace-and-status-bar). Canvas corners separately crop or extend the image without resampling,
+using an undoable worker transform.

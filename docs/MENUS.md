@@ -1,5 +1,9 @@
 # Menu and control specification
 
+Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
+It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
+current shipped behavior remains unchanged until implementation is verified.
+
 This is the visual and interaction contract for future implementation. It does not
 mark features as shipped; [FEATURES.md](FEATURES.md) remains the status ledger.
 Static layouts establish placement and visible choices, not runtime behavior,
@@ -9,9 +13,10 @@ remain planned unless the ledger says otherwise.
 ## Shared layout
 
 Use a compact menu row above the grouped command toolbar. File, Edit and View sit
-on the left, followed by quick Save, Share, Undo and Redo actions with small
-separators. Place What's new and Settings at the far right. An OpenPaint Help
-entry is allowed for documentation and accessibility. Window controls remain
+on the left, followed immediately by quick Save, Undo and Redo actions with a
+small separator. The Image and Help menus are removed; image commands remain in the ribbon and
+Updates/About are in File. Share is
+deferred until desktop sharing is implemented. Place What's new and Settings at the far right. F1 opens About for keyboard access. Window controls remain
 native Linux decorations, separate from application actions. Core editing needs
 no account; an account/profile button is not an OpenPaint requirement.
 
@@ -93,8 +98,9 @@ selected row. Invert/Delete may be disabled when no suitable selection exists.
 Transparent selection must expose its on/off state when implemented; its pixel
 and background-color rules need explicit tests.
 
-The Image group uses a compact two-row arrangement of crop/transform-related
-icons, with chevrons for grouped operations. Plan Crop, Rotate, Flip, Resize/Skew
+The Image group uses two rows: Crop and Rotate above Resize/Skew and Flip.
+Rotate and Flip each have a direct default action and an adjacent dropdown.
+Rotation offers right 90°, left 90° and 180°; Flip offers horizontal and vertical. Plan Crop, Rotate, Flip, Resize/Skew
 and background removal against their existing feature IDs. Unlabeled glyphs do
 not prove exact commands, angle lists or enabled-state rules. Specify those in the
 feature plan before wiring an icon to a command. Background removal stays in M6.
@@ -134,11 +140,16 @@ options and preview commit/cancel belong in the implementation plan.
 
 ## Colors
 
-Stack larger primary/secondary circles to the left of two rows of ten basic
+Stack two larger color circles to the left of two rows of ten basic
 swatches. A third row always shows ten custom slots, with hollow circles for
 empty positions. A colorful edit-colors action sits beside the grid; the Colors
 caption is below. A filled swatch and an empty slot are distinct states, not
-missing UI. Empty toolbar slots open the editor without changing drawing color.
+missing UI. Clicking either large circle selects it for color editing: top always
+means drawing color, bottom always means background/fill. It does not swap roles.
+Basic and filled custom swatches assign the selected circle. Empty slots open a
+chooser draft. OK applies and adds a new color to the first empty slot in both
+palettes; skip each full palette independently. Right-click or Shift+F10/Menu
+provides explicit slot replacement. No Swap button is needed.
 
 The rounded Edit colors dialog has a large square hue/saturation spectrum on the
 left, a narrow tall selected-color preview, a vertical brightness slider, then a
@@ -147,25 +158,40 @@ Below are a 12-by-4 Basic colors grid and a 6-by-4 Custom colors grid with an ad
 button. A separate footer contains two broad side-by-side OK and Cancel buttons.
 Keep the dialog usable at the minimum window size without clipping its footer.
 
-OpenPaint additionally offers a compact custom-color management menu and a clear
-persistence hint. Its existing draft/accept/cancel and immediate palette-save
-semantics remain as defined in [DESIGN.md](DESIGN.md). Do not reinterpret static
-empty slots as evidence for insertion order, persistence or replacement behavior.
+OpenPaint offers a custom-color management menu and an explicit session-lifetime
+hint. The ribbon holds 10 colors and the editor 24. Both start empty on launch;
+no palette settings are read or written. Existing colors do not consume another
+slot on acceptance. Explicit editor Add/Replace/Remove/Clear acts immediately
+within this session; Cancel discards the draft but not these explicit actions.
 
 ## Workspace and status bar
 
+Active shapes, ready text boxes and selections expose four small square corner
+handles with fixed 16px hit targets at every zoom level. Drag previews bounds;
+release resizes the active preview. Text reflows at its existing font size.
+Selection pixels and masks resample in the bounded worker. Repeated resizing
+commits as one undoable edit. Escape during dragging discards that drag; preview
+Cancel restores the original artwork. Focused handles support arrow keys (Shift
+for 10px). Committed raster marks must first be selected.
+
 Use a broad neutral workspace around a rectangular, sharp-cornered image. Canvas
-resize handles are small squares at corners and edge midpoints when that feature
-is implemented. A left-side tool rail can hold two narrow rounded vertical
-slider panels with small identifying icons, tracks and accent thumbs. Size and
-opacity are the intended OpenPaint roles; exact source ranges and behavior are
-not established by icon appearance. Provide accessible names and numeric values.
+resize handles are small squares at all four corners when no selection or editing
+preview is active. Dragging previews crop/expansion; releasing commits one undoable
+canvas-size change without resampling. The opposite corner stays fixed in document
+space. New space uses the background color, retaining existing pixel alpha.
+Escape cancels a drag; arrow keys resize by 1px (Shift: 10px). The canvas refits
+after commit. Dimensions are limited to 16384 per side and 32MP overall. A left-side floating rail holds narrow 36px rounded Size (1–128 px) and Opacity
+(0–100%) slider panels, with original stroke/droplet icons and accent thumbs.
+Numeric values appear in tooltips; accessible names retain each role and range. Size appears
+for pencil, brush, eraser and shapes; opacity appears for brushes. Both support
+keyboard arrows and are disabled while busy. Fill tolerance remains a separately
+labeled ribbon control. The rail consumes pointer input without painting through
+its margins and does not resize or reposition the canvas.
 
 The bottom status strip separates cursor/selection information from image size.
 The right side groups fit-to-window, a percentage dropdown, zoom-out, a horizontal
 zoom slider and zoom-in. Fractional percentage display should remain readable.
-Current zoom/pan does not imply resize handles, these sliders or the dropdown
-already exist. Canvas operations still belong to undoable document commands;
+The expanded zoom dropdown remains planned. Canvas operations still belong to undoable document commands;
 view-only changes never dirty the drawing.
 
 ## Settings
@@ -213,3 +239,76 @@ Keep the visible inventory separate from assumptions. Unopened submenus, dynamic
 interactions, numeric limits, brush rendering, AI availability and exact parity
 remain unverified until their own acceptance cases pass. Update the ledger and
 this contract together when deliberate Linux-specific choices change the layout.
+
+## Floating text controls
+
+Selecting Text shows a non-modal toolbar immediately below the ribbon: font,
+size, bold/italic/underline/strikeout, alignment and opaque background. Formatting
+controls do not commit the active text box. Clicking the canvas/workspace outside
+the box applies it as one undoable raster edit and consumes that click, without
+starting another text box. Clicking inside keeps editing; middle-button/Space pan
+does not commit. Escape cancels and Ctrl+Enter remains a keyboard commit shortcut.
+The text Apply/Options footer buttons are removed; other tools retain theirs.
+
+### Ribbon action feedback
+
+Image, Tools, Brushes and Shapes controls have transparent, borderless idle
+surfaces. Hover, pressed, selected and keyboard-focus states remain visible.
+Selection uses the rectangle or lasso icon matching its current mode. Rotate
+and Flip retain the last operation for the current session: their main buttons
+repeat it, with matching direction/angle icons, tooltips and accessible names.
+Their dropdowns continue to expose all operations. Defaults are right 90° and
+horizontal flip. These choices do not persist between launches.
+
+Selection is a compact vertical split control with a 26px icon: the icon activates the current
+selection mode, and the lower arrow opens its menu. Both share one rounded accent
+outline when Selection is active; idle state has no outline. Each half retains
+hover feedback, and keyboard focus strengthens the shared outline.
+
+Eyedropper hover shows a 28px color square offset beside the pointer tip, with
+checkerboard backing for transparency. It hides outside the image/canvas and
+when another tool is selected. Hover does not sample into either working color
+or change artwork/history; clicking retains the existing sampling behavior.
+
+Switching tools clears selection bounds. Pending moved or pasted content is
+committed first as one undoable edit; clearing bounds adds no history entry.
+Busy transforms block tool changes. An explicit selection created while a tool
+is already active may still clip its edits until the next tool switch.
+
+Edit colors uses a 26px multicolor circular icon with no idle square
+outline. A checkerboard option directly below selects transparent background
+color and activates the background editing target; foreground is unchanged.
+Transparent/partially transparent swatches show checkerboard backing, distinct
+from empty custom slots. Choosing another color restores an opaque background.
+This sets the working background/fill color, including new canvas space; it does
+not erase existing pixels or add a document history entry.
+
+Cut/Delete and the source area vacated by moved or transformed selections use the
+current background color, including its alpha. Irregular masks preserve pixels
+outside the selection. Undo restores the original pixels. The two color-option
+icons sit between the three palette rows; the transparency icon is 22px, with separate 28px circular controls.
+
+Brushes has a centered 28px icon: main activation selects the retained brush;
+the separate lower arrow opens brush styles. Pencil remains independent. Brush
+shows opacity below size in the left rail. The ribbon shape gallery is seven
+columns by three rows, exposing all 19 shapes without scrolling.
+
+The menu row ends with Check for updates and Settings icon buttons. Settings
+exposes System/Light/Dark appearance. The update shortcut opens the existing
+Updates screen (release guidance; automatic checking/installing remains planned).
+
+Brushes mirrors Selection: the icon and lower arrow share one rounded accent
+outline when active and a stronger shared keyboard-focus outline. Idle has no
+outline; each half retains hover/pressed feedback and its separate action.
+
+Menu-row Save, Undo and Redo use flat idle surfaces with no outlines. Undo/Redo
+use mirrored original curved-arrow icons; hover and keyboard focus remain visible.
+
+The full-shape popup button is removed from the ribbon because all shapes are
+visible in the gallery. Separate icon-and-chevron controls open Outline and Fill
+menus. Outline offers None/Solid outline; Fill offers None/Solid fill. These
+reflect the supported renderer styles and update active shape previews.
+
+Outline and Fill choices are exclusive: activating the already selected entry
+keeps its checkmark. Ribbon group captions share a common bottom baseline,
+including Selection and Brushes.

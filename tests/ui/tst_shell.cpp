@@ -2,6 +2,7 @@
 #include "color/ColorPalette.h"
 #include "color/ColorSpectrum.h"
 #include "io/ImageIo.h"
+#include "platform/WindowStartup.h"
 #include "render/CanvasItem.h"
 #include <QAccessible>
 #include <QColorSpace>
@@ -55,7 +56,10 @@ class ShellTest : public QObject {
         QCOMPARE(engine->rootObjects().size(), 1);
         window = qobject_cast<QQuickWindow*>(engine->rootObjects().first());
         QVERIFY(window);
+        revealAfterFirstFrame(window);
+        QCOMPARE(window->opacity(), 0.0);
         QVERIFY(QTest::qWaitForWindowExposed(window));
+        QTRY_COMPARE(window->opacity(), 1.0);
         window->requestActivate();
         QVERIFY(QTest::qWaitForWindowActive(window));
         QGuiApplication::sync();
@@ -83,6 +87,55 @@ class ShellTest : public QObject {
         }
     }
 
+    void floatingToolControls() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));
+        const auto original = editor->image();
+        const auto canvasRect = canvas->mapRectToScene(canvas->boundingRect());
+        QVERIFY(tabTo("strokeSize"));
+        keyClick(Qt::Key_Up);
+        QCOMPARE(editor->brushSize, 4);
+        editor->setTool(Editor::Tool::Brush);
+        QVERIFY(tabTo("brushOpacity"));
+        keyClick(Qt::Key_Down);
+        QCOMPARE(editor->opacity, 99);
+        QCOMPARE(canvas->mapRectToScene(canvas->boundingRect()), canvasRect);
+        auto* rail = window->findChild<QQuickItem*>(QStringLiteral("floatingToolControls"));
+        QVERIFY(rail);
+        const auto point = rail->mapToScene({3, 3}).toPoint();
+        QTest::mouseClick(window, Qt::LeftButton, {}, point);
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->dirty());
+        window->resize(1024, 640);
+        QVERIFY(capture(QStringLiteral("floating-controls-1024.png")));
+        const auto bounds = rail->mapRectToScene(rail->boundingRect());
+        QVERIFY(QRectF(0, 0, window->width(), window->height()).contains(bounds));
+        editor->setTool(Editor::Tool::Fill);
+        auto* size = window->findChild<QQuickItem*>(QStringLiteral("strokeSize"));
+        QVERIFY(size && !size->isVisible());
+        QVERIFY(tabTo("fillTolerance"));
+        keyClick(Qt::Key_Up);
+        QCOMPARE(editor->tolerance, 1);
+        QCOMPARE(editor->brushSize, 4);
+        QCOMPARE(editor->opacity, 99);
+    }
+
+    void quickActionPlacement() {
+        auto* menu = window->findChild<QQuickItem*>(QStringLiteral("primaryMenuBar"));
+        auto* save = window->findChild<QQuickItem*>(QStringLiteral("quickSaveButton"));
+        auto* undo = window->findChild<QQuickItem*>(QStringLiteral("quickUndoButton"));
+        auto* redo = window->findChild<QQuickItem*>(QStringLiteral("quickRedoButton"));
+        QVERIFY(menu && save && undo && redo);
+        window->resize(1024, 640);
+        QGuiApplication::sync();
+        const auto right = menu->mapToScene({menu->width(), 0}).x();
+        QVERIFY(save->mapToScene({0, 0}).x() >= right);
+        QVERIFY(save->mapToScene({0, 0}).x() - right < 40);
+        QVERIFY(save->mapToScene({0, 0}).x() < undo->mapToScene({0, 0}).x());
+        QVERIFY(undo->mapToScene({0, 0}).x() < redo->mapToScene({0, 0}).x());
+        QVERIFY(tabTo("quickSaveButton"));
+    }
+
     void themeActions() {
         auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
         auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
@@ -99,6 +152,10 @@ class ShellTest : public QObject {
         QTRY_VERIFY(menu->property("visible").toBool());
         QVERIFY(menu->property("width").toReal() >= 240);
         QVERIFY(capture(QStringLiteral("menu-dark.png")));
+        const auto hints = visualItems(window->contentItem(), "menuShortcutHint");
+        QVERIFY(!hints.isEmpty());
+        for (const auto* hint : hints)
+            QCOMPARE(hint->property("color").value<QColor>(), QColor("#ADB8C5"));
         QVERIFY(QMetaObject::invokeMethod(menu, "close"));
         window->resize(1024, 640);
         QVERIFY(capture(QStringLiteral("shell-dark-1024.png")));
@@ -200,8 +257,9 @@ class ShellTest : public QObject {
         editor->extend({80, 50});
         editor->finish();
         const auto artwork = editor->image();
-        keyClick(Qt::Key_H, Qt::AltModifier);
-        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_F, Qt::AltModifier);
+        for (int i = 0; i < 6; ++i)
+            keyClick(Qt::Key_Down); // New/Open/Save/Save As/Export/Updates.
         keyClick(Qt::Key_Return);
         QTRY_VERIFY(dialog->property("visible").toBool());
         QVERIFY(tabTo("viewReleasesButton"));
@@ -237,9 +295,15 @@ class ShellTest : public QObject {
         editor->finish();
         const auto artwork = editor->image();
         QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
-        QTRY_VERIFY(options->property("visible").toBool());
+        QTRY_VERIFY(options->property("opened").toBool());
+        // Keep the pointer outside the popup so scaled X11 hover events cannot
+        // override the keyboard-highlighted format.
+        QTest::mouseMove(window, QPoint(1, 1));
         QVERIFY(tabTo("exportFormat"));
         keyClick(Qt::Key_Space);
+        auto* formats = window->findChild<QObject*>("exportFormatsMenu");
+        QVERIFY(formats);
+        QTRY_VERIFY(formats->property("opened").toBool());
         keyClick(Qt::Key_Down);
         keyClick(Qt::Key_Down);
         keyClick(Qt::Key_Return);
@@ -337,6 +401,40 @@ class ShellTest : public QObject {
         QCOMPARE(editor->image(), original);
     }
 
+    void ribbonActionMemory() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = canvas->editor();
+        auto* selection = window->findChild<QObject*>("selectionButton");
+        editor->setProperty("freeFormSelection", true);
+        QCOMPARE(selection->property("symbol").toString(), QStringLiteral("lasso"));
+        editor->setProperty("freeFormSelection", false);
+        QCOMPARE(selection->property("symbol").toString(), QStringLiteral("selection"));
+        editor->begin({15, 25}, false);
+        editor->extend({60, 40});
+        editor->endGesture();
+        const auto original = editor->image();
+        for (const auto& name :
+             {"rotateLeft", "rotateHalf", "rotateRight", "flipVertical", "flipHorizontal"}) {
+            auto* action = window->findChild<QObject*>(QString::fromLatin1(name) + "Action");
+            QVERIFY(action);
+            QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+            QTRY_VERIFY(!editor->busy());
+            const auto once = editor->image();
+            const bool rotation = QString::fromLatin1(name).startsWith("rotate");
+            auto* button = window->findChild<QObject*>(rotation ? "rotateButton" : "flipButton");
+            QCOMPARE(button->property("action").value<QObject*>(), action);
+            QCOMPARE(button->property("text"), action->property("text"));
+            editor->undo();
+            QCOMPARE(editor->image(), original);
+            QVERIFY(QMetaObject::invokeMethod(button, "click"));
+            QTRY_VERIFY(!editor->busy());
+            QCOMPARE(editor->image(), once);
+            editor->undo();
+            QCOMPARE(editor->image(), original);
+        }
+        QVERIFY(capture(QStringLiteral("ribbon-action-memory.png")));
+    }
+
     void imageTransformWorkflow() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();
@@ -344,7 +442,7 @@ class ShellTest : public QObject {
         editor->extend({240, 160});
         editor->finish();
         const auto original = editor->image();
-        QVERIFY(tabTo("imageMenuButton"));
+        QVERIFY(tabTo("rotateMenuButton"));
         // Hold the pool until Escape is delivered; the keyboard helper processes events,
         // so an unblocked tiny rotation can legitimately finish before cancellation.
         auto* pool = QThreadPool::globalInstance();
@@ -365,11 +463,10 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!editor->busy());
         QCOMPARE(editor->image(), original);
         keyClick(Qt::Key_Space);
-        auto* menu = window->findChild<QObject*>(QStringLiteral("imageMenu"));
+        auto* menu = window->findChild<QObject*>(QStringLiteral("rotateMenu"));
         QTRY_VERIFY(menu->property("visible").toBool());
         QSignalSpy closed(menu, SIGNAL(closed()));
-        keyClick(Qt::Key_Down); // Crop is disabled; Resize is first enabled.
-        keyClick(Qt::Key_Down); // Rotate right.
+        keyClick(Qt::Key_Down); // Rotate right is the first entry.
         keyClick(Qt::Key_Return);
         QTRY_COMPARE(closed.size(), 1);
         QTRY_VERIFY(!editor->busy());
@@ -504,7 +601,7 @@ class ShellTest : public QObject {
         QVERIFY(editor->hasSelection());
         QVERIFY(!editor->dirty());
         keyClick(Qt::Key_Delete);
-        QCOMPARE(editor->image().pixelColor(150, 150).alpha(), 0);
+        QCOMPARE(editor->image().pixelColor(150, 150), editor->secondary);
         QCOMPARE(editor->image().pixelColor(50, 150), QColor(Qt::white));
         keyClick(Qt::Key_Z, Qt::ControlModifier);
         QCOMPARE(editor->image(), base);
@@ -578,15 +675,12 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
         window->resize(1024, 640);
         QVERIFY(capture(QStringLiteral("text-light-1024.png")));
-        QVERIFY(QMetaObject::invokeMethod(options, "open"));
         QTRY_VERIFY(options->property("visible").toBool());
         QVERIFY(capture(QStringLiteral("text-options-light.png")));
         auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
         QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
         QVERIFY(capture(QStringLiteral("text-options-dark.png")));
-        QSignalSpy optionsClosed(options, SIGNAL(closed()));
-        QVERIFY(QMetaObject::invokeMethod(options, "close"));
-        QTRY_COMPARE(optionsClosed.size(), 1);
+        input->forceActiveFocus();
         QTRY_VERIFY(input->hasActiveFocus());
         keyClick(Qt::Key_Return, Qt::ControlModifier);
         QVERIFY(!editor->textActive());
@@ -637,6 +731,141 @@ class ShellTest : public QObject {
         QTRY_COMPARE(unsavedClosed.size(), 2);
         editor->undo();
         QCOMPARE(editor->image(), draft);
+    }
+
+    void transparentBackgroundChoice() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = canvas->editor();
+        const auto original = editor->image();
+        const auto foreground = editor->primary;
+        auto* button = window->findChild<QObject*>("transparentBackgroundButton");
+        QVERIFY(button);
+        QVERIFY(QMetaObject::invokeMethod(button, "click"));
+        QCOMPARE(editor->secondary.alpha(), 0);
+        QCOMPARE(editor->primary, foreground);
+        QVERIFY(editor->editingSecondary());
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->canUndo());
+        editor->resizeCanvas(0, 0, original.width() + 1, original.height());
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->image().pixelColor(original.width(), 0).alpha(), 0);
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        QVERIFY(capture(QStringLiteral("transparent-background.png")));
+    }
+    void canvasCornerResize() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = canvas->editor();
+        const auto original = editor->image();
+        const auto handles = visualItems(window->contentItem(), "canvasResizeCorner3");
+        QCOMPARE(handles.size(), 1);
+        auto* handle = handles.first();
+        QVERIFY(handle->isVisible());
+        const auto start = handle->mapToScene({8, 8}).toPoint();
+        const auto end = start - QPoint(70, 50);
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QCOMPARE(editor->image(), original);
+        keyClick(Qt::Key_Escape);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QCOMPARE(editor->image(), original);
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(editor->imageSize().width() < original.width());
+        QVERIFY(editor->imageSize().height() < original.height());
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->canUndo());
+    }
+    void cornerResizeHandles() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        const auto original = editor->image();
+        editor->setTool(Editor::Tool::Text);
+        editor->begin({100, 180}, false);
+        editor->endGesture();
+        for (char letter : std::string("Resizable text"))
+            keyClick(letter);
+        QCOMPARE(editor->textDraft(), QStringLiteral("Resizable text"));
+        QGuiApplication::sync();
+        const auto before = editor->textRect();
+        const auto corners = visualItems(window->contentItem(), QStringLiteral("resizeCorner3"));
+        QCOMPARE(corners.size(), 1);
+        auto* corner = corners.first();
+        QVERIFY(corner && corner->isVisible());
+        auto center = [&] { return corner->mapToScene({8, 8}).toPoint(); };
+        const auto start = center();
+        const auto end = start + QPoint(qRound(80 * canvas->zoom()), qRound(40 * canvas->zoom()));
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QCOMPARE(editor->textRect(), before); // Dragging only previews the bounds.
+        keyClick(Qt::Key_Escape);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QCOMPARE(editor->textRect(), before);
+        QVERIFY(editor->textActive());
+        QTest::mousePress(window, Qt::LeftButton, {}, center());
+        QTest::mouseMove(window, end);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QVERIFY(editor->textActive());
+        QCOMPARE(editor->textRect().topLeft(), before.topLeft());
+        QVERIFY(std::abs(editor->textRect().width() - before.width() - 80) <= 1);
+        QVERIFY(std::abs(editor->textRect().height() - before.height() - 40) <= 1);
+        QVERIFY(capture(QStringLiteral("text-resize-handles.png")));
+        const auto draft = editor->image();
+        editor->commitPreview();
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image(), draft);
+        editor->selectRect(100, 180, 100, 80);
+        QGuiApplication::sync();
+        QVERIFY(corner->isVisible());
+        QCOMPARE(corner->width(), 16.0);
+        canvas->zoomBy(1.5);
+        QCOMPARE(corner->width(), 16.0);
+        corner->forceActiveFocus();
+        keyClick(Qt::Key_Right);
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(editor->floatingActive());
+        QCOMPARE(editor->resizeBounds().width(), 101.0);
+        editor->cancel();
+        QCOMPARE(editor->image(), draft);
+    }
+
+    void textToolbarOutsideClickCommit() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        auto* options = window->findChild<QQuickItem*>(QStringLiteral("textOptions"));
+        const auto original = editor->image();
+        editor->setTool(Editor::Tool::Text);
+        QVERIFY(options->isVisible());
+        auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
+        QTest::mousePress(window, Qt::LeftButton, {}, at({80, 180}));
+        QTest::mouseMove(window, at({400, 280}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({400, 280}));
+        QTRY_VERIFY(editor->textReady());
+        keyClick('x');
+        QVERIFY(tabTo("textBold"));
+        keyClick(Qt::Key_Space);
+        QVERIFY(editor->textBold);
+        QVERIFY(editor->textActive());
+        auto* apply = window->findChild<QQuickItem*>(QStringLiteral("applyPreviewButton"));
+        QVERIFY(apply && !apply->isVisible());
+        const auto draft = editor->image();
+        QTest::mouseClick(window, Qt::LeftButton, {}, at({600, 400}));
+        QVERIFY(!editor->textActive());
+        QCOMPARE(editor->image(), draft);
+        QVERIFY(editor->dirty());
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image(), draft);
+        window->resize(1024, 640);
+        QVERIFY(capture(QStringLiteral("text-toolbar-1024.png")));
+        QVERIFY(QRectF(0, 0, window->width(), window->height())
+                    .contains(options->mapRectToScene(options->boundingRect())));
     }
 
     void chordAndPanLifecycle() {
@@ -826,7 +1055,7 @@ class ShellTest : public QObject {
             list = list->parentItem();
         QVERIFY(list);
         QTRY_COMPARE(list->property("count").toInt(), 1);
-        keyClick(Qt::Key_Home);
+        keyClick(Qt::Key_Down);
         keyClick(Qt::Key_Down);
         QVERIFY(tabToButton("Open"));
         keyClick(Qt::Key_Space);
@@ -878,36 +1107,76 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
-    void shapePaletteKeyboardAndLayout() {
-        QVERIFY(tabTo("shapesButton"));
-        keyClick(Qt::Key_Space);
-        auto* palette = window->findChild<QObject*>(QStringLiteral("shapesMenu"));
-        QTRY_VERIFY(palette->property("visible").toBool());
-        window->resize(1024, 640);
-        QVERIFY(QMetaObject::invokeMethod(
-            window->findChild<QObject*>(QStringLiteral("lightThemeAction")), "trigger",
-            Q_ARG(QObject*, nullptr)));
-        QVERIFY(capture(QStringLiteral("shape-palette-light.png")));
-        QVERIFY(QMetaObject::invokeMethod(
-            window->findChild<QObject*>(QStringLiteral("darkThemeAction")), "trigger",
-            Q_ARG(QObject*, nullptr)));
-        QVERIFY(capture(QStringLiteral("shape-palette-dark.png")));
-        keyClick(Qt::Key_Down);
-        keyClick(Qt::Key_Down);
-        keyClick(Qt::Key_Down);
-        QCOMPARE(window->activeFocusItem()->objectName(), QString("shapeChoice15"));
-        keyClick(Qt::Key_Space);
-        QTRY_VERIFY(!palette->property("visible").toBool());
+    void topRightControls() {
+        auto* settings = window->findChild<QObject*>("settingsButton");
+        auto* updates = window->findChild<QObject*>("quickUpdatesButton");
+        auto* menu = window->findChild<QObject*>("settingsMenu");
+        QVERIFY(settings && updates && menu);
+        QVERIFY(QMetaObject::invokeMethod(settings, "click"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!menu->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(updates, "click"));
+        auto* dialog = window->findChild<QObject*>("updatesDialog");
+        QVERIFY(dialog);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        keyClick(Qt::Key_Escape);
+        QVERIFY(capture(QStringLiteral("completed-ribbon.png")));
+    }
+    void brushMainActivation() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* menu = window->findChild<QObject*>("brushesMenu");
+        auto* main = window->findChild<QObject*>("brushesButton");
+        editor->brushStyle = 4;
+        QVERIFY(QMetaObject::invokeMethod(main, "click"));
+        QCOMPARE(editor->tool(), Editor::Tool::Brush);
+        QCOMPARE(editor->brushStyle, 4);
+        QVERIFY(!menu->property("visible").toBool());
+        editor->setTool(Editor::Tool::Pencil);
+        QCOMPARE(editor->tool(), Editor::Tool::Pencil);
+        QCOMPARE(editor->brushStyle, 4);
+    }
+    void ribbonShapeKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
-        QCOMPARE(editor->shapeKind, 15);
+        QVERIFY(tabTo("ribbonShape0"));
+        for (int i = 0; i < 18; ++i)
+            keyClick(Qt::Key_Right);
+        QCOMPARE(window->activeFocusItem()->objectName(), QString("ribbonShape18"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->shapeKind, 18);
         QCOMPARE(editor->tool(), Editor::Tool::Shape);
+        const auto* item = window->activeFocusItem();
+        const auto bounds = item->mapRectToScene(item->boundingRect());
+        QVERIFY(bounds.top() >= 40 && bounds.bottom() <= 152);
+        QVERIFY(!editor->dirty());
+    }
+
+    void shapeStyleMenus() {
+        auto* editor = window->findChild<Editor*>("editor");
+        for (const auto& kind : {QStringLiteral("Outline"), QStringLiteral("Fill")}) {
+            QVERIFY(tabTo("shape" + kind + "Button"));
+            keyClick(Qt::Key_Space);
+            auto* menu = window->findChild<QObject*>("shape" + kind + "Menu");
+            QTRY_VERIFY(menu->property("visible").toBool());
+            auto* none = window->findChild<QObject*>("no" + kind + "Item");
+            QVERIFY(QMetaObject::invokeMethod(none, "click"));
+            QVERIFY(!editor->property(("shape" + kind).toUtf8()).toBool());
+            QVERIFY(QMetaObject::invokeMethod(none, "click"));
+            QVERIFY(none->property("checked").toBool());
+            auto* solid = window->findChild<QObject*>("solid" + kind + "Item");
+            QVERIFY(QMetaObject::invokeMethod(solid, "click"));
+            QVERIFY(editor->property(("shape" + kind).toUtf8()).toBool());
+            QVERIFY(QMetaObject::invokeMethod(solid, "click"));
+            QVERIFY(solid->property("checked").toBool());
+            QVERIFY(!none->property("checked").toBool());
+            QMetaObject::invokeMethod(menu, "close");
+        }
+        QVERIFY(!editor->dirty());
     }
     void shapeOptionsKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         const auto original = editor->image();
-        QVERIFY(tabTo("shapesButton"));
-        keyClick(Qt::Key_Space);
-        keyClick(Qt::Key_Right);
+        QVERIFY(tabTo("ribbonShape1"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Shape);
         QCOMPARE(editor->shapeKind, 1);
@@ -951,7 +1220,7 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(
             window->findChild<QObject*>(QStringLiteral("lightThemeAction")), "trigger",
             Q_ARG(QObject*, nullptr)));
-        QVERIFY(tabTo("brushesButton"));
+        QVERIFY(tabTo("brushMenuButton"));
         keyClick(Qt::Key_Space);
         auto* menu = window->findChild<QObject*>(QStringLiteral("brushesMenu"));
         QVERIFY(menu);
@@ -1016,6 +1285,8 @@ class ShellTest : public QObject {
         QVERIFY(accessible->state().checked);
         keyClick(Qt::Key_Space);
         QVERIFY(accessible->state().checked);
+        QVERIFY(tabTo("pencilButton"));
+        keyClick(Qt::Key_Space);
         QVERIFY(tabTo("strokeSize"));
         const auto previousSize = editor->brushSize;
         keyClick(Qt::Key_Up);
@@ -1023,12 +1294,12 @@ class ShellTest : public QObject {
         QVERIFY(tabTo("fillButton"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Fill);
-        QVERIFY(tabTo("strokeSize"));
+        QVERIFY(tabTo("fillTolerance"));
         keyClick(Qt::Key_Up);
         QCOMPARE(editor->tolerance, 1);
         QVERIFY(tabTo("pencilButton"));
         keyClick(Qt::Key_Space);
-        QVERIFY(tabTo("primaryButton"));
+        QVERIFY(tabTo("editColorsButton"));
         keyClick(Qt::Key_Space);
         auto* colors = window->findChild<QObject*>(QStringLiteral("colorEditor"));
         QTRY_VERIFY(colors->property("visible").toBool());
@@ -1137,6 +1408,8 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!dialog->property("visible").toBool());
         QCOMPARE(editor->primary, original);
         click(secondary);
+        QVERIFY(editor->editingSecondary());
+        click(window->findChild<QQuickItem*>(QStringLiteral("editColorsButton")));
         QTRY_VERIFY(dialog->property("visible").toBool());
         QVERIFY(capture(QStringLiteral("color-secondary-dark-1024.png")));
         QVERIFY(selection->setHex("#12AB34"));
@@ -1165,6 +1438,7 @@ class ShellTest : public QObject {
             QVERIFY(QRectF(0, 0, window->width(), window->height()).contains(bounds));
         }
         click(primary);
+        click(window->findChild<QQuickItem*>(QStringLiteral("editColorsButton")));
         QTRY_VERIFY(dialog->property("visible").toBool());
         QVERIFY(capture(QStringLiteral("color-editor-full-dark-1024.png")));
         for (auto* slot : dialogSlots)
@@ -1172,6 +1446,67 @@ class ShellTest : public QObject {
         QVERIFY(!add->isEnabled());
         QTest::keyClick(window, Qt::Key_Escape);
         QVERIFY(palette->clear());
+    }
+
+    void toolbarSlotAndRoleWorkflow() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* dialog = window->findChild<QObject*>(QStringLiteral("colorEditor"));
+        auto* draft = window->findChild<ColorSelection*>(QStringLiteral("colorSelection"));
+        auto* palette = window->findChild<ColorPalette*>(QStringLiteral("customPalette"));
+        const auto before = editor->image();
+        QVERIFY(tabTo("secondaryButton"));
+        keyClick(Qt::Key_Space);
+        QVERIFY(editor->editingSecondary());
+        QCOMPARE(editor->primary, QColor(Qt::black));
+        QCOMPARE(editor->secondary, QColor(Qt::white));
+        QVERIFY(!dialog->property("visible").toBool());
+        editor->setTool(Editor::Tool::Text);
+        editor->begin({20, 20}, false);
+        QCOMPARE(editor->textColor(), QColor(Qt::black));
+        QCOMPARE(editor->textBackgroundColor(), QColor(Qt::white));
+        editor->cancel();
+        editor->setTool(Editor::Tool::Pencil);
+        const auto toolbarSlots = visualItems(window->contentItem(), "customToolbarSwatch");
+        QVERIFY(tabToItem(toolbarSlots.at(7)));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(draft->setHex("#123456"));
+        keyClick(Qt::Key_Escape);
+        QCOMPARE(palette->toolbarColors(), QStringList(10, QString()));
+        QVERIFY(palette->colors().isEmpty());
+        QVERIFY(tabToItem(toolbarSlots.at(7)));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(draft->setHex("#123456"));
+        QVERIFY(tabTo("acceptColor"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+        QCOMPARE(palette->toolbarColors().first(), QString("#123456"));
+        QCOMPARE(palette->toolbarColors().at(7), QString());
+        QCOMPARE(palette->colors(), QStringList{"#123456"});
+        QCOMPARE(editor->secondary, QColor("#123456"));
+        QCOMPARE(editor->primary, QColor(Qt::black));
+        QVERIFY(tabToItem(toolbarSlots.first()));
+        keyClick(Qt::Key_F10, Qt::ShiftModifier);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Return);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(draft->setHex("#654321"));
+        QVERIFY(tabTo("acceptColor"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+        QCOMPARE(editor->secondary, QColor("#654321"));
+        QCOMPARE(palette->toolbarColors().first(), QString("#654321"));
+        QCOMPARE(palette->colors().last(), QString("#654321"));
+        QVERIFY(tabTo("primaryButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->secondary, QColor("#654321"));
+        QCOMPARE(editor->primary, QColor(Qt::black));
+        QVERIFY(tabToItem(toolbarSlots.first()));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->primary, QColor("#654321"));
+        QCOMPARE(editor->image(), before);
+        QVERIFY(!editor->dirty());
     }
 
     void renderTiming() {

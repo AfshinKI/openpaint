@@ -13,6 +13,66 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void switchingToolsClearsSelection() {
+        Editor editor;
+        editor.selectRect(10, 10, 30, 30);
+        const auto original = editor.image();
+        editor.setTool(Editor::Tool::Brush);
+        QVERIFY(!editor.hasSelection());
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        QImage paste(10, 10, QImage::Format_ARGB32_Premultiplied);
+        paste.fill(Qt::red);
+        editor.pasteImage(paste);
+        QVERIFY(editor.floatingActive());
+        const auto preview = editor.image();
+        editor.setTool(Editor::Tool::Pencil);
+        QVERIFY(!editor.floatingActive());
+        QVERIFY(!editor.hasSelection());
+        QCOMPARE(editor.image(), preview);
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+    }
+    void fixedColorRoles() {
+        Editor editor;
+        const auto original = editor.image();
+        editor.primary = QColor(200, 10, 20, 100);
+        editor.secondary = Qt::blue;
+        const auto foreground = editor.primary;
+        editor.setEditingSecondary(true);
+        QCOMPARE(editor.primary, foreground);
+        QCOMPARE(editor.secondary, QColor(Qt::blue));
+        QCOMPARE(editor.selectedColor(), QColor(Qt::blue));
+        QVERIFY(!editor.dirty());
+        editor.setSelectedColor(Qt::green);
+        QCOMPARE(editor.secondary, QColor(Qt::green));
+        QCOMPARE(editor.primary, foreground);
+        editor.setEditingSecondary(false);
+        editor.setSelectedColor(Qt::red);
+        editor.setEditingSecondary(true);
+        editor.begin({40, 40}, false);
+        editor.finish();
+        QCOMPARE(editor.image().pixelColor(40, 40), QColor(Qt::red));
+        editor.undo();
+        editor.begin({40, 40}, true);
+        editor.finish();
+        QCOMPARE(editor.image().pixelColor(40, 40), QColor(Qt::green));
+        editor.undo();
+        editor.setTool(Editor::Tool::Fill);
+        editor.begin({50, 50}, false);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image().pixelColor(50, 50), QColor(Qt::red));
+        editor.undo();
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 1;
+        editor.shapeFill = true;
+        editor.begin({20, 20}, false);
+        editor.extend({80, 80});
+        QCOMPARE(editor.image().pixelColor(50, 50), QColor(Qt::green));
+        editor.cancel();
+        QCOMPARE(editor.image(), original);
+    }
     void rectangularSelectionLifecycle() {
         Editor editor;
         const auto base = editor.image();
@@ -30,6 +90,8 @@ class EditorTest : public QObject {
         editor.selectRect(-1, 0, 20, 20);
         QCOMPARE(editor.selectionRect(), QRect(20, 30, 31, 21));
         editor.setTool(Editor::Tool::Fill);
+        QVERIFY(!editor.hasSelection());
+        editor.selectRect(20, 30, 31, 21);
         editor.primary = Qt::red;
         editor.begin({30, 40}, false);
         QVERIFY(editor.filling());
@@ -41,6 +103,8 @@ class EditorTest : public QObject {
         editor.undo();
         QCOMPARE(editor.image(), base);
         editor.setTool(Editor::Tool::Shape);
+        QVERIFY(!editor.hasSelection());
+        editor.selectRect(20, 30, 31, 21);
         editor.shapeKind = 1;
         editor.shapeFill = true;
         editor.begin({0, 0}, false);
@@ -52,7 +116,7 @@ class EditorTest : public QObject {
         QCOMPARE(editor.image(), base);
         QVERIFY(editor.hasSelection());
         editor.deleteSelection();
-        QCOMPARE(editor.image().pixelColor(30, 40).alpha(), 0);
+        QCOMPARE(editor.image().pixelColor(30, 40), editor.secondary);
         editor.undo();
         QCOMPARE(editor.image(), base);
         editor.deselect();
@@ -62,6 +126,31 @@ class EditorTest : public QObject {
         editor.newDocument();
         QVERIFY(!editor.hasSelection());
         QVERIFY(!editor.dirty());
+    }
+    void shapeHandleGeometry() {
+        Editor editor;
+        const auto original = editor.image();
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 15;
+        editor.begin({20, 20}, false);
+        editor.extend({100, 20});
+        editor.endGesture();
+        editor.begin({100, 100}, false);
+        editor.endGesture();
+        editor.begin({20, 100}, false);
+        editor.endGesture();
+        editor.resizeActiveBounds(40, 30, 160, 120);
+        QCOMPARE(editor.resizeBounds(), QRectF(40, 30, 160, 120));
+        QCOMPARE(editor.shapeStart(), QPointF(40, 30));
+        QCOMPARE(editor.shapeEnd(), QPointF(40, 150));
+        editor.removeShapePoint();
+        QCOMPARE(editor.shapeEnd(), QPointF(200, 150));
+        const auto resized = editor.image();
+        editor.commitPreview();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), resized);
     }
     void polygonAndConstraints() {
         Editor editor;

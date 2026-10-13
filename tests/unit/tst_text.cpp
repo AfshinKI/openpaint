@@ -8,9 +8,9 @@ class TextTest : public QObject {
   private slots:
     void selectedTextClipsRaster() {
         Editor editor;
+        editor.setTool(Editor::Tool::Text);
         editor.selectRect(20, 20, 40, 40);
         const auto base = editor.image();
-        editor.setTool(Editor::Tool::Text);
         editor.begin({0, 0}, false);
         editor.endGesture();
         editor.textBackground = true;

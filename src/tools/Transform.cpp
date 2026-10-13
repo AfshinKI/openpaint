@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Transform.h"
 #include "document/Document.h"
+#include <QColorSpace>
 #include <QCoreApplication>
+#include <QPainter>
 #include <QTransform>
 #include <cmath>
 #include <cstring>
@@ -17,6 +19,27 @@ TransformResult transformImage(const QImage& source, const QRegion& mask, Transf
         (!mask.isEmpty() && !source.rect().contains(mask.boundingRect())))
         return {
             {}, {}, QCoreApplication::translate("Transform", "Invalid source image or selection.")};
+    if (kind == TransformKind::CanvasResize) {
+        if (!Document::validSize(options.size) || !mask.isEmpty() ||
+            std::abs(qint64(options.canvasOrigin.x())) > 16384 ||
+            std::abs(qint64(options.canvasOrigin.y())) > 16384)
+            return {{}, {}, QCoreApplication::translate("Transform", "Invalid canvas dimensions.")};
+        QImage result(options.size, source.format());
+        if (result.isNull())
+            return {
+                {},
+                {},
+                QCoreApplication::translate("Transform", "Not enough memory to resize canvas.")};
+        result.setColorSpace(source.colorSpace());
+        result.fill(options.background);
+        QPainter painter(&result);
+        painter.setCompositionMode(QPainter::CompositionMode_Source);
+        painter.drawImage(-options.canvasOrigin, source);
+        painter.end();
+        if (token->load())
+            return {{}, {}, {}, true};
+        return {result, {}, {}};
+    }
     if (kind == TransformKind::ResizeSkew) {
         if (!Document::validSize(options.size) || !std::isfinite(options.skewX) ||
             !std::isfinite(options.skewY) || std::abs(options.skewX) > 89 ||

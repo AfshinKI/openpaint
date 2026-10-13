@@ -1,0 +1,2 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later; original OpenPaint artwork -->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><defs><pattern id="checks" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#ffffff"/><path d="M0 0h4v4H0zM4 4h4v4H4z" fill="#d9d9d9"/></pattern></defs><circle cx="12" cy="12" r="12" fill="url(#checks)"/></svg>

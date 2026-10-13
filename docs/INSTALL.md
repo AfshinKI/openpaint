@@ -61,5 +61,5 @@ sources and runtime build references. Dependency inventories and a CycloneDX SBO
 accompany the release. The Flatpak's shared KDE runtime is distributed separately
 by Flathub; its exact tested commit and source recipe are in the Flatpak inventory.
 
-Help → Updates shows the installed version and a manual link to GitHub Releases.
+File → Updates shows the installed version and a manual link to GitHub Releases.
 It does not check, download, install or restart automatically.

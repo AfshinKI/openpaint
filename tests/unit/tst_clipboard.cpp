@@ -2,6 +2,7 @@
 #include "app/Editor.h"
 #include <QBuffer>
 #include <QClipboard>
+#include <QColorSpace>
 #include <QGuiApplication>
 #include <QMimeData>
 #include <QPainter>
@@ -19,14 +20,34 @@ class ClipboardEditor : public Editor {
 class ClipboardTest : public QObject {
     Q_OBJECT
   private slots:
+    void cutUsesBackground() {
+        for (const auto color :
+             {QColor(Qt::yellow), QColor(Qt::transparent), QColor(30, 90, 150, 120)}) {
+            ClipboardEditor editor;
+            QImage source(20, 20, QImage::Format_ARGB32_Premultiplied);
+            source.fill(Qt::red);
+            source.setColorSpace(QColorSpace::SRgb);
+            editor.reset(source);
+            editor.secondary = color;
+            editor.selectRect(2, 2, 5, 5);
+            editor.cutSelection();
+            QTRY_VERIFY(!editor.busy());
+            QImage expected(1, 1, source.format());
+            expected.fill(color);
+            QCOMPARE(editor.image().pixel(3, 3), expected.pixel(0, 0));
+            QCOMPARE(editor.image().pixelColor(0, 0), QColor(Qt::red));
+            editor.undo();
+            QCOMPARE(editor.image(), source);
+        }
+    }
     void cleanup() {
         QGuiApplication::clipboard()->clear();
     }
     void freeFormAndInversion() {
         ClipboardEditor editor;
+        editor.setTool(Editor::Tool::Select);
         editor.selectRect(5, 5, 10, 10);
         const auto prior = editor.selection();
-        editor.setTool(Editor::Tool::Select);
         editor.freeFormSelection = true;
         editor.begin({100, 100}, false);
         editor.extend({200, 100});
@@ -78,17 +99,17 @@ class ClipboardTest : public QObject {
     }
     void irregularMovePreservesHole() {
         ClipboardEditor editor;
+        editor.setTool(Editor::Tool::Select);
         QImage base(100, 60, QImage::Format_ARGB32_Premultiplied);
         base.fill(Qt::green);
         editor.reset(base);
         const auto original = editor.image();
         const QRegion ring = QRegion(QRect(10, 10, 30, 30)) - QRect(20, 20, 10, 10);
         editor.select(ring);
-        editor.setTool(Editor::Tool::Select);
         editor.begin({12, 12}, false);
         editor.extend({52, 12});
         editor.endGesture();
-        QCOMPARE(editor.image().pixelColor(12, 12).alpha(), 0);
+        QCOMPARE(editor.image().pixelColor(12, 12), editor.secondary);
         QCOMPARE(editor.image().pixelColor(25, 25), QColor(Qt::green));
         QCOMPARE(editor.image().pixelColor(52, 12), QColor(Qt::green));
         editor.finish();
@@ -98,6 +119,7 @@ class ClipboardTest : public QObject {
     }
     void transparentKeyCanBeReversed() {
         ClipboardEditor editor;
+        editor.setTool(Editor::Tool::Select);
         QImage source(3, 1, QImage::Format_ARGB32_Premultiplied);
         source.fill(Qt::white);
         source.setPixelColor(1, 0, QColor(254, 255, 255));
@@ -133,6 +155,7 @@ class ClipboardTest : public QObject {
         source.setPixelColor(22, 12, Qt::blue);
         source.setText(QStringLiteral("Comment"), QStringLiteral("synthetic metadata"));
         ClipboardEditor editor;
+        editor.setTool(Editor::Tool::Select);
         editor.reset(source);
         const auto original = editor.image();
         editor.select(QRegion(QRect(10, 10, 5, 5)) + QRect(20, 10, 5, 5));
@@ -148,7 +171,7 @@ class ClipboardTest : public QObject {
         QVERIFY(result.image.textKeys().isEmpty());
         editor.cutSelection();
         QTRY_VERIFY(!editor.busy());
-        QCOMPARE(editor.image().pixelColor(12, 12).alpha(), 0);
+        QCOMPARE(editor.image().pixelColor(12, 12), editor.secondary);
         editor.undo();
         QCOMPARE(editor.image(), original);
         editor.pasteClipboard();
@@ -165,10 +188,11 @@ class ClipboardTest : public QObject {
             for (int x = 10; x < 30; ++x)
                 source.setPixelColor(x, y, QColor(x * 7, y * 7, 0, 160));
         ClipboardEditor editor;
+        editor.setTool(Editor::Tool::Select);
         editor.reset(source);
+        editor.secondary = Qt::transparent;
         const auto original = editor.image();
         editor.selectRect(10, 10, 20, 20);
-        editor.setTool(Editor::Tool::Select);
         editor.begin({15, 15}, false);
         editor.extend({25, 15});
         editor.endGesture();
@@ -193,6 +217,7 @@ class ClipboardTest : public QObject {
     }
     void pasteClippingAndFileCommit() {
         ClipboardEditor editor;
+        editor.setTool(Editor::Tool::Select);
         QImage base(80, 60, QImage::Format_ARGB32_Premultiplied);
         base.fill(Qt::blue);
         editor.reset(base);
