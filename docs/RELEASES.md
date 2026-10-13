@@ -1,15 +1,16 @@
 # Releases and in-app updates
 
 Status: the first alpha provides AppImage and Flatpak test-bundle downloads,
-manual Updates UI and installation metadata. See [installation](INSTALL.md) and
+manual Updates UI and installation metadata. Main pushes now publish tested alpha portable archives after all CI jobs pass. See [installation](INSTALL.md) and
 [release evidence](plans/0027-alpha-release.md). No OpenPaint update feed, signing
-keys, automatic installer or release-publishing automation exists yet.
+keys or automatic in-app installer exists yet.
 
 ## Distribution strategy
 
 | Format | Initial audience | Update owner |
 | --- | --- | --- |
-| Flatpak | Recommended installed Linux app; GNOME and KDE | Configured Flatpak repository and desktop software manager |
+| Portable tar.gz | Primary GitHub download; extract and run | Manual replacement |
+| Flatpak | Installed Linux app; GNOME and KDE | Configured Flatpak repository and desktop software manager |
 | AppImage | Portable download from GitHub Releases | OpenPaint's verified portable updater from M5 |
 | Source | Developers and distribution packagers | User or distribution package manager |
 | deb/rpm | Deferred; add only with maintenance capacity | Distribution/package manager; never overwrite from inside the app |
@@ -58,7 +59,7 @@ Installed version, source, and channel come from trusted build/package metadata.
 Do not infer write authority merely because a file is writable. An unrecognized
 installation gets a release-page link and manual instructions.
 
-All builds provide File → Updates with a manual Check action and release
+All builds provide an Updates screen with a manual Check action and release
 notes. Initial alpha builds use a clearly labeled “View releases” action and report
 that automatic checking/installation is not implemented. Do not show simulated
 network results or claim “up to date” without a successful authoritative check.
@@ -170,3 +171,12 @@ appropriately without pretending an independent reviewer exists.
 Before 1.0, declare the support policy: initially the latest stable minor line
 receives fixes, prereleases have no stability promise. Never call a build supported
 without its installation and update evidence.
+
+## Alpha publishing automation
+
+The Repository checks workflow publishes only successful pushes to main, after
+all validation and packaging jobs succeed. Version suffix is `alpha.<run number>`.
+A draft release receives the tested portable archive, a consolidated sources and
+notices archive, and SHA256SUMS before publication. Reruns preserve published
+releases. Internal inventories and extra package formats remain Actions artifacts.
+See [the execution plan](plans/0029-automatic-alpha-releases.md).

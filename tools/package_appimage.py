@@ -107,11 +107,23 @@ def public_tar_info(info: tarfile.TarInfo) -> tarfile.TarInfo:
     return info
 
 
+def portable_archive(appdir: Path, work: Path, version: str) -> Path:
+    # A relocatable download that does not invoke an AppImage/FUSE runtime.
+    portable_name = f'OpenPaint-{version}-linux-x86_64'
+    portable = work / (portable_name + '.tar.gz')
+    shutil.copyfile(appdir / 'AppRun', appdir / 'openpaint')
+    (appdir / 'openpaint').chmod(0o755)
+    with tarfile.open(portable, 'w:gz') as archive:
+        archive.add(appdir, arcname=portable_name, filter=public_tar_info)
+    return portable
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--qt', type=Path, required=True)
     parser.add_argument('--work', type=Path, default=ROOT / 'build/appimage')
     parser.add_argument('--suffix', default='dev')
+    parser.add_argument('--kind', choices=['appimage', 'portable'], default='appimage')
     parser.add_argument('--jobs', type=int, default=2)
     parser.add_argument('--collect-system-sources', action='store_true', help='Requires signed deb-src indexes; mandatory before release')
     args = parser.parse_args()
@@ -137,7 +149,7 @@ def main() -> None:
     def run(command, **kwargs):
         subprocess.run([str(part) for part in command], check=True, env=env, **kwargs)
     run(['cmake', '--fresh', '-S', ROOT, '-B', work / 'compile', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release',
-         '-DBUILD_TESTING=OFF', '-DCMAKE_PREFIX_PATH=' + str(qt), '-DOPENPAINT_INSTALL_KIND=appimage',
+         '-DBUILD_TESTING=OFF', '-DCMAKE_PREFIX_PATH=' + str(qt), '-DOPENPAINT_INSTALL_KIND=' + args.kind,
          '-DOPENPAINT_VERSION_SUFFIX=' + args.suffix])
     run(['cmake', '--build', work / 'compile', '--parallel', args.jobs])
     install_env = dict(env, DESTDIR=str(appdir))
@@ -206,6 +218,21 @@ def main() -> None:
            'components': components}
     bom_path = work / 'bom.cdx.json'
     bom_path.write_text(json.dumps(bom, indent=2) + '\n')
+    portable = portable_archive(appdir, work, version)
+    # Keep public downloads small in number, retaining all corresponding sources.
+    own_source = work / 'openpaint-source.tar'
+    with own_source.open('wb') as output:
+        subprocess.run(['git', '-C', str(ROOT), 'archive', '--format=tar', 'HEAD'], stdout=output, check=True)
+    compliance = work / f'OpenPaint-{version}-sources-and-notices.tar'
+    with tarfile.open(compliance, 'w') as archive:
+        for path in [source_bundle, own_source, work / 'dependency-inventory.json', bom_path]:
+            archive.add(path, arcname=path.name, filter=public_tar_info)
+    public = work / 'public'
+    public.mkdir()
+    for path in [portable, compliance]:
+        shutil.copyfile(path, public / path.name)
+    (public / 'SHA256SUMS').write_text(''.join(digest(path) + '  ' + path.name + '\n'
+                                              for path in [public / portable.name, public / compliance.name]))
     (work / 'SHA256SUMS').write_text(''.join(digest(path) + '  ' + path.name + '\n'
                                           for path in [image, source_bundle, work / 'dependency-inventory.json', bom_path]))
     print('Built ' + image.name + '; no release was published.')
