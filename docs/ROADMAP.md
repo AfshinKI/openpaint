@@ -1,7 +1,9 @@
 # Delivery plan
 
 A usable basic source editor supports drawing, history and safe PNG files.
-M1 is complete for the validated source-build checkpoint; M2 tools and packages come next.
+M1 and M2 are complete for their validated gates. The first useful alpha is
+[published and verified](plans/0027-alpha-release.md); layered projects and recovery
+come next in M3.
 See [M1 closure evidence and limits](plans/0009-m1-closure.md). See [the build guide](BUILD.md) to run the preview.
 Milestones are exit gates, not promised dates. Complete thin, usable slices before
 adding breadth. [FEATURES.md](FEATURES.md) is the implementation status ledger.
@@ -10,7 +12,7 @@ adding breadth. [FEATURES.md](FEATURES.md) is the implementation status ledger.
 | --- | --- | --- |
 | M0 — foundation | Reviewed docs, license, shared agent rules, templates, working docs/privacy checks | Local checks pass; repository settings verified after publication |
 | M1 — first working canvas (complete) | Native window; pencil/eraser; primary/secondary colors; PNG open/save; undo/redo; zoom/pan; dirty-close prompt | Draw → undo → redo → save → reopen preserves pixels; failed save preserves original; clean Linux build; keyboard shell; performance baseline |
-| M2 — useful alpha | Brush options, fill, shapes/text, selections/clipboard, crop/resize/rotate, common image formats; first downloadable alpha | Workflow tests; transparency/lossy export prompts; clean-VM AppImage and test Flatpak install; Updates screen with manual release link |
+| M2 — useful alpha (complete) | Brush options, fill, shapes/text, selections/clipboard, crop/resize/rotate, common image formats; first downloadable alpha | Workflow tests; transparency/lossy export prompts; clean-VM AppImage and test Flatpak install; Updates screen with manual release link |
 | M3 — layered beta | Layer operations, .ora projects, tiled storage as needed, bounded history, crash recovery | Cross-tool .ora round-trip; crash/recovery and disk-full tests; large-document budget; full project save fidelity |
 | M4 — desktop completeness | Freeform rotation, rulers/grid, stylus/touch, printing, accessibility, adaptive UI and translation infrastructure | GNOME/KDE Wayland and X11 matrix; Orca and keyboard tests; print preview; scale/theme screenshots; input-device tests |
 | M5 — 1.0 release quality | Signed portable updates, package-managed update UX, trustworthy downloads, release/support process | Upgrade + failed-upgrade matrix; all core feature gates; licenses/SBOM/source artifacts; no open data-loss/security blockers |
@@ -63,7 +65,8 @@ implementation; do not accumulate all M2 work on one branch.
     publish source/licenses/checksums alongside downloads, and only then assign
     `0.1.0-alpha.1`. Record incomplete desktop certification as explicit limits.
 
-The M2 gate stays open until all required outcomes and release evidence pass.
+The M2 gate passed with `0.1.0-alpha.1`; [closure evidence](plans/0027-alpha-release.md)
+records exact binaries, public-download verification and remaining limits.
 
 ## Risks to retire early
 

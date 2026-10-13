@@ -38,5 +38,5 @@ All four checksums passed. Installation, version and host-home sentinel isolatio
 passed. The restricted package launched and saved a 1152 × 648 PNG with 231 colors
 through the native portal. All 15 tooling tests and repository checks pass.
 
-Next: pass protected CI, then merge separately
-before alpha preparation. M2 remains open until public downloads are verified.
+This recipe is merged. The first alpha and public-download verification are
+recorded in [release closure](0027-alpha-release.md).

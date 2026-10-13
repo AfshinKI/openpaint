@@ -1,6 +1,6 @@
 # Feature: first downloadable useful alpha
 
-Status: candidate preparation; M2 remains open
+Status: complete — alpha published and public downloads verified
 Feature IDs: F25 and M2 editing scope
 Milestone: M2
 
@@ -19,14 +19,14 @@ No automatic publishing workflow, signing secrets or self-updater is introduced.
 - [x] Full regression: 12/12 development and 12/12 sanitizer suites; formatting
   of 66 C++/QML files, strict QML lint, 15 tooling tests and repository checks.
 - [x] Gitleaks 8.30.1 history scan: no leaks in 72 commits at the preflight checkpoint.
-- [ ] Merge this version/installation preparation through all required checks.
-- [ ] Build final artifacts once from that reviewed commit; record exact hashes.
-- [ ] Test those bytes: install/replace, launch, edit, undo/save/reopen and uninstall;
+- [x] Merge this version/installation preparation through all required checks.
+- [x] Build final artifacts once from that reviewed commit; record exact hashes.
+- [x] Test those bytes: install/replace, launch, edit, undo/save/reopen and uninstall;
   preserve saved artwork. Inspect Updates identity and native file portals.
-- [ ] Audit source, notices, dependency inventories, artifact paths and checksums.
-- [ ] Publish a prerelease manually from the reviewed tag with all required assets.
-- [ ] Download public bytes, verify hashes and a fresh installation.
-- [ ] Close M2 in a separate evidence/documentation PR after publication succeeds.
+- [x] Audit source, notices, dependency inventories, artifact paths and checksums.
+- [x] Publish a prerelease manually from the reviewed tag with all required assets.
+- [x] Download public bytes, verify hashes and a fresh installation.
+- [x] Close M2 in a separate evidence/documentation PR after publication succeeds.
 
 ## Evidence already available
 
@@ -54,6 +54,50 @@ Flathub listing or OpenPaint update remote. These alpha artifacts are explicitly
 unsigned by OpenPaint; checksums are integrity evidence, not signature verification.
 M1's PERF-01, UI-01 and PLATFORM-01 follow-ups remain in the roadmap.
 
-Next: merge candidate preparation, build/test the exact alpha files and publish
-only after the remaining artifact gates pass. Installation steps are in
-[the install guide](../INSTALL.md).
+## Final release evidence
+
+[OpenPaint 0.1.0-alpha.1](https://github.com/AfshinKI/openpaint/releases/tag/v0.1.0-alpha.1)
+was published as a prerelease on 2026-10-13 UTC from
+`98f9fd62a55cd4c58698e7335bef4e86c7ec04e0`. PR 32 passed all six CI jobs;
+the merged commit and tag also passed all six jobs (runs `38333949186` and
+`38334806091`). No protection or required check was bypassed.
+
+| Final artifact | SHA-256 |
+| --- | --- |
+| AppImage x86_64 | `35170a2e492b9eef6b4c71900627984398d7e15f64c02a8991c3a4923bb23ef3` |
+| Flatpak x86_64 | `73df1700ec8c4dad00aa82aa8245e16cab3c57259eb4702abb21b28375aebacb` |
+| Matching source tar | `a6a907318db9d41114427f61385d58d999cbabf3c8eb89a56977be1272bd7586` |
+
+The exact final binaries passed launch, edit, native save, overwrite and undo/save
+pixel equality on Ubuntu 24.04 GNOME/X11 and Fedora 44 GNOME/Wayland. Flatpak native
+Open reopened generated drawings; AppImage opened them by launch argument and
+created pixel-identical native Save As copies. Flatpak replacement of development
+bundles passed. Uninstall/removal left artwork intact. AppImage FUSE launch and
+extraction fallback passed; Updates showed correct alpha/source instructions.
+
+Tests used fresh cloud-image-derived desktop VMs and software rendering. Ubuntu
+also hosted the isolated Flatpak SDK build; installed apps use the separate
+runtime. No native development Qt supplied AppImage dependencies. Fedora's GNOME
+50 portal required its normal Nautilus component. This does not close the broader
+M4 desktop/hardware matrix or M1 performance follow-ups.
+
+All 13 uploaded assets matched GitHub's reported digests. Every asset was then
+downloaded anonymously from the public release and matched the local tested bytes.
+Fresh Flatpak installs and AppImage version checks from those public downloads
+passed on both systems. The release includes installation instructions, application
+source, third-party source/notices, inventories, a CycloneDX SBOM, license, checksums
+and detailed pre-publication evidence. No local logs, keys or VM data were uploaded.
+
+Gitleaks scanned 76 commits at the release source with no leaks. All 1,920 staged
+AppImage files passed the outer-workspace private-path audit; 116 source archive
+entries have normalized ownership. CycloneDX 1.6 validation passed. All 41 existing
+repository screenshots had no text/EXIF chunks. The new README image was generated
+by the existing isolated X11 `themeActions` test (3 passed) and visually inspected;
+it contains only the app's blank canvas and original controls.
+
+## Next unfinished milestone
+
+M2 is closed. M3 starts with a bounded layer/document-model plan, `.ora` persistence,
+and crash recovery, with PERF-01 considered before expanding document memory.
+Do not add those features to the release or closure branches. The current alpha
+continues to use manual updates; signed portable updates remain M5.
