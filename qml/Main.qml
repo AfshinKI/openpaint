@@ -1091,14 +1091,22 @@ ApplicationWindow {
                 Layout.preferredHeight: 72
                 Layout.alignment: Qt.AlignTop
                 IconButton {
+                    id: editColorsOption
                     objectName: "editColorsButton"
+                    background: Rectangle {
+                        radius: width / 2
+                        color: editColorsOption.down ? Theme.pressed : editColorsOption.hovered ? Theme.hover : "transparent"
+                        border.width: editColorsOption.visualFocus ? 2 : 0
+                        border.color: Theme.accent
+                    }
                     flat: true
-                    width: 40
-                    height: 40
-                    y: 4
-                    icon.width: 32
-                    icon.height: 32
-                    padding: 4
+                    width: 28
+                    height: 28
+                    x: 6
+                    y: 10
+                    icon.width: 26
+                    icon.height: 26
+                    padding: 1
                     symbol: "palette"
                     icon.color: "transparent"
                     text: qsTr("Edit colors")
@@ -1112,16 +1120,17 @@ ApplicationWindow {
                         width: 28
                         height: 28
                         radius: 14
-                        color: "transparent"
-                        border.width: transparencyOption.visualFocus ? 2 : transparencyOption.hovered ? 1 : 0
+                        color: transparencyOption.down ? Theme.pressed : transparencyOption.hovered ? Theme.hover : "transparent"
+                        border.width: transparencyOption.visualFocus ? 2 : transparencyOption.highlighted || transparencyOption.hovered ? 1 : 0
                         border.color: Theme.accent
                     }
-                    width: 40
-                    height: 32
-                    y: 32
+                    width: 28
+                    height: 28
+                    x: 6
+                    y: 40
                     padding: 3
-                    icon.width: 26
-                    icon.height: 26
+                    icon.width: 22
+                    icon.height: 22
                     flat: true
                     symbol: "transparent"
                     icon.color: "transparent"

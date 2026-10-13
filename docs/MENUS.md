@@ -275,7 +275,7 @@ committed first as one undoable edit; clearing bounds adds no history entry.
 Busy transforms block tool changes. An explicit selection created while a tool
 is already active may still clip its edits until the next tool switch.
 
-Edit colors uses a larger 32px multicolor circular icon with no idle square
+Edit colors uses a 26px multicolor circular icon with no idle square
 outline. A checkerboard option directly below selects transparent background
 color and activates the background editing target; foreground is unchanged.
 Transparent/partially transparent swatches show checkerboard backing, distinct
@@ -286,4 +286,4 @@ not erase existing pixels or add a document history entry.
 Cut/Delete and the source area vacated by moved or transformed selections use the
 current background color, including its alpha. Irregular masks preserve pixels
 outside the selection. Undo restores the original pixels. The two color-option
-icons sit between the three palette rows; the transparency icon is 26px.
+icons sit between the three palette rows; the transparency icon is 22px, with separate 28px circular controls.

@@ -410,3 +410,7 @@ Validation: dev build, clipboard (eight cases), editor (12 cases), transform
 and repository checks passed. Reviewed the generated alignment capture; the
 transparency option uses circular focus/hover feedback. UI validation was
  offscreen; full desktop review remains pending.
+
+Color-option spacing correction: separate 28px controls now have a 2px gap;
+Edit colors uses a 26px icon and transparency 22px. Hover, active and keyboard
+focus feedback are circular for both controls. Dev build passed.
