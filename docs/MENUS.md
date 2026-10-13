@@ -97,8 +97,9 @@ selected row. Invert/Delete may be disabled when no suitable selection exists.
 Transparent selection must expose its on/off state when implemented; its pixel
 and background-color rules need explicit tests.
 
-The Image group uses a compact two-row arrangement of crop/transform-related
-icons, with chevrons for grouped operations. Plan Crop, Rotate, Flip, Resize/Skew
+The Image group uses two rows: Crop and Rotate above Resize/Skew and Flip.
+Rotate and Flip each have a direct default action and an adjacent dropdown.
+Rotation offers right 90°, left 90° and 180°; Flip offers horizontal and vertical. Plan Crop, Rotate, Flip, Resize/Skew
 and background removal against their existing feature IDs. Unlabeled glyphs do
 not prove exact commands, angle lists or enabled-state rules. Specify those in the
 feature plan before wiring an icon to a command. Background removal stays in M6.

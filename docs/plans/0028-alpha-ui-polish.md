@@ -1,6 +1,6 @@
 # Feature: alpha ribbon and color workflow polish
 
-Status: planned — no implementation claimed
+Status: in progress — step 1 implemented; validation recorded below
 Feature IDs: F01, F02, F03, F05, F06, F08, F09, F26
 Milestone: post-M2 alpha polish, before M3
 
@@ -109,5 +109,20 @@ A later alpha release needs fresh artifact validation; do not replace alpha.1.
 
 ## Progress and next action
 
-Planning only. Next: implement and validate step 1, then review each numbered
-step in order on this branch. No application behavior has changed yet.
+Step 1 replaces the generic Image menu with separate Rotate and Flip dropdowns,
+retains direct Crop/Resize, and gives Selection a smaller chevron below its icon
+and a group caption. Existing selection bounds/deselect entries remain available.
+Two original vector glyphs identify Rotate and Flip. Existing command guards,
+preview handling and keyboard shortcuts are retained.
+
+Next: step 2 (quick-action placement). Broader theme/scale and full regression
+checks are deferred until all eight steps are implemented, as requested.
+
+### Step 1 focused evidence
+
+Fresh dev configuration with Qt 6.12.0 and the full dev build succeeded. The
+executable is `build/dev/openpaint`; desktop `--version` succeeds. Focused shell
+cases `launchAndResize`, `imageTransformWorkflow` and `freeFormSelectionWorkflow`
+passed (5 including setup/cleanup), with offscreen software rendering and no QML
+warnings. Repository and diff whitespace checks passed. This is not a full visual
+or accessibility certification; the batch review remains pending.

@@ -559,6 +559,7 @@ ApplicationWindow {
             anchors.margins: 8
             spacing: 8
             ColumnLayout {
+                spacing: 0
                 IconButton {
                     objectName: "selectionButton"
                     symbol: "selection"
@@ -567,11 +568,17 @@ ApplicationWindow {
                     highlighted: editor.tool === Editor.Select
                     enabled: editor.canSelect
                     onClicked: editor.tool = Editor.Select
+                    Layout.preferredWidth: 44
+                    Layout.preferredHeight: 42
                     Layout.alignment: Qt.AlignHCenter
                 }
                 PaintButton {
                     objectName: "selectionMenuButton"
-                    text: qsTr("Select ▾")
+                    text: "⌄"
+                    Accessible.name: qsTr("Selection options")
+                    Layout.preferredWidth: 44
+                    Layout.preferredHeight: 24
+                    Layout.alignment: Qt.AlignHCenter
                     enabled: editor.canSelect || editor.floatingActive
                     onClicked: selectionMenu.open()
                     PaintMenu {
@@ -627,57 +634,94 @@ ApplicationWindow {
                         }
                     }
                 }
+                Label {
+                    text: qsTr("Selection")
+                    color: Theme.secondaryText
+                    Layout.topMargin: 4
+                    Layout.alignment: Qt.AlignHCenter
+                }
             }
             ToolSeparator {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
+                spacing: 4
+                GridLayout {
+                    columns: 2
+                    rowSpacing: 2
+                    columnSpacing: 4
                     IconButton {
                         symbol: "crop"
                         objectName: "cropButton"
                         action: cropAction
-                        Accessible.name: text
+                    }
+                    RowLayout {
+                        spacing: 0
+                        IconButton {
+                            symbol: "rotate"
+                            action: rotateRightAction
+                        }
+                        PaintButton {
+                            objectName: "rotateMenuButton"
+                            text: "⌄"
+                            Accessible.name: qsTr("Rotation options")
+                            implicitWidth: 24
+                            implicitHeight: 32
+                            enabled: rotateRightAction.enabled
+                            onClicked: rotateMenu.open()
+                            PaintMenu {
+                                id: rotateMenu
+                                objectName: "rotateMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    action: rotateRightAction
+                                }
+                                PaintMenuItem {
+                                    action: rotateLeftAction
+                                }
+                                PaintMenuItem {
+                                    action: rotateHalfAction
+                                }
+                            }
+                        }
                     }
                     IconButton {
                         symbol: "resize"
                         objectName: "resizeButton"
                         action: resizeAction
-                        Accessible.name: text
                     }
-                }
-                PaintButton {
-                    objectName: "imageMenuButton"
-                    text: qsTr("Image ▾")
-                    enabled: editor.canSelect && !editor.busy
-                    onClicked: imageMenu.open()
-                    PaintMenu {
-                        id: imageMenu
-                        objectName: "imageMenu"
-                        y: parent.height
-                        PaintMenuItem {
-                            action: cropAction
-                        }
-                        PaintMenuItem {
-                            action: resizeAction
-                        }
-                        PaintMenuItem {
-                            action: rotateRightAction
-                        }
-                        PaintMenuItem {
-                            action: rotateLeftAction
-                        }
-                        PaintMenuItem {
-                            action: rotateHalfAction
-                        }
-                        PaintMenuItem {
+                    RowLayout {
+                        spacing: 0
+                        IconButton {
+                            symbol: "flip"
                             action: flipHorizontalAction
                         }
-                        PaintMenuItem {
-                            action: flipVerticalAction
+                        PaintButton {
+                            objectName: "flipMenuButton"
+                            text: "⌄"
+                            Accessible.name: qsTr("Flip options")
+                            implicitWidth: 24
+                            implicitHeight: 32
+                            enabled: flipHorizontalAction.enabled
+                            onClicked: flipMenu.open()
+                            PaintMenu {
+                                id: flipMenu
+                                objectName: "flipMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    action: flipHorizontalAction
+                                }
+                                PaintMenuItem {
+                                    action: flipVerticalAction
+                                }
+                            }
                         }
                     }
+                }
+                Label {
+                    text: qsTr("Image")
+                    color: Theme.secondaryText
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
             ToolSeparator {

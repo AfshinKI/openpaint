@@ -344,7 +344,7 @@ class ShellTest : public QObject {
         editor->extend({240, 160});
         editor->finish();
         const auto original = editor->image();
-        QVERIFY(tabTo("imageMenuButton"));
+        QVERIFY(tabTo("rotateMenuButton"));
         // Hold the pool until Escape is delivered; the keyboard helper processes events,
         // so an unblocked tiny rotation can legitimately finish before cancellation.
         auto* pool = QThreadPool::globalInstance();
@@ -365,11 +365,10 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!editor->busy());
         QCOMPARE(editor->image(), original);
         keyClick(Qt::Key_Space);
-        auto* menu = window->findChild<QObject*>(QStringLiteral("imageMenu"));
+        auto* menu = window->findChild<QObject*>(QStringLiteral("rotateMenu"));
         QTRY_VERIFY(menu->property("visible").toBool());
         QSignalSpy closed(menu, SIGNAL(closed()));
-        keyClick(Qt::Key_Down); // Crop is disabled; Resize is first enabled.
-        keyClick(Qt::Key_Down); // Rotate right.
+        keyClick(Qt::Key_Down); // Rotate right is the first entry.
         keyClick(Qt::Key_Return);
         QTRY_COMPARE(closed.size(), 1);
         QTRY_VERIFY(!editor->busy());

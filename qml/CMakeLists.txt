@@ -10,7 +10,7 @@ qt_add_qml_module(openpaint_ui STATIC
         ../src/color/ColorPalette.h ../src/color/ColorPalette.cpp
         ../src/color/ColorSpectrum.h ../src/color/ColorSpectrum.cpp
     QML_FILES UpdatesDialog.qml ExportDialog.qml ResizeDialog.qml SelectionOptions.qml InlineText.qml TextOptions.qml ShapePalette.qml ShapeOptions.qml BrushMenu.qml ColorEditor.qml ColorSwatch.qml Main.qml Theme.qml PaintButton.qml IconButton.qml PaintMenu.qml PaintMenuItem.qml PaintDialog.qml PaintSpinBox.qml PaintCheckBox.qml
-    RESOURCES icons/app.svg icons/resize.svg icons/crop.svg icons/selection.svg icons/text.svg icons/line.svg icons/rectangle.svg icons/ellipse.svg icons/brush.svg icons/fill.svg icons/eyedropper.svg icons/save.svg icons/palette.svg icons/redo.svg icons/fit.svg icons/undo.svg icons/swap.svg icons/pencil.svg icons/zoom-in.svg icons/zoom-out.svg icons/eraser.svg
+    RESOURCES icons/rotate.svg icons/flip.svg icons/app.svg icons/resize.svg icons/crop.svg icons/selection.svg icons/text.svg icons/line.svg icons/rectangle.svg icons/ellipse.svg icons/brush.svg icons/fill.svg icons/eyedropper.svg icons/save.svg icons/palette.svg icons/redo.svg icons/fit.svg icons/undo.svg icons/swap.svg icons/pencil.svg icons/zoom-in.svg icons/zoom-out.svg icons/eraser.svg
 )
 target_link_libraries(openpaint_ui PUBLIC openpaint_document openpaint_io Qt6::Concurrent Qt6::Quick Qt6::QuickControls2)
 target_include_directories(openpaint_ui PRIVATE ../src/platform ../src/app ../src/render ../src/color "${PROJECT_BINARY_DIR}/generated")
