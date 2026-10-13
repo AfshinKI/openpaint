@@ -6,10 +6,12 @@ downloads. This guide builds from source and does not install the app system-wid
 
 ## Tested baseline
 
-Ubuntu 24.04 x86_64; GCC 13.3.0; Qt 6.8.3; CMake 3.30.0; Ninja 1.12.1;
+Ubuntu 24.04 x86_64; GCC 13.3.0; Qt 6.12.0; CMake 3.30.0; Ninja 1.12.1;
 Python 3.12.3. CMake requires 3.28+, Python tooling requires 3.11+, and the Qt API
-floor is 6.8. CI also builds with Ubuntu's Clang 18 package. Qt 6.8.3 is a pinned
-development baseline, not a claim that it is the newest Qt release.
+floor is 6.8. CI also builds with Ubuntu's Clang 18 package. Qt 6.12.0 is a pinned
+native toolchain. Historical M1/early M2 evidence used Qt 6.8.3; see
+[the migration plan](plans/0023-maintained-qt.md). Recheck available security/patch
+updates when preparing a binary release.
 
 The setup downloads Qt from its distribution mirrors using aqtinstall. CMake never
 downloads dependencies. The top-level Python tools are pinned in
@@ -32,11 +34,15 @@ Install development tools and Qt in the ignored build directory:
 ```sh
 python3 -m venv build/tooling
 build/tooling/bin/python -m pip install -r tools/requirements-dev.txt
-build/tooling/bin/python -m aqt install-qt linux desktop 6.8.3 linux_gcc_64 \
+build/tooling/bin/python -m aqt install-qt linux desktop 6.12.0 linux_gcc_64 \
   --outputdir build/qt --modules qtimageformats --archives icu qtbase qtdeclarative qtsvg qttools qtwayland qtimageformats
 export PATH="$PWD/build/tooling/bin:$PATH"
-export CMAKE_PREFIX_PATH="$PWD/build/qt/6.8.3/gcc_64"
+export CMAKE_PREFIX_PATH="$PWD/build/qt/6.12.0/gcc_64"
 ```
+
+When changing Qt versions in an existing build tree, use `cmake --fresh --preset dev`
+(and the matching release/asan preset) after setting the new `CMAKE_PREFIX_PATH`.
+This prevents cached Qt module paths from mixing SDK versions.
 
 ICU is required by the downloaded Qt binaries even if another ICU version is
 already installed on the system. An existing compatible Qt installation can be
@@ -72,7 +78,7 @@ To apply the pinned formatters:
 
 ```sh
 clang-format -i src/app/main.cpp tests/ui/tst_shell.cpp
-build/qt/6.8.3/gcc_64/bin/qmlformat -i qml/Main.qml qml/Theme.qml
+build/qt/6.12.0/gcc_64/bin/qmlformat -i qml/Main.qml qml/Theme.qml
 ```
 
 `release` and `asan` presets use separate directories and the same configure/build/

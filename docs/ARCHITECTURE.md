@@ -8,7 +8,7 @@ See [decision 0001](decisions/0001-native-stack.md) for alternatives and tradeof
 | Area | Decision |
 | --- | --- |
 | Desktop application | C++20, Qt 6, Qt Quick Controls and QML |
-| Initial compatibility floor | Qt 6.8; pin exact supported patch versions in M1 CI |
+| Initial compatibility floor | Qt 6.8; CI pins Qt 6.12.0; packaged runtimes are recorded separately |
 | Build | CMake 3.28+, Ninja, checked-in CMake presets |
 | Document/raster engine | C++ with Qt Core/Gui; QImage-backed raster storage |
 | View | QML controls around a C++ canvas item |

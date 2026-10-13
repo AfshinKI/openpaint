@@ -14,13 +14,13 @@ PaintDialog {
     signal colorChosen(color chosen)
     function begin(color, target: string) {
         colorTarget = target;
-        selection.color = color;
-        hexField.text = selection.hex;
+        colorDraft.color = color;
+        hexField.text = colorDraft.hex;
         selectedSlot = -1;
         open();
     }
     function addColor() {
-        if (paletteStore.add(selection.color))
+        if (paletteStore.add(colorDraft.color))
             selectedSlot = paletteStore.colors.length - 1;
     }
     parent: Overlay.overlay
@@ -29,16 +29,16 @@ PaintDialog {
     title: qsTr("Edit colors")
     modal: true
     closePolicy: Popup.CloseOnEscape
-    onAccepted: colorChosen(selection.color)
+    onAccepted: colorChosen(colorDraft.color)
     onOpened: hexField.forceActiveFocus()
     ColorSelection {
-        id: selection
+        id: colorDraft
         objectName: "colorSelection"
     }
     Connections {
-        target: selection
+        target: colorDraft
         function onChanged() {
-            hexField.text = selection.hex;
+            hexField.text = colorDraft.hex;
         }
     }
     contentItem: ColumnLayout {
@@ -48,20 +48,20 @@ PaintDialog {
             spacing: 12
             ColorSpectrum {
                 objectName: "colorSpectrum"
-                selection: selection
+                selection: colorDraft
                 Layout.preferredWidth: 256
                 Layout.preferredHeight: 256
                 Accessible.role: Accessible.Pane
-                Accessible.name: qsTr("Hue and saturation spectrum. Use the numeric controls for keyboard selection.")
+                Accessible.name: qsTr("Hue and saturation spectrum. Use the numeric controls for keyboard colorDraft.")
             }
             Rectangle {
                 Layout.preferredWidth: 36
                 Layout.preferredHeight: 256
                 radius: 4
-                color: selection.color
+                color: colorDraft.color
                 border.color: Theme.divider
                 Accessible.role: Accessible.Indicator
-                Accessible.name: qsTr("Selected color %1").arg(selection.hex)
+                Accessible.name: qsTr("Selected color %1").arg(colorDraft.hex)
             }
             Slider {
                 id: brightness
@@ -72,15 +72,15 @@ PaintDialog {
                 stepSize: 1
                 Keys.onPressed: function (event) {
                     if (event.key === Qt.Key_Home || event.key === Qt.Key_End) {
-                        selection.setHsv(selection.hue, selection.saturation, event.key === Qt.Key_End ? 100 : 0);
+                        colorDraft.setHsv(colorDraft.hue, colorDraft.saturation, event.key === Qt.Key_End ? 100 : 0);
                         event.accepted = true;
                     }
                 }
-                value: selection.value
+                value: colorDraft.value
                 Layout.preferredWidth: 24
                 Layout.preferredHeight: 256
                 Accessible.name: qsTr("Brightness, 0 to 100")
-                onMoved: selection.setHsv(selection.hue, selection.saturation, value)
+                onMoved: colorDraft.setHsv(colorDraft.hue, colorDraft.saturation, value)
                 background: Rectangle {
                     x: (brightness.width - width) / 2
                     y: brightness.topPadding
@@ -126,7 +126,7 @@ PaintDialog {
                     }
                     Accessible.name: qsTr("Hexadecimal color")
                     onTextEdited: if (acceptableInput)
-                        selection.setHex(text)
+                        colorDraft.setHex(text)
                     background: Rectangle {
                         radius: Theme.controlRadius
                         color: Theme.hover
@@ -200,17 +200,17 @@ PaintDialog {
                             from: 0
                             to: channel.rgb ? 255 : channel.index === 0 ? 359 : 100
                             editable: true
-                            value: channel.rgb ? [selection.red, selection.green, selection.blue][channel.index] : Math.round([selection.hue, selection.saturation, selection.value][channel.index]) % (channel.index === 0 ? 360 : 101)
+                            value: channel.rgb ? [colorDraft.red, colorDraft.green, colorDraft.blue][channel.index] : Math.round([colorDraft.hue, colorDraft.saturation, colorDraft.value][channel.index]) % (channel.index === 0 ? 360 : 101)
                             Accessible.name: channel.channelName
                             onValueModified: {
                                 if (channel.rgb) {
-                                    let values = [selection.red, selection.green, selection.blue];
+                                    let values = [colorDraft.red, colorDraft.green, colorDraft.blue];
                                     values[channel.index] = value;
-                                    selection.setRgb(values[0], values[1], values[2]);
+                                    colorDraft.setRgb(values[0], values[1], values[2]);
                                 } else {
-                                    let values = [selection.hue, selection.saturation, selection.value];
+                                    let values = [colorDraft.hue, colorDraft.saturation, colorDraft.value];
                                     values[channel.index] = value;
-                                    selection.setHsv(values[0], values[1], values[2]);
+                                    colorDraft.setHsv(values[0], values[1], values[2]);
                                 }
                             }
                         }
@@ -246,8 +246,8 @@ PaintDialog {
                             implicitHeight: 30
                             diameter: 20
                             swatchColor: modelData
-                            checked: selection.hex.toLowerCase() === modelData
-                            onClicked: selection.color = modelData
+                            checked: colorDraft.hex.toLowerCase() === modelData
+                            onClicked: colorDraft.color = modelData
                         }
                     }
                 }
@@ -283,7 +283,7 @@ PaintDialog {
                             PaintMenuItem {
                                 text: qsTr("Replace selected")
                                 enabled: dialog.selectedSlot >= 0 && hexField.acceptableInput
-                                onTriggered: dialog.paletteStore.replace(dialog.selectedSlot, selection.color)
+                                onTriggered: dialog.paletteStore.replace(dialog.selectedSlot, colorDraft.color)
                             }
                             PaintMenuItem {
                                 text: qsTr("Remove selected")
@@ -322,7 +322,7 @@ PaintDialog {
                                         dialog.addColor();
                                 } else {
                                     dialog.selectedSlot = index;
-                                    selection.color = swatchColor;
+                                    colorDraft.color = swatchColor;
                                 }
                             }
                         }

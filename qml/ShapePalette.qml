@@ -6,7 +6,7 @@ import QtQuick.Layouts
 import OpenPaint
 
 Popup {
-    id: palette
+    id: shapePopup
     required property Editor editor
     width: 224
     padding: 8
@@ -40,11 +40,11 @@ Popup {
                 padding: 5
                 checkable: true
                 autoExclusive: true
-                checked: palette.editor.tool === Editor.Shape && palette.editor.shapeKind === index
+                checked: shapePopup.editor.tool === Editor.Shape && shapePopup.editor.shapeKind === index
                 onClicked: {
-                    palette.editor.shapeKind = index;
-                    palette.editor.tool = Editor.Shape;
-                    palette.close();
+                    shapePopup.editor.shapeKind = index;
+                    shapePopup.editor.tool = Editor.Shape;
+                    shapePopup.close();
                 }
                 contentItem: ShapePreview {
                     kind: choice.index
