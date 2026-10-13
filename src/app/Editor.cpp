@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Editor.h"
+#include "io/ImageIo.h"
 #include "tools/Shape.h"
 #include "tools/Text.h"
 #include <QFileInfo>
@@ -431,15 +432,19 @@ Editor::Editor(QObject* parent) : QObject(parent) {
             if (wasPasting) {
                 if (!cancellation_ || !cancellation_->load())
                     pasteImage(result.image);
-            } else if (wasLoading) {
+            } else if (wasLoading && (!cancellation_ || !cancellation_->load())) {
                 document.reset(result.image);
-                fileUrl_ = operationUrl_;
+                fileUrl_ = result.format == "png" &&
+                                   operationUrl_.toLocalFile().endsWith(".png", Qt::CaseInsensitive)
+                               ? operationUrl_
+                               : QUrl();
+                sourceName_ = QFileInfo(operationUrl_.toLocalFile()).fileName();
                 notice_ = result.notice;
                 if (!notice_.isEmpty())
                     emit noticeChanged();
                 emit documentReplaced();
                 emit pixelsChanged(QRect());
-            } else {
+            } else if (!wasLoading) {
                 document.markSaved(savingRevision_);
                 fileUrl_ = operationUrl_;
             }
@@ -452,7 +457,8 @@ Editor::Editor(QObject* parent) : QObject(parent) {
     });
 }
 QString Editor::fileName() const {
-    return fileUrl_.isEmpty() ? tr("Untitled") : QFileInfo(fileUrl_.toLocalFile()).fileName();
+    return fileUrl_.isEmpty() ? (sourceName_.isEmpty() ? tr("Untitled") : sourceName_)
+                              : QFileInfo(fileUrl_.toLocalFile()).fileName();
 }
 void Editor::fail(const QString& message) {
     error_ = message;
@@ -466,6 +472,7 @@ void Editor::newDocument() {
     image.fill(Qt::white);
     document.reset(image);
     fileUrl_ = QUrl();
+    sourceName_.clear();
     emit documentReplaced();
     emit pixelsChanged(QRect());
     emit changed();
@@ -475,7 +482,7 @@ void Editor::openFile(const QUrl& url) {
         return;
     finish();
     if (!url.isLocalFile()) {
-        fail(tr("Choose a local PNG file."));
+        fail(tr("Choose a local image file."));
         return;
     }
     operationUrl_ = url;
@@ -483,7 +490,7 @@ void Editor::openFile(const QUrl& url) {
     cancellation_ = std::make_shared<std::atomic_bool>(false);
     emit changed();
     watcher_.setFuture(QtConcurrent::run([path = url.toLocalFile(), token = cancellation_] {
-        return openpaint::loadPng(path, token);
+        return openpaint::loadImage(path, token);
     }));
 }
 void Editor::saveFile(const QUrl& url) {

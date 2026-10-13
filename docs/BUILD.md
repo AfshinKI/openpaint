@@ -33,7 +33,7 @@ Install development tools and Qt in the ignored build directory:
 python3 -m venv build/tooling
 build/tooling/bin/python -m pip install -r tools/requirements-dev.txt
 build/tooling/bin/python -m aqt install-qt linux desktop 6.8.3 linux_gcc_64 \
-  --outputdir build/qt --archives icu qtbase qtdeclarative qtsvg qttools qtwayland
+  --outputdir build/qt --modules qtimageformats --archives icu qtbase qtdeclarative qtsvg qttools qtwayland qtimageformats
 export PATH="$PWD/build/tooling/bin:$PATH"
 export CMAKE_PREFIX_PATH="$PWD/build/qt/6.8.3/gcc_64"
 ```
@@ -159,11 +159,13 @@ unless Transparent is checked. Each drag is one undo step; Escape cancels it.
 
 Ctrl+Z undoes; Ctrl+Y/Ctrl+Shift+Z redo. Ctrl+wheel zooms around the pointer;
 Space+drag or middle-drag pans; Ctrl+0 fits. Ctrl+N creates a blank image, Ctrl+O
-opens PNG, Ctrl+S saves and Ctrl+Shift+S chooses another PNG filename. Unsaved
+opens supported images, Ctrl+S saves and Ctrl+Shift+S chooses another PNG filename. Unsaved
 New/Open/Close offers Save, Discard and Cancel. Failed saves keep the drawing open.
 
-Only static PNG is supported, with a 32 MP limit. Text metadata is removed and
-colors normalize to sRGB; EXIF orientation is normalized; animated PNG is rejected. Recovery after a
+Static PNG, JPEG, BMP and WebP imports have a 32 MP limit. Source metadata is
+removed, colors normalize to sRGB and JPEG/PNG/WebP EXIF orientation is applied.
+Animated PNG/WebP and BMP V4/V5 color headers are rejected. Save writes PNG;
+non-PNG imports ask for a PNG destination. Recovery after a
 crash, layers, shapes, text, selection, packaged downloads and updates are not yet
 available. The developer build is useful for basic drawings, not a stable release.
 

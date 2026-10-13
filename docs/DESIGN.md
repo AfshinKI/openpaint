@@ -105,7 +105,9 @@ them explicitly. Clicking another canvas location commits shape/text only when
 that behavior is specified in its feature plan and tested. Enter in a multiline
 text box inserts a newline; it must not trigger a global action.
 
-The File menu separates Save, Save As, and Export. Show the current file format
+Open accepts PNG, JPEG, BMP and static WebP. Non-PNG imports show a notice and
+Save asks for a PNG destination, preserving the original. The File menu separates
+Save, Save As, and the forthcoming Export action. Show the current file format
 in the relevant dialogs. Lossy export and flattening are explicit. Opening a file
 with unsupported metadata must not quietly overwrite that original on Save.
 

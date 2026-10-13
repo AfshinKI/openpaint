@@ -992,9 +992,9 @@ ApplicationWindow {
     FileDialog {
         id: openDialog
         objectName: "openDialog"
-        title: qsTr("Open PNG")
+        title: qsTr("Open image")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("PNG images (*.png)")]
+        nameFilters: [qsTr("Images (*.png *.jpg *.jpeg *.bmp *.webp)"), qsTr("PNG images (*.png)"), qsTr("JPEG images (*.jpg *.jpeg)"), qsTr("BMP images (*.bmp)"), qsTr("WebP images (*.webp)")]
         onAccepted: editor.openFile(selectedFile)
     }
     FileDialog {

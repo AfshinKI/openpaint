@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Open static JPEG, BMP and WebP images with bounded worker decoding, orientation
+  normalization and source-metadata removal. Save imports as PNG copies.
+
 - Add pixel/percentage resize, aspect lock, smooth/nearest resampling and bounded
   horizontal/vertical skew for images and selected content.
 

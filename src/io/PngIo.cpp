@@ -23,6 +23,7 @@ QString tr(const char* text) {
 bool cancelled(const Cancellation& token) {
     return token && token->load();
 }
+} // namespace
 // Only IFD0 orientation affects the raster. Other EXIF data is never retained.
 std::optional<int> exifOrientation(const QByteArray& data) {
     if (data.size() < 8 || (data.first(2) != "II" && data.first(2) != "MM"))
@@ -91,7 +92,6 @@ QImage cleanImage(QImage image) {
     clean.setColorSpace(QColorSpace::SRgb);
     return clean;
 }
-} // namespace
 static ImageResult readPng(QIODevice& file, const Cancellation& cancellation) {
     if (cancelled(cancellation))
         return {{}, {}, true};

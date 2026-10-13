@@ -1,7 +1,7 @@
 # Privacy and public-repository hygiene
 
-These are product requirements. The current native editor has no network operations. It opens and saves local PNG
-files, normalizes EXIF orientation and strips text/EXIF metadata. Recovery
+These are product requirements. The current native editor has no network operations. It opens local PNG/JPEG/BMP/WebP images and saves PNG
+files, normalizes EXIF orientation and strips source metadata. Recovery
 and updates below are still planned.
 
 ## Current local settings

@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     QCommandLineParser parser;
     parser.setApplicationDescription(
         QCoreApplication::translate("main", "OpenPaint development preview. Pencil, eraser and "
-                                            "undo, and safe PNG open/save."));
+                                            "undo, image import and safe PNG save."));
     parser.addHelpOption();
     parser.addVersionOption();
     parser.process(app);
