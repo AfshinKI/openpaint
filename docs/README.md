@@ -15,7 +15,7 @@ These documents are implementation contracts. Plans describe intended behavior;
 | M1 completion evidence and performance baseline | [M1 closure](plans/0009-m1-closure.md) |
 | Testing and release gates | [Quality](QUALITY.md) |
 | Alpha installation and removal | [Install guide](INSTALL.md) |
-| M2 release validation | [Alpha release plan](plans/0027-alpha-release.md) |
+| M2 completion and release validation | [Alpha release plan](plans/0027-alpha-release.md) |
 | Download formats and Updates screen | [Releases](RELEASES.md) |
 | Personal data, network access, fixture rules | [Privacy](PRIVACY.md) |
 | Why this stack | [Decision 0001](decisions/0001-native-stack.md) |

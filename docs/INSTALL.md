@@ -1,6 +1,6 @@
 # OpenPaint alpha installation
 
-Candidate guide: publication and exact-byte verification are still pending.
+Download assets from [the alpha release](https://github.com/AfshinKI/openpaint/releases/tag/v0.1.0-alpha.1).
 
 Linux x86_64. Tested release environments and artifact digests are recorded in the
 release evidence. This is an early alpha; keep copies of important originals.

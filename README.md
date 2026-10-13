@@ -6,15 +6,20 @@ OpenPaint is an independent, open-source desktop painting app inspired by modern
 Microsoft Paint: quick sketches, easy image edits, and a canvas that gets out of
 your way.
 
-> **M1 complete · usable development build.** Draw and erase, choose or pick colors and sizes, undo/redo,
-> zoom/pan, and open/save PNG safely. Brush styles, fill, shapes and inline text.
-> Rounded controls, a spectrum color editor,
-> and saved custom palettes. Runs from source; packaged downloads come next.
+**First useful alpha: 0.1.0-alpha.1 · Linux x86_64**
 
-[Build and run](docs/BUILD.md) · [Current capabilities](docs/FEATURES.md) ·
-[M1 validation](docs/plans/0009-m1-closure.md)
+[Download AppImage or Flatpak](https://github.com/AfshinKI/openpaint/releases/tag/v0.1.0-alpha.1) ·
+[Install / update / remove](docs/INSTALL.md) · [Build from source](docs/BUILD.md)
 
-![OpenPaint editor in light mode](docs/assets/eyedropper-shell-light-1280.png)
+Draw with brushes and fill, add shapes and text, select/copy/paste, crop and resize.
+Open and export PNG, JPEG, BMP and WebP. Undo/redo, zoom/pan, light/dark themes,
+and saved custom colors are included. Editing works offline without an account.
+
+This is an early alpha. Layers, project files, crash recovery and automatic updates
+come later. Keep copies of important originals. See [capabilities and limits](docs/FEATURES.md)
+and [release validation](docs/plans/0027-alpha-release.md).
+
+![OpenPaint alpha editor in light mode](docs/assets/m2-editor-light-1280.png)
 
 ### What we're building
 
@@ -50,7 +55,7 @@ Codex, Claude Code, other coding assistants, and human contributors share the sa
 No paid assistant or API key is needed to contribute.
 
 [Documentation index](docs/README.md) ·
-[Planned releases](https://github.com/AfshinKI/openpaint/releases) ·
+[Releases](https://github.com/AfshinKI/openpaint/releases) ·
 [Report an issue](https://github.com/AfshinKI/openpaint/issues)
 
 ### Open by design

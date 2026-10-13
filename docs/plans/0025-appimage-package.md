@@ -52,6 +52,5 @@ The first CI run rejected a stale preinstalled PNG package whose exact source
 revision had left the current indexes. The packaging job now uses the same fresh,
 pinned Ubuntu base container as local validation; source matching remains strict.
 
-Next: merge after all CI jobs pass, then deliver the separate Flatpak recipe.
-Exact final-artifact installation, editing, uninstall and publication remain M2's
-release closure gate.
+This recipe is merged. The first alpha and public-download verification are
+recorded in [release closure](0027-alpha-release.md).

@@ -1,9 +1,9 @@
 # Releases and in-app updates
 
-Status: manual Updates screen and installation metadata implemented. The
-[AppImage recipe](../packaging/README.md) produces development artifacts; the [Flatpak recipe](plans/0026-flatpak-package.md) adds a sandboxed test bundle. No public downloads,
-update feed, signing keys, or release-publishing automation exist yet. Do not add a Download button or an enabled self-updater
-until a corresponding artifact and verification path have been tested.
+Status: the first alpha provides AppImage and Flatpak test-bundle downloads,
+manual Updates UI and installation metadata. See [installation](INSTALL.md) and
+[release evidence](plans/0027-alpha-release.md). No OpenPaint update feed, signing
+keys, automatic installer or release-publishing automation exists yet.
 
 ## Distribution strategy
 
@@ -141,8 +141,9 @@ multiple windows/processes, unsaved work, failed save, and failed startup/rollba
 
 ## Release pipeline
 
-Current CI runs repository checks, native shell builds/tests, and formatting/QML
-checks. M2 adds packaging jobs; M5 adds signed publishing/update jobs.
+Current CI runs repository checks, native builds/tests, formatting/QML checks,
+AppImage source/inventory packaging and Flatpak sandbox packaging. M5 adds signed
+publishing/update jobs.
 Do not commit a workflow that pretends to build targets that do not exist.
 
 Release sequence:
