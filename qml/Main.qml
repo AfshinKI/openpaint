@@ -8,6 +8,7 @@ import OpenPaint
 
 ApplicationWindow {
     id: window
+    readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible
     readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
     readonly property CanvasItem canvasController: canvas
@@ -79,6 +80,13 @@ ApplicationWindow {
             close.accepted = false;
             requestChange("close");
         }
+    }
+    ExportDialog {
+        id: exportOptions
+        objectName: "exportOptions"
+        editor: window.editorController
+        parent: Overlay.overlay
+        onChooseDestination: exportDialog.open()
     }
     ResizeDialog {
         id: resizeDialog
@@ -176,7 +184,7 @@ ApplicationWindow {
         objectName: "newAction"
         text: qsTr("&New")
         shortcut: StandardKey.New
-        enabled: !editor.busy && !resizeDialog.visible
+        enabled: !editor.busy && !window.documentOptionsOpen
         onTriggered: window.requestChange("new")
     }
     Action {
@@ -184,7 +192,7 @@ ApplicationWindow {
         objectName: "openAction"
         text: qsTr("&Open…")
         shortcut: StandardKey.Open
-        enabled: !editor.busy && !resizeDialog.visible
+        enabled: !editor.busy && !window.documentOptionsOpen
         onTriggered: window.requestChange("open")
     }
     Action {
@@ -192,44 +200,51 @@ ApplicationWindow {
         objectName: "saveAction"
         text: qsTr("&Save")
         shortcut: StandardKey.Save
-        enabled: !editor.busy && !resizeDialog.visible
+        enabled: !editor.busy && !window.documentOptionsOpen
         onTriggered: window.saveDrawing()
     }
     Action {
         id: saveAsAction
         text: qsTr("Save &As…")
         shortcut: StandardKey.SaveAs
-        enabled: !editor.busy && !resizeDialog.visible
+        enabled: !editor.busy && !window.documentOptionsOpen
         onTriggered: {
             editor.commitPreview();
             saveDialog.open();
         }
     }
     Action {
+        id: exportAction
+        objectName: "exportAction"
+        text: qsTr("Export &copy…")
+        enabled: !editor.busy && !editor.previewActive && !window.documentOptionsOpen
+        onTriggered: exportOptions.open()
+    }
+    Action {
         id: quitAction
         objectName: "quitAction"
         text: qsTr("&Quit")
         shortcut: "Ctrl+Q"
-        enabled: !resizeDialog.visible
+        enabled: !window.documentOptionsOpen
         onTriggered: window.close()
     }
     Action {
         id: undoAction
         text: qsTr("Undo")
         shortcut: StandardKey.Undo
-        enabled: editor.canUndo && !editor.loading && !editor.textActive && !resizeDialog.visible
+        enabled: editor.canUndo && !editor.loading && !editor.textActive && !window.documentOptionsOpen
         onTriggered: editor.undo()
     }
     Action {
         id: redoAction
         text: qsTr("Redo")
         shortcut: "Ctrl+Y"
-        enabled: editor.canRedo && !editor.loading && !editor.textActive && !resizeDialog.visible
+        enabled: editor.canRedo && !editor.loading && !editor.textActive && !window.documentOptionsOpen
         onTriggered: editor.redo()
     }
     Shortcut {
         sequence: "Ctrl+Shift+Z"
-        enabled: !editor.textActive && !resizeDialog.visible
+        enabled: !editor.textActive && !window.documentOptionsOpen
         onActivated: editor.redo()
     }
     Action {
@@ -253,65 +268,65 @@ ApplicationWindow {
     Action {
         id: rotateRightAction
         text: editor.hasSelection ? qsTr("Rotate selection right 90°") : qsTr("Rotate image right 90°")
-        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
+        enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(0)
     }
     Action {
         id: rotateLeftAction
         text: editor.hasSelection ? qsTr("Rotate selection left 90°") : qsTr("Rotate image left 90°")
-        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
+        enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(1)
     }
     Action {
         id: rotateHalfAction
         text: editor.hasSelection ? qsTr("Rotate selection 180°") : qsTr("Rotate image 180°")
-        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
+        enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(2)
     }
     Action {
         id: flipHorizontalAction
         text: editor.hasSelection ? qsTr("Flip selection horizontally") : qsTr("Flip image horizontally")
-        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
+        enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(3)
     }
     Action {
         id: flipVerticalAction
         text: editor.hasSelection ? qsTr("Flip selection vertically") : qsTr("Flip image vertically")
-        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
+        enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(4)
     }
     Action {
         id: resizeAction
         objectName: "resizeAction"
         text: editor.hasSelection ? qsTr("Resize/skew selection…") : qsTr("Resize/skew image…")
-        enabled: editor.canSelect && !editor.busy && !resizeDialog.visible
+        enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: resizeDialog.open()
     }
     Action {
         id: cropAction
         text: qsTr("Crop to selection")
-        enabled: editor.canSelect && editor.hasSelection && !editor.busy && !resizeDialog.visible
+        enabled: editor.canSelect && editor.hasSelection && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(5)
     }
     Action {
         id: copyAction
         text: qsTr("Copy")
         shortcut: "Ctrl+C"
-        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !resizeDialog.visible
+        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.copySelection()
     }
     Action {
         id: cutAction
         text: qsTr("Cut")
         shortcut: "Ctrl+X"
-        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !resizeDialog.visible
+        enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.cutSelection()
     }
     Action {
         id: pasteAction
         text: qsTr("Paste")
         shortcut: "Ctrl+V"
-        enabled: editor.canSelect && !editor.busy && !window.textInputFocused && !resizeDialog.visible
+        enabled: editor.canSelect && !editor.busy && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.pasteClipboard()
     }
     Action {
@@ -319,21 +334,21 @@ ApplicationWindow {
         objectName: "selectAllAction"
         text: qsTr("Select all")
         shortcut: "Ctrl+A"
-        enabled: editor.canSelect && !window.textInputFocused && !resizeDialog.visible
+        enabled: editor.canSelect && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.selectAll()
     }
     Action {
         id: deselectAction
         text: qsTr("Deselect")
         shortcut: "Ctrl+D"
-        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !resizeDialog.visible
+        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.deselect()
     }
     Action {
         id: deleteSelectionAction
         text: qsTr("Delete selection")
         shortcut: "Delete"
-        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !resizeDialog.visible
+        enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.deleteSelection()
     }
     Action {
@@ -406,6 +421,9 @@ ApplicationWindow {
                     }
                     PaintMenuItem {
                         action: saveAsAction
+                    }
+                    PaintMenuItem {
+                        action: exportAction
                     }
                     MenuSeparator {}
                     PaintMenuItem {
@@ -931,7 +949,7 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }
@@ -996,6 +1014,15 @@ ApplicationWindow {
         fileMode: FileDialog.OpenFile
         nameFilters: [qsTr("Images (*.png *.jpg *.jpeg *.bmp *.webp)"), qsTr("PNG images (*.png)"), qsTr("JPEG images (*.jpg *.jpeg)"), qsTr("BMP images (*.bmp)"), qsTr("WebP images (*.webp)")]
         onAccepted: editor.openFile(selectedFile)
+    }
+    FileDialog {
+        id: exportDialog
+        objectName: "exportFileDialog"
+        title: qsTr("Export copy")
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: exportOptions.suffix
+        nameFilters: [exportOptions.fileFilter]
+        onAccepted: editor.exportFile(selectedFile, exportOptions.formatIndex, exportOptions.quality, exportOptions.lossless, exportOptions.flatten, exportOptions.backgroundColor)
     }
     FileDialog {
         id: saveDialog

@@ -5,7 +5,11 @@
 #include <QColorSpace>
 #include <QCoreApplication>
 #include <QFile>
+#include <QFileInfo>
 #include <QImageReader>
+#include <QImageWriter>
+#include <QPainter>
+#include <QSaveFile>
 #include <QtEndian>
 
 namespace openpaint {
@@ -170,5 +174,76 @@ ImageResult loadImage(const QString& path, const Cancellation& token) {
             tr("Imported image. Save creates a PNG; the original stays unchanged. Source metadata "
                "was removed and colors were normalized to sRGB."),
             format};
+}
+QByteArray exportCodec(ExportFormat format) {
+    switch (format) {
+    case ExportFormat::Png:
+        return "png";
+    case ExportFormat::Jpeg:
+        return "jpeg";
+    case ExportFormat::Bmp:
+        return "bmp";
+    case ExportFormat::WebP:
+        return "webp";
+    }
+    return {};
+}
+bool exportSuffix(const QString& path, ExportFormat format) {
+    const auto suffix = QFileInfo(path).suffix().toLower();
+    return suffix == QString::fromLatin1(exportCodec(format)) ||
+           (format == ExportFormat::Jpeg && suffix == "jpg");
+}
+ImageResult exportImage(const QString& path, const QImage& image, const ExportOptions& options,
+                        const Cancellation& token, const std::function<bool(QSaveFile&)>& commit,
+                        const std::function<qint64(QIODevice&, const QByteArray&)>& write) {
+    if (token && token->load())
+        return {{}, {}, true};
+    const auto codec = exportCodec(options.format);
+    if (codec.isEmpty() || !exportSuffix(path, options.format) || image.isNull() ||
+        !Document::validSize(image.size()) || options.quality < 1 || options.quality > 99 ||
+        (options.flatten && (!options.background.isValid() || options.background.alpha() != 255)) ||
+        (!options.flatten &&
+         (options.format == ExportFormat::Jpeg || options.format == ExportFormat::Bmp)))
+        return {{}, tr("Choose valid export options and a matching filename extension.")};
+    auto raster = cleanImage(image);
+    if (raster.isNull())
+        return {{}, tr("There is not enough memory to export this image.")};
+    if (options.flatten) {
+        QImage opaque(raster.size(), QImage::Format_RGB32);
+        if (opaque.isNull())
+            return {{}, tr("There is not enough memory to flatten this image.")};
+        opaque.fill(options.background);
+        QPainter painter(&opaque);
+        painter.drawImage(0, 0, raster);
+        painter.end();
+        opaque.setColorSpace(QColorSpace::SRgb);
+        raster = opaque;
+    }
+    // Encode to memory so a failing destination never interrupts codec cleanup.
+    QByteArray bytes;
+    QBuffer buffer(&bytes);
+    buffer.open(QIODevice::WriteOnly);
+    QImageWriter writer(&buffer, codec);
+    writer.setQuality(options.format == ExportFormat::WebP && options.lossless ? 100
+                                                                               : options.quality);
+    if (!writer.write(raster) || bytes.size() > 128 * 1024 * 1024)
+        return {{}, tr("Export encoding failed or exceeds the 128 MiB file limit.")};
+    if (token && token->load())
+        return {{}, {}, true};
+    QSaveFile file(path);
+    file.setDirectWriteFallback(false);
+    if (!file.open(QIODevice::WriteOnly))
+        return {{}, tr("Cannot create a safe temporary file here. Choose another destination.")};
+    if ((write ? write(file, bytes) : file.write(bytes)) != bytes.size()) {
+        file.cancelWriting();
+        return {{}, tr("Export writing failed. The original file has been preserved.")};
+    }
+    if (token && token->load()) {
+        file.cancelWriting();
+        return {{}, {}, true};
+    }
+    if (!(commit ? commit(file) : file.commit()))
+        return {{}, tr("File replacement failed. The original file has been preserved.")};
+    return {};
 }
 } // namespace openpaint

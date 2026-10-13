@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Export PNG/JPEG/BMP/WebP copies with explicit quality, lossless WebP and opaque
+  background choices, without changing the working drawing’s saved state.
+
 - Open static JPEG, BMP and WebP images with bounded worker decoding, orientation
   normalization and source-metadata removal. Save imports as PNG copies.
 

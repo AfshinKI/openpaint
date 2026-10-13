@@ -165,7 +165,8 @@ New/Open/Close offers Save, Discard and Cancel. Failed saves keep the drawing op
 Static PNG, JPEG, BMP and WebP imports have a 32 MP limit. Source metadata is
 removed, colors normalize to sRGB and JPEG/PNG/WebP EXIF orientation is applied.
 Animated PNG/WebP and BMP V4/V5 color headers are rejected. Save writes PNG;
-non-PNG imports ask for a PNG destination. Recovery after a
+non-PNG imports ask for a PNG destination. File → Export copy writes PNG/JPEG/BMP/WebP
+with explicit quality/background options and leaves the drawing’s saved state intact. Recovery after a
 crash, layers, shapes, text, selection, packaged downloads and updates are not yet
 available. The developer build is useful for basic drawings, not a stable release.
 

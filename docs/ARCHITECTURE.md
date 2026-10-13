@@ -164,7 +164,10 @@ it never reports a failed underlying write as a successful save.
 PNG is the lossless Save baseline. JPEG/BMP/static WebP imports use signature-selected
 Qt codecs with encoded/dimension limits and fresh sRGB pixel copies. Animated WebP
 and BMP V4/V5 color headers are rejected. Imports do not retain non-PNG backing
-URLs; Save requests a PNG destination. Explicit JPEG/BMP/WebP export follows in M2. Add static
+URLs; Save requests a PNG destination. Export serializes PNG/JPEG/BMP/WebP copies with explicit alpha/loss choices.
+It encodes a sanitized immutable snapshot to a bounded file result, then uses
+QSaveFile without direct-write fallback. Export completion never marks a revision
+saved or resumes a pending Save/Close operation. Add static
 GIF import in M4 and warn that only the first frame is used. Do not claim animation
 editing, GIF export, SVG rendering, or PSD compatibility in 1.0.
 

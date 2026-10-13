@@ -5,6 +5,8 @@
 #include <QColorSpace>
 #include <QFile>
 #include <QImageWriter>
+#include <QPainter>
+#include <QSaveFile>
 #include <QTemporaryDir>
 #include <QtEndian>
 #include <QtTest>
@@ -26,6 +28,143 @@ class ImageIoTest : public QObject {
         return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size();
     }
   private slots:
+    void exportCopies() {
+        QTemporaryDir dir;
+        QImage source(48, 32, QImage::Format_ARGB32_Premultiplied);
+        source.fill(QColor(80, 140, 200, 128));
+        source.setText("Author", "Generated fixture");
+        source.setColorSpace(QColorSpace::SRgb);
+        for (const auto format : {openpaint::ExportFormat::Png, openpaint::ExportFormat::Jpeg,
+                                  openpaint::ExportFormat::Bmp, openpaint::ExportFormat::WebP}) {
+            const auto path =
+                dir.filePath("copy." + QString::fromLatin1(openpaint::exportCodec(format)));
+            openpaint::ExportOptions options;
+            options.format = format;
+            options.flatten =
+                format == openpaint::ExportFormat::Jpeg || format == openpaint::ExportFormat::Bmp;
+            options.background = QColor(240, 220, 200);
+            const auto result = openpaint::exportImage(path, source, options);
+            QVERIFY2(result.ok(), qPrintable(result.error));
+            const auto loaded = openpaint::loadImage(path);
+            QVERIFY2(loaded.ok(), qPrintable(loaded.error));
+            QVERIFY(loaded.image.textKeys().isEmpty());
+            QImage expected = openpaint::cleanImage(source);
+            if (options.flatten) {
+                expected.fill(options.background);
+                QPainter painter(&expected);
+                painter.drawImage(0, 0, source);
+            }
+            const auto actual = loaded.image.pixelColor(12, 12);
+            const auto target = expected.pixelColor(12, 12);
+            QCOMPARE(actual.alpha(), target.alpha());
+            QVERIFY(qAbs(actual.red() - target.red()) <= 2);
+            QVERIFY(qAbs(actual.green() - target.green()) <= 2);
+            QVERIFY(qAbs(actual.blue() - target.blue()) <= 2);
+            if (format == openpaint::ExportFormat::Png || format == openpaint::ExportFormat::WebP)
+                QCOMPARE(loaded.image, expected);
+            if (options.flatten) {
+                options.flatten = false;
+                QVERIFY(!openpaint::exportImage(path, source, options).ok());
+            }
+        }
+    }
+    void exportFailuresPreserveFile() {
+        QTemporaryDir dir;
+        const auto path = dir.filePath("copy.webp");
+        const QByteArray original("Existing destination");
+        QImage source(32, 24, QImage::Format_ARGB32_Premultiplied);
+        source.fill(Qt::red);
+        openpaint::ExportOptions options;
+        options.format = openpaint::ExportFormat::WebP;
+        QVERIFY(write(path, original));
+        auto preserved = [&] {
+            QFile file(path);
+            return file.open(QIODevice::ReadOnly) && file.readAll() == original;
+        };
+        auto token = std::make_shared<std::atomic_bool>(true);
+        QVERIFY(openpaint::exportImage(path, source, options, token).cancelled);
+        QVERIFY(preserved());
+        token->store(false);
+        QVERIFY(!openpaint::exportImage(path, source, options, {}, [](QSaveFile& file) {
+                     file.cancelWriting();
+                     return false;
+                 }).ok());
+        QVERIFY(preserved());
+        QVERIFY(!openpaint::exportImage(path, source, options, {}, {},
+                                        [](QIODevice& file, const QByteArray& bytes) {
+                                            file.write(bytes.first(2));
+                                            return qint64(2);
+                                        })
+                     .ok());
+        QVERIFY(preserved());
+        QVERIFY(openpaint::exportImage(path, source, options, token, {},
+                                       [&](QIODevice& file, const QByteArray& bytes) {
+                                           const auto n = file.write(bytes);
+                                           token->store(true);
+                                           return n;
+                                       })
+                    .cancelled);
+        QVERIFY(preserved());
+        options.quality = 101;
+        QVERIFY(!openpaint::exportImage(path, source, options).ok());
+        QVERIFY(preserved());
+        QVERIFY(!openpaint::exportSuffix("copy.png", openpaint::ExportFormat::Jpeg));
+        QVERIFY(openpaint::exportSuffix("copy.JPG", openpaint::ExportFormat::Jpeg));
+    }
+    void exportLeavesWorkingDocument() {
+        QTemporaryDir dir;
+        Editor editor;
+        const auto savedPath = dir.filePath("drawing.png");
+        editor.saveFile(QUrl::fromLocalFile(savedPath));
+        QTRY_VERIFY(!editor.busy());
+        editor.begin({10, 10}, false);
+        editor.extend({100, 80});
+        editor.finish();
+        const auto before = editor.image();
+        QSignalSpy saved(&editor, &Editor::saved), exported(&editor, &Editor::exported);
+        editor.exportFile(QUrl::fromLocalFile(dir.filePath("copy.webp")), 3, 90, true, false,
+                          Qt::white);
+        QVERIFY(editor.exporting());
+        editor.begin({200, 200}, false);
+        editor.finish();
+        const auto during = editor.image();
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(exported.size(), 1);
+        QVERIFY(exported.first().first().toBool());
+        QVERIFY(saved.isEmpty());
+        QVERIFY(editor.dirty());
+        QCOMPARE(editor.fileUrl(), QUrl::fromLocalFile(savedPath));
+        QCOMPARE(editor.image(), during);
+        QCOMPARE(openpaint::loadImage(dir.filePath("copy.webp")).image, before);
+        editor.undo();
+        QCOMPARE(editor.image(), before);
+        editor.undo();
+        QVERIFY(!editor.dirty());
+    }
+    void lossyQuality() {
+        QTemporaryDir dir;
+        QImage source(96, 80, QImage::Format_RGB32);
+        for (int y = 0; y < source.height(); ++y)
+            for (int x = 0; x < source.width(); ++x)
+                source.setPixelColor(
+                    x, y, QColor((x * 17 + y * 23) % 256, (x * 7) % 256, (y * 13) % 256));
+        for (auto format : {openpaint::ExportFormat::Jpeg, openpaint::ExportFormat::WebP}) {
+            openpaint::ExportOptions options;
+            options.format = format;
+            options.flatten = true;
+            options.lossless = false;
+            const auto ext = QString::fromLatin1(openpaint::exportCodec(format));
+            const auto low = dir.filePath("low." + ext), high = dir.filePath("high." + ext);
+            options.quality = 10;
+            QVERIFY(openpaint::exportImage(low, source, options).ok());
+            options.quality = 95;
+            QVERIFY(openpaint::exportImage(high, source, options).ok());
+            QVERIFY(QFileInfo(low).size() < QFileInfo(high).size());
+            const auto result = openpaint::loadImage(high);
+            QVERIFY2(result.ok(), qPrintable(result.error));
+            QCOMPARE(result.image.size(), source.size());
+        }
+    }
     void import_data() {
         QTest::addColumn<QByteArray>("format");
         for (const auto& format : {"png", "jpeg", "bmp", "webp"})

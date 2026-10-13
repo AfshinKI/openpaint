@@ -13,6 +13,7 @@
 class Editor : public QObject {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(bool exporting READ exporting NOTIFY changed)
     Q_PROPERTY(bool transforming READ transforming NOTIFY changed)
     Q_PROPERTY(bool freeFormSelection MEMBER freeFormSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentSelection MEMBER transparentSelection NOTIFY settingsChanged)
@@ -71,6 +72,11 @@ class Editor : public QObject {
     }
     void setTool(Tool tool);
     explicit Editor(QObject* parent = nullptr);
+    bool exporting() const {
+        return exporting_;
+    }
+    Q_INVOKABLE void exportFile(const QUrl& url, int format, int quality, bool lossless,
+                                bool flatten, QColor background);
     bool transforming() const {
         return transforming_;
     }
@@ -210,6 +216,7 @@ class Editor : public QObject {
     void noticeChanged();
     void documentReplaced();
     void saved(bool success);
+    void exported(bool success);
     void settingsChanged();
     void pixelsChanged(QRect rect);
 
@@ -248,6 +255,7 @@ class Editor : public QObject {
     QList<QPointF> shapePoints_;
     bool shapeActive_ = false, shapeSecondary_ = false, shapeInputBlocked_ = false;
     Tool tool_ = Tool::Pencil;
+    bool exporting_ = false;
     bool busy_ = false, loading_ = false, filling_ = false, pasting_ = false;
     QFutureWatcher<openpaint::FillResult> fillWatcher_;
     quint64 fillRevision_ = 0;
