@@ -1,0 +1,13 @@
+{
+  "branch": "6.11",
+  "architecture": "x86_64",
+  "remote": "https://flathub.org/repo/flathub.flatpakrepo",
+  "runtime": {
+    "id": "org.kde.Platform",
+    "commit": "fe192771c0992ad873e6a9ccc6e4f087c76314ce5ced165650cc7ea045a6bbaa"
+  },
+  "sdk": {
+    "id": "org.kde.Sdk",
+    "commit": "305b8ec8d506448558798256bd9afcfd856c7e62357a42e320a6678a08f81465"
+  }
+}

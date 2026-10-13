@@ -1,7 +1,7 @@
 # Releases and in-app updates
 
 Status: manual Updates screen and installation metadata implemented. The
-[AppImage recipe](../packaging/README.md) produces development artifacts; Flatpak remains planned. No public downloads,
+[AppImage recipe](../packaging/README.md) produces development artifacts; the [Flatpak recipe](plans/0026-flatpak-package.md) adds a sandboxed test bundle. No public downloads,
 update feed, signing keys, or release-publishing automation exist yet. Do not add a Download button or an enabled self-updater
 until a corresponding artifact and verification path have been tested.
 

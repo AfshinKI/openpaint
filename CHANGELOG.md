@@ -4,6 +4,8 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add a restricted Flatpak test-bundle recipe with pinned runtime/SDK commits,
+  source identity, permission auditing and CI review artifacts.
 - Add an audited AppImage build recipe and CI review artifacts with dependency
   licenses, corresponding sources, checksums and a software bill of materials.
 
