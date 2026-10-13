@@ -92,8 +92,48 @@ if(BUILD_TESTING)
     target_link_libraries(openpaint_shell_tests PRIVATE
         openpaint_ui openpaint_uiplugin Qt6::QuickControls2 Qt6::Test)
     target_compile_options(openpaint_shell_tests PRIVATE -Wall -Wextra -Wpedantic)
-    add_test(NAME shell COMMAND openpaint_shell_tests)
-    set_tests_properties(shell PROPERTIES TIMEOUT 30)
+    # Keep each bounded shell shard below 30 seconds as coverage grows.
+    add_test(NAME shell COMMAND openpaint_shell_tests
+        launchAndResize
+        floatingToolControls
+        quickActionPlacement
+        themeActions
+        keyboardAboutAndEscape
+        drawingAndTransforms
+        interruptedAndSecondaryStroke
+        updatesWorkflow
+        exportDialogWorkflow
+        resizeDialogWorkflow
+        ribbonActionMemory
+        imageTransformWorkflow
+        freeFormSelectionWorkflow
+        clipboardMoveWorkflow
+        rectangularSelectionWorkflow
+        inlineTextWorkflow
+        transparentBackgroundChoice
+        canvasCornerResize
+        cornerResizeHandles)
+    add_test(NAME shell-more COMMAND openpaint_shell_tests
+        textToolbarOutsideClickCommit
+        chordAndPanLifecycle
+        unsavedCancelAndSaveClose
+        failedSavePreventsClose
+        fileDialogCancel
+        nativePortalWorkflow
+        keyboardFileWorkflow
+        topRightControls
+        brushMainActivation
+        ribbonShapeKeyboard
+        shapeStyleMenus
+        shapeOptionsKeyboard
+        brushMenuKeyboardAndLayout
+        fillOptionsLayout
+        keyboardControlsAndAccessibility
+        customColorEditor
+        toolbarSlotAndRoleWorkflow
+        renderTiming
+        quitClosesWindow)
+    set_tests_properties(shell shell-more PROPERTIES TIMEOUT 30)
     add_test(NAME cli-version COMMAND openpaint --version)
     set_tests_properties(cli-version PROPERTIES
         PASS_REGULAR_EXPRESSION "OpenPaint ${OPENPAINT_VERSION}" TIMEOUT 10)
