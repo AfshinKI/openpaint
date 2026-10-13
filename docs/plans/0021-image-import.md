@@ -37,6 +37,9 @@ Qt 6.8.3/Linux x86_64: all 11 development and ASan/UBSan suites pass;
 metadata removal, P3 conversion, JPEG/WebP orientation, WebP alpha and malformed
 containers/limits. The tiny-WebP fixture also covers Qt 6.8's minimum probe-size
 workaround (a legal ignored RIFF chunk in the private decode buffer).
+CI exposed a race in the earlier transform-cancel shell test: its keyboard helper
+pumped events before Escape, allowing a tiny operation to finish. A semaphore
+now holds the worker until Escape is delivered, preserving the original assertion.
 Existing X11 keyboard file/cancel workflows pass (4 test results). Strict QML
 lint, C++/QML formatting, repository checks and seven tooling tests pass.
 

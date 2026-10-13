@@ -13,10 +13,12 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QScopeGuard>
+#include <QSemaphore>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QTimer>
+#include <QtConcurrentRun>
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -235,8 +237,23 @@ class ShellTest : public QObject {
         editor->finish();
         const auto original = editor->image();
         QVERIFY(tabTo("imageMenuButton"));
+        // Hold the pool until Escape is delivered; the keyboard helper processes events,
+        // so an unblocked tiny rotation can legitimately finish before cancellation.
+        auto* pool = QThreadPool::globalInstance();
+        pool->waitForDone();
+        const int threadCount = pool->maxThreadCount();
+        pool->setMaxThreadCount(1);
+        QSemaphore started, resume;
+        auto gate = QtConcurrent::run([&] {
+            started.release();
+            resume.acquire();
+        });
+        started.acquire();
         editor->transformImage(0);
         keyClick(Qt::Key_Escape);
+        resume.release();
+        gate.waitForFinished();
+        pool->setMaxThreadCount(threadCount);
         QTRY_VERIFY(!editor->busy());
         QCOMPARE(editor->image(), original);
         keyClick(Qt::Key_Space);
