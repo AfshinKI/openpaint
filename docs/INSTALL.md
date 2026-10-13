@@ -77,12 +77,11 @@ Flatpak operation; do not remove shared runtimes needed by other applications.
 
 ## Source and licenses
 
-The matching OpenPaint source archive contains the CMake build, packaging recipes,
-GPL license, contribution rules and documentation. The AppImage includes notices;
-the separate third-party source archive supplies corresponding bundled-library
-sources and runtime build references. Dependency inventories and a CycloneDX SBOM
-accompany the release. The Flatpak's shared KDE runtime is distributed separately
-by Flathub; its exact tested commit and source recipe are in the Flatpak inventory.
+The combined sources-and-notices archive includes matching OpenPaint source,
+bundled third-party sources, dependency inventories and a CycloneDX SBOM. The
+portable application also includes license notices. These materials are for
+source availability and license compliance; they are not required to run the app.
+Older AppImage/Flatpak releases publish these materials as separate assets.
 
-Help → Updates shows the installed version and a manual link to GitHub Releases.
-It does not check, download, install or restart automatically.
+The top-right Updates button shows the installed version and a manual link to
+GitHub Releases. It does not check, download, install or restart automatically.

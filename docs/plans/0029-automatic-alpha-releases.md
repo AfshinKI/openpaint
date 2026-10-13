@@ -21,6 +21,8 @@ The packaging job retains AppImage/Flatpak validation but publishes the portable
 AppDir archive. AppRun and the portable launcher share the same relative library
 layout. Portable installation identity explains manual archive replacement.
 Publishing uses the same run's artifacts after all prerequisite jobs succeed.
+Feature branches run checks through their PR, avoiding duplicate push builds.
+Each main commit keeps its own run so rapid merges do not cancel a release.
 The project remains alpha; automatic in-app updating is a separate milestone.
 
 ## Reported AppImage failure
