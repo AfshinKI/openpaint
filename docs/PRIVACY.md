@@ -5,11 +5,10 @@ files or exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strip
 
 ## Current local settings
 
-Explicit custom-color actions store at most 24 opaque HEX colors and a schema
-version in `palette.json` under Qt's XDG application configuration directory. No
-artwork, filenames or identifiers are stored. Remove selected and Clear all are
-available in the color editor’s Manage custom colors menu. Writes are atomic; failures retain the previous
-palette and show an error. Invalid settings are ignored until explicitly replaced.
+Custom colors are session-only: up to 10 ribbon colors and 24 editor colors stay
+in memory and reset on launch. No palette settings are read or written. Older
+palette files, if present from a prior build, are ignored and left untouched.
+Remove selected and Clear all remain available for the editor's session list.
 
 ## Product commitments
 

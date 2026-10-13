@@ -948,26 +948,26 @@ ApplicationWindow {
                     implicitWidth: 32
                     implicitHeight: 32
                     diameter: 26
-                    swatchColor: editor.secondaryActive ? editor.secondary : editor.primary
-                    checked: !editor.secondaryActive
+                    swatchColor: editor.primary
+                    checked: !editor.editingSecondary
                     checkable: true
                     autoExclusive: true
                     enabled: !editor.busy
-                    text: qsTr("Use upper color as main drawing color")
-                    onClicked: editor.secondaryActive = false
+                    text: qsTr("Choose drawing color")
+                    onClicked: editor.editingSecondary = false
                 }
                 ColorSwatch {
                     objectName: "secondaryButton"
                     implicitWidth: 32
                     implicitHeight: 32
                     diameter: 24
-                    swatchColor: editor.secondaryActive ? editor.primary : editor.secondary
-                    checked: editor.secondaryActive
+                    swatchColor: editor.secondary
+                    checked: editor.editingSecondary
                     checkable: true
                     autoExclusive: true
                     enabled: !editor.busy
-                    text: qsTr("Use lower color as main drawing color")
-                    onClicked: editor.secondaryActive = true
+                    text: qsTr("Choose background and fill color")
+                    onClicked: editor.editingSecondary = true
                 }
             }
             ColumnLayout {
@@ -981,8 +981,8 @@ ApplicationWindow {
                             objectName: "colorSwatch"
                             required property string modelData
                             swatchColor: modelData
-                            checked: editor.primary.toString() === modelData
-                            onClicked: editor.primary = modelData
+                            checked: editor.selectedColor.toString() === modelData
+                            onClicked: editor.selectedColor = modelData
                         }
                     }
                 }
@@ -996,16 +996,18 @@ ApplicationWindow {
                             required property int index
                             empty: customPalette.toolbarColors[index] === ""
                             swatchColor: empty ? "transparent" : customPalette.toolbarColors[index]
-                            checked: !empty && editor.primary.toString() === swatchColor.toString()
+                            checked: !empty && editor.selectedColor.toString() === swatchColor.toString()
                             text: empty ? qsTr("Empty custom slot %1 · edit colors").arg(index + 1) : qsTr("Custom color %1").arg(swatchColor.toString())
                             onClicked: {
                                 if (empty)
-                                    colorDialog.begin(editor.primary, "toolbar:" + index);
+                                    colorDialog.begin(editor.selectedColor, editor.editingSecondary ? "secondary" : "primary");
                                 else
-                                    editor.primary = swatchColor;
+                                    editor.selectedColor = swatchColor;
                             }
                             function replaceColor() {
-                                colorDialog.begin(empty ? editor.primary : swatchColor, "toolbar:" + index);
+                                colorDialog.begin(empty ? editor.selectedColor : swatchColor, editor.editingSecondary ? "secondary" : "primary");
+                                if (!empty)
+                                    colorDialog.replacementSlot = index;
                             }
                             TapHandler {
                                 acceptedButtons: Qt.RightButton
@@ -1040,7 +1042,7 @@ ApplicationWindow {
                     symbol: "palette"
                     icon.color: "transparent"
                     text: qsTr("Edit colors")
-                    onClicked: colorDialog.begin(editor.primary, "primary")
+                    onClicked: colorDialog.begin(editor.selectedColor, editor.editingSecondary ? "secondary" : "primary")
                 }
             }
             Item {
@@ -1198,15 +1200,8 @@ ApplicationWindow {
         id: colorDialog
         paletteStore: customPalette
         onColorChosen: function (chosen) {
-            if (colorTarget.startsWith("toolbar:")) {
-                const slot = Number(colorTarget.slice(8));
-                if (customPalette.setToolbarColor(slot, chosen))
-                    editor.primary = chosen;
-                else
-                    Qt.callLater(function () {
-                        colorDialog.open();
-                    });
-            } else if (colorTarget === "primary")
+            customPalette.remember(chosen, replacementSlot);
+            if (colorTarget === "primary")
                 editor.primary = chosen;
             else
                 editor.secondary = chosen;

@@ -144,12 +144,12 @@ Stack two larger color circles to the left of two rows of ten basic
 swatches. A third row always shows ten custom slots, with hollow circles for
 empty positions. A colorful edit-colors action sits beside the grid; the Colors
 caption is below. A filled swatch and an empty slot are distinct states, not
-missing UI. Empty toolbar slots open an exact-slot draft; OK saves and selects its color,
-Cancel changes neither. Filled slots select the active main color; right-click
-or Shift+F10/Menu opens Replace. Clicking a large circle makes it the active main
-color without moving the colors between circles. The other supplies background/
-fill and right-button drawing. Edit colors edits main; there is no Swap button.
-Toolbar slots now have an independent persistent store; migration review is step 6.
+missing UI. Clicking either large circle selects it for color editing: top always
+means drawing color, bottom always means background/fill. It does not swap roles.
+Basic and filled custom swatches assign the selected circle. Empty slots open a
+chooser draft. OK applies and adds a new color to the first empty slot in both
+palettes; skip each full palette independently. Right-click or Shift+F10/Menu
+provides explicit slot replacement. No Swap button is needed.
 
 The rounded Edit colors dialog has a large square hue/saturation spectrum on the
 left, a narrow tall selected-color preview, a vertical brightness slider, then a
@@ -158,10 +158,11 @@ Below are a 12-by-4 Basic colors grid and a 6-by-4 Custom colors grid with an ad
 button. A separate footer contains two broad side-by-side OK and Cancel buttons.
 Keep the dialog usable at the minimum window size without clipping its footer.
 
-OpenPaint additionally offers a compact custom-color management menu and a clear
-persistence hint. Its existing draft/accept/cancel and immediate palette-save
-semantics remain as defined in [DESIGN.md](DESIGN.md). Do not reinterpret static
-empty slots as evidence for insertion order, persistence or replacement behavior.
+OpenPaint offers a custom-color management menu and an explicit session-lifetime
+hint. The ribbon holds 10 colors and the editor 24. Both start empty on launch;
+no palette settings are read or written. Existing colors do not consume another
+slot on acceptance. Explicit editor Add/Replace/Remove/Clear acts immediately
+within this session; Cancel discards the draft but not these explicit actions.
 
 ## Workspace and status bar
 

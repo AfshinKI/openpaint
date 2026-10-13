@@ -189,16 +189,19 @@ frames and file dialogs follow the desktop. The artwork itself remains rectangul
 Use the app-owned color chooser with a rectangular hue/saturation spectrum,
 vertical brightness slider and color preview, HEX input and switchable RGB/HSV
 fields, basic/custom grids and explicit accept/cancel. Both primary and secondary
-colors are editable. Twenty-four local custom
-swatches support add, replace, remove and clear. These explicit palette actions save
-immediately, even if the drawing-color draft is later canceled; the dialog explains
-this distinction. Palette changes are settings, not undoable
-artwork edits, and never dirty the document. See the [UI polish plan](plans/0004-ui-polish.md)
-for the two focused implementation slices and acceptance cases.
+colors are editable. The top circle always controls foreground drawing color;
+the bottom always controls background/fill and right-button drawing. Selecting
+a circle changes only the color-editing target. Applying a new chooser color
+fills the first empty slot in each custom palette: 10 on the ribbon, 24 in the
+editor. Skip full palettes and existing duplicates. Both palettes are session-only
+and start empty on launch. Explicit editor Add/Replace/Remove/Clear affects its
+own list immediately for this session; Cancel discards only the pending color
+draft. Palette changes never dirty artwork or enter its undo history. See the
+[current alpha plan](plans/0028-alpha-ui-polish.md) for the superseding contract.
 
 The [reference layout refinement](plans/0005-reference-color-layout.md) supersedes
 the earlier inferred hue-ring design. Toolbar height is 112 logical pixels;
-two role-selectable color circles stack beside two rows of basic colors and a
+two fixed-role color circles stack beside two rows of basic colors and a
 third row of ten independently editable toolbar slots. Empty slots remain visible as hollow circles and open the
 editor. The color editor always exposes all 24 custom slots. Plus/empty-slot
 activation appends the draft to the next free slot; Manage custom colors offers

@@ -11,12 +11,14 @@ PaintDialog {
     required property ColorPalette paletteStore
     property string colorTarget: "primary"
     property int selectedSlot: -1
+    property int replacementSlot: -1
     signal colorChosen(color chosen)
     function begin(color, target: string) {
         colorTarget = target;
         colorDraft.color = color;
         hexField.text = colorDraft.hex;
         selectedSlot = -1;
+        replacementSlot = -1;
         open();
     }
     function addColor() {
@@ -42,7 +44,7 @@ PaintDialog {
         }
     }
     contentItem: ColumnLayout {
-        Accessible.name: (dialog.colorTarget === "primary" || dialog.colorTarget.startsWith("toolbar:")) ? qsTr("Edit primary color") : qsTr("Edit secondary color")
+        Accessible.name: dialog.colorTarget === "primary" ? qsTr("Edit primary color") : qsTr("Edit secondary color")
         spacing: 12
         RowLayout {
             spacing: 12
@@ -336,7 +338,7 @@ PaintDialog {
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            text: dialog.paletteStore.error.length ? dialog.paletteStore.error : qsTr("Custom colors save immediately. Cancel discards only the drawing-color change.")
+            text: dialog.paletteStore.error.length ? dialog.paletteStore.error : qsTr("Custom colors last until you close the app. OK adds to empty slots in both palettes. Cancel discards the color draft.")
             color: Theme.secondaryText
         }
     }

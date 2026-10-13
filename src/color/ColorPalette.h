@@ -12,7 +12,7 @@ class ColorPalette : public QObject {
     Q_PROPERTY(QStringList toolbarColors READ toolbarColors NOTIFY changed)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
   public:
-    explicit ColorPalette(QObject* parent = nullptr, const QString& path = {});
+    explicit ColorPalette(QObject* parent = nullptr) : QObject(parent) {}
     QStringList colors() const {
         return colors_;
     }
@@ -22,6 +22,7 @@ class ColorPalette : public QObject {
     QStringList toolbarColors() const {
         return toolbarColors_;
     }
+    Q_INVOKABLE bool remember(QColor color, int replacementSlot = -1);
     Q_INVOKABLE bool setToolbarColor(int index, QColor color);
     Q_INVOKABLE bool add(QColor color);
     Q_INVOKABLE bool replace(int index, QColor color);
@@ -32,11 +33,10 @@ class ColorPalette : public QObject {
     void errorChanged();
 
   private:
-    void loadToolbar();
     bool writeToolbar(const QStringList& colors);
     bool write(const QStringList& colors);
     bool fail(const QString& error);
-    QString path_, error_;
+    QString error_;
     QStringList colors_;
     QStringList toolbarColors_ = QStringList(10, QString());
 };

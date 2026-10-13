@@ -9,15 +9,18 @@
 #include <QtConcurrent>
 #include <cmath>
 #include <numbers>
-#include <utility>
-void Editor::setSecondaryActive(bool active) {
-    if (active == secondaryActive_ || busy())
+void Editor::setEditingSecondary(bool active) {
+    if (active == editingSecondary_)
         return;
-    // End an in-flight gesture before changing the roles used by future gestures.
+    editingSecondary_ = active;
+    emit settingsChanged();
+}
+void Editor::setSelectedColor(QColor color) {
+    if (!color.isValid() || color == selectedColor())
+        return;
     if (!previewActive())
         finish();
-    std::swap(primary, secondary);
-    secondaryActive_ = active;
+    (editingSecondary_ ? secondary : primary) = color;
     emit settingsChanged();
 }
 void Editor::setTool(Tool tool) {

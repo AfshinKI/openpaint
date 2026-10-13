@@ -13,41 +13,42 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
-    void activeColorRoles() {
+    void fixedColorRoles() {
         Editor editor;
         const auto original = editor.image();
         editor.primary = QColor(200, 10, 20, 100);
         editor.secondary = Qt::blue;
-        const auto upper = editor.primary;
-        editor.setSecondaryActive(true);
-        QCOMPARE(editor.primary, QColor(Qt::blue));
-        QCOMPARE(editor.secondary, upper);
+        const auto foreground = editor.primary;
+        editor.setEditingSecondary(true);
+        QCOMPARE(editor.primary, foreground);
+        QCOMPARE(editor.secondary, QColor(Qt::blue));
+        QCOMPARE(editor.selectedColor(), QColor(Qt::blue));
         QVERIFY(!editor.dirty());
+        editor.setSelectedColor(Qt::green);
+        QCOMPARE(editor.secondary, QColor(Qt::green));
+        QCOMPARE(editor.primary, foreground);
+        editor.setEditingSecondary(false);
+        editor.setSelectedColor(Qt::red);
+        editor.setEditingSecondary(true);
         editor.begin({40, 40}, false);
         editor.finish();
-        QCOMPARE(editor.image().pixelColor(40, 40), QColor(Qt::blue));
+        QCOMPARE(editor.image().pixelColor(40, 40), QColor(Qt::red));
         editor.undo();
-        QCOMPARE(editor.image(), original);
-        editor.setSecondaryActive(false);
-        QCOMPARE(editor.primary, upper);
-        QCOMPARE(editor.secondary, QColor(Qt::blue));
         editor.begin({40, 40}, true);
         editor.finish();
-        QCOMPARE(editor.image().pixelColor(40, 40), QColor(Qt::blue));
+        QCOMPARE(editor.image().pixelColor(40, 40), QColor(Qt::green));
         editor.undo();
         editor.setTool(Editor::Tool::Fill);
-        editor.setSecondaryActive(true);
         editor.begin({50, 50}, false);
         QTRY_VERIFY(!editor.busy());
-        QCOMPARE(editor.image().pixelColor(50, 50), QColor(Qt::blue));
+        QCOMPARE(editor.image().pixelColor(50, 50), QColor(Qt::red));
         editor.undo();
-        editor.setSecondaryActive(false);
         editor.setTool(Editor::Tool::Shape);
         editor.shapeKind = 1;
         editor.shapeFill = true;
         editor.begin({20, 20}, false);
         editor.extend({80, 80});
-        QCOMPARE(editor.image().pixelColor(50, 50), QColor(Qt::blue));
+        QCOMPARE(editor.image().pixelColor(50, 50), QColor(Qt::green));
         editor.cancel();
         QCOMPARE(editor.image(), original);
     }

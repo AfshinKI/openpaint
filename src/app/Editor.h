@@ -59,8 +59,10 @@ class Editor : public QObject {
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY changed)
     Q_PROPERTY(bool canRedo READ canRedo NOTIFY changed)
     Q_PROPERTY(QSize imageSize READ imageSize NOTIFY changed)
+    Q_PROPERTY(bool editingSecondary READ editingSecondary WRITE setEditingSecondary NOTIFY
+                   settingsChanged)
     Q_PROPERTY(
-        bool secondaryActive READ secondaryActive WRITE setSecondaryActive NOTIFY settingsChanged)
+        QColor selectedColor READ selectedColor WRITE setSelectedColor NOTIFY settingsChanged)
     Q_PROPERTY(QColor primary MEMBER primary NOTIFY settingsChanged)
     Q_PROPERTY(QColor secondary MEMBER secondary NOTIFY settingsChanged)
     Q_PROPERTY(int brushSize MEMBER brushSize NOTIFY settingsChanged)
@@ -73,10 +75,14 @@ class Editor : public QObject {
         return tool_;
     }
     void setTool(Tool tool);
-    bool secondaryActive() const {
-        return secondaryActive_;
+    bool editingSecondary() const {
+        return editingSecondary_;
     }
-    void setSecondaryActive(bool active);
+    void setEditingSecondary(bool active);
+    QColor selectedColor() const {
+        return editingSecondary_ ? secondary : primary;
+    }
+    void setSelectedColor(QColor color);
     explicit Editor(QObject* parent = nullptr);
     bool exporting() const {
         return exporting_;
@@ -227,7 +233,7 @@ class Editor : public QObject {
     void pixelsChanged(QRect rect);
 
   private:
-    bool secondaryActive_ = false;
+    bool editingSecondary_ = false;
     void fail(const QString& message);
     void finishTransform();
     void startTransform(openpaint::TransformKind operation,

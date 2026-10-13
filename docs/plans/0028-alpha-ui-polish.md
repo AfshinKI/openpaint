@@ -1,6 +1,6 @@
 # Feature: alpha ribbon and color workflow polish
 
-Status: in progress — steps 1–5 implemented; focused validation recorded below
+Status: in progress — steps 1–6 implemented; focused validation recorded below
 Feature IDs: F01, F02, F03, F05, F06, F08, F09, F26
 Milestone: post-M2 alpha polish, before M3
 
@@ -44,25 +44,24 @@ Do not redistribute external reference images or record their locations.
    - [ ] Put all 19 existing shapes in a small bordered icon matrix with scrolling
      or overflow access and a visible selected shape. Keep outline/fill controls
      adjacent. Keyboard users can reach every shape; previews and undo stay intact.
-5. **Active color roles and toolbar slots.**
-   - [ ] Clicking either large circle makes that role active for color assignment;
-     the selected role becomes the main drawing color, the other is background/
-     fill. Show a clear active outline without requiring a Swap button. Switching
-     roles must preserve both stored colors. Define left/right drawing and shape/
-     text fill mapping in tests so all tools follow the same active-role contract.
-   - [ ] Clicking an empty toolbar slot opens the chooser for that exact slot;
-     OK stores and selects its color as main, Cancel leaves the slot and colors
-     unchanged. Clicking a filled slot selects it as main; right-click opens an
-     explicit replacement action. Provide equivalent keyboard/context-menu access.
-6. **Independent persistent custom palette.**
-   - [ ] Keep ten toolbar slots separate from the chooser's 24 saved custom colors.
-     Adding/replacing/removing in one must not silently change the other. Preserve
-     both across restart; palette edits do not dirty artwork or enter undo history.
-   - [ ] Migrate existing saved colors without loss: preserve all 24 in the dialog
-     library and seed the toolbar's ten slots from the previous visible entries
-     once. Version settings and test repeated startup, gaps and malformed settings.
-   - [ ] Dialog library Add/Replace remains an explicit immediate save; Cancel
-     discards the drawing-color/toolbar-slot draft, not explicit library changes.
+5. **Fixed color roles and editable toolbar slots.**
+   - [x] Top circle always supplies drawing color; bottom always supplies background/
+     fill and right-button drawing. Clicking a circle only selects which color to
+     edit. It never swaps colors, changes roles or changes artwork by itself.
+   - [x] Basic/filled custom swatches assign the selected circle. Empty toolbar
+     slots open a draft. OK applies to the selected circle; Cancel changes neither
+     colors nor palettes. Right-click or Shift+F10/Menu offers explicit replacement.
+6. **Session-only custom palettes.**
+   - [x] Applying a new chooser color inserts it in the first empty ribbon slot
+     and first empty editor slot, independently. Ribbon capacity is 10; editor
+     capacity is 24. A full palette is skipped; applying the color still succeeds.
+     Existing colors do not consume duplicate slots.
+   - [x] Both palettes start empty each launch. No palette settings are read or
+     written. Legacy files are left untouched and ignored; no migration is needed.
+   - [x] Explicit toolbar replacement changes that slot and adds the color to the
+     editor if space remains. Dialog Add/Replace/Remove/Clear affect its own list;
+     those explicit session edits survive Cancel, while its color draft does not.
+     None of these palette actions dirty artwork or enter document undo history.
 7. **Floating size and opacity controls.**
    - [ ] Place two narrow rounded vertical panels on the RIGHT of the workspace,
      following the requested placement. Replace ribbon size/opacity controls.
@@ -82,8 +81,8 @@ Do not redistribute external reference images or record their locations.
 ## Implementation contracts
 
 QML owns layout and transient UI state; existing C++ Editor/Document commands own
-pixel mutations. Extend ColorSelection/ColorPalette for active roles, separate
-slot stores and migration; do not duplicate these models in QML. Preserve alpha
+pixel mutations. Use Editor for the selected color-editing target and ColorPalette for bounded
+session lists; do not duplicate these models in QML. Preserve alpha
 when assigning colors. No document format changes or new networking are needed.
 Tool-setting changes affect subsequent gestures, not a partially committed stroke.
 Resolve active previews through the existing guards before invoking transforms.
@@ -98,8 +97,8 @@ implementation evidence until the new behavior passes acceptance.
 For each step, record targeted behavioral tests and generated OpenPaint captures.
 Check light/dark at 1024×640 and 1280×800, plus 100%, 125%, 150% and 200% scaling.
 Test keyboard focus, menus, disabled actions and relevant preview/cancel/undo paths.
-Color tests cover active-role mapping across tools, transparent colors, independent
-persistence, migration, Cancel and exact-slot replacement. Slider tests cover
+Color tests cover fixed-role mapping across tools, transparent colors, independent capacity,
+empty palettes on launch, Cancel and explicit slot replacement. Slider tests cover
 bounds, keyboard input and unchanged artwork/history before drawing.
 
 Run repository/tooling checks, format/QML lint and applicable native/sanitizer
@@ -115,7 +114,7 @@ and a group caption. Existing selection bounds/deselect entries remain available
 Two original vector glyphs identify Rotate and Flip. Existing command guards,
 preview handling and keyboard shortcuts are retained.
 
-Next: step 6 (custom palette management and migration review). Broader theme/scale and full regression
+Next: step 7 (floating size/opacity controls). Broader theme/scale and full regression
 checks are deferred until all eight steps are implemented, as requested.
 
 ### Step 1 focused evidence
@@ -150,19 +149,11 @@ scrolling and arrow-key access to all 19 shapes. The full chooser remains next t
 it, alongside outline/fill toggles. Dense shape targets are 24px; tooltips and
 keyboard focus identify each shape. The minimum-width toolbar remains reachable.
 
-The two large circles retain their physical colors while the selected circle
-becomes main; the other supplies background/fill and right-button drawing. C++
-owns role switching and preserves alpha. The Swap action is removed; Edit colors
-changes the active main color. Existing live previews refresh using the new roles.
-An in-flight ordinary stroke finishes before roles switch.
-
-Empty toolbar slots open an exact-slot draft; OK saves/selects, Cancel preserves
-the previous slot and drawing color. Filled slots select main color. Right-click
-or Shift+F10/Menu opens Replace. Failed slot saves preserve the old settings and
-reopen the chooser with its error message. The ten-slot store preserves gaps and
-persists independently; it seeds from the prior visible palette when no toolbar
-file exists. Step 6 must finalize one-time migration and independent management
-acceptance (including old/invalid settings). Dialog-library edits stay unchanged.
+The later color correction supersedes the initial role-switching/persistence
+implementation: top is always foreground, bottom is always background/fill.
+Selection only chooses an editing target. Applying a chooser color fills each
+palette's first available slot independently, skipping full lists. Custom colors
+last only for the app session. There are no settings migrations or palette writes.
 
 Focused validation: dev build succeeded; shell launch/minimum layout, full shape
 chooser, shape options, color editor, exact-slot/role workflow and theme captures
@@ -174,3 +165,18 @@ Additional focused checks passed: direct gallery keyboard navigation, control
 accessibility smoke checks, active-role fill/undo and GUI text color mapping.
 Text coverage runs in the GUI shell suite because the headless editor unit suite
 has no font database. This does not claim full Orca verification.
+
+### Color correction and step 6
+
+The fixed-role/selected-target split is owned by Editor; palette insertion and
+capacity limits are owned by ColorPalette. All pixel commands retain their
+original foreground/background meaning, regardless of the selected circle.
+The 10/24 session lists replace the earlier persistent stores. Existing legacy
+settings are neither read nor deleted. Full palettes do not block color acceptance.
+Focused validation covers fixed-role drawing/fill/shape/text, both capacity limits,
+duplicates, explicit replacement, cancel, and fresh-instance empty palettes.
+
+Correction validation: dev build succeeded; fixed-color-role engine case passed
+(3 including setup/cleanup), color model suite passed (5), focused shell launch,
+color editor and toolbar workflow passed (5). Repository and diff checks passed.
+Earlier step 5 test counts above describe the superseded implementation only.
