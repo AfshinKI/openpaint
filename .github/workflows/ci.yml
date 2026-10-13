@@ -118,6 +118,7 @@ jobs:
           desktop-file-validate packaging/io.github.AfshinKI.OpenPaint.desktop
           appstreamcli validate --no-net packaging/io.github.AfshinKI.OpenPaint.metainfo.xml
           python3 tools/package_appimage.py --qt build/qt/6.12.0/gcc_64 --collect-system-sources --kind portable --suffix "alpha.${GITHUB_RUN_NUMBER}"
+          QT_QPA_PLATFORM=offscreen APPIMAGE_EXTRACT_AND_RUN=1 build/appimage/*.AppImage --version
           mkdir -p build/portable-smoke
           tar -xzf build/appimage/public/*-linux-x86_64.tar.gz -C build/portable-smoke
           QT_QPA_PLATFORM=offscreen build/portable-smoke/*/openpaint --version
