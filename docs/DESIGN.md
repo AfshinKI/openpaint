@@ -1,5 +1,9 @@
 # Interface design
 
+Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
+It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
+current shipped behavior remains unchanged until implementation is verified.
+
 Status: design specification, not an implemented or pixel-verified replica.
 Goal: someone familiar with modern Paint should find the same everyday workflows
 quickly, with Linux window conventions and original OpenPaint assets.

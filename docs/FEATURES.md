@@ -1,5 +1,9 @@
 # Feature checklist and reference audit
 
+Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
+It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
+current shipped behavior remains unchanged until implementation is verified.
+
 Audit date: 2026-10-12. **The single-layer alpha editor is implemented.**
 The M1 source-editor checkpoint is complete; see [validation and limits](plans/0009-m1-closure.md).
 M2 editing tools and package recipes are implemented; release evidence is recorded

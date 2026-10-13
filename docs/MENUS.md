@@ -1,5 +1,9 @@
 # Menu and control specification
 
+Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
+It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
+current shipped behavior remains unchanged until implementation is verified.
+
 This is the visual and interaction contract for future implementation. It does not
 mark features as shipped; [FEATURES.md](FEATURES.md) remains the status ledger.
 Static layouts establish placement and visible choices, not runtime behavior,

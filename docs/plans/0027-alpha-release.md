@@ -97,7 +97,8 @@ it contains only the app's blank canvas and original controls.
 
 ## Next unfinished milestone
 
-M2 is closed. M3 starts with a bounded layer/document-model plan, `.ora` persistence,
+M2 is closed. Complete the [alpha UI polish checklist](0028-alpha-ui-polish.md)
+before starting M3. M3 starts with a bounded layer/document-model plan, `.ora` persistence,
 and crash recovery, with PERF-01 considered before expanding document memory.
 Do not add those features to the release or closure branches. The current alpha
 continues to use manual updates; signed portable updates remain M5.
