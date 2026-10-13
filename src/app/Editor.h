@@ -252,7 +252,7 @@ class Editor : public QObject {
     QFutureWatcher<openpaint::FillResult> fillWatcher_;
     quint64 fillRevision_ = 0;
     QUrl fileUrl_;
-    QString error_, notice_;
+    QString error_, notice_, sourceName_;
     QFutureWatcher<openpaint::ImageResult> watcher_;
     openpaint::Cancellation cancellation_;
     QUrl operationUrl_;

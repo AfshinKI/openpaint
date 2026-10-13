@@ -931,7 +931,7 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening PNG…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }
@@ -992,9 +992,9 @@ ApplicationWindow {
     FileDialog {
         id: openDialog
         objectName: "openDialog"
-        title: qsTr("Open PNG")
+        title: qsTr("Open image")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("PNG images (*.png)")]
+        nameFilters: [qsTr("Images (*.png *.jpg *.jpeg *.bmp *.webp)"), qsTr("PNG images (*.png)"), qsTr("JPEG images (*.jpg *.jpeg)"), qsTr("BMP images (*.bmp)"), qsTr("WebP images (*.webp)")]
         onAccepted: editor.openFile(selectedFile)
     }
     FileDialog {

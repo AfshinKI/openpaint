@@ -5,6 +5,7 @@
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <optional>
 class QSaveFile;
 class QIODevice;
 namespace openpaint {
@@ -14,10 +15,14 @@ struct ImageResult {
     QString error;
     bool cancelled = false;
     QString notice = {};
+    QByteArray format = {};
     bool ok() const {
         return error.isEmpty() && !cancelled;
     }
 };
+std::optional<int> exifOrientation(const QByteArray& data);
+QImage orientImage(QImage image, int orientation);
+QImage cleanImage(QImage image);
 // Encode while deferring device errors until the codec has released its resources.
 bool writePng(QIODevice& device, const QImage& image);
 ImageResult decodePng(const QByteArray& bytes, const Cancellation& cancellation = {});

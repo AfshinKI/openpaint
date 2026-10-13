@@ -161,7 +161,10 @@ exactly once before the document receives pixels. ICC profiles are limited to
 records short/failed writes and lets the codec unwind before cancelling QSaveFile;
 it never reports a failed underlying write as a successful save.
 
-PNG is the lossless interchange baseline; add JPEG, BMP, and WebP in M2. Add static
+PNG is the lossless Save baseline. JPEG/BMP/static WebP imports use signature-selected
+Qt codecs with encoded/dimension limits and fresh sRGB pixel copies. Animated WebP
+and BMP V4/V5 color headers are rejected. Imports do not retain non-PNG backing
+URLs; Save requests a PNG destination. Explicit JPEG/BMP/WebP export follows in M2. Add static
 GIF import in M4 and warn that only the first frame is used. Do not claim animation
 editing, GIF export, SVG rendering, or PSD compatibility in 1.0.
 

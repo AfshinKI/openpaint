@@ -58,7 +58,7 @@ jobs:
           python3 -m venv build/tooling
           build/tooling/bin/python -m pip install -r tools/requirements-dev.txt
           build/tooling/bin/python -m aqt install-qt linux desktop 6.8.3 linux_gcc_64 \
-            --outputdir build/qt --archives icu qtbase qtdeclarative qtsvg qttools qtwayland
+            --outputdir build/qt --modules qtimageformats --archives icu qtbase qtdeclarative qtsvg qttools qtwayland qtimageformats
           echo "$GITHUB_WORKSPACE/build/tooling/bin" >> "$GITHUB_PATH"
           echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/build/qt/6.8.3/gcc_64" >> "$GITHUB_ENV"
       - name: Configure and build
