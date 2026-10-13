@@ -287,3 +287,16 @@ Cut/Delete and the source area vacated by moved or transformed selections use th
 current background color, including its alpha. Irregular masks preserve pixels
 outside the selection. Undo restores the original pixels. The two color-option
 icons sit between the three palette rows; the transparency icon is 22px, with separate 28px circular controls.
+
+Brushes has a centered 28px icon: main activation selects the retained brush;
+the separate lower arrow opens brush styles. Pencil remains independent. Brush
+shows opacity below size in the left rail. The ribbon shape gallery is seven
+columns by three rows, exposing all 19 shapes without scrolling.
+
+The menu row ends with Check for updates and Settings icon buttons. Settings
+exposes System/Light/Dark appearance. The update shortcut opens the existing
+Updates screen (release guidance; automatic checking/installing remains planned).
+
+Brushes mirrors Selection: the icon and lower arrow share one rounded accent
+outline when active and a stronger shared keyboard-focus outline. Idle has no
+outline; each half retains hover/pressed feedback and its separate action.

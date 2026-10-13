@@ -7,7 +7,7 @@ import OpenPaint
 Rectangle {
     id: gallery
     required property Editor editor
-    implicitWidth: 100
+    implicitWidth: 172
     implicitHeight: 76
     radius: Theme.controlRadius
     color: Theme.panel
@@ -25,7 +25,7 @@ Rectangle {
         }
         Grid {
             id: grid
-            columns: 4
+            columns: 7
             Repeater {
                 id: choices
                 model: [qsTr("Line"), qsTr("Rectangle"), qsTr("Ellipse"), qsTr("Rounded rectangle"), qsTr("Triangle"), qsTr("Diamond"), qsTr("Pentagon"), qsTr("Hexagon"), qsTr("Right arrow"), qsTr("Left arrow"), qsTr("Up arrow"), qsTr("Down arrow"), qsTr("Five-point star"), qsTr("Speech bubble"), qsTr("Curve"), qsTr("Polygon"), qsTr("Four-point star"), qsTr("Six-point star"), qsTr("Oval speech bubble")]
@@ -66,8 +66,8 @@ Rectangle {
                     ToolTip.text: text
                     KeyNavigation.right: choices.itemAt((index + 1) % 19)
                     KeyNavigation.left: choices.itemAt((index + 18) % 19)
-                    KeyNavigation.down: choices.itemAt((index + 4) % 19)
-                    KeyNavigation.up: choices.itemAt((index + 15) % 19)
+                    KeyNavigation.down: choices.itemAt((index + 7) % 19)
+                    KeyNavigation.up: choices.itemAt((index + 12) % 19)
                 }
             }
         }

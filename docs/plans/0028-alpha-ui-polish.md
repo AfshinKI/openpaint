@@ -231,7 +231,7 @@ Repository and whitespace checks passed. Changes remain on the same polish branc
 
 ## Follow-up requests
 
-Items 1–9 are implemented below; items 10–11 remain pending before the final polish
+Items 1–11 are implemented below; final review remains pending before the final polish
 review. Earlier implementation evidence does not verify these requests.
 
 1. Add small square corner resize handles to active shapes, text boxes and
@@ -414,3 +414,32 @@ transparency option uses circular focus/hover feedback. UI validation was
 Color-option spacing correction: separate 28px controls now have a 2px gap;
 Edit colors uses a 26px icon and transparency 22px. Hover, active and keyboard
 focus feedback are circular for both controls. Dev build passed.
+
+### Items 10–11 acceptance and implementation
+
+Brush main activation selects the retained brush style without opening a menu;
+a separate arrow opens the styles menu. The larger icon and caption are centered.
+Pencil stays independent; Brush retains the existing left size/opacity rail.
+Shape gallery uses 7×3 cells for all 19 shapes without scrolling, with matching
+seven-column keyboard navigation. Verify minimum-window layout and keyboard menus.
+
+
+Top-right access: Settings and Check for updates sit on the menu row. Settings
+opens existing appearance choices; the update shortcut opens the existing Updates
+screen. Automatic network checking/installing remains unimplemented. Both use
+original icons and keyboard-accessible controls.
+
+Brush split-control follow-up: the main icon and arrow share a 40×56 rounded
+outline while Brush is active, matching Selection, with individual hover feedback.
+The main action retains the brush style; the arrow alone opens the menu.
+
+Validation: dev build, focused brush/gallery/top-right controls, all 11 non-shell
+CTest suites, 15 repository-tool tests, formatting, strict QML lint and repository
+checks passed. Minimum-width brush menu and completed ribbon captures inspected.
+The aggregate shell CTest hit its existing 30-second timeout; limits were not
+changed. Full shell validation is run directly and recorded below. Two historical
+fixtures were updated to the new tool-switch and background-clear contracts.
+Automatic update checking remains planned; the top-right button opens existing
+release guidance. Final desktop/platform review and protected merge remain pending.
+
+Full direct shell run: 40 passed, zero failures (offscreen software rendering).

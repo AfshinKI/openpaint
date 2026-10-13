@@ -578,6 +578,40 @@ ApplicationWindow {
             Item {
                 Layout.fillWidth: true
             }
+            IconButton {
+                objectName: "quickUpdatesButton"
+                flat: true
+                symbol: "update"
+                text: qsTr("Check for updates")
+                onClicked: updatesDialog.open()
+            }
+            IconButton {
+                objectName: "settingsButton"
+                flat: true
+                symbol: "settings"
+                text: qsTr("Settings")
+                onClicked: settingsMenu.open()
+                PaintMenu {
+                    id: settingsMenu
+                    objectName: "settingsMenu"
+                    x: parent.width - width
+                    y: parent.height
+                    title: qsTr("Settings")
+                    PaintMenuItem {
+                        text: qsTr("Appearance")
+                        enabled: false
+                    }
+                    PaintMenuItem {
+                        action: systemThemeAction
+                    }
+                    PaintMenuItem {
+                        action: lightThemeAction
+                    }
+                    PaintMenuItem {
+                        action: darkThemeAction
+                    }
+                }
+            }
         }
     }
     header: ToolBar {
@@ -873,25 +907,64 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                IconButton {
-                    id: brushesButton
-                    flat: true
-                    objectName: "brushesButton"
-                    enabled: !editor.textActive
-                    symbol: "brush"
-                    text: qsTr("Brushes")
-                    highlighted: editor.tool === Editor.Brush
-                    onClicked: brushesMenu.open()
-                    Accessible.name: text
-                    BrushMenu {
-                        id: brushesMenu
-                        objectName: "brushesMenu"
-                        editor: window.editorController
-                        y: brushesButton.height
+                spacing: 0
+                Item {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: 56
+                    Layout.alignment: Qt.AlignHCenter
+                    IconButton {
+                        id: brushesButton
+                        flat: true
+                        objectName: "brushesButton"
+                        enabled: !editor.textActive
+                        symbol: "brush"
+                        icon.width: 28
+                        icon.height: 28
+                        width: 40
+                        height: 36
+                        padding: 4
+                        text: qsTr("Brush")
+                        background: Rectangle {
+                            radius: Theme.controlRadius
+                            color: brushesButton.down ? Theme.pressed : brushesButton.hovered ? Theme.hover : "transparent"
+                        }
+                        onClicked: editor.tool = Editor.Brush
+                        Accessible.name: text
+                    }
+                    PaintButton {
+                        id: brushDropdown
+                        objectName: "brushMenuButton"
+                        flat: true
+                        text: "⌄"
+                        width: 40
+                        height: 20
+                        y: 36
+                        background: Rectangle {
+                            radius: Theme.controlRadius
+                            color: brushDropdown.down ? Theme.pressed : brushDropdown.hovered ? Theme.hover : "transparent"
+                        }
+                        enabled: !editor.textActive && !editor.busy
+                        Accessible.name: qsTr("Brush styles")
+                        onClicked: brushesMenu.open()
+                        BrushMenu {
+                            id: brushesMenu
+                            objectName: "brushesMenu"
+                            editor: window.editorController
+                            y: brushDropdown.height
+                        }
+                    }
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Theme.controlRadius
+                        color: "transparent"
+                        border.color: Theme.accent
+                        border.width: brushesButton.visualFocus || brushDropdown.visualFocus ? 2 : editor.tool === Editor.Brush ? 1 : 0
                     }
                 }
                 Label {
                     text: qsTr("Brushes")
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.topMargin: 4
                     color: Theme.secondaryText
                 }
             }

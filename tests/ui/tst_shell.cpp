@@ -591,7 +591,7 @@ class ShellTest : public QObject {
         QVERIFY(editor->hasSelection());
         QVERIFY(!editor->dirty());
         keyClick(Qt::Key_Delete);
-        QCOMPARE(editor->image().pixelColor(150, 150).alpha(), 0);
+        QCOMPARE(editor->image().pixelColor(150, 150), editor->secondary);
         QCOMPARE(editor->image().pixelColor(50, 150), QColor(Qt::white));
         keyClick(Qt::Key_Z, Qt::ControlModifier);
         QCOMPARE(editor->image(), base);
@@ -1097,6 +1097,35 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
+    void topRightControls() {
+        auto* settings = window->findChild<QObject*>("settingsButton");
+        auto* updates = window->findChild<QObject*>("quickUpdatesButton");
+        auto* menu = window->findChild<QObject*>("settingsMenu");
+        QVERIFY(settings && updates && menu);
+        QVERIFY(QMetaObject::invokeMethod(settings, "click"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!menu->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(updates, "click"));
+        auto* dialog = window->findChild<QObject*>("updatesDialog");
+        QVERIFY(dialog);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        keyClick(Qt::Key_Escape);
+        QVERIFY(capture(QStringLiteral("completed-ribbon.png")));
+    }
+    void brushMainActivation() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* menu = window->findChild<QObject*>("brushesMenu");
+        auto* main = window->findChild<QObject*>("brushesButton");
+        editor->brushStyle = 4;
+        QVERIFY(QMetaObject::invokeMethod(main, "click"));
+        QCOMPARE(editor->tool(), Editor::Tool::Brush);
+        QCOMPARE(editor->brushStyle, 4);
+        QVERIFY(!menu->property("visible").toBool());
+        editor->setTool(Editor::Tool::Pencil);
+        QCOMPARE(editor->tool(), Editor::Tool::Pencil);
+        QCOMPARE(editor->brushStyle, 4);
+    }
     void ribbonShapeKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         QVERIFY(tabTo("ribbonShape0"));
@@ -1185,7 +1214,7 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(
             window->findChild<QObject*>(QStringLiteral("lightThemeAction")), "trigger",
             Q_ARG(QObject*, nullptr)));
-        QVERIFY(tabTo("brushesButton"));
+        QVERIFY(tabTo("brushMenuButton"));
         keyClick(Qt::Key_Space);
         auto* menu = window->findChild<QObject*>(QStringLiteral("brushesMenu"));
         QVERIFY(menu);
