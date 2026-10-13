@@ -168,16 +168,17 @@ within this session; Cancel discards the draft but not these explicit actions.
 
 Use a broad neutral workspace around a rectangular, sharp-cornered image. Canvas
 resize handles are small squares at corners and edge midpoints when that feature
-is implemented. A left-side tool rail can hold two narrow rounded vertical
-slider panels with small identifying icons, tracks and accent thumbs. Size and
-opacity are the intended OpenPaint roles; exact source ranges and behavior are
-not established by icon appearance. Provide accessible names and numeric values.
+is implemented. A right-side floating rail holds rounded vertical Size (1–128 px) and Opacity
+(0–100%) sliders, with labels, numeric readouts and accent thumbs. Size appears
+for pencil, brush, eraser and shapes; opacity appears for brushes. Both support
+keyboard arrows and are disabled while busy. Fill tolerance remains a separately
+labeled ribbon control. The rail consumes pointer input without painting through
+its margins and does not resize or reposition the canvas.
 
 The bottom status strip separates cursor/selection information from image size.
 The right side groups fit-to-window, a percentage dropdown, zoom-out, a horizontal
 zoom slider and zoom-in. Fractional percentage display should remain readable.
-Current zoom/pan does not imply resize handles, these sliders or the dropdown
-already exist. Canvas operations still belong to undoable document commands;
+Canvas resize handles and the expanded zoom dropdown remain planned. Canvas operations still belong to undoable document commands;
 view-only changes never dirty the drawing.
 
 ## Settings

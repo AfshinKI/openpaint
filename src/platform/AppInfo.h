@@ -2,6 +2,7 @@
 #pragma once
 #include <QObject>
 #include <QUrl>
+#include <QVariant>
 #include <QtQml/qqmlregistration.h>
 
 class AppInfo : public QObject {
@@ -20,5 +21,6 @@ class AppInfo : public QObject {
     QString installation() const;
     QString instructions() const;
     QUrl releaseUrl() const;
+    Q_INVOKABLE QString shortcutText(const QVariant& shortcut) const;
     Q_INVOKABLE bool openReleases() const;
 };

@@ -84,7 +84,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Action | Behavior |
 | --- | --- |
 | Draw | Capture pointer, show preview immediately, commit one undo step on release |
-| Brushes | Nine named styles with generated previews; size and 0–100% stroke opacity; fixed-distance path sampling, one undo step |
+| Brushes | Nine named styles with generated previews; floating size and 0–100% stroke opacity; fixed-distance path sampling, one undo step |
 | Fill | Left/right press fills with primary/secondary; tolerance 0–255 replaces the size input; busy indicator and Cancel/Escape leave original pixels intact |
 | Color picker | Select once per press: left sets primary, right sets secondary; exact containing artwork pixel including alpha; stays selected, never paints or changes history |
 | Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
@@ -222,3 +222,11 @@ transforms retain a movable Apply/Cancel preview, while whole-image commands com
 one undo step and refit when dimensions change. Resize/skew offers pixel/percent
 size, aspect lock, smooth/nearest resampling and bounded horizontal/vertical skew.
 Its local dialog draft is accepted after closing; Cancel preserves all pixels.
+
+### Alpha floating controls and menu icons
+
+Size/opacity moved out of the ribbon into a right-side floating rail. Tool-specific
+visibility, numeric limits and input isolation are defined in [MENUS.md](MENUS.md).
+The rail overlays workspace without changing canvas coordinates. Shared menu rows
+use original 18px icons, theme-aware disabled colors, shortcut hints, check
+indicators and submenu arrows. Brush choices retain generated stroke previews.

@@ -1,6 +1,6 @@
 # Feature: alpha ribbon and color workflow polish
 
-Status: in progress — steps 1–6 implemented; focused validation recorded below
+Status: in progress — steps 1–8 implemented; final batch review pending; focused validation recorded below
 Feature IDs: F01, F02, F03, F05, F06, F08, F09, F26
 Milestone: post-M2 alpha polish, before M3
 
@@ -114,7 +114,7 @@ and a group caption. Existing selection bounds/deselect entries remain available
 Two original vector glyphs identify Rotate and Flip. Existing command guards,
 preview handling and keyboard shortcuts are retained.
 
-Next: step 7 (floating size/opacity controls). Broader theme/scale and full regression
+Next: final batch review, including scale/theme, sanitizer and protected CI checks. Broader theme/scale and full regression
 checks are deferred until all eight steps are implemented, as requested.
 
 ### Step 1 focused evidence
@@ -180,3 +180,29 @@ Correction validation: dev build succeeded; fixed-color-role engine case passed
 (3 including setup/cleanup), color model suite passed (5), focused shell launch,
 color editor and toolbar workflow passed (5). Repository and diff checks passed.
 Earlier step 5 test counts above describe the superseded implementation only.
+
+### Steps 7 and 8
+
+Floating right-side Size and Opacity panels replace their ribbon controls. Size
+is 1–128 px for pencil/brush/eraser/shapes; brush opacity is 0–100%. Labels and
+numeric readouts accompany vertical sliders, which support keyboard adjustment.
+Fill tolerance remains in the ribbon, and irrelevant controls hide without losing
+settings. The panels consume input in their margins and do not resize the canvas.
+
+Action-backed menus share icons with their commands. Selection, shape styles,
+color management, units, alignment and export choices have original vector glyphs;
+brushes retain generated sample previews. Qt supplies command shortcuts and submenu navigation. Shared rows render
+aligned icons/checkmarks and native-text shortcut hints with live theme colors. Disabled rows use muted icons/text. No new
+editing commands, network behavior or external asset dependency is introduced.
+
+The build and focused slider/menu tests are recorded below. Full batch review and
+all protected CI jobs remain required before the single final merge.
+
+Step 7/8 evidence: dev rebuild passed. Focused final shell checks for theme
+changes, free-form selection menu, floating sliders and brush menu passed
+(6 including setup/cleanup); keyboard/control checks also passed. The slider test
+verifies numeric changes, hidden irrelevant controls, retained settings, unchanged
+canvas geometry and no painting through panel margins. Runtime shortcut-hint
+colors have a dark-theme regression assertion. Light/dark generated menu captures
+and minimum-size floating controls were visually inspected. Strict QML lint,
+repository and diff checks passed. Broader batch review remains pending.

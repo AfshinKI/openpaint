@@ -186,6 +186,7 @@ ApplicationWindow {
     }
     Action {
         id: newAction
+        icon.source: "icons/new.svg"
         objectName: "newAction"
         text: qsTr("&New")
         shortcut: StandardKey.New
@@ -194,6 +195,7 @@ ApplicationWindow {
     }
     Action {
         id: openAction
+        icon.source: "icons/open.svg"
         objectName: "openAction"
         text: qsTr("&Open…")
         shortcut: StandardKey.Open
@@ -202,6 +204,7 @@ ApplicationWindow {
     }
     Action {
         id: saveAction
+        icon.source: "icons/save.svg"
         objectName: "saveAction"
         text: qsTr("&Save")
         shortcut: StandardKey.Save
@@ -210,6 +213,7 @@ ApplicationWindow {
     }
     Action {
         id: saveAsAction
+        icon.source: "icons/save.svg"
         text: qsTr("Save &As…")
         shortcut: StandardKey.SaveAs
         enabled: !editor.busy && !window.documentOptionsOpen
@@ -220,6 +224,7 @@ ApplicationWindow {
     }
     Action {
         id: exportAction
+        icon.source: "icons/export.svg"
         objectName: "exportAction"
         text: qsTr("Export &copy…")
         enabled: !editor.busy && !editor.previewActive && !window.documentOptionsOpen
@@ -227,6 +232,7 @@ ApplicationWindow {
     }
     Action {
         id: quitAction
+        icon.source: "icons/exit.svg"
         objectName: "quitAction"
         text: qsTr("&Quit")
         shortcut: "Ctrl+Q"
@@ -235,6 +241,7 @@ ApplicationWindow {
     }
     Action {
         id: undoAction
+        icon.source: "icons/undo.svg"
         text: qsTr("Undo")
         shortcut: StandardKey.Undo
         enabled: editor.canUndo && !editor.loading && !editor.textActive && !window.documentOptionsOpen
@@ -242,6 +249,7 @@ ApplicationWindow {
     }
     Action {
         id: redoAction
+        icon.source: "icons/redo.svg"
         text: qsTr("Redo")
         shortcut: "Ctrl+Y"
         enabled: editor.canRedo && !editor.loading && !editor.textActive && !window.documentOptionsOpen
@@ -254,54 +262,63 @@ ApplicationWindow {
     }
     Action {
         id: fitAction
+        icon.source: "icons/fit.svg"
         text: qsTr("Fit")
         shortcut: "Ctrl+0"
         onTriggered: canvas.fit()
     }
     Action {
         id: zoomInAction
+        icon.source: "icons/zoom-in.svg"
         text: qsTr("Zoom in")
         shortcut: StandardKey.ZoomIn
         onTriggered: canvas.zoomBy(1.25)
     }
     Action {
         id: zoomOutAction
+        icon.source: "icons/zoom-out.svg"
         text: qsTr("Zoom out")
         shortcut: StandardKey.ZoomOut
         onTriggered: canvas.zoomBy(0.8)
     }
     Action {
         id: rotateRightAction
+        icon.source: "icons/rotate.svg"
         text: editor.hasSelection ? qsTr("Rotate selection right 90°") : qsTr("Rotate image right 90°")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(0)
     }
     Action {
         id: rotateLeftAction
+        icon.source: "icons/rotate.svg"
         text: editor.hasSelection ? qsTr("Rotate selection left 90°") : qsTr("Rotate image left 90°")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(1)
     }
     Action {
         id: rotateHalfAction
+        icon.source: "icons/rotate.svg"
         text: editor.hasSelection ? qsTr("Rotate selection 180°") : qsTr("Rotate image 180°")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(2)
     }
     Action {
         id: flipHorizontalAction
+        icon.source: "icons/flip.svg"
         text: editor.hasSelection ? qsTr("Flip selection horizontally") : qsTr("Flip image horizontally")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(3)
     }
     Action {
         id: flipVerticalAction
+        icon.source: "icons/flip.svg"
         text: editor.hasSelection ? qsTr("Flip selection vertically") : qsTr("Flip image vertically")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(4)
     }
     Action {
         id: resizeAction
+        icon.source: "icons/resize.svg"
         objectName: "resizeAction"
         text: editor.hasSelection ? qsTr("Resize/skew selection…") : qsTr("Resize/skew image…")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
@@ -309,12 +326,14 @@ ApplicationWindow {
     }
     Action {
         id: cropAction
+        icon.source: "icons/crop.svg"
         text: qsTr("Crop to selection")
         enabled: editor.canSelect && editor.hasSelection && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(5)
     }
     Action {
         id: copyAction
+        icon.source: "icons/copy.svg"
         text: qsTr("Copy")
         shortcut: "Ctrl+C"
         enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
@@ -322,6 +341,7 @@ ApplicationWindow {
     }
     Action {
         id: cutAction
+        icon.source: "icons/cut.svg"
         text: qsTr("Cut")
         shortcut: "Ctrl+X"
         enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
@@ -329,6 +349,7 @@ ApplicationWindow {
     }
     Action {
         id: pasteAction
+        icon.source: "icons/paste.svg"
         text: qsTr("Paste")
         shortcut: "Ctrl+V"
         enabled: editor.canSelect && !editor.busy && !window.textInputFocused && !window.documentOptionsOpen
@@ -336,6 +357,7 @@ ApplicationWindow {
     }
     Action {
         id: selectAllAction
+        icon.source: "icons/selection.svg"
         objectName: "selectAllAction"
         text: qsTr("Select all")
         shortcut: "Ctrl+A"
@@ -344,6 +366,7 @@ ApplicationWindow {
     }
     Action {
         id: deselectAction
+        icon.source: "icons/selection.svg"
         text: qsTr("Deselect")
         shortcut: "Ctrl+D"
         enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
@@ -351,6 +374,7 @@ ApplicationWindow {
     }
     Action {
         id: deleteSelectionAction
+        icon.source: "icons/delete.svg"
         text: qsTr("Delete selection")
         shortcut: "Delete"
         enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
@@ -358,6 +382,7 @@ ApplicationWindow {
     }
     Action {
         id: aboutAction
+        icon.source: "icons/info.svg"
         objectName: "aboutAction"
         text: qsTr("&About OpenPaint")
         shortcut: "F1"
@@ -366,6 +391,7 @@ ApplicationWindow {
     ActionGroup {
         Action {
             id: systemThemeAction
+            icon.source: "icons/menu.svg"
             objectName: "systemThemeAction"
             text: qsTr("&System")
             checkable: true
@@ -374,6 +400,7 @@ ApplicationWindow {
         }
         Action {
             id: lightThemeAction
+            icon.source: "icons/palette.svg"
             objectName: "lightThemeAction"
             text: qsTr("&Light")
             checkable: true
@@ -382,6 +409,7 @@ ApplicationWindow {
         }
         Action {
             id: darkThemeAction
+            icon.source: "icons/palette.svg"
             objectName: "darkThemeAction"
             text: qsTr("&Dark")
             checkable: true
@@ -554,6 +582,7 @@ ApplicationWindow {
                     title: qsTr("&Help")
                     PaintMenuItem {
                         objectName: "updatesMenuItem"
+                        symbol: "update"
                         text: qsTr("Updates…")
                         onTriggered: updatesDialog.open()
                     }
@@ -606,6 +635,7 @@ ApplicationWindow {
                         objectName: "selectionMenu"
                         y: parent.height
                         PaintMenuItem {
+                            symbol: "selection"
                             text: qsTr("Rectangle")
                             checkable: true
                             checked: editor.tool === Editor.Select && !editor.freeFormSelection
@@ -617,6 +647,7 @@ ApplicationWindow {
                         }
                         PaintMenuItem {
                             objectName: "freeFormSelectionItem"
+                            symbol: "lasso"
                             text: qsTr("Free-form")
                             checkable: true
                             checked: editor.tool === Editor.Select && editor.freeFormSelection
@@ -631,11 +662,13 @@ ApplicationWindow {
                             action: selectAllAction
                         }
                         PaintMenuItem {
+                            symbol: "invert"
                             text: qsTr("Invert selection")
                             enabled: editor.canSelect && editor.hasSelection
                             onTriggered: editor.invertSelection()
                         }
                         PaintMenuItem {
+                            symbol: "opacity"
                             text: qsTr("Transparent selection")
                             checkable: true
                             checked: editor.transparentSelection
@@ -645,6 +678,7 @@ ApplicationWindow {
                             action: deselectAction
                         }
                         PaintMenuItem {
+                            symbol: "resize"
                             text: editor.floatingActive ? qsTr("Selection position…") : qsTr("Selection bounds…")
                             enabled: editor.hasSelection
                             onTriggered: selectionOptions.open()
@@ -876,12 +910,14 @@ ApplicationWindow {
                                 id: shapeStyleMenu
                                 y: parent.height
                                 PaintMenuItem {
+                                    symbol: "rectangle"
                                     text: qsTr("Outline")
                                     checkable: true
                                     checked: editor.shapeOutline
                                     onTriggered: editor.shapeOutline = !editor.shapeOutline
                                 }
                                 PaintMenuItem {
+                                    symbol: "fill"
                                     text: qsTr("Fill")
                                     checkable: true
                                     checked: editor.shapeFill
@@ -901,19 +937,15 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
+                visible: editor.tool === Editor.Fill || editor.tool === Editor.Eraser
                 PaintSpinBox {
-                    id: sizeBox
-                    objectName: "strokeSize"
-                    from: editor.tool === Editor.Fill ? 0 : 1
-                    to: editor.tool === Editor.Fill ? 255 : 128
-                    value: editor.tool === Editor.Fill ? editor.tolerance : editor.brushSize
-                    onValueModified: {
-                        if (editor.tool === Editor.Fill)
-                            editor.tolerance = value;
-                        else
-                            editor.brushSize = value;
-                    }
-                    Accessible.name: editor.tool === Editor.Fill ? qsTr("Fill tolerance") : qsTr("Stroke size in pixels")
+                    objectName: "fillTolerance"
+                    visible: editor.tool === Editor.Fill
+                    from: 0
+                    to: 255
+                    value: editor.tolerance
+                    onValueModified: editor.tolerance = value
+                    Accessible.name: qsTr("Fill tolerance")
                     implicitWidth: 104
                 }
                 PaintCheckBox {
@@ -922,23 +954,14 @@ ApplicationWindow {
                     checked: editor.transparentEraser
                     onToggled: editor.transparentEraser = checked
                 }
-                PaintSpinBox {
-                    objectName: "brushOpacity"
-                    visible: editor.tool === Editor.Brush
-                    from: 0
-                    to: 100
-                    value: editor.opacity
-                    onValueModified: editor.opacity = value
-                    Accessible.name: qsTr("Brush opacity percent")
-                    implicitWidth: 104
-                }
                 Label {
-                    text: editor.tool === Editor.Brush ? qsTr("Size / opacity %") : editor.tool === Editor.Fill ? qsTr("Tolerance") : qsTr("Size · px")
+                    text: editor.tool === Editor.Fill ? qsTr("Tolerance") : qsTr("Eraser")
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
                 }
             }
             ToolSeparator {
+                visible: editor.tool === Editor.Fill || editor.tool === Editor.Eraser
                 Layout.fillHeight: true
             }
             ColumnLayout {
@@ -1023,6 +1046,7 @@ ApplicationWindow {
                                 id: slotMenu
                                 y: parent.height
                                 PaintMenuItem {
+                                    symbol: "palette"
                                     text: toolbarSlot.empty ? qsTr("Set color…") : qsTr("Replace color…")
                                     onTriggered: toolbarSlot.replaceColor()
                                 }
@@ -1063,6 +1087,39 @@ ApplicationWindow {
             id: textOverlay
             editor: window.editorController
             canvas: window.canvasController
+        }
+    }
+    Column {
+        objectName: "floatingToolControls"
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.rightMargin: 12
+        anchors.topMargin: 24
+        spacing: 8
+        z: 2
+        enabled: !editor.busy
+        property real panelHeight: Math.max(120, Math.min(204, (parent.height - 64) / 2))
+        ToolSlider {
+            visible: editor.tool === Editor.Pencil || editor.tool === Editor.Brush || editor.tool === Editor.Eraser || editor.tool === Editor.Shape
+            height: parent.panelHeight
+            label: qsTr("Size")
+            controlName: "strokeSize"
+            minimum: 1
+            maximum: 128
+            value: editor.brushSize
+            suffix: qsTr(" px")
+            onAdjusted: value => editor.brushSize = value
+        }
+        ToolSlider {
+            visible: editor.tool === Editor.Brush
+            height: parent.panelHeight
+            label: qsTr("Opacity")
+            controlName: "brushOpacity"
+            minimum: 0
+            maximum: 100
+            value: editor.opacity
+            suffix: "%"
+            onAdjusted: value => editor.opacity = value
         }
     }
     footer: ToolBar {

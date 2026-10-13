@@ -83,6 +83,39 @@ class ShellTest : public QObject {
         }
     }
 
+    void floatingToolControls() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));
+        const auto original = editor->image();
+        const auto canvasRect = canvas->mapRectToScene(canvas->boundingRect());
+        QVERIFY(tabTo("strokeSize"));
+        keyClick(Qt::Key_Up);
+        QCOMPARE(editor->brushSize, 4);
+        editor->setTool(Editor::Tool::Brush);
+        QVERIFY(tabTo("brushOpacity"));
+        keyClick(Qt::Key_Down);
+        QCOMPARE(editor->opacity, 99);
+        QCOMPARE(canvas->mapRectToScene(canvas->boundingRect()), canvasRect);
+        auto* rail = window->findChild<QQuickItem*>(QStringLiteral("floatingToolControls"));
+        QVERIFY(rail);
+        const auto point = rail->mapToScene({3, 3}).toPoint();
+        QTest::mouseClick(window, Qt::LeftButton, {}, point);
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->dirty());
+        window->resize(1024, 640);
+        QVERIFY(capture(QStringLiteral("floating-controls-1024.png")));
+        const auto bounds = rail->mapRectToScene(rail->boundingRect());
+        QVERIFY(QRectF(0, 0, window->width(), window->height()).contains(bounds));
+        editor->setTool(Editor::Tool::Fill);
+        auto* size = window->findChild<QQuickItem*>(QStringLiteral("strokeSize"));
+        QVERIFY(size && !size->isVisible());
+        QVERIFY(tabTo("fillTolerance"));
+        keyClick(Qt::Key_Up);
+        QCOMPARE(editor->tolerance, 1);
+        QCOMPARE(editor->brushSize, 4);
+        QCOMPARE(editor->opacity, 99);
+    }
+
     void quickActionPlacement() {
         auto* menu = window->findChild<QQuickItem*>(QStringLiteral("primaryMenuBar"));
         auto* save = window->findChild<QQuickItem*>(QStringLiteral("quickSaveButton"));
@@ -115,6 +148,10 @@ class ShellTest : public QObject {
         QTRY_VERIFY(menu->property("visible").toBool());
         QVERIFY(menu->property("width").toReal() >= 240);
         QVERIFY(capture(QStringLiteral("menu-dark.png")));
+        const auto hints = visualItems(window->contentItem(), "menuShortcutHint");
+        QVERIFY(!hints.isEmpty());
+        for (const auto* hint : hints)
+            QCOMPARE(hint->property("color").value<QColor>(), QColor("#ADB8C5"));
         QVERIFY(QMetaObject::invokeMethod(menu, "close"));
         window->resize(1024, 640);
         QVERIFY(capture(QStringLiteral("shell-dark-1024.png")));
@@ -1046,6 +1083,8 @@ class ShellTest : public QObject {
         QVERIFY(accessible->state().checked);
         keyClick(Qt::Key_Space);
         QVERIFY(accessible->state().checked);
+        QVERIFY(tabTo("pencilButton"));
+        keyClick(Qt::Key_Space);
         QVERIFY(tabTo("strokeSize"));
         const auto previousSize = editor->brushSize;
         keyClick(Qt::Key_Up);
@@ -1053,7 +1092,7 @@ class ShellTest : public QObject {
         QVERIFY(tabTo("fillButton"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Fill);
-        QVERIFY(tabTo("strokeSize"));
+        QVERIFY(tabTo("fillTolerance"));
         keyClick(Qt::Key_Up);
         QCOMPARE(editor->tolerance, 1);
         QVERIFY(tabTo("pencilButton"));

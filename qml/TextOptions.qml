@@ -75,14 +75,17 @@ PaintDialog {
                 PaintMenu {
                     id: alignmentMenu
                     PaintMenuItem {
+                        symbol: "align-left"
                         text: qsTr("Left")
                         onTriggered: dialog.editor.textAlignment = 0
                     }
                     PaintMenuItem {
+                        symbol: "align-center"
                         text: qsTr("Center")
                         onTriggered: dialog.editor.textAlignment = 1
                     }
                     PaintMenuItem {
+                        symbol: "align-right"
                         text: qsTr("Right")
                         onTriggered: dialog.editor.textAlignment = 2
                     }

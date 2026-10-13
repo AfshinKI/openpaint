@@ -56,18 +56,22 @@ PaintDialog {
                 id: formats
                 y: parent.height
                 PaintMenuItem {
+                    symbol: "rectangle"
                     text: "PNG"
                     onTriggered: dialog.formatIndex = 0
                 }
                 PaintMenuItem {
+                    symbol: "rectangle"
                     text: "JPEG"
                     onTriggered: dialog.formatIndex = 1
                 }
                 PaintMenuItem {
+                    symbol: "rectangle"
                     text: "BMP"
                     onTriggered: dialog.formatIndex = 2
                 }
                 PaintMenuItem {
+                    symbol: "rectangle"
                     text: "WebP"
                     onTriggered: dialog.formatIndex = 3
                 }
@@ -124,14 +128,17 @@ PaintDialog {
                     id: backgrounds
                     y: parent.height
                     PaintMenuItem {
+                        symbol: "fill"
                         text: qsTr("White")
                         onTriggered: dialog.backgroundIndex = 0
                     }
                     PaintMenuItem {
+                        symbol: "fill"
                         text: qsTr("Black")
                         onTriggered: dialog.backgroundIndex = 1
                     }
                     PaintMenuItem {
+                        symbol: "fill"
                         text: qsTr("Secondary color")
                         onTriggered: dialog.backgroundIndex = 2
                     }
