@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: repo-checks-${{ github.workflow }}-${{ github.ref }}
+  group: repo-checks-${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -87,6 +87,10 @@ jobs:
       image: ubuntu@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55
     timeout-minutes: 25
     steps:
+      - name: Install Git before checkout
+        run: |
+          apt-get update
+          apt-get install -y git ca-certificates
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
