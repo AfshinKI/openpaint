@@ -1,0 +1,77 @@
+# Linux packages
+
+Packaging produces review artifacts. It never publishes releases or installs into
+the host system. Release approval and exact-byte clean-machine tests follow the
+[release contract](../docs/RELEASES.md).
+
+## AppImage (x86_64)
+
+Build on Ubuntu 24.04 with the [Qt 6.12.0 toolchain](../docs/BUILD.md), Python 3.11+,
+CMake 3.28+, Ninja, GCC 13, the native build dependencies and OpenGL development
+libraries. Install the runtime prerequisites listed in the `appimage` CI job,
+including D-Bus, EGL, font and Wayland libraries even in a headless build container.
+Enable signed Ubuntu `deb-src` indexes for the installed packages before
+collecting corresponding sources. The CI workflow is an executable example.
+
+```sh
+python3 tools/package_appimage.py --qt build/qt/6.12.0/gcc_64 --collect-system-sources
+```
+
+Use a fresh `--work` directory for every run. `--suffix dev` is the default;
+release preparation supplies the reviewed prerelease suffix. Do not assign a
+release version before the milestone gates pass. `--jobs` controls compilation.
+The default output is `build/appimage/`: AppImage, SHA256SUMS, dependency inventory,
+CycloneDX 1.6 bill of materials and third-party source archive. Omitting `--collect-system-sources` is allowed for
+local preflight only; the inventory records this omission and such a build must
+not be published. The matching OpenPaint source archive is produced separately
+from the reviewed commit during release preparation.
+
+The recipe verifies every downloaded tool/runtime/source against the checked-in
+SHA-256 manifests, including cached files. The upstream `continuous` URLs are
+mutable: a changed digest fails the build and requires a reviewed manifest update;
+it never silently trusts new bytes. `appimage-tools.json` records source commits.
+Qt source digests are checked against its official release checksum endpoints.
+ICU and runtime source pins were recorded from their official HTTPS release URLs.
+The upstream runtime pins libfuse and squashfuse source checksums in its build recipe.
+
+The bundle includes X11, Wayland, desktop-portal, SVG and image-codec plugins. The
+vendor-neutral OpenGL dispatch library is explicitly included because a minimal
+Fedora GNOME installation does not necessarily provide it. Graphics drivers,
+glibc and the desktop/session services remain owned by the host. Do not bundle
+GPU-specific drivers. Qt's plugin loader chooses the session backend. The launcher requests the desktop
+portal theme unless the user explicitly selected another theme. A working portal
+backend is part of the desktop prerequisite (GNOME 50 delegates file selection
+to Nautilus). No broad filesystem grants are added.
+
+System library identity and corresponding source versions come from `dpkg-query`;
+`apt-get source --download-only` uses authenticated Ubuntu indexes. The inventory
+lists actual bundled file hashes, upstream source pins and package versions. It
+is a distribution inventory, not a claim that every static upstream subcomponent
+is independently vulnerability-certified. The CycloneDX summary identifies the application, Qt, ICU, portable runtime and
+bundled Ubuntu packages; the detailed inventory supplies per-file hashes. Qt source archives retain their
+third-party attribution files. License files are copied without extracting links
+or arbitrary archive paths. Debian copyright files and referenced common license
+texts are included, as are the upstream runtime and its permissive dependencies'
+notices. The runtime source includes its libfuse patch and build instructions;
+the runtime links libfuse, squashfuse, zstd, zlib, mimalloc and musl.
+
+Before release, inspect the inventory and source bundle, run a secret/history
+scan, and test the exact final artifact on the supported clean systems. Compiler
+prefix mapping and the artifact audit reject private developer workspace/home
+paths. Generic controlled build locations such as `/src` and the root account
+directory are not personal paths; also audit the staged output from the outer
+workspace before publication. Source
+bundle tar headers omit local owner/group information. The AppImage is not signed
+by an OpenPaint signing key; checksums detect changed bytes but are not an update
+authentication mechanism. Verified portable self-updates remain M5.
+
+## Runtime notice sources
+
+- [AppImage runtime](https://github.com/AppImage/type2-runtime/tree/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa): MIT; libfuse source patch/build recipe included.
+- [musl](https://git.musl-libc.org/cgit/musl/tree/COPYRIGHT?h=v1.2.5): MIT and additional permissive notices.
+- [mimalloc](https://github.com/microsoft/mimalloc/blob/v2.1.7/LICENSE): MIT. This is an open-source allocator dependency of the upstream runtime, not Microsoft Paint code or assets.
+- [zlib](https://github.com/madler/zlib/blob/v1.3.1/LICENSE): zlib license.
+- [zstd](https://github.com/facebook/zstd/blob/v1.5.6/LICENSE): BSD-3-Clause.
+
+These notices preserve upstream copyright attribution. They do not identify a
+local developer, computer or account.

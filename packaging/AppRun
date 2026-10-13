@@ -1,0 +1,6 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Keep desktop file choosers in the user's session; no filesystem/network grants.
+APPDIR="${APPDIR:-$(dirname "$(readlink -f "$0")")}"
+export QT_QPA_PLATFORMTHEME="${QT_QPA_PLATFORMTHEME:-xdgdesktopportal}"
+exec "$APPDIR/usr/bin/openpaint" "$@"

@@ -1,7 +1,8 @@
 # Releases and in-app updates
 
-Status: manual Updates screen and installation metadata implemented; packaging remains planned. No packages, update feed, signing keys, or release
-automation exist yet. Do not add a Download button or an enabled self-updater
+Status: manual Updates screen and installation metadata implemented. The
+[AppImage recipe](../packaging/README.md) produces development artifacts; Flatpak remains planned. No public downloads,
+update feed, signing keys, or release-publishing automation exist yet. Do not add a Download button or an enabled self-updater
 until a corresponding artifact and verification path have been tested.
 
 ## Distribution strategy

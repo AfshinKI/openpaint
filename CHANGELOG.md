@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add an audited AppImage build recipe and CI review artifacts with dependency
+  licenses, corresponding sources, checksums and a software bill of materials.
+
 - Add Help → Updates with build identity and explicit release-page browsing, plus
   desktop integration, an original application icon and single-image launch arguments.
 
