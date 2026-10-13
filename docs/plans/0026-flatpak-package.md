@@ -1,6 +1,6 @@
 # Feature: sandboxed Flatpak test bundle
 
-Status: implementation in progress
+Status: implemented; protected CI/merge pending
 Feature ID: F25
 Milestone: M2
 
@@ -13,11 +13,11 @@ publication in this slice. Final release-byte testing and publication follow.
 
 ## Acceptance cases
 
-- [ ] Build from a committed source archive with matching runtime/SDK pins.
-- [ ] Reject dependency drift and unexpected effective permissions.
-- [ ] No network, broad home access or inherited KDE configuration/bus grants.
-- [ ] Portal Save, overwrite and undo/save preserve expected pixels.
-- [ ] Bundle, source archive, dependency inventory and checksums are produced.
+- [x] Build from a committed source archive with matching runtime/SDK pins.
+- [x] Reject dependency drift and unexpected effective permissions.
+- [x] No network, broad home access or inherited KDE configuration/bus grants.
+- [x] Portal Save, overwrite and undo/save preserve expected pixels.
+- [x] Bundle, source archive, dependency inventory and checksums are produced.
 - [ ] Tooling tests and protected CI pass before merge.
 
 ## Implementation and validation
@@ -32,5 +32,11 @@ Native portal save and overwrite worked; undo followed by save restored the exac
 original pixel digest. Removing inherited permissions leaves display, IPC and
 render-device access only. These preflight results are not final release evidence.
 
-Next: implement recipe, validate its exact output and CI, then merge separately
+The committed recipe produced development bundle SHA-256
+`6b94359a80d3d67d2fbf2b2a62ae265140c9db9f69b19502a6d8e25980b4013d`.
+All four checksums passed. Installation, version and host-home sentinel isolation
+passed. The restricted package launched and saved a 1152 × 648 PNG with 231 colors
+through the native portal. All 15 tooling tests and repository checks pass.
+
+Next: pass protected CI, then merge separately
 before alpha preparation. M2 remains open until public downloads are verified.
