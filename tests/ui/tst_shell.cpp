@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "color/ColorPalette.h"
 #include "color/ColorSpectrum.h"
+#include "io/ImageIo.h"
 #include "render/CanvasItem.h"
 #include <QAccessible>
 #include <QColorSpace>
@@ -181,6 +182,78 @@ class ShellTest : public QObject {
         editor->undo();
         QCOMPARE(editor->image(), first);
         editor->undo();
+    }
+
+    void exportDialogWorkflow() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* action = window->findChild<QObject*>(QStringLiteral("exportAction"));
+        auto* options = window->findChild<QObject*>(QStringLiteral("exportOptions"));
+        auto* file = window->findChild<QObject*>(QStringLiteral("exportFileDialog"));
+        QVERIFY(editor && action && options && file);
+        QTemporaryDir dir;
+        QQmlExpression fallback(qmlContext(file), file, "FileDialog.DontUseNativeDialog");
+        const auto flag = fallback.evaluate();
+        QVERIFY(!fallback.hasError());
+        QVERIFY(file->setProperty("options", flag));
+        QVERIFY(file->setProperty("currentFolder", QUrl::fromLocalFile(dir.path())));
+        QSignalSpy closed(options, SIGNAL(closed()));
+        editor->begin({30, 30}, false);
+        editor->extend({80, 50});
+        editor->finish();
+        const auto artwork = editor->image();
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QTRY_VERIFY(options->property("visible").toBool());
+        QVERIFY(tabTo("exportFormat"));
+        keyClick(Qt::Key_Space);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Return);
+        QTRY_COMPARE(options->property("formatIndex").toInt(), 1);
+        QVERIFY(options->property("flatten").toBool());
+        QVERIFY(tabTo("exportQuality"));
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        keyClick('7');
+        keyClick('5');
+        keyClick(Qt::Key_Tab);
+        QCOMPARE(options->property("quality").toInt(), 75);
+        QVERIFY(!editor->hasSelection());
+        window->resize(1024, 640);
+        auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
+        auto* formatButton = window->findChild<QQuickItem*>(QStringLiteral("exportFormat"));
+        QVERIFY(formatButton);
+        QVERIFY(formatButton->width() <= 420);
+        QVERIFY(capture(QStringLiteral("export-jpeg-light-1024.png")));
+        auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
+        QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(options->setProperty("formatIndex", 3));
+        QVERIFY(options->property("lossless").toBool());
+        QVERIFY(!options->property("flatten").toBool());
+        QVERIFY(capture(QStringLiteral("export-webp-dark-1024.png")));
+        keyClick(Qt::Key_Escape);
+        QTRY_COMPARE(closed.size(), 1);
+        QCOMPARE(editor->image(), artwork);
+        QVERIFY(!file->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QTRY_VERIFY(options->property("visible").toBool());
+        QCOMPARE(options->property("formatIndex").toInt(), 0);
+        QVERIFY(tabToButton("OK"));
+        keyClick(Qt::Key_Space);
+        QTRY_COMPARE(closed.size(), 2);
+        QTRY_VERIFY(file->property("visible").toBool());
+        QCOMPARE(file->property("defaultSuffix").toString(), QString("png"));
+        QVERIFY(tabTo("fileNameTextField"));
+        for (char key : std::string("export.png"))
+            keyClick(key);
+        QVERIFY(tabToButton("Save"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!file->property("visible").toBool());
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(QFileInfo::exists(dir.filePath("export.png")));
+        QCOMPARE(openpaint::loadPng(dir.filePath("export.png")).image, artwork);
+        QVERIFY(editor->dirty());
+        QVERIFY(editor->fileUrl().isEmpty());
+        QCOMPARE(editor->image(), artwork);
     }
 
     void resizeDialogWorkflow() {

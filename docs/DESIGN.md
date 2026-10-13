@@ -107,7 +107,9 @@ text box inserts a newline; it must not trigger a global action.
 
 Open accepts PNG, JPEG, BMP and static WebP. Non-PNG imports show a notice and
 Save asks for a PNG destination, preserving the original. The File menu separates
-Save, Save As, and the forthcoming Export action. Show the current file format
+Save, Save As, and Export copy. Export offers lossless PNG/WebP or JPEG/BMP/WebP
+interchange with explicit quality and opaque-background choices; it never clears
+the working drawing’s unsaved state. Apply/cancel previews before exporting. Show the current file format
 in the relevant dialogs. Lossy export and flattening are explicit. Opening a file
 with unsupported metadata must not quietly overwrite that original on Save.
 

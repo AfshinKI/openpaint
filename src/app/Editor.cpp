@@ -427,9 +427,13 @@ Editor::Editor(QObject* parent) : QObject(parent) {
         const auto result = watcher_.result();
         const bool wasLoading = loading_;
         const bool wasPasting = pasting_;
-        busy_ = loading_ = pasting_ = clipboardBusy_ = false;
+        const bool wasExporting = exporting_;
+        busy_ = loading_ = pasting_ = clipboardBusy_ = exporting_ = false;
         if (result.ok()) {
-            if (wasPasting) {
+            if (wasExporting) {
+                notice_ = tr("Exported a copy. Save still preserves your working drawing as PNG.");
+                emit noticeChanged();
+            } else if (wasPasting) {
                 if (!cancellation_ || !cancellation_->load())
                     pasteImage(result.image);
             } else if (wasLoading && (!cancellation_ || !cancellation_->load())) {
@@ -452,7 +456,9 @@ Editor::Editor(QObject* parent) : QObject(parent) {
             fail(result.error);
         }
         emit changed();
-        if (!wasLoading)
+        if (wasExporting)
+            emit exported(result.ok());
+        else if (!wasLoading)
             emit saved(result.ok());
     });
 }
@@ -511,6 +517,27 @@ void Editor::saveFile(const QUrl& url) {
     watcher_.setFuture(
         QtConcurrent::run([path = url.toLocalFile(), snapshot, token = cancellation_] {
             return openpaint::savePng(path, snapshot, token);
+        }));
+}
+void Editor::exportFile(const QUrl& url, int format, int quality, bool lossless, bool flatten,
+                        QColor background) {
+    if (busy_ || document.active() || previewActive())
+        return;
+    if (!url.isLocalFile() || format < 0 || format > 3 ||
+        !openpaint::exportSuffix(url.toLocalFile(), openpaint::ExportFormat(format))) {
+        fail(tr("Choose a local filename matching the export format."));
+        emit exported(false);
+        return;
+    }
+    const openpaint::ExportOptions options{openpaint::ExportFormat(format), quality, lossless,
+                                           flatten, background};
+    const QImage snapshot = image();
+    busy_ = exporting_ = true;
+    cancellation_ = std::make_shared<std::atomic_bool>(false);
+    emit changed();
+    watcher_.setFuture(
+        QtConcurrent::run([path = url.toLocalFile(), snapshot, options, token = cancellation_] {
+            return openpaint::exportImage(path, snapshot, options, token);
         }));
 }
 void Editor::cancelIo() {
