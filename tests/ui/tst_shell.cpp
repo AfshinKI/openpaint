@@ -5,6 +5,7 @@
 #include "render/CanvasItem.h"
 #include <QAccessible>
 #include <QColorSpace>
+#include <QDesktopServices>
 #include <QDir>
 #include <QElapsedTimer>
 #include <QGuiApplication>
@@ -182,6 +183,40 @@ class ShellTest : public QObject {
         editor->undo();
         QCOMPARE(editor->image(), first);
         editor->undo();
+    }
+
+    void captureReleaseUrl(const QUrl& url) {
+        QCOMPARE(url, QUrl("https://github.com/AfshinKI/openpaint/releases"));
+    }
+
+    void updatesWorkflow() {
+        QDesktopServices::setUrlHandler("https", this, "captureReleaseUrl");
+        const auto resetHandler = qScopeGuard([] { QDesktopServices::unsetUrlHandler("https"); });
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* action = window->findChild<QObject*>(QStringLiteral("updatesMenuItem"));
+        auto* dialog = window->findChild<QObject*>(QStringLiteral("updatesDialog"));
+        QVERIFY(editor && action && dialog);
+        editor->begin({30, 30}, false);
+        editor->extend({80, 50});
+        editor->finish();
+        const auto artwork = editor->image();
+        keyClick(Qt::Key_H, Qt::AltModifier);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Return);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(tabTo("viewReleasesButton"));
+        keyClick(Qt::Key_Space);
+        window->resize(1024, 640);
+        for (const auto& theme : {QString("light"), QString("dark")}) {
+            auto* themeAction = window->findChild<QObject*>(theme + "ThemeAction");
+            QVERIFY(QMetaObject::invokeMethod(themeAction, "trigger", Q_ARG(QObject*, nullptr)));
+            QVERIFY(capture("updates-" + theme + "-1024.png"));
+        }
+        QSignalSpy closed(dialog, SIGNAL(closed()));
+        keyClick(Qt::Key_Escape);
+        QTRY_COMPARE(closed.size(), 1);
+        QCOMPARE(editor->image(), artwork);
+        QVERIFY(editor->dirty());
     }
 
     void exportDialogWorkflow() {

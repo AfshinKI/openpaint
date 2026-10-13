@@ -41,7 +41,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F22 | Sticker generation | R5 | M6 | Planned |
 | F23 | Coloring-page generation | R3 preview, hardware/account restrictions in reference | M6 | Planned |
 | F24 | Collapsible command toolbar | Persistent/auto-hide modes specified visually; timing and focus behavior need validation | M4 | Planned |
-| F25 | Flatpak/AppImage downloads and Updates screen | Linux-specific product choice | M2–M5 | Planned |
+| F25 | Flatpak/AppImage downloads and Updates screen | Linux-specific product choice | M2–M5 | Manual Updates screen and install metadata implemented in [plan 0024](plans/0024-install-updates.md); downloadable packages and verified automatic updates remain pending. |
 | F26 | Privacy controls, metadata removal, accessible keyboard UI | Product choice | M1–M5 | In progress: offline PNG metadata removal, keyboard lifecycle, accessible names/roles and GNOME portal workflow tested; see [desktop workflow](plans/0008-keyboard-desktop-workflow.md); Orca usability certification remains M4. |
 | F27 | Printing through the Linux print dialog | Product choice; reference details need observation | M4 | Planned |
 

@@ -1,14 +1,22 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include "app/Editor.h"
+#include "platform/AppInfo.h"
 #include <QCommandLineParser>
+#include <QFileInfo>
 #include <QGuiApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
+#include <QTimer>
 
 int main(int argc, char* argv[]) {
     QGuiApplication app(argc, argv);
     QCoreApplication::setApplicationName(QStringLiteral("OpenPaint"));
-    QCoreApplication::setApplicationVersion(QStringLiteral("0.1.0-dev"));
+    QCoreApplication::setApplicationVersion(AppInfo::version());
     QGuiApplication::setDesktopFileName(QStringLiteral("io.github.AfshinKI.OpenPaint"));
+    QGuiApplication::setWindowIcon(
+        QIcon::fromTheme(QStringLiteral("io.github.AfshinKI.OpenPaint"),
+                         QIcon(QStringLiteral(":/qt/qml/OpenPaint/icons/app.svg"))));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
     QCommandLineParser parser;
@@ -17,12 +25,24 @@ int main(int argc, char* argv[]) {
                                             "undo, image import and safe PNG save."));
     parser.addHelpOption();
     parser.addVersionOption();
+    parser.addPositionalArgument(QStringLiteral("image"),
+                                 QCoreApplication::translate("main", "One local image to open."),
+                                 QStringLiteral("[image]"));
     parser.process(app);
+    if (parser.positionalArguments().size() > 1)
+        parser.showHelp(2);
 
     QQmlApplicationEngine engine;
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
         [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
     engine.loadFromModule("OpenPaint", "Main");
+    if (!parser.positionalArguments().isEmpty() && !engine.rootObjects().isEmpty()) {
+        auto* editor = engine.rootObjects().first()->findChild<Editor*>(QStringLiteral("editor"));
+        const auto url =
+            QUrl::fromLocalFile(QFileInfo(parser.positionalArguments().first()).absoluteFilePath());
+        if (editor)
+            QTimer::singleShot(0, editor, [editor, url] { editor->openFile(url); });
+    }
     return app.exec();
 }

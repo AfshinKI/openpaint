@@ -186,3 +186,18 @@ QT_QPA_PLATFORM=xcb QSG_RHI_BACKEND=opengl QT_SCALE_FACTOR=1 python3 tools/bench
 
 The probe opens short-lived test windows and uses temporary generated artwork. See [M1 closure](plans/0009-m1-closure.md)
 for the measured baseline, target misses and remaining later gates.
+
+## Staged installation
+
+`cmake --install build/dev --prefix /usr --strip` installs the executable, desktop
+entry, original icon, AppStream metadata, license and documentation. Use `DESTDIR`
+for staging rather than installing development builds over a system package.
+Packaging builds may set `BUILD_TESTING=OFF`; developer formatter/Python tooling
+is then unnecessary. Set `OPENPAINT_INSTALL_KIND` to `appimage`, `flatpak` or
+`system` only in the corresponding package recipe (default `source`).
+`OPENPAINT_VERSION_SUFFIX` defaults to `dev`; a prerelease recipe supplies e.g.
+`alpha.1`, while an empty suffix identifies a stable build. The generated identity
+is shown by `--version` and Help → Updates.
+
+`openpaint [image]` opens one local image in a new window/process. More than one
+argument is rejected. Save and export retain the same safety rules as File → Open.

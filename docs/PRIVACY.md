@@ -1,8 +1,7 @@
 # Privacy and public-repository hygiene
 
 These are product requirements. The current native editor has no network operations. It opens local PNG/JPEG/BMP/WebP images and saves PNG
-files or exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strips source metadata. Recovery
-and updates below are still planned.
+files or exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strips source metadata. Help → Updates opens the public GitHub Releases page only after the explicit View releases action. The browser makes an ordinary request to GitHub; no artwork or document information is included. Recovery and automatic update checks below are still planned.
 
 ## Current local settings
 
