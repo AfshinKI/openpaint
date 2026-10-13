@@ -602,6 +602,9 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                     IconButton {
                         id: selectionMain
+                        icon.width: 26
+                        icon.height: 26
+                        padding: 4
                         objectName: "selectionButton"
                         symbol: editor.freeFormSelection ? "lasso" : "selection"
                         text: editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
