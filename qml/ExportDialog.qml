@@ -54,6 +54,7 @@ PaintDialog {
             onClicked: formats.open()
             PaintMenu {
                 id: formats
+                objectName: "exportFormatsMenu"
                 y: parent.height
                 PaintMenuItem {
                     symbol: "rectangle"

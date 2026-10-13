@@ -298,6 +298,9 @@ class ShellTest : public QObject {
         QTRY_VERIFY(options->property("visible").toBool());
         QVERIFY(tabTo("exportFormat"));
         keyClick(Qt::Key_Space);
+        auto* formats = window->findChild<QObject*>("exportFormatsMenu");
+        QVERIFY(formats);
+        QTRY_VERIFY(formats->property("opened").toBool());
         keyClick(Qt::Key_Down);
         keyClick(Qt::Key_Down);
         keyClick(Qt::Key_Return);
@@ -1049,7 +1052,7 @@ class ShellTest : public QObject {
             list = list->parentItem();
         QVERIFY(list);
         QTRY_COMPARE(list->property("count").toInt(), 1);
-        keyClick(Qt::Key_Home);
+        keyClick(Qt::Key_Down);
         keyClick(Qt::Key_Down);
         QVERIFY(tabToButton("Open"));
         keyClick(Qt::Key_Space);
