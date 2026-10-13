@@ -13,6 +13,22 @@ SPEC.loader.exec_module(PACKAGE)
 
 
 class PackageTests(unittest.TestCase):
+    def test_portable_archive_preserves_launcher_and_bundled_libraries(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            appdir = root / 'AppDir'
+            (appdir / 'usr/lib').mkdir(parents=True)
+            (appdir / 'AppRun').write_text('#!/bin/sh\nexit 0\n')
+            (appdir / 'usr/lib/library.so').write_bytes(b'library')
+            archive = PACKAGE.portable_archive(appdir, root, '0.1.0-alpha.10')
+            with tarfile.open(archive) as bundle:
+                prefix = 'OpenPaint-0.1.0-alpha.10-linux-x86_64'
+                launcher = bundle.getmember(prefix + '/openpaint')
+                self.assertEqual(launcher.mode, 0o755)
+                self.assertEqual((launcher.uid, launcher.gid), (0, 0))
+                self.assertEqual(bundle.extractfile(launcher).read(), b'#!/bin/sh\nexit 0\n')
+                self.assertEqual(bundle.extractfile(prefix + '/usr/lib/library.so').read(), b'library')
+
     def test_source_tar_omits_local_owner(self):
         info = tarfile.TarInfo('source.tar.xz')
         info.uname = 'local-builder'

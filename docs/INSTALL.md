@@ -1,6 +1,6 @@
 # OpenPaint alpha installation
 
-Download assets from [the alpha release](https://github.com/AfshinKI/openpaint/releases/tag/v0.1.0-alpha.1).
+Download assets from [GitHub Releases](https://github.com/AfshinKI/openpaint/releases).
 
 Linux x86_64. Tested release environments and artifact digests are recorded in the
 release evidence. This is an early alpha; keep copies of important originals.
@@ -12,10 +12,28 @@ directory, run `sha256sum --ignore-missing -c SHA256SUMS`. Every downloaded entr
 must report OK. Checksums detect changed bytes; these alpha artifacts do not have
 an OpenPaint signing signature or an automatic updater.
 
+## Recommended: portable Linux archive
+
+Download the `OpenPaint-<version>-linux-x86_64.tar.gz` asset. Extract it with your
+archive manager, then run `openpaint` inside the extracted folder. Keep the whole
+folder together; bundled libraries are required. No root access, FUSE or installer.
+This targets Ubuntu 24.04 and compatible newer x86_64 Linux desktops.
+
+For example, replacing `<version>` with the downloaded release version:
+
+```sh
+tar -xzf OpenPaint-<version>-linux-x86_64.tar.gz
+./OpenPaint-<version>-linux-x86_64/openpaint
+```
+
+To update, save your work, close OpenPaint and extract a newer release into a new
+folder. The sources-and-notices archive is for developers/license compliance, not
+installation. `.dmg` files are for macOS, not Linux.
+
 ## Portable AppImage
 
 ```sh
-chmod +x OpenPaint-0.1.0-alpha.1-x86_64.AppImage
+chmod u+rx OpenPaint-0.1.0-alpha.1-x86_64.AppImage
 ./OpenPaint-0.1.0-alpha.1-x86_64.AppImage
 ```
 
@@ -25,6 +43,11 @@ required. If FUSE 2 is unavailable, launch with extraction instead:
 ```sh
 APPIMAGE_EXTRACT_AND_RUN=1 ./OpenPaint-0.1.0-alpha.1-x86_64.AppImage
 ```
+
+If the runtime reports `Cannot open /proc/self/exe: Permission denied`, ensure
+the AppImage has both read and execute permissions using `chmod u+rx` above.
+The extraction variable starts with `APPIMAGE`, not `PPIMAGE`. Alternatively use
+the portable archive, which does not invoke this runtime.
 
 No root access or installer is required. To update, save your work, close the app,
 verify the new download and replace the old AppImage. To uninstall, close it and

@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: repo-checks-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   repository:
@@ -112,8 +112,12 @@ jobs:
         run: |
           desktop-file-validate packaging/io.github.AfshinKI.OpenPaint.desktop
           appstreamcli validate --no-net packaging/io.github.AfshinKI.OpenPaint.metainfo.xml
-          python3 tools/package_appimage.py --qt build/qt/6.12.0/gcc_64 --collect-system-sources
-          QT_QPA_PLATFORM=offscreen APPIMAGE_EXTRACT_AND_RUN=1 build/appimage/OpenPaint-0.1.0-dev-x86_64.AppImage --version
+          python3 tools/package_appimage.py --qt build/qt/6.12.0/gcc_64 --collect-system-sources --kind portable --suffix "alpha.${GITHUB_RUN_NUMBER}"
+          mkdir -p build/portable-smoke
+          tar -xzf build/appimage/public/*-linux-x86_64.tar.gz -C build/portable-smoke
+          QT_QPA_PLATFORM=offscreen build/portable-smoke/*/openpaint --version
+          cd build/appimage/public
+          sha256sum -c SHA256SUMS
       - name: Retain review artifacts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -121,6 +125,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
           path: |
+            build/appimage/public/*
             build/appimage/*.AppImage
             build/appimage/*.json
             build/appimage/*.tar
@@ -167,3 +172,47 @@ jobs:
             build/flatpak/*.json
             build/flatpak/openpaint-source.tar
             build/flatpak/SHA256SUMS
+
+  publish:
+    name: Publish tested alpha
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [repository, native, appimage, flatpak]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RUN_ID: ${{ github.run_id }}
+      SOURCE_SHA: ${{ github.sha }}
+    steps:
+      - name: Download this run's tested packages
+        run: gh run download "$RUN_ID" --name appimage-development-x86_64 --dir artifacts
+      - name: Publish immutable alpha assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd artifacts/public
+          sha256sum -c SHA256SUMS
+          archive=(OpenPaint-*-linux-x86_64.tar.gz)
+          test "${#archive[@]}" -eq 1
+          version="${archive[0]#OpenPaint-}"
+          version="${version%-linux-x86_64.tar.gz}"
+          tag="v${version}"
+          cat > notes.md <<'NOTES'
+          Linux x86_64 alpha (Ubuntu 24.04 or newer compatible desktop).
+
+          **Download the `linux-x86_64.tar.gz` archive**, extract it, then run `openpaint` inside the extracted folder. Keep the entire folder together. No installation, administrator access, FUSE, or AppImage runtime is required.
+
+          `sources-and-notices.tar` is for developers and license compliance, not installation. `SHA256SUMS` verifies downloads. Automatic in-app updating is not implemented; close the app and extract a newer archive to update. Alpha software: keep copies of important drawings.
+          NOTES
+          # Draft first: a failed upload never leaves a partial published release.
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$SOURCE_SHA" --draft --prerelease --title "OpenPaint $version" --notes-file notes.md
+          fi
+          if test "$(gh release view "$tag" --json isDraft --jq .isDraft)" = true; then
+            gh release upload "$tag" "${archive[0]}" OpenPaint-*-sources-and-notices.tar SHA256SUMS --clobber
+            gh release edit "$tag" --draft=false --prerelease --latest=false
+          fi
