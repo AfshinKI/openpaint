@@ -308,3 +308,7 @@ The full-shape popup button is removed from the ribbon because all shapes are
 visible in the gallery. Separate icon-and-chevron controls open Outline and Fill
 menus. Outline offers None/Solid outline; Fill offers None/Solid fill. These
 reflect the supported renderer styles and update active shape previews.
+
+Outline and Fill choices are exclusive: activating the already selected entry
+keeps its checkmark. Ribbon group captions share a common bottom baseline,
+including Selection and Brushes.

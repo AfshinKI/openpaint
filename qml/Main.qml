@@ -635,6 +635,7 @@ ApplicationWindow {
             anchors.margins: 8
             spacing: 4
             ColumnLayout {
+                Layout.alignment: Qt.AlignBottom
                 spacing: 0
                 Item {
                     Layout.preferredWidth: 40
@@ -749,6 +750,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
+                Layout.alignment: Qt.AlignBottom
                 spacing: 4
                 GridLayout {
                     columns: 2
@@ -840,6 +842,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
+                Layout.alignment: Qt.AlignBottom
                 GridLayout {
                     columns: 3
                     IconButton {
@@ -913,6 +916,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
+                Layout.alignment: Qt.AlignBottom
                 spacing: 0
                 Item {
                     Layout.preferredWidth: 40
@@ -978,6 +982,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
+                Layout.alignment: Qt.AlignBottom
                 spacing: 2
                 RowLayout {
                     spacing: 2
@@ -1004,6 +1009,7 @@ ApplicationWindow {
                                 y: parent.height
                                 PaintMenuItem {
                                     objectName: "noOutlineItem"
+                                    autoExclusive: true
                                     symbol: "none"
                                     text: qsTr("No outline")
                                     checkable: true
@@ -1012,6 +1018,7 @@ ApplicationWindow {
                                 }
                                 PaintMenuItem {
                                     objectName: "solidOutlineItem"
+                                    autoExclusive: true
                                     symbol: "shape-outline"
                                     text: qsTr("Solid outline")
                                     checkable: true
@@ -1038,6 +1045,7 @@ ApplicationWindow {
                                 y: parent.height
                                 PaintMenuItem {
                                     objectName: "noFillItem"
+                                    autoExclusive: true
                                     symbol: "none"
                                     text: qsTr("No fill")
                                     checkable: true
@@ -1046,6 +1054,7 @@ ApplicationWindow {
                                 }
                                 PaintMenuItem {
                                     objectName: "solidFillItem"
+                                    autoExclusive: true
                                     symbol: "fill"
                                     text: qsTr("Solid fill")
                                     checkable: true
@@ -1123,6 +1132,7 @@ ApplicationWindow {
                 }
             }
             ColumnLayout {
+                Layout.alignment: Qt.AlignBottom
                 GridLayout {
                     columns: 10
                     rowSpacing: 0

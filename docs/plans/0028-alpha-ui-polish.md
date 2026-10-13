@@ -483,3 +483,8 @@ choice state and numeric options through the gallery.
 Validation: dev build, style-menu choices, gallery keyboard navigation and numeric
 shape options passed; formatting, strict QML lint and repository checks passed.
 Offscreen backend reports unsupported native opacity as previously documented.
+
+Style-menu and caption correction: Outline/Fill entries use exclusive selection,
+so repeat clicks retain their checkmark. Labeled ribbon groups align at the
+bottom to share the same caption baseline. Dev build, repeat-choice shell test,
+formatting, strict QML lint and repository checks passed (offscreen rendering).

@@ -1155,9 +1155,14 @@ class ShellTest : public QObject {
             auto* none = window->findChild<QObject*>("no" + kind + "Item");
             QVERIFY(QMetaObject::invokeMethod(none, "click"));
             QVERIFY(!editor->property(("shape" + kind).toUtf8()).toBool());
+            QVERIFY(QMetaObject::invokeMethod(none, "click"));
+            QVERIFY(none->property("checked").toBool());
             auto* solid = window->findChild<QObject*>("solid" + kind + "Item");
             QVERIFY(QMetaObject::invokeMethod(solid, "click"));
             QVERIFY(editor->property(("shape" + kind).toUtf8()).toBool());
+            QVERIFY(QMetaObject::invokeMethod(solid, "click"));
+            QVERIFY(solid->property("checked").toBool());
+            QVERIFY(!none->property("checked").toBool());
             QMetaObject::invokeMethod(menu, "close");
         }
         QVERIFY(!editor->dirty());
