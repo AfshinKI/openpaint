@@ -465,3 +465,11 @@ checks, formatting, strict QML lint and repository checks passed. Offscreen Qt
 warns that native opacity is unsupported: these tests validate signal sequencing
 only, not visual suppression. Actual compositor/multi-monitor behavior remains
 unverified; platforms lacking window-opacity support may still show the flash.
+
+Startup placement: the maintainer confirmed first-frame reveal fixed the flash.
+Launch now requests centering in the pointer monitor's available work area,
+falling back to the primary screen. Placement accounts for window decorations
+before reveal; oversized windows keep their top-left within the work area.
+Dev build, launch/resize and quit checks and repository checks passed. Physical
+multi-monitor placement still needs confirmation; window managers may override
+application positioning (particularly Wayland).
