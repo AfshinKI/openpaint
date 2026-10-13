@@ -1145,36 +1145,27 @@ class ShellTest : public QObject {
         QVERIFY(!editor->dirty());
     }
 
-    void shapePaletteKeyboardAndLayout() {
-        QVERIFY(tabTo("shapesButton"));
-        keyClick(Qt::Key_Space);
-        auto* palette = window->findChild<QObject*>(QStringLiteral("shapesMenu"));
-        QTRY_VERIFY(palette->property("visible").toBool());
-        window->resize(1024, 640);
-        QVERIFY(QMetaObject::invokeMethod(
-            window->findChild<QObject*>(QStringLiteral("lightThemeAction")), "trigger",
-            Q_ARG(QObject*, nullptr)));
-        QVERIFY(capture(QStringLiteral("shape-palette-light.png")));
-        QVERIFY(QMetaObject::invokeMethod(
-            window->findChild<QObject*>(QStringLiteral("darkThemeAction")), "trigger",
-            Q_ARG(QObject*, nullptr)));
-        QVERIFY(capture(QStringLiteral("shape-palette-dark.png")));
-        keyClick(Qt::Key_Down);
-        keyClick(Qt::Key_Down);
-        keyClick(Qt::Key_Down);
-        QCOMPARE(window->activeFocusItem()->objectName(), QString("shapeChoice15"));
-        keyClick(Qt::Key_Space);
-        QTRY_VERIFY(!palette->property("visible").toBool());
-        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
-        QCOMPARE(editor->shapeKind, 15);
-        QCOMPARE(editor->tool(), Editor::Tool::Shape);
+    void shapeStyleMenus() {
+        auto* editor = window->findChild<Editor*>("editor");
+        for (const auto& kind : {QStringLiteral("Outline"), QStringLiteral("Fill")}) {
+            QVERIFY(tabTo("shape" + kind + "Button"));
+            keyClick(Qt::Key_Space);
+            auto* menu = window->findChild<QObject*>("shape" + kind + "Menu");
+            QTRY_VERIFY(menu->property("visible").toBool());
+            auto* none = window->findChild<QObject*>("no" + kind + "Item");
+            QVERIFY(QMetaObject::invokeMethod(none, "click"));
+            QVERIFY(!editor->property(("shape" + kind).toUtf8()).toBool());
+            auto* solid = window->findChild<QObject*>("solid" + kind + "Item");
+            QVERIFY(QMetaObject::invokeMethod(solid, "click"));
+            QVERIFY(editor->property(("shape" + kind).toUtf8()).toBool());
+            QMetaObject::invokeMethod(menu, "close");
+        }
+        QVERIFY(!editor->dirty());
     }
     void shapeOptionsKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         const auto original = editor->image();
-        QVERIFY(tabTo("shapesButton"));
-        keyClick(Qt::Key_Space);
-        keyClick(Qt::Key_Right);
+        QVERIFY(tabTo("ribbonShape1"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Shape);
         QCOMPARE(editor->shapeKind, 1);

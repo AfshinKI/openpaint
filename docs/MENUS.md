@@ -303,3 +303,8 @@ outline; each half retains hover/pressed feedback and its separate action.
 
 Menu-row Save, Undo and Redo use flat idle surfaces with no outlines. Undo/Redo
 use mirrored original curved-arrow icons; hover and keyboard focus remain visible.
+
+The full-shape popup button is removed from the ribbon because all shapes are
+visible in the gallery. Separate icon-and-chevron controls open Outline and Fill
+menus. Outline offers None/Solid outline; Fill offers None/Solid fill. These
+reflect the supported renderer styles and update active shape previews.

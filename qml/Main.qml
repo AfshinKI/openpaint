@@ -987,46 +987,70 @@ ApplicationWindow {
                     ColumnLayout {
                         spacing: 2
                         IconButton {
-                            id: shapesButton
+                            objectName: "shapeOutlineButton"
                             flat: true
-                            objectName: "shapesButton"
-                            enabled: !editor.textActive
-                            symbol: "rectangle"
-                            implicitWidth: 24
+                            symbol: "shape-outline"
+                            text: "⌄"
+                            display: AbstractButton.TextBesideIcon
+                            implicitWidth: 48
                             implicitHeight: 32
-                            text: qsTr("Shapes")
-                            highlighted: editor.tool === Editor.Shape
-                            onClicked: shapesMenu.open()
-                            ShapePalette {
-                                id: shapesMenu
-                                objectName: "shapesMenu"
-                                editor: window.editorController
-                                y: shapesButton.height
-                            }
-                        }
-                        PaintButton {
-                            flat: true
-                            text: "▾"
-                            implicitWidth: 24
-                            implicitHeight: 32
-                            Accessible.name: qsTr("Shape outline and fill")
-                            onClicked: shapeStyleMenu.open()
+                            enabled: !editor.textActive && !editor.busy
+                            Accessible.name: qsTr("Shape outline")
+                            ToolTip.text: Accessible.name
+                            onClicked: outlineMenu.open()
                             PaintMenu {
-                                id: shapeStyleMenu
+                                id: outlineMenu
+                                objectName: "shapeOutlineMenu"
                                 y: parent.height
                                 PaintMenuItem {
-                                    symbol: "rectangle"
-                                    text: qsTr("Outline")
+                                    objectName: "noOutlineItem"
+                                    symbol: "none"
+                                    text: qsTr("No outline")
                                     checkable: true
-                                    checked: editor.shapeOutline
-                                    onTriggered: editor.shapeOutline = !editor.shapeOutline
+                                    checked: !editor.shapeOutline
+                                    onTriggered: editor.shapeOutline = false
                                 }
                                 PaintMenuItem {
+                                    objectName: "solidOutlineItem"
+                                    symbol: "shape-outline"
+                                    text: qsTr("Solid outline")
+                                    checkable: true
+                                    checked: editor.shapeOutline
+                                    onTriggered: editor.shapeOutline = true
+                                }
+                            }
+                        }
+                        IconButton {
+                            objectName: "shapeFillButton"
+                            flat: true
+                            symbol: "fill"
+                            text: "⌄"
+                            display: AbstractButton.TextBesideIcon
+                            implicitWidth: 48
+                            implicitHeight: 32
+                            enabled: !editor.textActive && !editor.busy
+                            Accessible.name: qsTr("Shape fill")
+                            ToolTip.text: Accessible.name
+                            onClicked: fillMenu.open()
+                            PaintMenu {
+                                id: fillMenu
+                                objectName: "shapeFillMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    objectName: "noFillItem"
+                                    symbol: "none"
+                                    text: qsTr("No fill")
+                                    checkable: true
+                                    checked: !editor.shapeFill
+                                    onTriggered: editor.shapeFill = false
+                                }
+                                PaintMenuItem {
+                                    objectName: "solidFillItem"
                                     symbol: "fill"
-                                    text: qsTr("Fill")
+                                    text: qsTr("Solid fill")
                                     checkable: true
                                     checked: editor.shapeFill
-                                    onTriggered: editor.shapeFill = !editor.shapeFill
+                                    onTriggered: editor.shapeFill = true
                                 }
                             }
                         }

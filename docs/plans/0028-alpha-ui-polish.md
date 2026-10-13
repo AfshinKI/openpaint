@@ -473,3 +473,13 @@ before reveal; oversized windows keep their top-left within the work area.
 Dev build, launch/resize and quit checks and repository checks passed. Physical
 multi-monitor placement still needs confirmation; window managers may override
 application positioning (particularly Wayland).
+
+Shape controls follow-up: replace the redundant full-shape chooser and combined
+style dropdown with separate original Outline and Fill icon dropdowns. Each has
+None/Solid choices bound to the existing preview-aware properties. Gallery
+selection and numeric shape options remain available. Validate keyboard opening,
+choice state and numeric options through the gallery.
+
+Validation: dev build, style-menu choices, gallery keyboard navigation and numeric
+shape options passed; formatting, strict QML lint and repository checks passed.
+Offscreen backend reports unsupported native opacity as previously documented.
