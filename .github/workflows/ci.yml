@@ -115,6 +115,8 @@ jobs:
             --outputdir build/qt --modules qtimageformats --archives icu qtbase qtdeclarative qtsvg qttools qtwayland qtimageformats
       - name: Build portable package, source bundle and inventory
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git rev-parse --verify HEAD
           desktop-file-validate packaging/io.github.AfshinKI.OpenPaint.desktop
           appstreamcli validate --no-net packaging/io.github.AfshinKI.OpenPaint.metainfo.xml
           python3 tools/package_appimage.py --qt build/qt/6.12.0/gcc_64 --collect-system-sources --kind portable --suffix "alpha.${GITHUB_RUN_NUMBER}"
