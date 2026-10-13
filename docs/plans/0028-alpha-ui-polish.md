@@ -453,3 +453,15 @@ possible early-exposure path, but does not establish the cause of compositor/GPU
 artifacts. Dev build, launch/resize, theme and quit smoke tests, formatting,
 strict QML lint and repository checks passed. Tests used offscreen rendering;
 the reported physical multi-monitor flash still needs desktop confirmation.
+
+### First-frame reveal follow-up
+
+Construction deferral did not resolve the reported desktop flash. Startup now
+sets native window opacity to zero before mapping, then restores it through a
+queued, one-shot GUI-thread connection to `frameSwapped`. The startup test uses
+the same helper and verifies opacity transitions from zero to one. No timer or
+render-thread document/UI mutation is introduced. Dev build, startup/theme/quit
+checks, formatting, strict QML lint and repository checks passed. Offscreen Qt
+warns that native opacity is unsupported: these tests validate signal sequencing
+only, not visual suppression. Actual compositor/multi-monitor behavior remains
+unverified; platforms lacking window-opacity support may still show the flash.

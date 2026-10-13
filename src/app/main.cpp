@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "app/Editor.h"
 #include "platform/AppInfo.h"
+#include "platform/WindowStartup.h"
 #include <QCommandLineParser>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -43,6 +44,10 @@ int main(int argc, char* argv[]) {
         &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
         [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
     engine.loadFromModule("OpenPaint", "Main");
+    if (!engine.rootObjects().isEmpty()) {
+        if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().first()))
+            revealAfterFirstFrame(window);
+    }
     if (!parser.positionalArguments().isEmpty() && !engine.rootObjects().isEmpty()) {
         auto* editor = engine.rootObjects().first()->findChild<Editor*>(QStringLiteral("editor"));
         const auto url =

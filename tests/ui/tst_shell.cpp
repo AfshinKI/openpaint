@@ -2,6 +2,7 @@
 #include "color/ColorPalette.h"
 #include "color/ColorSpectrum.h"
 #include "io/ImageIo.h"
+#include "platform/WindowStartup.h"
 #include "render/CanvasItem.h"
 #include <QAccessible>
 #include <QColorSpace>
@@ -55,7 +56,10 @@ class ShellTest : public QObject {
         QCOMPARE(engine->rootObjects().size(), 1);
         window = qobject_cast<QQuickWindow*>(engine->rootObjects().first());
         QVERIFY(window);
+        revealAfterFirstFrame(window);
+        QCOMPARE(window->opacity(), 0.0);
         QVERIFY(QTest::qWaitForWindowExposed(window));
+        QTRY_COMPARE(window->opacity(), 1.0);
         window->requestActivate();
         QVERIFY(QTest::qWaitForWindowActive(window));
         QGuiApplication::sync();
