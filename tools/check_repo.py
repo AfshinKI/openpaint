@@ -18,7 +18,7 @@ SKIP_DIRS = {
 TEXT_SUFFIXES = {".md", ".py", ".yml", ".yaml", ".json", ".toml", ".txt",
                  ".cmake", ".cpp", ".h", ".hpp", ".qml", ".svg", ".html",
                  ".sh", ".xml", ".desktop", ".in"}
-TEXT_NAMES = {"LICENSE", "CMakeLists.txt", ".gitignore", ".gitattributes", ".editorconfig"}
+TEXT_NAMES = {"AppRun", "LICENSE", "CMakeLists.txt", ".gitignore", ".gitattributes", ".editorconfig"}
 REQUIRED = ("README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", "LICENSE",
             "SECURITY.md", "docs/README.md", "docs/ROADMAP.md", "docs/FEATURES.md",
             "docs/ARCHITECTURE.md", "docs/DESIGN.md", "docs/DEVELOPMENT.md",
