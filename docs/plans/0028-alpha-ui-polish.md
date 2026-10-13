@@ -228,3 +228,74 @@ Updates workflow passed (7 including setup/cleanup). Text toolbar and narrow
 left rail were inspected in generated 1024px captures. Tab/Shift+Tab now move
 from the inline text editor to controls; Ctrl+Enter and Escape remain available.
 Repository and whitespace checks passed. Changes remain on the same polish branch.
+
+## Follow-up requests
+
+Item 1 is implemented below; items 2–11 remain pending before the final polish
+review. Earlier implementation evidence does not verify these requests.
+
+1. Add small square corner resize handles to active shapes, text boxes and
+   selections. Committed raster marks require selecting their pixels before
+   resizing; retaining separately editable drawn objects would need a separate
+   document-model decision. Specify preview, cancel and one-step undo behavior.
+2. Remove idle button outlines in Image, Tools, Brushes and Shapes. Preserve
+   visible hover, selected and keyboard-focus states.
+3. Change the Selection button icon to match Rectangle or Free-form selection.
+4. Remember the last horizontal/vertical Flip choice and show the matching icon;
+   the main button repeats that operation. Session state is sufficient unless
+   persistence is explicitly requested later.
+5. Give rotation choices distinct original direction/angle icons. Show the last
+   chosen rotation on the main button so its next action is clear.
+6. While Color picker is selected, show a floating sampled-color square attached
+   to the eyedropper tip, following the pointer. Define out-of-canvas and alpha
+   presentation; hovering must not change colors, artwork or undo history.
+7. Clear the active selection when switching to another tool. This deliberately
+   changes the current cross-tool selection-clipping behavior: reconcile active
+   move/paste previews and document the new command/undo semantics before coding.
+8. Add corner handles for canvas resizing, with explicit clipping behavior and
+   undo. Keep canvas resizing distinct from resampling selected content.
+9. Make Edit colors a larger circular color icon without a square outline.
+10. Make the Brushes icon larger and centered above its caption. Main activation
+    selects the current brush for painting; a separate small arrow below opens
+    the brush-style menu. Pencil continues to draw a solid line independently of
+    brush style. Selecting Brush shows opacity below thickness in the left rail.
+11. Enlarge the visible shape gallery to six columns by three rows or larger so
+    every shape is available without scrolling. There are currently 19 shapes,
+    so use at least 19 visible cells (for example 7×3), while preserving minimum-
+    window usability and keyboard access.
+
+Use original assets. Define acceptance cases for interaction changes before
+implementation. Resume deliberately in bounded scope; do not merge the polish
+branch until the requested review and required checks pass.
+
+### Item 1 acceptance — active corner resize handles
+
+Scope: four corner handles for a ready text box, an active shape preview, or a
+selection (including floating pasted/moved content). Committed raster marks must
+first be selected. Canvas resizing is item 8 and is outside this change.
+
+- Drag shows bounds; release resizes the existing preview, without flattening it.
+- Opposite corner stays fixed; bounds stop at one pixel and image limits.
+- Text reflows without changing font size; shape geometry scales, including all
+  polygon vertices; selection pixels/mask resize through the bounded worker.
+- Repeated selection resizing stays in one preview; Apply/Enter commits one undo
+  step. Escape during a handle drag discards only that drag. Existing preview
+  Cancel restores original pixels; undo/redo after commit preserves the result.
+- Handles keep constant screen size across zoom, sit above inline text input, and
+  support keyboard arrows. Busy state, viewport changes and lost grabs must not
+  leave a stale drag or paint through a handle.
+
+### Item 1 implementation and evidence
+
+Implemented four corner handles with 8px squares and 16px hit targets. Text
+reflows, shape vertices scale, and selected/pasted pixels resize asynchronously.
+Repeated selection resizing retains the original preview base for one-step
+commit/undo and cancellation. Keyboard arrows resize by 1px (Shift: 10px).
+
+Validation: Qt 6.12 dev build passed; `./build/dev/openpaint` is rebuilt. All nine
+transform cases, the polygon geometry case and four focused shell cases passed
+(including corner drag/Escape, constant-size zoom targets, text editing and image
+transforms). Formatting, strict QML lint and repository checks passed. Inspected
+the generated text-handle capture. UI checks used offscreen software rendering;
+full desktop/platform and batch regression checks remain pending. Next unfinished
+request is item 2, removing idle button outlines. Canvas resize remains item 8.

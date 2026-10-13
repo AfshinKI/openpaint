@@ -230,3 +230,9 @@ visibility, numeric limits and input isolation are defined in [MENUS.md](MENUS.m
 The rail overlays workspace without changing canvas coordinates. Shared menu rows
 use original 18px icons, theme-aware disabled colors, shortcut hints, check
 indicators and submenu arrows. Brush choices retain generated stroke previews.
+
+Active shapes, text boxes and selections have four square corner resize handles.
+Their hit areas remain fixed at screen scale. Resizing preserves the active
+preview until committed; cancellation restores the original artwork. See the
+[control specification](MENUS.md#workspace-and-status-bar). Canvas resizing is
+still planned separately.

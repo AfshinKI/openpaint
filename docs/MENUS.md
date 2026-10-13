@@ -166,6 +166,14 @@ within this session; Cancel discards the draft but not these explicit actions.
 
 ## Workspace and status bar
 
+Active shapes, ready text boxes and selections expose four small square corner
+handles with fixed 16px hit targets at every zoom level. Drag previews bounds;
+release resizes the active preview. Text reflows at its existing font size.
+Selection pixels and masks resample in the bounded worker. Repeated resizing
+commits as one undoable edit. Escape during dragging discards that drag; preview
+Cancel restores the original artwork. Focused handles support arrow keys (Shift
+for 10px). Committed raster marks must first be selected.
+
 Use a broad neutral workspace around a rectangular, sharp-cornered image. Canvas
 resize handles are small squares at corners and edge midpoints when that feature
 is implemented. A left-side floating rail holds narrow 36px rounded Size (1–128 px) and Opacity

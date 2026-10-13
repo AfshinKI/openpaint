@@ -1,6 +1,48 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Editor.h"
 #include <QtConcurrent>
+#include <algorithm>
+#include <cmath>
+QRectF Editor::resizeBounds() const {
+    if (busy() || selecting_ || textDrawing_)
+        return {};
+    if (textActive_)
+        return textRect_;
+    if (shapeActive_) {
+        const auto box = QPolygonF(shapePoints_).boundingRect();
+        return {box.topLeft(), QSizeF(std::max(1.0, box.width()), std::max(1.0, box.height()))};
+    }
+    if (floatingActive_)
+        return {floatingPosition_, floatingImage_.size()};
+    return hasSelection() ? QRectF(selectionRect()) : QRectF();
+}
+void Editor::resizeActiveBounds(int x, int y, int width, int height) {
+    const auto before = resizeBounds();
+    if (before.isEmpty() || !openpaint::Document::validSize({width, height}) || x < 0 || y < 0 ||
+        width > image().width() || height > image().height() || x > image().width() - width ||
+        y > image().height() - height)
+        return;
+    const QRect target(x, y, width, height);
+    if (before == QRectF(target))
+        return;
+    if (textActive_) {
+        setTextBounds(x, y, width, height);
+    } else if (shapeActive_) {
+        const auto map = [&](QPointF p) {
+            return QPointF(x + (p.x() - before.x()) * width / before.width(),
+                           y + (p.y() - before.y()) * height / before.height());
+        };
+        shapeStart_ = map(shapeStart_);
+        shapeEnd_ = map(shapeEnd_);
+        for (auto& point : shapePoints_)
+            point = map(point);
+        refreshShape();
+    } else {
+        startTransform(openpaint::TransformKind::ResizeSkew, {{width, height}, 0, 0, true});
+        if (transforming_)
+            transformPosition_ = target.topLeft();
+    }
+}
 void Editor::transformImage(int kind) {
     if (kind < 0 || kind > int(openpaint::TransformKind::Crop))
         return;
@@ -11,14 +53,22 @@ void Editor::resizeImage(int width, int height, qreal skewX, qreal skewY, bool s
 }
 void Editor::startTransform(openpaint::TransformKind operation,
                             const openpaint::TransformOptions& options) {
-    if (busy_ || !canSelect())
+    const bool floatingResize =
+        floatingActive_ && operation == openpaint::TransformKind::ResizeSkew;
+    if (busy_ || (!canSelect() && !floatingResize))
         return;
     if (operation == openpaint::TransformKind::Crop && !hasSelection())
         return;
-    finish();
-    const auto source = hasSelection() ? selectedImage() : image();
-    const auto mask =
-        hasSelection() ? selection().translated(-selectionRect().topLeft()) : QRegion();
+    transformFromFloating_ = floatingResize;
+    transformPosition_ = floatingResize ? floatingPosition_ : selectionRect().topLeft();
+    if (!floatingResize)
+        finish();
+    const auto source = floatingResize   ? floatingImage_
+                        : hasSelection() ? selectedImage()
+                                         : image();
+    const auto mask = floatingResize   ? floatingRegion_
+                      : hasSelection() ? selection().translated(-selectionRect().topLeft())
+                                       : QRegion();
     transformSelection_ = hasSelection() && operation != openpaint::TransformKind::Crop;
     transformRevision_ = document.revision();
     cancellation_ = std::make_shared<std::atomic_bool>(false);
@@ -39,9 +89,15 @@ void Editor::finishTransform() {
     if (!result.error.isEmpty() || document.revision() != transformRevision_) {
         fail(result.error.isEmpty() ? tr("The drawing changed before the transform completed.")
                                     : result.error);
+    } else if (transformFromFloating_) {
+        floatingImage_ = result.image;
+        floatingRegion_ = result.mask;
+        floatingPosition_ = transformPosition_;
+        floatingComposite_ = {};
+        refreshFloating();
     } else if (transformSelection_) {
         floatingOriginalSelection_ = document.selection();
-        floatingPosition_ = floatingOriginalSelection_.boundingRect().topLeft();
+        floatingPosition_ = transformPosition_;
         document.setSelection({});
         if (document.beginPreview()) {
             floatingImage_ = result.image;

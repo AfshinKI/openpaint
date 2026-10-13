@@ -1053,6 +1053,12 @@ ApplicationWindow {
             editor: window.editorController
             canvas: window.canvasController
         }
+        ResizeHandles {
+            anchors.fill: parent
+            editor: window.editorController
+            canvas: window.canvasController
+            z: 2
+        }
     }
     Column {
         objectName: "floatingToolControls"

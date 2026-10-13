@@ -102,6 +102,31 @@ class EditorTest : public QObject {
         QVERIFY(!editor.hasSelection());
         QVERIFY(!editor.dirty());
     }
+    void shapeHandleGeometry() {
+        Editor editor;
+        const auto original = editor.image();
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 15;
+        editor.begin({20, 20}, false);
+        editor.extend({100, 20});
+        editor.endGesture();
+        editor.begin({100, 100}, false);
+        editor.endGesture();
+        editor.begin({20, 100}, false);
+        editor.endGesture();
+        editor.resizeActiveBounds(40, 30, 160, 120);
+        QCOMPARE(editor.resizeBounds(), QRectF(40, 30, 160, 120));
+        QCOMPARE(editor.shapeStart(), QPointF(40, 30));
+        QCOMPARE(editor.shapeEnd(), QPointF(40, 150));
+        editor.removeShapePoint();
+        QCOMPARE(editor.shapeEnd(), QPointF(200, 150));
+        const auto resized = editor.image();
+        editor.commitPreview();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), resized);
+    }
     void polygonAndConstraints() {
         Editor editor;
         const auto original = editor.image();

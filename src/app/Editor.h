@@ -63,6 +63,7 @@ class Editor : public QObject {
                    settingsChanged)
     Q_PROPERTY(
         QColor selectedColor READ selectedColor WRITE setSelectedColor NOTIFY settingsChanged)
+    Q_PROPERTY(QRectF resizeBounds READ resizeBounds NOTIFY changed)
     Q_PROPERTY(QColor primary MEMBER primary NOTIFY settingsChanged)
     Q_PROPERTY(QColor secondary MEMBER secondary NOTIFY settingsChanged)
     Q_PROPERTY(int brushSize MEMBER brushSize NOTIFY settingsChanged)
@@ -93,6 +94,8 @@ class Editor : public QObject {
         return transforming_;
     }
     Q_INVOKABLE void transformImage(int kind);
+    QRectF resizeBounds() const;
+    Q_INVOKABLE void resizeActiveBounds(int x, int y, int width, int height);
     Q_INVOKABLE void resizeImage(int width, int height, qreal skewX, qreal skewY, bool smooth);
     bool clipboardBusy() const {
         return clipboardBusy_;
@@ -240,7 +243,8 @@ class Editor : public QObject {
                         const openpaint::TransformOptions& options = {});
     QFutureWatcher<openpaint::TransformResult> transformWatcher_;
     quint64 transformRevision_ = 0;
-    bool transforming_ = false, transformSelection_ = false;
+    bool transforming_ = false, transformSelection_ = false, transformFromFloating_ = false;
+    QPoint transformPosition_;
     void refreshShape();
     void refreshText();
     bool startCopy(bool cut);

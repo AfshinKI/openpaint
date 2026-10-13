@@ -25,6 +25,53 @@ class TransformTest : public QObject {
         return image;
     }
   private slots:
+    void selectionHandlesKeepOnePreview() {
+        TransformEditor editor;
+        const auto original = fixture();
+        editor.reset(original);
+        editor.selectRect(1, 1, 2, 2);
+        editor.resizeActiveBounds(0, 0, 4, 3);
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(editor.floatingActive());
+        QCOMPARE(editor.resizeBounds(), QRectF(0, 0, 4, 3));
+        editor.resizeActiveBounds(1, 1, 3, 2);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.resizeBounds(), QRectF(1, 1, 3, 2));
+        const auto resized = editor.image();
+        editor.commitPreview();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        editor.redo();
+        QCOMPARE(editor.image(), resized);
+        editor.undo();
+        editor.selectRect(1, 1, 2, 2);
+        editor.resizeActiveBounds(0, 0, 4, 3);
+        QTRY_VERIFY(!editor.busy());
+        editor.resizeActiveBounds(1, 1, 3, 2);
+        QTRY_VERIFY(!editor.busy());
+        editor.cancel();
+        QCOMPARE(editor.image(), original);
+        QCOMPARE(editor.selectionRect(), QRect(1, 1, 2, 2));
+    }
+    void pasteHandlesAndInvalidBounds() {
+        TransformEditor editor;
+        const auto original = editor.image();
+        QVERIFY(editor.pasteImage(fixture()));
+        const auto before = editor.image();
+        editor.resizeActiveBounds(-1, 0, 10, 10);
+        editor.resizeActiveBounds(std::numeric_limits<int>::max(), 0, 10, 10);
+        editor.resizeActiveBounds(0, 0, 0, 10);
+        QCOMPARE(editor.image(), before);
+        QVERIFY(!editor.busy());
+        editor.resizeActiveBounds(10, 10, 12, 8);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.resizeBounds(), QRectF(10, 10, 12, 8));
+        editor.commitPreview();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+    }
     void resizeSkewBoundsAndFiltering() {
         using namespace openpaint;
         const auto source = fixture();

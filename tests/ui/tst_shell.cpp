@@ -689,6 +689,61 @@ class ShellTest : public QObject {
         QCOMPARE(editor->image(), draft);
     }
 
+    void cornerResizeHandles() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        const auto original = editor->image();
+        editor->setTool(Editor::Tool::Text);
+        editor->begin({100, 180}, false);
+        editor->endGesture();
+        for (char letter : std::string("Resizable text"))
+            keyClick(letter);
+        QCOMPARE(editor->textDraft(), QStringLiteral("Resizable text"));
+        QGuiApplication::sync();
+        const auto before = editor->textRect();
+        const auto corners = visualItems(window->contentItem(), QStringLiteral("resizeCorner3"));
+        QCOMPARE(corners.size(), 1);
+        auto* corner = corners.first();
+        QVERIFY(corner && corner->isVisible());
+        auto center = [&] { return corner->mapToScene({8, 8}).toPoint(); };
+        const auto start = center();
+        const auto end = start + QPoint(qRound(80 * canvas->zoom()), qRound(40 * canvas->zoom()));
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QCOMPARE(editor->textRect(), before); // Dragging only previews the bounds.
+        keyClick(Qt::Key_Escape);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QCOMPARE(editor->textRect(), before);
+        QVERIFY(editor->textActive());
+        QTest::mousePress(window, Qt::LeftButton, {}, center());
+        QTest::mouseMove(window, end);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QVERIFY(editor->textActive());
+        QCOMPARE(editor->textRect().topLeft(), before.topLeft());
+        QVERIFY(std::abs(editor->textRect().width() - before.width() - 80) <= 1);
+        QVERIFY(std::abs(editor->textRect().height() - before.height() - 40) <= 1);
+        QVERIFY(capture(QStringLiteral("text-resize-handles.png")));
+        const auto draft = editor->image();
+        editor->commitPreview();
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image(), draft);
+        editor->selectRect(100, 180, 100, 80);
+        QGuiApplication::sync();
+        QVERIFY(corner->isVisible());
+        QCOMPARE(corner->width(), 16.0);
+        canvas->zoomBy(1.5);
+        QCOMPARE(corner->width(), 16.0);
+        corner->forceActiveFocus();
+        keyClick(Qt::Key_Right);
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(editor->floatingActive());
+        QCOMPARE(editor->resizeBounds().width(), 101.0);
+        editor->cancel();
+        QCOMPARE(editor->image(), draft);
+    }
+
     void textToolbarOutsideClickCommit() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();
