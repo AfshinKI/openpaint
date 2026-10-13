@@ -253,8 +253,9 @@ class ShellTest : public QObject {
         editor->extend({80, 50});
         editor->finish();
         const auto artwork = editor->image();
-        keyClick(Qt::Key_H, Qt::AltModifier);
-        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_F, Qt::AltModifier);
+        for (int i = 0; i < 6; ++i)
+            keyClick(Qt::Key_Down); // New/Open/Save/Save As/Export/Updates.
         keyClick(Qt::Key_Return);
         QTRY_VERIFY(dialog->property("visible").toBool());
         QVERIFY(tabTo("viewReleasesButton"));
@@ -630,15 +631,12 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
         window->resize(1024, 640);
         QVERIFY(capture(QStringLiteral("text-light-1024.png")));
-        QVERIFY(QMetaObject::invokeMethod(options, "open"));
         QTRY_VERIFY(options->property("visible").toBool());
         QVERIFY(capture(QStringLiteral("text-options-light.png")));
         auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
         QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
         QVERIFY(capture(QStringLiteral("text-options-dark.png")));
-        QSignalSpy optionsClosed(options, SIGNAL(closed()));
-        QVERIFY(QMetaObject::invokeMethod(options, "close"));
-        QTRY_COMPARE(optionsClosed.size(), 1);
+        input->forceActiveFocus();
         QTRY_VERIFY(input->hasActiveFocus());
         keyClick(Qt::Key_Return, Qt::ControlModifier);
         QVERIFY(!editor->textActive());
@@ -689,6 +687,40 @@ class ShellTest : public QObject {
         QTRY_COMPARE(unsavedClosed.size(), 2);
         editor->undo();
         QCOMPARE(editor->image(), draft);
+    }
+
+    void textToolbarOutsideClickCommit() {
+        auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
+        auto* editor = canvas->editor();
+        auto* options = window->findChild<QQuickItem*>(QStringLiteral("textOptions"));
+        const auto original = editor->image();
+        editor->setTool(Editor::Tool::Text);
+        QVERIFY(options->isVisible());
+        auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
+        QTest::mousePress(window, Qt::LeftButton, {}, at({80, 180}));
+        QTest::mouseMove(window, at({400, 280}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({400, 280}));
+        QTRY_VERIFY(editor->textReady());
+        keyClick('x');
+        QVERIFY(tabTo("textBold"));
+        keyClick(Qt::Key_Space);
+        QVERIFY(editor->textBold);
+        QVERIFY(editor->textActive());
+        auto* apply = window->findChild<QQuickItem*>(QStringLiteral("applyPreviewButton"));
+        QVERIFY(apply && !apply->isVisible());
+        const auto draft = editor->image();
+        QTest::mouseClick(window, Qt::LeftButton, {}, at({600, 400}));
+        QVERIFY(!editor->textActive());
+        QCOMPARE(editor->image(), draft);
+        QVERIFY(editor->dirty());
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image(), draft);
+        window->resize(1024, 640);
+        QVERIFY(capture(QStringLiteral("text-toolbar-1024.png")));
+        QVERIFY(QRectF(0, 0, window->width(), window->height())
+                    .contains(options->mapRectToScene(options->boundingRect())));
     }
 
     void chordAndPanLifecycle() {

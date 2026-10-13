@@ -133,6 +133,13 @@ void CanvasItem::mousePressEvent(QMouseEvent* event) {
         event->ignore();
         return;
     }
+    if (editor_ && editor_->textReady() && event->button() == Qt::LeftButton && !space_ &&
+        !QRectF(editor_->textRect()).contains(toDocument(event->position()))) {
+        editor_->commitPreview();
+        forceActiveFocus();
+        event->accept();
+        return; // Applying consumes the click; it must not create another text box.
+    }
     forceActiveFocus();
     // Sampling emits settingsChanged synchronously. Do it before establishing the
     // gesture so the settings handler cannot release ownership of this press.

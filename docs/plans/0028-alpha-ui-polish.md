@@ -63,10 +63,10 @@ Do not redistribute external reference images or record their locations.
      those explicit session edits survive Cancel, while its color draft does not.
      None of these palette actions dirty artwork or enter document undo history.
 7. **Floating size and opacity controls.**
-   - [ ] Place two narrow rounded vertical panels on the RIGHT of the workspace,
+   - [ ] Place two narrow rounded vertical panels on the LEFT of the workspace,
      following the requested placement. Replace ribbon size/opacity controls.
      Preserve existing tool-specific limits and 0–100% opacity; expose numeric
-     values, accessible labels, keyboard adjustment and tooltips.
+     values in tooltips, accessible labels and keyboard adjustment.
    - [ ] Hide/disable irrelevant controls without changing stored tool settings.
      Fill tolerance remains a separately labeled option. Controls must not steal
      canvas gestures, hide required actions, or alter document coordinates when
@@ -183,9 +183,9 @@ Earlier step 5 test counts above describe the superseded implementation only.
 
 ### Steps 7 and 8
 
-Floating right-side Size and Opacity panels replace their ribbon controls. Size
-is 1–128 px for pencil/brush/eraser/shapes; brush opacity is 0–100%. Labels and
-numeric readouts accompany vertical sliders, which support keyboard adjustment.
+Floating left-side Size and Opacity panels replace their ribbon controls. Size
+is 1–128 px for pencil/brush/eraser/shapes; brush opacity is 0–100%. Original size/opacity icons accompany narrow 36px vertical panels; numeric
+values are shown in tooltips, which support keyboard adjustment.
 Fill tolerance remains in the ribbon, and irrelevant controls hide without losing
 settings. The panels consume input in their margins and do not resize the canvas.
 
@@ -206,3 +206,25 @@ canvas geometry and no painting through panel margins. Runtime shortcut-hint
 colors have a dark-theme regression assertion. Light/dark generated menu captures
 and minimum-size floating controls were visually inspected. Strict QML lint,
 repository and diff checks passed. Broader batch review remains pending.
+
+### Follow-up: narrow left rail and contextual text toolbar
+
+The slider rail moved left and narrowed to 36px. Original stroke-size and half-full
+droplet vectors replace text/readouts; hover/drag tooltips and accessible slider
+values preserve precision. No external images were copied. Image/Help menus are
+removed; existing image commands remain in the ribbon and File hosts Updates/About.
+
+Text now exposes a floating non-modal formatting row below the ribbon as soon as
+Text is selected. Font/style/alignment/background controls preserve the draft.
+A left click on canvas/workspace outside a ready text box commits through the
+existing C++ command, consumes the click and does not start a second box. Panning
+and inside-box clicks do not commit. Escape and Ctrl+Enter retain their existing
+semantics. Text has no Apply/Options footer buttons; guarded New/Open/Close flows
+still protect an active draft. Full batch review is still pending.
+
+Follow-up validation: dev build and strict QML lint passed. Focused launch/layout,
+floating controls, existing text workflow, outside-click commit/undo and File →
+Updates workflow passed (7 including setup/cleanup). Text toolbar and narrow
+left rail were inspected in generated 1024px captures. Tab/Shift+Tab now move
+from the inline text editor to controls; Ctrl+Enter and Escape remain available.
+Repository and whitespace checks passed. Changes remain on the same polish branch.

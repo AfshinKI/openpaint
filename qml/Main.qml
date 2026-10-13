@@ -109,9 +109,13 @@ ApplicationWindow {
         id: textOptions
         objectName: "textOptions"
         editor: window.editorController
-        parent: Overlay.overlay
-        onClosed: {
-            if (window.editorController.textActive)
+        anchors.top: parent.top
+        anchors.topMargin: 8
+        anchors.horizontalCenter: parent.horizontalCenter
+        z: 3
+        visible: window.editorController.tool === Editor.Text
+        onReturnToText: {
+            if (window.editorController.textReady)
                 textOverlay.focusInput();
         }
     }
@@ -460,6 +464,16 @@ ApplicationWindow {
                     }
                     MenuSeparator {}
                     PaintMenuItem {
+                        objectName: "updatesMenuItem"
+                        symbol: "update"
+                        text: qsTr("Updates…")
+                        onTriggered: updatesDialog.open()
+                    }
+                    PaintMenuItem {
+                        action: aboutAction
+                    }
+                    MenuSeparator {}
+                    PaintMenuItem {
                         action: quitAction
                     }
                 }
@@ -541,55 +555,6 @@ ApplicationWindow {
             }
             Item {
                 Layout.fillWidth: true
-            }
-            MenuBar {
-                objectName: "secondaryMenuBar"
-                background: Rectangle {
-                    color: Theme.window
-                }
-                delegate: MenuBarItem {
-                    id: secondaryEntry
-                    background: Rectangle {
-                        radius: Theme.controlRadius
-                        color: secondaryEntry.highlighted ? Theme.hover : "transparent"
-                    }
-                }
-                PaintMenu {
-                    title: qsTr("&Image")
-                    PaintMenuItem {
-                        action: cropAction
-                    }
-                    PaintMenuItem {
-                        action: resizeAction
-                    }
-                    PaintMenuItem {
-                        action: rotateRightAction
-                    }
-                    PaintMenuItem {
-                        action: rotateLeftAction
-                    }
-                    PaintMenuItem {
-                        action: rotateHalfAction
-                    }
-                    PaintMenuItem {
-                        action: flipHorizontalAction
-                    }
-                    PaintMenuItem {
-                        action: flipVerticalAction
-                    }
-                }
-                PaintMenu {
-                    title: qsTr("&Help")
-                    PaintMenuItem {
-                        objectName: "updatesMenuItem"
-                        symbol: "update"
-                        text: qsTr("Updates…")
-                        onTriggered: updatesDialog.open()
-                    }
-                    PaintMenuItem {
-                        action: aboutAction
-                    }
-                }
             }
         }
     }
@@ -1091,18 +1056,19 @@ ApplicationWindow {
     }
     Column {
         objectName: "floatingToolControls"
-        anchors.right: parent.right
+        anchors.left: parent.left
         anchors.top: parent.top
-        anchors.rightMargin: 12
+        anchors.leftMargin: 12
         anchors.topMargin: 24
         spacing: 8
         z: 2
         enabled: !editor.busy
-        property real panelHeight: Math.max(120, Math.min(204, (parent.height - 64) / 2))
+        property real panelHeight: Math.max(120, Math.min(280, (parent.height - 64) / 2))
         ToolSlider {
             visible: editor.tool === Editor.Pencil || editor.tool === Editor.Brush || editor.tool === Editor.Eraser || editor.tool === Editor.Shape
             height: parent.panelHeight
             label: qsTr("Size")
+            symbol: "stroke-size"
             controlName: "strokeSize"
             minimum: 1
             maximum: 128
@@ -1114,6 +1080,7 @@ ApplicationWindow {
             visible: editor.tool === Editor.Brush
             height: parent.panelHeight
             label: qsTr("Opacity")
+            symbol: "opacity"
             controlName: "brushOpacity"
             minimum: 0
             maximum: 100
@@ -1139,20 +1106,20 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }
             PaintButton {
                 objectName: "shapeOptionsButton"
                 text: qsTr("Options")
-                visible: editor.previewActive
-                onClicked: editor.floatingActive ? selectionOptions.open() : editor.textActive ? textOptions.open() : shapeOptions.open()
+                visible: editor.previewActive && !editor.textActive
+                onClicked: editor.floatingActive ? selectionOptions.open() : shapeOptions.open()
             }
             PaintButton {
                 objectName: "applyPreviewButton"
                 text: qsTr("Apply")
-                visible: editor.previewActive
+                visible: editor.previewActive && !editor.textActive
                 onClicked: {
                     editor.commitPreview();
                 }

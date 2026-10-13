@@ -18,7 +18,7 @@ adding or rearranging visible controls; planned entries are not shipped features
 ┌────────────────────────────────────────────────────────────────────────┐
 │ OpenPaint     Untitled •                              window controls   │
 ├────────────────────────────────────────────────────────────────────────┤
-│ File Edit View │ Save Share Undo Redo             What’s new Settings  │
+│ File Edit View │ Save Undo Redo                                      │
 ├────────────────────────────────────────────────────────────────────────┤
 │ Selection │ Image │ Tools │ Brushes │ Shapes │ Colors │ AI* │ Layers   │
 ├───────────┬───────────────────────────────────────────────┬────────────┤
@@ -92,7 +92,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Pan / zoom | Space+drag pans outside text entry; Ctrl+wheel zooms around pointer; plain wheel scrolls |
 | Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Resize/skew supports selected content or the whole image. |
 | Transform | Shift constrains proportions or rotation increments; numeric inputs provide keyboard precision |
-| Text | Inline editor with font, size, alignment, style, foreground and optional background; Ctrl+Enter commits, Escape cancels |
+| Text | Inline editor and floating formatting toolbar below ribbon; outside-box canvas click or Ctrl+Enter commits, Escape cancels; top color is foreground and bottom is background |
 | Shape | 19-item icon palette; Shift constrains geometry, polygon clicks add vertices and Backspace removes the last; drag/release retains preview; numeric start/end and outline/fill options; Enter/Apply commits and Escape/Cancel restores original; new drawing/tool switch commits current preview; Undo cancels the preview |
 | Resize image | Pixel/percent inputs, aspect lock, interpolation; one undoable operation |
 | Resize canvas | Anchor and dimensions; warn when reducing clips content; undo restores it |
@@ -225,7 +225,7 @@ Its local dialog draft is accepted after closing; Cancel preserves all pixels.
 
 ### Alpha floating controls and menu icons
 
-Size/opacity moved out of the ribbon into a right-side floating rail. Tool-specific
+Size/opacity moved out of the ribbon into a left-side floating rail. Tool-specific
 visibility, numeric limits and input isolation are defined in [MENUS.md](MENUS.md).
 The rail overlays workspace without changing canvas coordinates. Shared menu rows
 use original 18px icons, theme-aware disabled colors, shortcut hints, check

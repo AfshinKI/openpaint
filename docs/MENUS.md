@@ -14,9 +14,9 @@ remain planned unless the ledger says otherwise.
 
 Use a compact menu row above the grouped command toolbar. File, Edit and View sit
 on the left, followed immediately by quick Save, Undo and Redo actions with a
-small separator. Image and Help sit on the right in the current alpha. Share is
-deferred until desktop sharing is implemented. Place What's new and Settings at the far right. An OpenPaint Help
-entry is allowed for documentation and accessibility. Window controls remain
+small separator. The Image and Help menus are removed; image commands remain in the ribbon and
+Updates/About are in File. Share is
+deferred until desktop sharing is implemented. Place What's new and Settings at the far right. F1 opens About for keyboard access. Window controls remain
 native Linux decorations, separate from application actions. Core editing needs
 no account; an account/profile button is not an OpenPaint requirement.
 
@@ -168,8 +168,9 @@ within this session; Cancel discards the draft but not these explicit actions.
 
 Use a broad neutral workspace around a rectangular, sharp-cornered image. Canvas
 resize handles are small squares at corners and edge midpoints when that feature
-is implemented. A right-side floating rail holds rounded vertical Size (1–128 px) and Opacity
-(0–100%) sliders, with labels, numeric readouts and accent thumbs. Size appears
+is implemented. A left-side floating rail holds narrow 36px rounded Size (1–128 px) and Opacity
+(0–100%) slider panels, with original stroke/droplet icons and accent thumbs.
+Numeric values appear in tooltips; accessible names retain each role and range. Size appears
 for pencil, brush, eraser and shapes; opacity appears for brushes. Both support
 keyboard arrows and are disabled while busy. Fill tolerance remains a separately
 labeled ribbon control. The rail consumes pointer input without painting through
@@ -226,3 +227,13 @@ Keep the visible inventory separate from assumptions. Unopened submenus, dynamic
 interactions, numeric limits, brush rendering, AI availability and exact parity
 remain unverified until their own acceptance cases pass. Update the ledger and
 this contract together when deliberate Linux-specific choices change the layout.
+
+## Floating text controls
+
+Selecting Text shows a non-modal toolbar immediately below the ribbon: font,
+size, bold/italic/underline/strikeout, alignment and opaque background. Formatting
+controls do not commit the active text box. Clicking the canvas/workspace outside
+the box applies it as one undoable raster edit and consumes that click, without
+starting another text box. Clicking inside keeps editing; middle-button/Space pan
+does not commit. Escape cancels and Ctrl+Enter remains a keyboard commit shortcut.
+The text Apply/Options footer buttons are removed; other tools retain theirs.

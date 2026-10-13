@@ -26,6 +26,15 @@ Rectangle {
         textFormat: TextEdit.PlainText
         wrapMode: TextEdit.Wrap
         selectByMouse: true
+        activeFocusOnTab: true
+        Keys.onTabPressed: event => {
+            input.nextItemInFocusChain(true).forceActiveFocus(Qt.TabFocusReason);
+            event.accepted = true;
+        }
+        Keys.onBacktabPressed: event => {
+            input.nextItemInFocusChain(false).forceActiveFocus(Qt.BacktabFocusReason);
+            event.accepted = true;
+        }
         persistentSelection: true
         color: box.editor.hasSelection ? "transparent" : box.editor.textColor
         selectionColor: Theme.accent
