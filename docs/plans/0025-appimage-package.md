@@ -48,6 +48,10 @@ Wayland graphics helper libraries; the recipe now bundles and audits them.
 Generic controlled build directories are not personal paths; the privacy audit
 is additionally run outside the container with the actual workspace prefixes.
 
+The first CI run rejected a stale preinstalled PNG package whose exact source
+revision had left the current indexes. The packaging job now uses the same fresh,
+pinned Ubuntu base container as local validation; source matching remains strict.
+
 Next: merge after all CI jobs pass, then deliver the separate Flatpak recipe.
 Exact final-artifact installation, editing, uninstall and publication remain M2's
 release closure gate.
