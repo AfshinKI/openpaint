@@ -67,6 +67,22 @@ class ColorsTest : public QObject {
         ColorPalette reopened(nullptr, path);
         QCOMPARE(reopened.colors().size(), 11);
     }
+    void toolbarSlotsPreserveGapsAndFailures() {
+        QTemporaryDir dir;
+        const auto path = dir.filePath("palette.json");
+        ColorPalette palette(nullptr, path);
+        QVERIFY(palette.setToolbarColor(7, Qt::red));
+        QVERIFY(palette.toolbarColors().at(6).isEmpty());
+        QVERIFY(palette.colors().isEmpty());
+        ColorPalette restored(nullptr, path);
+        QCOMPARE(restored.toolbarColors(), palette.toolbarColors());
+        QVERIFY(!palette.setToolbarColor(10, Qt::blue));
+        QVERIFY(QFile::remove(path + ".toolbar"));
+        QVERIFY(QDir().mkdir(path + ".toolbar"));
+        QVERIFY(!palette.setToolbarColor(7, Qt::blue));
+        QCOMPARE(palette.toolbarColors().at(7), QString("#ff0000"));
+        QVERIFY(!palette.error().isEmpty());
+    }
     void failedWritesAndCorruptSettings() {
         QTemporaryDir dir;
         const auto path = dir.filePath("palette.json");

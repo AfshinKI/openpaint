@@ -577,7 +577,7 @@ ApplicationWindow {
         RowLayout {
             anchors.fill: parent
             anchors.margins: 8
-            spacing: 8
+            spacing: 4
             ColumnLayout {
                 spacing: 0
                 IconButton {
@@ -841,24 +841,60 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                IconButton {
-                    id: shapesButton
-                    objectName: "shapesButton"
-                    enabled: !editor.textActive
-                    symbol: "rectangle"
-                    text: qsTr("Shapes")
-                    highlighted: editor.tool === Editor.Shape
-                    onClicked: shapesMenu.open()
-                    ShapePalette {
-                        id: shapesMenu
-                        objectName: "shapesMenu"
+                spacing: 2
+                RowLayout {
+                    spacing: 2
+                    ShapeGallery {
                         editor: window.editorController
-                        y: shapesButton.height
+                    }
+                    ColumnLayout {
+                        spacing: 2
+                        IconButton {
+                            id: shapesButton
+                            objectName: "shapesButton"
+                            enabled: !editor.textActive
+                            symbol: "rectangle"
+                            implicitWidth: 24
+                            implicitHeight: 32
+                            text: qsTr("Shapes")
+                            highlighted: editor.tool === Editor.Shape
+                            onClicked: shapesMenu.open()
+                            ShapePalette {
+                                id: shapesMenu
+                                objectName: "shapesMenu"
+                                editor: window.editorController
+                                y: shapesButton.height
+                            }
+                        }
+                        PaintButton {
+                            text: "▾"
+                            implicitWidth: 24
+                            implicitHeight: 32
+                            Accessible.name: qsTr("Shape outline and fill")
+                            onClicked: shapeStyleMenu.open()
+                            PaintMenu {
+                                id: shapeStyleMenu
+                                y: parent.height
+                                PaintMenuItem {
+                                    text: qsTr("Outline")
+                                    checkable: true
+                                    checked: editor.shapeOutline
+                                    onTriggered: editor.shapeOutline = !editor.shapeOutline
+                                }
+                                PaintMenuItem {
+                                    text: qsTr("Fill")
+                                    checkable: true
+                                    checked: editor.shapeFill
+                                    onTriggered: editor.shapeFill = !editor.shapeFill
+                                }
+                            }
+                        }
                     }
                 }
                 Label {
                     text: qsTr("Shapes")
                     color: Theme.secondaryText
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
             ToolSeparator {
@@ -912,19 +948,26 @@ ApplicationWindow {
                     implicitWidth: 32
                     implicitHeight: 32
                     diameter: 26
-                    swatchColor: editor.primary
-                    checked: true
-                    text: qsTr("Edit primary color")
-                    onClicked: colorDialog.begin(editor.primary, "primary")
+                    swatchColor: editor.secondaryActive ? editor.secondary : editor.primary
+                    checked: !editor.secondaryActive
+                    checkable: true
+                    autoExclusive: true
+                    enabled: !editor.busy
+                    text: qsTr("Use upper color as main drawing color")
+                    onClicked: editor.secondaryActive = false
                 }
                 ColorSwatch {
                     objectName: "secondaryButton"
                     implicitWidth: 32
                     implicitHeight: 32
                     diameter: 24
-                    swatchColor: editor.secondary
-                    text: qsTr("Edit secondary color · right-click to draw")
-                    onClicked: colorDialog.begin(editor.secondary, "secondary")
+                    swatchColor: editor.secondaryActive ? editor.primary : editor.secondary
+                    checked: editor.secondaryActive
+                    checkable: true
+                    autoExclusive: true
+                    enabled: !editor.busy
+                    text: qsTr("Use lower color as main drawing color")
+                    onClicked: editor.secondaryActive = true
                 }
             }
             ColumnLayout {
@@ -948,17 +991,39 @@ ApplicationWindow {
                     Repeater {
                         model: 10
                         delegate: ColorSwatch {
+                            id: toolbarSlot
                             objectName: "customToolbarSwatch"
                             required property int index
-                            empty: index >= customPalette.colors.length
-                            swatchColor: empty ? "transparent" : customPalette.colors[index]
+                            empty: customPalette.toolbarColors[index] === ""
+                            swatchColor: empty ? "transparent" : customPalette.toolbarColors[index]
                             checked: !empty && editor.primary.toString() === swatchColor.toString()
                             text: empty ? qsTr("Empty custom slot %1 · edit colors").arg(index + 1) : qsTr("Custom color %1").arg(swatchColor.toString())
                             onClicked: {
                                 if (empty)
-                                    colorDialog.begin(editor.primary, "primary");
+                                    colorDialog.begin(editor.primary, "toolbar:" + index);
                                 else
                                     editor.primary = swatchColor;
+                            }
+                            function replaceColor() {
+                                colorDialog.begin(empty ? editor.primary : swatchColor, "toolbar:" + index);
+                            }
+                            TapHandler {
+                                acceptedButtons: Qt.RightButton
+                                onTapped: slotMenu.open()
+                            }
+                            Keys.onPressed: function (event) {
+                                if (event.key === Qt.Key_Menu || (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) {
+                                    slotMenu.open();
+                                    event.accepted = true;
+                                }
+                            }
+                            PaintMenu {
+                                id: slotMenu
+                                y: parent.height
+                                PaintMenuItem {
+                                    text: toolbarSlot.empty ? qsTr("Set color…") : qsTr("Replace color…")
+                                    onTriggered: toolbarSlot.replaceColor()
+                                }
                             }
                         }
                     }
@@ -971,19 +1036,11 @@ ApplicationWindow {
             }
             ColumnLayout {
                 IconButton {
+                    objectName: "editColorsButton"
                     symbol: "palette"
                     icon.color: "transparent"
                     text: qsTr("Edit colors")
                     onClicked: colorDialog.begin(editor.primary, "primary")
-                }
-                IconButton {
-                    symbol: "swap"
-                    text: qsTr("Swap primary and secondary colors")
-                    onClicked: {
-                        const old = editor.primary;
-                        editor.primary = editor.secondary;
-                        editor.secondary = old;
-                    }
                 }
             }
             Item {
@@ -1141,7 +1198,15 @@ ApplicationWindow {
         id: colorDialog
         paletteStore: customPalette
         onColorChosen: function (chosen) {
-            if (colorTarget === "primary")
+            if (colorTarget.startsWith("toolbar:")) {
+                const slot = Number(colorTarget.slice(8));
+                if (customPalette.setToolbarColor(slot, chosen))
+                    editor.primary = chosen;
+                else
+                    Qt.callLater(function () {
+                        colorDialog.open();
+                    });
+            } else if (colorTarget === "primary")
                 editor.primary = chosen;
             else
                 editor.secondary = chosen;

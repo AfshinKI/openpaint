@@ -42,7 +42,7 @@ PaintDialog {
         }
     }
     contentItem: ColumnLayout {
-        Accessible.name: dialog.colorTarget === "primary" ? qsTr("Edit primary color") : qsTr("Edit secondary color")
+        Accessible.name: (dialog.colorTarget === "primary" || dialog.colorTarget.startsWith("toolbar:")) ? qsTr("Edit primary color") : qsTr("Edit secondary color")
         spacing: 12
         RowLayout {
             spacing: 12

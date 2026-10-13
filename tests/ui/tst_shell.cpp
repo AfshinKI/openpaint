@@ -893,6 +893,21 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
+    void ribbonShapeKeyboard() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        QVERIFY(tabTo("ribbonShape0"));
+        for (int i = 0; i < 18; ++i)
+            keyClick(Qt::Key_Right);
+        QCOMPARE(window->activeFocusItem()->objectName(), QString("ribbonShape18"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->shapeKind, 18);
+        QCOMPARE(editor->tool(), Editor::Tool::Shape);
+        const auto* item = window->activeFocusItem();
+        const auto bounds = item->mapRectToScene(item->boundingRect());
+        QVERIFY(bounds.top() >= 40 && bounds.bottom() <= 152);
+        QVERIFY(!editor->dirty());
+    }
+
     void shapePaletteKeyboardAndLayout() {
         QVERIFY(tabTo("shapesButton"));
         keyClick(Qt::Key_Space);
@@ -1043,7 +1058,7 @@ class ShellTest : public QObject {
         QCOMPARE(editor->tolerance, 1);
         QVERIFY(tabTo("pencilButton"));
         keyClick(Qt::Key_Space);
-        QVERIFY(tabTo("primaryButton"));
+        QVERIFY(tabTo("editColorsButton"));
         keyClick(Qt::Key_Space);
         auto* colors = window->findChild<QObject*>(QStringLiteral("colorEditor"));
         QTRY_VERIFY(colors->property("visible").toBool());
@@ -1152,6 +1167,8 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!dialog->property("visible").toBool());
         QCOMPARE(editor->primary, original);
         click(secondary);
+        QVERIFY(editor->secondaryActive());
+        click(window->findChild<QQuickItem*>(QStringLiteral("editColorsButton")));
         QTRY_VERIFY(dialog->property("visible").toBool());
         QVERIFY(capture(QStringLiteral("color-secondary-dark-1024.png")));
         QVERIFY(selection->setHex("#12AB34"));
@@ -1165,8 +1182,8 @@ class ShellTest : public QObject {
         click(ok);
         QTRY_VERIFY(!dialog->property("visible").toBool());
         QCOMPARE(chosen.size(), 1);
-        QCOMPARE(editor->secondary, QColor("#12AB34"));
-        QCOMPARE(editor->primary, original);
+        QCOMPARE(editor->primary, QColor("#12AB34"));
+        QCOMPARE(editor->secondary, original);
         QCOMPARE(editor->image(), pixels);
         QVERIFY(!editor->dirty());
         for (int i = 2; i < 24; ++i)
@@ -1180,6 +1197,7 @@ class ShellTest : public QObject {
             QVERIFY(QRectF(0, 0, window->width(), window->height()).contains(bounds));
         }
         click(primary);
+        click(window->findChild<QQuickItem*>(QStringLiteral("editColorsButton")));
         QTRY_VERIFY(dialog->property("visible").toBool());
         QVERIFY(capture(QStringLiteral("color-editor-full-dark-1024.png")));
         for (auto* slot : dialogSlots)
@@ -1187,6 +1205,55 @@ class ShellTest : public QObject {
         QVERIFY(!add->isEnabled());
         QTest::keyClick(window, Qt::Key_Escape);
         QVERIFY(palette->clear());
+    }
+
+    void toolbarSlotAndRoleWorkflow() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* dialog = window->findChild<QObject*>(QStringLiteral("colorEditor"));
+        auto* draft = window->findChild<ColorSelection*>(QStringLiteral("colorSelection"));
+        auto* palette = window->findChild<ColorPalette*>(QStringLiteral("customPalette"));
+        const auto before = editor->image();
+        QVERIFY(tabTo("secondaryButton"));
+        keyClick(Qt::Key_Space);
+        QVERIFY(editor->secondaryActive());
+        QCOMPARE(editor->primary, QColor(Qt::white));
+        QCOMPARE(editor->secondary, QColor(Qt::black));
+        QVERIFY(!dialog->property("visible").toBool());
+        editor->setTool(Editor::Tool::Text);
+        editor->begin({20, 20}, false);
+        QCOMPARE(editor->textColor(), QColor(Qt::white));
+        QCOMPARE(editor->textBackgroundColor(), QColor(Qt::black));
+        editor->cancel();
+        editor->setTool(Editor::Tool::Pencil);
+        const auto toolbarSlots = visualItems(window->contentItem(), "customToolbarSwatch");
+        QVERIFY(tabToItem(toolbarSlots.at(7)));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(draft->setHex("#123456"));
+        keyClick(Qt::Key_Escape);
+        QCOMPARE(palette->toolbarColors().at(7), QString());
+        QVERIFY(tabToItem(toolbarSlots.at(7)));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(draft->setHex("#123456"));
+        QVERIFY(tabTo("acceptColor"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+        QCOMPARE(palette->toolbarColors().at(7), QString("#123456"));
+        QCOMPARE(palette->toolbarColors().at(6), QString());
+        QCOMPARE(editor->primary, QColor("#123456"));
+        QVERIFY(tabToItem(toolbarSlots.at(7)));
+        keyClick(Qt::Key_F10, Qt::ShiftModifier);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Return);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(draft->setHex("#654321"));
+        QVERIFY(tabTo("acceptColor"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!dialog->property("visible").toBool());
+        QCOMPARE(editor->primary, QColor("#654321"));
+        QCOMPARE(editor->image(), before);
+        QVERIFY(!editor->dirty());
     }
 
     void renderTiming() {

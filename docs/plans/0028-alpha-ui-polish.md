@@ -1,6 +1,6 @@
 # Feature: alpha ribbon and color workflow polish
 
-Status: in progress — steps 1–3 implemented; focused validation recorded below
+Status: in progress — steps 1–5 implemented; focused validation recorded below
 Feature IDs: F01, F02, F03, F05, F06, F08, F09, F26
 Milestone: post-M2 alpha polish, before M3
 
@@ -115,7 +115,7 @@ and a group caption. Existing selection bounds/deselect entries remain available
 Two original vector glyphs identify Rotate and Flip. Existing command guards,
 preview handling and keyboard shortcuts are retained.
 
-Next: step 4 (compact shapes gallery). Broader theme/scale and full regression
+Next: step 6 (custom palette management and migration review). Broader theme/scale and full regression
 checks are deferred until all eight steps are implemented, as requested.
 
 ### Step 1 focused evidence
@@ -142,3 +142,35 @@ full scale/state and accessibility review remains part of the final batch check.
 Focused checks passed: 6 including setup/cleanup, no QML warnings. Light/dark
 1280px captures were inspected; the chooser retains its multicolor glyph for
 contrast. Repository and diff whitespace checks passed.
+
+### Steps 4 and 5
+
+The ribbon now contains a four-column, three-visible-row shape gallery, with
+scrolling and arrow-key access to all 19 shapes. The full chooser remains next to
+it, alongside outline/fill toggles. Dense shape targets are 24px; tooltips and
+keyboard focus identify each shape. The minimum-width toolbar remains reachable.
+
+The two large circles retain their physical colors while the selected circle
+becomes main; the other supplies background/fill and right-button drawing. C++
+owns role switching and preserves alpha. The Swap action is removed; Edit colors
+changes the active main color. Existing live previews refresh using the new roles.
+An in-flight ordinary stroke finishes before roles switch.
+
+Empty toolbar slots open an exact-slot draft; OK saves/selects, Cancel preserves
+the previous slot and drawing color. Filled slots select main color. Right-click
+or Shift+F10/Menu opens Replace. Failed slot saves preserve the old settings and
+reopen the chooser with its error message. The ten-slot store preserves gaps and
+persists independently; it seeds from the prior visible palette when no toolbar
+file exists. Step 6 must finalize one-time migration and independent management
+acceptance (including old/invalid settings). Dialog-library edits stay unchanged.
+
+Focused validation: dev build succeeded; shell launch/minimum layout, full shape
+chooser, shape options, color editor, exact-slot/role workflow and theme captures
+passed (8 including setup/cleanup). Color unit suite passed (7); active-role
+drawing/undo and alpha-preservation test passed. Generated dark UI inspected.
+Broader scale/accessibility checks and the full regression remain deferred.
+
+Additional focused checks passed: direct gallery keyboard navigation, control
+accessibility smoke checks, active-role fill/undo and GUI text color mapping.
+Text coverage runs in the GUI shell suite because the headless editor unit suite
+has no font database. This does not claim full Orca verification.

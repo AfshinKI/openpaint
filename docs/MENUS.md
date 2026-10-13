@@ -140,11 +140,16 @@ options and preview commit/cancel belong in the implementation plan.
 
 ## Colors
 
-Stack larger primary/secondary circles to the left of two rows of ten basic
+Stack two larger color circles to the left of two rows of ten basic
 swatches. A third row always shows ten custom slots, with hollow circles for
 empty positions. A colorful edit-colors action sits beside the grid; the Colors
 caption is below. A filled swatch and an empty slot are distinct states, not
-missing UI. Empty toolbar slots open the editor without changing drawing color.
+missing UI. Empty toolbar slots open an exact-slot draft; OK saves and selects its color,
+Cancel changes neither. Filled slots select the active main color; right-click
+or Shift+F10/Menu opens Replace. Clicking a large circle makes it the active main
+color without moving the colors between circles. The other supplies background/
+fill and right-button drawing. Edit colors edits main; there is no Swap button.
+Toolbar slots now have an independent persistent store; migration review is step 6.
 
 The rounded Edit colors dialog has a large square hue/saturation spectrum on the
 left, a narrow tall selected-color preview, a vertical brightness slider, then a

@@ -9,6 +9,17 @@
 #include <QtConcurrent>
 #include <cmath>
 #include <numbers>
+#include <utility>
+void Editor::setSecondaryActive(bool active) {
+    if (active == secondaryActive_ || busy())
+        return;
+    // End an in-flight gesture before changing the roles used by future gestures.
+    if (!previewActive())
+        finish();
+    std::swap(primary, secondary);
+    secondaryActive_ = active;
+    emit settingsChanged();
+}
 void Editor::setTool(Tool tool) {
     if (textActive_)
         return;

@@ -198,8 +198,8 @@ for the two focused implementation slices and acceptance cases.
 
 The [reference layout refinement](plans/0005-reference-color-layout.md) supersedes
 the earlier inferred hue-ring design. Toolbar height is 112 logical pixels;
-primary/secondary circles stack beside two rows of basic colors and a third row
-of ten custom slots. Empty slots remain visible as hollow circles and open the
+two role-selectable color circles stack beside two rows of basic colors and a
+third row of ten independently editable toolbar slots. Empty slots remain visible as hollow circles and open the
 editor. The color editor always exposes all 24 custom slots. Plus/empty-slot
 activation appends the draft to the next free slot; Manage custom colors offers
 replace/remove/clear. Removal compacts the slots. Native window frames remain

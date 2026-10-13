@@ -8,7 +8,9 @@
 #include <QJsonObject>
 #include <QRegularExpression>
 #include <QSaveFile>
+#include <QScopeGuard>
 #include <QStandardPaths>
+#include <algorithm>
 
 ColorPalette::ColorPalette(QObject* parent, const QString& path) : QObject(parent), path_(path) {
     if (path_.isEmpty()) {
@@ -19,6 +21,7 @@ ColorPalette::ColorPalette(QObject* parent, const QString& path) : QObject(paren
         }
         path_ = QDir(root).filePath("palette.json");
     }
+    const auto loadSlots = qScopeGuard([this] { loadToolbar(); });
     QFile file(path_);
     if (!file.exists())
         return;
@@ -91,4 +94,57 @@ bool ColorPalette::remove(int index) {
 }
 bool ColorPalette::clear() {
     return write({});
+}
+
+void ColorPalette::loadToolbar() {
+    QFile file(path_ + ".toolbar");
+    if (!file.exists()) {
+        for (int i = 0; i < std::min(10, int(colors_.size())); ++i)
+            toolbarColors_[i] = colors_[i];
+        return;
+    }
+    if (!file.open(QIODevice::ReadOnly) || file.size() > 4096) {
+        fail(tr("Toolbar colors could not be read."));
+        return;
+    }
+    const auto object = QJsonDocument::fromJson(file.read(4097)).object();
+    const auto entries = object.value("colors").toArray();
+    if (object.value("version").toInt() != 1 || entries.size() != 10) {
+        fail(tr("Toolbar colors are invalid."));
+        return;
+    }
+    QStringList next;
+    const QRegularExpression hex("^#[0-9a-fA-F]{6}$");
+    for (const auto& entry : entries) {
+        if (!entry.isString() ||
+            (!entry.toString().isEmpty() && !hex.match(entry.toString()).hasMatch())) {
+            fail(tr("Toolbar colors are invalid."));
+            return;
+        }
+        next.append(entry.toString().toLower());
+    }
+    toolbarColors_ = next;
+}
+bool ColorPalette::writeToolbar(const QStringList& colors) {
+    if (path_.isEmpty() || !QDir().mkpath(QFileInfo(path_).absolutePath()))
+        return fail(tr("Cannot create the toolbar-color settings folder."));
+    QSaveFile file(path_ + ".toolbar");
+    file.setDirectWriteFallback(false);
+    const auto data =
+        QJsonDocument(QJsonObject{{"version", 1}, {"colors", QJsonArray::fromStringList(colors)}})
+            .toJson(QJsonDocument::Compact);
+    if (!file.open(QIODevice::WriteOnly) || file.write(data) != data.size() || !file.commit())
+        return fail(tr("Toolbar colors could not be saved. The previous slots are unchanged."));
+    toolbarColors_ = colors;
+    error_.clear();
+    emit errorChanged();
+    emit changed();
+    return true;
+}
+bool ColorPalette::setToolbarColor(int index, QColor color) {
+    if (index < 0 || index >= 10 || !color.isValid())
+        return false;
+    auto next = toolbarColors_;
+    next[index] = color.name();
+    return writeToolbar(next);
 }
