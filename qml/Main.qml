@@ -8,6 +8,8 @@ import OpenPaint
 
 ApplicationWindow {
     id: window
+    property Action lastRotation: rotateRightAction
+    property Action lastFlip: flipHorizontalAction
     readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible
     readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
@@ -17,7 +19,10 @@ ApplicationWindow {
     height: 800
     minimumWidth: 1024
     minimumHeight: 640
-    visible: true
+    visible: false
+    Component.onCompleted: Qt.callLater(function () {
+        window.show();
+    })
     title: (editor.dirty ? "* " : "") + editor.fileName + qsTr(" — OpenPaint")
     color: Theme.workspace
     palette.window: Theme.window
@@ -109,9 +114,13 @@ ApplicationWindow {
         id: textOptions
         objectName: "textOptions"
         editor: window.editorController
-        parent: Overlay.overlay
-        onClosed: {
-            if (window.editorController.textActive)
+        anchors.top: parent.top
+        anchors.topMargin: 8
+        anchors.horizontalCenter: parent.horizontalCenter
+        z: 3
+        visible: window.editorController.tool === Editor.Text
+        onReturnToText: {
+            if (window.editorController.textReady)
                 textOverlay.focusInput();
         }
     }
@@ -186,6 +195,7 @@ ApplicationWindow {
     }
     Action {
         id: newAction
+        icon.source: "icons/new.svg"
         objectName: "newAction"
         text: qsTr("&New")
         shortcut: StandardKey.New
@@ -194,6 +204,7 @@ ApplicationWindow {
     }
     Action {
         id: openAction
+        icon.source: "icons/open.svg"
         objectName: "openAction"
         text: qsTr("&Open…")
         shortcut: StandardKey.Open
@@ -202,6 +213,7 @@ ApplicationWindow {
     }
     Action {
         id: saveAction
+        icon.source: "icons/save.svg"
         objectName: "saveAction"
         text: qsTr("&Save")
         shortcut: StandardKey.Save
@@ -210,6 +222,7 @@ ApplicationWindow {
     }
     Action {
         id: saveAsAction
+        icon.source: "icons/save.svg"
         text: qsTr("Save &As…")
         shortcut: StandardKey.SaveAs
         enabled: !editor.busy && !window.documentOptionsOpen
@@ -220,6 +233,7 @@ ApplicationWindow {
     }
     Action {
         id: exportAction
+        icon.source: "icons/export.svg"
         objectName: "exportAction"
         text: qsTr("Export &copy…")
         enabled: !editor.busy && !editor.previewActive && !window.documentOptionsOpen
@@ -227,6 +241,7 @@ ApplicationWindow {
     }
     Action {
         id: quitAction
+        icon.source: "icons/exit.svg"
         objectName: "quitAction"
         text: qsTr("&Quit")
         shortcut: "Ctrl+Q"
@@ -235,6 +250,7 @@ ApplicationWindow {
     }
     Action {
         id: undoAction
+        icon.source: "icons/undo.svg"
         text: qsTr("Undo")
         shortcut: StandardKey.Undo
         enabled: editor.canUndo && !editor.loading && !editor.textActive && !window.documentOptionsOpen
@@ -242,6 +258,7 @@ ApplicationWindow {
     }
     Action {
         id: redoAction
+        icon.source: "icons/redo.svg"
         text: qsTr("Redo")
         shortcut: "Ctrl+Y"
         enabled: editor.canRedo && !editor.loading && !editor.textActive && !window.documentOptionsOpen
@@ -254,54 +271,83 @@ ApplicationWindow {
     }
     Action {
         id: fitAction
+        icon.source: "icons/fit.svg"
         text: qsTr("Fit")
         shortcut: "Ctrl+0"
         onTriggered: canvas.fit()
     }
     Action {
         id: zoomInAction
+        icon.source: "icons/zoom-in.svg"
         text: qsTr("Zoom in")
         shortcut: StandardKey.ZoomIn
         onTriggered: canvas.zoomBy(1.25)
     }
     Action {
         id: zoomOutAction
+        icon.source: "icons/zoom-out.svg"
         text: qsTr("Zoom out")
         shortcut: StandardKey.ZoomOut
         onTriggered: canvas.zoomBy(0.8)
     }
     Action {
         id: rotateRightAction
+        objectName: "rotateRightAction"
+        icon.source: "icons/rotate-right.svg"
         text: editor.hasSelection ? qsTr("Rotate selection right 90°") : qsTr("Rotate image right 90°")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(0)
+        onTriggered: {
+            window.lastRotation = rotateRightAction;
+            editor.transformImage(0);
+        }
     }
     Action {
         id: rotateLeftAction
+        objectName: "rotateLeftAction"
+        icon.source: "icons/rotate-left.svg"
         text: editor.hasSelection ? qsTr("Rotate selection left 90°") : qsTr("Rotate image left 90°")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(1)
+        onTriggered: {
+            window.lastRotation = rotateLeftAction;
+            editor.transformImage(1);
+        }
     }
     Action {
         id: rotateHalfAction
+        objectName: "rotateHalfAction"
+        icon.source: "icons/rotate-half.svg"
         text: editor.hasSelection ? qsTr("Rotate selection 180°") : qsTr("Rotate image 180°")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(2)
+        onTriggered: {
+            window.lastRotation = rotateHalfAction;
+            editor.transformImage(2);
+        }
     }
     Action {
         id: flipHorizontalAction
+        objectName: "flipHorizontalAction"
+        icon.source: "icons/flip.svg"
         text: editor.hasSelection ? qsTr("Flip selection horizontally") : qsTr("Flip image horizontally")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(3)
+        onTriggered: {
+            window.lastFlip = flipHorizontalAction;
+            editor.transformImage(3);
+        }
     }
     Action {
         id: flipVerticalAction
+        objectName: "flipVerticalAction"
+        icon.source: "icons/flip-vertical.svg"
         text: editor.hasSelection ? qsTr("Flip selection vertically") : qsTr("Flip image vertically")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(4)
+        onTriggered: {
+            window.lastFlip = flipVerticalAction;
+            editor.transformImage(4);
+        }
     }
     Action {
         id: resizeAction
+        icon.source: "icons/resize.svg"
         objectName: "resizeAction"
         text: editor.hasSelection ? qsTr("Resize/skew selection…") : qsTr("Resize/skew image…")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
@@ -309,12 +355,14 @@ ApplicationWindow {
     }
     Action {
         id: cropAction
+        icon.source: "icons/crop.svg"
         text: qsTr("Crop to selection")
         enabled: editor.canSelect && editor.hasSelection && !editor.busy && !window.documentOptionsOpen
         onTriggered: editor.transformImage(5)
     }
     Action {
         id: copyAction
+        icon.source: "icons/copy.svg"
         text: qsTr("Copy")
         shortcut: "Ctrl+C"
         enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
@@ -322,6 +370,7 @@ ApplicationWindow {
     }
     Action {
         id: cutAction
+        icon.source: "icons/cut.svg"
         text: qsTr("Cut")
         shortcut: "Ctrl+X"
         enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
@@ -329,6 +378,7 @@ ApplicationWindow {
     }
     Action {
         id: pasteAction
+        icon.source: "icons/paste.svg"
         text: qsTr("Paste")
         shortcut: "Ctrl+V"
         enabled: editor.canSelect && !editor.busy && !window.textInputFocused && !window.documentOptionsOpen
@@ -336,6 +386,7 @@ ApplicationWindow {
     }
     Action {
         id: selectAllAction
+        icon.source: "icons/selection.svg"
         objectName: "selectAllAction"
         text: qsTr("Select all")
         shortcut: "Ctrl+A"
@@ -344,6 +395,7 @@ ApplicationWindow {
     }
     Action {
         id: deselectAction
+        icon.source: "icons/selection.svg"
         text: qsTr("Deselect")
         shortcut: "Ctrl+D"
         enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
@@ -351,6 +403,7 @@ ApplicationWindow {
     }
     Action {
         id: deleteSelectionAction
+        icon.source: "icons/delete.svg"
         text: qsTr("Delete selection")
         shortcut: "Delete"
         enabled: editor.canSelect && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
@@ -358,6 +411,7 @@ ApplicationWindow {
     }
     Action {
         id: aboutAction
+        icon.source: "icons/info.svg"
         objectName: "aboutAction"
         text: qsTr("&About OpenPaint")
         shortcut: "F1"
@@ -366,6 +420,7 @@ ApplicationWindow {
     ActionGroup {
         Action {
             id: systemThemeAction
+            icon.source: "icons/menu.svg"
             objectName: "systemThemeAction"
             text: qsTr("&System")
             checkable: true
@@ -374,6 +429,7 @@ ApplicationWindow {
         }
         Action {
             id: lightThemeAction
+            icon.source: "icons/palette.svg"
             objectName: "lightThemeAction"
             text: qsTr("&Light")
             checkable: true
@@ -382,6 +438,7 @@ ApplicationWindow {
         }
         Action {
             id: darkThemeAction
+            icon.source: "icons/palette.svg"
             objectName: "darkThemeAction"
             text: qsTr("&Dark")
             checkable: true
@@ -401,7 +458,7 @@ ApplicationWindow {
         contentItem: RowLayout {
             spacing: 4
             MenuBar {
-                Layout.fillWidth: true
+                objectName: "primaryMenuBar"
                 background: Rectangle {
                     color: Theme.window
                 }
@@ -429,6 +486,16 @@ ApplicationWindow {
                     }
                     PaintMenuItem {
                         action: exportAction
+                    }
+                    MenuSeparator {}
+                    PaintMenuItem {
+                        objectName: "updatesMenuItem"
+                        symbol: "update"
+                        text: qsTr("Updates…")
+                        onTriggered: updatesDialog.open()
+                    }
+                    PaintMenuItem {
+                        action: aboutAction
                     }
                     MenuSeparator {}
                     PaintMenuItem {
@@ -465,30 +532,6 @@ ApplicationWindow {
                     }
                 }
                 PaintMenu {
-                    title: qsTr("&Image")
-                    PaintMenuItem {
-                        action: cropAction
-                    }
-                    PaintMenuItem {
-                        action: resizeAction
-                    }
-                    PaintMenuItem {
-                        action: rotateRightAction
-                    }
-                    PaintMenuItem {
-                        action: rotateLeftAction
-                    }
-                    PaintMenuItem {
-                        action: rotateHalfAction
-                    }
-                    PaintMenuItem {
-                        action: flipHorizontalAction
-                    }
-                    PaintMenuItem {
-                        action: flipVerticalAction
-                    }
-                }
-                PaintMenu {
                     title: qsTr("&View")
                     PaintMenuItem {
                         action: fitAction
@@ -512,35 +555,68 @@ ApplicationWindow {
                         }
                     }
                 }
-                PaintMenu {
-                    title: qsTr("&Help")
-                    PaintMenuItem {
-                        objectName: "updatesMenuItem"
-                        text: qsTr("Updates…")
-                        onTriggered: updatesDialog.open()
-                    }
-                    PaintMenuItem {
-                        action: aboutAction
-                    }
-                }
             }
+            ToolSeparator {}
             IconButton {
+                objectName: "quickSaveButton"
+                flat: true
                 symbol: "save"
                 shortcutLabel: "Ctrl+S"
                 action: saveAction
                 Accessible.name: text
             }
             IconButton {
+                objectName: "quickUndoButton"
+                flat: true
                 symbol: "undo"
                 shortcutLabel: "Ctrl+Z"
                 action: undoAction
                 Accessible.name: text
             }
             IconButton {
+                objectName: "quickRedoButton"
+                flat: true
                 symbol: "redo"
                 shortcutLabel: "Ctrl+Y"
                 action: redoAction
                 Accessible.name: text
+            }
+            Item {
+                Layout.fillWidth: true
+            }
+            IconButton {
+                objectName: "quickUpdatesButton"
+                flat: true
+                symbol: "update"
+                text: qsTr("Check for updates")
+                onClicked: updatesDialog.open()
+            }
+            IconButton {
+                objectName: "settingsButton"
+                flat: true
+                symbol: "settings"
+                text: qsTr("Settings")
+                onClicked: settingsMenu.open()
+                PaintMenu {
+                    id: settingsMenu
+                    objectName: "settingsMenu"
+                    x: parent.width - width
+                    y: parent.height
+                    title: qsTr("Settings")
+                    PaintMenuItem {
+                        text: qsTr("Appearance")
+                        enabled: false
+                    }
+                    PaintMenuItem {
+                        action: systemThemeAction
+                    }
+                    PaintMenuItem {
+                        action: lightThemeAction
+                    }
+                    PaintMenuItem {
+                        action: darkThemeAction
+                    }
+                }
             }
         }
     }
@@ -557,136 +633,220 @@ ApplicationWindow {
         RowLayout {
             anchors.fill: parent
             anchors.margins: 8
-            spacing: 8
+            spacing: 4
             ColumnLayout {
-                IconButton {
-                    objectName: "selectionButton"
-                    symbol: "selection"
-                    text: editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
-                    Accessible.name: text
-                    highlighted: editor.tool === Editor.Select
-                    enabled: editor.canSelect
-                    onClicked: editor.tool = Editor.Select
+                Layout.alignment: Qt.AlignBottom
+                spacing: 0
+                Item {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: 56
                     Layout.alignment: Qt.AlignHCenter
-                }
-                PaintButton {
-                    objectName: "selectionMenuButton"
-                    text: qsTr("Select ▾")
-                    enabled: editor.canSelect || editor.floatingActive
-                    onClicked: selectionMenu.open()
-                    PaintMenu {
-                        id: selectionMenu
-                        objectName: "selectionMenu"
-                        y: parent.height
-                        PaintMenuItem {
-                            text: qsTr("Rectangle")
-                            checkable: true
-                            checked: editor.tool === Editor.Select && !editor.freeFormSelection
-                            enabled: editor.canSelect
-                            onTriggered: {
-                                editor.freeFormSelection = false;
-                                editor.tool = Editor.Select;
+                    IconButton {
+                        id: selectionMain
+                        icon.width: 26
+                        icon.height: 26
+                        padding: 4
+                        objectName: "selectionButton"
+                        symbol: editor.freeFormSelection ? "lasso" : "selection"
+                        text: editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
+                        Accessible.name: text
+                        background: Rectangle {
+                            radius: Theme.controlRadius
+                            color: selectionMain.down ? Theme.pressed : selectionMain.hovered ? Theme.hover : "transparent"
+                        }
+                        enabled: editor.canSelect
+                        onClicked: editor.tool = Editor.Select
+                        width: parent.width
+                        height: 36
+                    }
+                    PaintButton {
+                        id: selectionDropdown
+                        objectName: "selectionMenuButton"
+                        text: "⌄"
+                        Accessible.name: qsTr("Selection options")
+                        y: 36
+                        width: parent.width
+                        height: 20
+                        background: Rectangle {
+                            radius: Theme.controlRadius
+                            color: selectionDropdown.down ? Theme.pressed : selectionDropdown.hovered ? Theme.hover : "transparent"
+                        }
+                        enabled: editor.canSelect || editor.floatingActive
+                        onClicked: selectionMenu.open()
+                        PaintMenu {
+                            id: selectionMenu
+                            objectName: "selectionMenu"
+                            y: parent.height
+                            PaintMenuItem {
+                                symbol: "selection"
+                                text: qsTr("Rectangle")
+                                checkable: true
+                                checked: editor.tool === Editor.Select && !editor.freeFormSelection
+                                enabled: editor.canSelect
+                                onTriggered: {
+                                    editor.freeFormSelection = false;
+                                    editor.tool = Editor.Select;
+                                }
                             }
-                        }
-                        PaintMenuItem {
-                            objectName: "freeFormSelectionItem"
-                            text: qsTr("Free-form")
-                            checkable: true
-                            checked: editor.tool === Editor.Select && editor.freeFormSelection
-                            enabled: editor.canSelect
-                            onTriggered: {
-                                editor.freeFormSelection = true;
-                                editor.tool = Editor.Select;
+                            PaintMenuItem {
+                                objectName: "freeFormSelectionItem"
+                                symbol: "lasso"
+                                text: qsTr("Free-form")
+                                checkable: true
+                                checked: editor.tool === Editor.Select && editor.freeFormSelection
+                                enabled: editor.canSelect
+                                onTriggered: {
+                                    editor.freeFormSelection = true;
+                                    editor.tool = Editor.Select;
+                                }
                             }
-                        }
-                        MenuSeparator {}
-                        PaintMenuItem {
-                            action: selectAllAction
-                        }
-                        PaintMenuItem {
-                            text: qsTr("Invert selection")
-                            enabled: editor.canSelect && editor.hasSelection
-                            onTriggered: editor.invertSelection()
-                        }
-                        PaintMenuItem {
-                            text: qsTr("Transparent selection")
-                            checkable: true
-                            checked: editor.transparentSelection
-                            onTriggered: editor.transparentSelection = !editor.transparentSelection
-                        }
-                        PaintMenuItem {
-                            action: deselectAction
-                        }
-                        PaintMenuItem {
-                            text: editor.floatingActive ? qsTr("Selection position…") : qsTr("Selection bounds…")
-                            enabled: editor.hasSelection
-                            onTriggered: selectionOptions.open()
-                        }
-                        PaintMenuItem {
-                            action: deleteSelectionAction
+                            MenuSeparator {}
+                            PaintMenuItem {
+                                action: selectAllAction
+                            }
+                            PaintMenuItem {
+                                symbol: "invert"
+                                text: qsTr("Invert selection")
+                                enabled: editor.canSelect && editor.hasSelection
+                                onTriggered: editor.invertSelection()
+                            }
+                            PaintMenuItem {
+                                symbol: "opacity"
+                                text: qsTr("Transparent selection")
+                                checkable: true
+                                checked: editor.transparentSelection
+                                onTriggered: editor.transparentSelection = !editor.transparentSelection
+                            }
+                            PaintMenuItem {
+                                action: deselectAction
+                            }
+                            PaintMenuItem {
+                                symbol: "resize"
+                                text: editor.floatingActive ? qsTr("Selection position…") : qsTr("Selection bounds…")
+                                enabled: editor.hasSelection
+                                onTriggered: selectionOptions.open()
+                            }
+                            PaintMenuItem {
+                                action: deleteSelectionAction
+                            }
                         }
                     }
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Theme.controlRadius
+                        color: "transparent"
+                        border.color: Theme.accent
+                        border.width: selectionMain.visualFocus || selectionDropdown.visualFocus ? 2 : editor.tool === Editor.Select ? 1 : 0
+                    }
+                }
+                Label {
+                    text: qsTr("Selection")
+                    color: Theme.secondaryText
+                    Layout.topMargin: 4
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
             ToolSeparator {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
+                Layout.alignment: Qt.AlignBottom
+                spacing: 4
+                GridLayout {
+                    columns: 2
+                    rowSpacing: 2
+                    columnSpacing: 4
                     IconButton {
+                        flat: true
                         symbol: "crop"
                         objectName: "cropButton"
                         action: cropAction
-                        Accessible.name: text
+                    }
+                    RowLayout {
+                        spacing: 0
+                        IconButton {
+                            flat: true
+                            objectName: "rotateButton"
+                            icon.source: window.lastRotation.icon.source
+                            action: window.lastRotation
+                        }
+                        PaintButton {
+                            flat: true
+                            objectName: "rotateMenuButton"
+                            text: "⌄"
+                            Accessible.name: qsTr("Rotation options")
+                            implicitWidth: 24
+                            implicitHeight: 32
+                            enabled: rotateRightAction.enabled
+                            onClicked: rotateMenu.open()
+                            PaintMenu {
+                                id: rotateMenu
+                                objectName: "rotateMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    action: rotateRightAction
+                                }
+                                PaintMenuItem {
+                                    action: rotateLeftAction
+                                }
+                                PaintMenuItem {
+                                    action: rotateHalfAction
+                                }
+                            }
+                        }
                     }
                     IconButton {
+                        flat: true
                         symbol: "resize"
                         objectName: "resizeButton"
                         action: resizeAction
-                        Accessible.name: text
+                    }
+                    RowLayout {
+                        spacing: 0
+                        IconButton {
+                            flat: true
+                            objectName: "flipButton"
+                            icon.source: window.lastFlip.icon.source
+                            action: window.lastFlip
+                        }
+                        PaintButton {
+                            flat: true
+                            objectName: "flipMenuButton"
+                            text: "⌄"
+                            Accessible.name: qsTr("Flip options")
+                            implicitWidth: 24
+                            implicitHeight: 32
+                            enabled: flipHorizontalAction.enabled
+                            onClicked: flipMenu.open()
+                            PaintMenu {
+                                id: flipMenu
+                                objectName: "flipMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    action: flipHorizontalAction
+                                }
+                                PaintMenuItem {
+                                    action: flipVerticalAction
+                                }
+                            }
+                        }
                     }
                 }
-                PaintButton {
-                    objectName: "imageMenuButton"
-                    text: qsTr("Image ▾")
-                    enabled: editor.canSelect && !editor.busy
-                    onClicked: imageMenu.open()
-                    PaintMenu {
-                        id: imageMenu
-                        objectName: "imageMenu"
-                        y: parent.height
-                        PaintMenuItem {
-                            action: cropAction
-                        }
-                        PaintMenuItem {
-                            action: resizeAction
-                        }
-                        PaintMenuItem {
-                            action: rotateRightAction
-                        }
-                        PaintMenuItem {
-                            action: rotateLeftAction
-                        }
-                        PaintMenuItem {
-                            action: rotateHalfAction
-                        }
-                        PaintMenuItem {
-                            action: flipHorizontalAction
-                        }
-                        PaintMenuItem {
-                            action: flipVerticalAction
-                        }
-                    }
+                Label {
+                    text: qsTr("Image")
+                    color: Theme.secondaryText
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
             ToolSeparator {
                 Layout.fillHeight: true
             }
             ColumnLayout {
+                Layout.alignment: Qt.AlignBottom
                 GridLayout {
                     columns: 3
                     IconButton {
+                        flat: true
                         symbol: "pencil"
                         objectName: "pencilButton"
                         text: qsTr("Pencil")
@@ -698,6 +858,7 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        flat: true
                         symbol: "fill"
                         objectName: "fillButton"
                         text: qsTr("Fill")
@@ -709,6 +870,7 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        flat: true
                         symbol: "text"
                         objectName: "textButton"
                         text: qsTr("Text")
@@ -720,6 +882,7 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        flat: true
                         symbol: "eraser"
                         objectName: "eraserButton"
                         text: qsTr("Eraser")
@@ -731,6 +894,7 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        flat: true
                         symbol: "eyedropper"
                         objectName: "pickerButton"
                         text: qsTr("Color picker")
@@ -752,24 +916,65 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                IconButton {
-                    id: brushesButton
-                    objectName: "brushesButton"
-                    enabled: !editor.textActive
-                    symbol: "brush"
-                    text: qsTr("Brushes")
-                    highlighted: editor.tool === Editor.Brush
-                    onClicked: brushesMenu.open()
-                    Accessible.name: text
-                    BrushMenu {
-                        id: brushesMenu
-                        objectName: "brushesMenu"
-                        editor: window.editorController
-                        y: brushesButton.height
+                Layout.alignment: Qt.AlignBottom
+                spacing: 0
+                Item {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: 56
+                    Layout.alignment: Qt.AlignHCenter
+                    IconButton {
+                        id: brushesButton
+                        flat: true
+                        objectName: "brushesButton"
+                        enabled: !editor.textActive
+                        symbol: "brush"
+                        icon.width: 28
+                        icon.height: 28
+                        width: 40
+                        height: 36
+                        padding: 4
+                        text: qsTr("Brush")
+                        background: Rectangle {
+                            radius: Theme.controlRadius
+                            color: brushesButton.down ? Theme.pressed : brushesButton.hovered ? Theme.hover : "transparent"
+                        }
+                        onClicked: editor.tool = Editor.Brush
+                        Accessible.name: text
+                    }
+                    PaintButton {
+                        id: brushDropdown
+                        objectName: "brushMenuButton"
+                        flat: true
+                        text: "⌄"
+                        width: 40
+                        height: 20
+                        y: 36
+                        background: Rectangle {
+                            radius: Theme.controlRadius
+                            color: brushDropdown.down ? Theme.pressed : brushDropdown.hovered ? Theme.hover : "transparent"
+                        }
+                        enabled: !editor.textActive && !editor.busy
+                        Accessible.name: qsTr("Brush styles")
+                        onClicked: brushesMenu.open()
+                        BrushMenu {
+                            id: brushesMenu
+                            objectName: "brushesMenu"
+                            editor: window.editorController
+                            y: brushDropdown.height
+                        }
+                    }
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Theme.controlRadius
+                        color: "transparent"
+                        border.color: Theme.accent
+                        border.width: brushesButton.visualFocus || brushDropdown.visualFocus ? 2 : editor.tool === Editor.Brush ? 1 : 0
                     }
                 }
                 Label {
                     text: qsTr("Brushes")
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.topMargin: 4
                     color: Theme.secondaryText
                 }
             }
@@ -777,43 +982,108 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                IconButton {
-                    id: shapesButton
-                    objectName: "shapesButton"
-                    enabled: !editor.textActive
-                    symbol: "rectangle"
-                    text: qsTr("Shapes")
-                    highlighted: editor.tool === Editor.Shape
-                    onClicked: shapesMenu.open()
-                    ShapePalette {
-                        id: shapesMenu
-                        objectName: "shapesMenu"
+                Layout.alignment: Qt.AlignBottom
+                spacing: 2
+                RowLayout {
+                    spacing: 2
+                    ShapeGallery {
                         editor: window.editorController
-                        y: shapesButton.height
+                    }
+                    ColumnLayout {
+                        spacing: 2
+                        IconButton {
+                            objectName: "shapeOutlineButton"
+                            flat: true
+                            symbol: "shape-outline"
+                            text: "⌄"
+                            display: AbstractButton.TextBesideIcon
+                            implicitWidth: 48
+                            implicitHeight: 32
+                            enabled: !editor.textActive && !editor.busy
+                            Accessible.name: qsTr("Shape outline")
+                            ToolTip.text: Accessible.name
+                            onClicked: outlineMenu.open()
+                            PaintMenu {
+                                id: outlineMenu
+                                objectName: "shapeOutlineMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    objectName: "noOutlineItem"
+                                    autoExclusive: true
+                                    symbol: "none"
+                                    text: qsTr("No outline")
+                                    checkable: true
+                                    checked: !editor.shapeOutline
+                                    onTriggered: editor.shapeOutline = false
+                                }
+                                PaintMenuItem {
+                                    objectName: "solidOutlineItem"
+                                    autoExclusive: true
+                                    symbol: "shape-outline"
+                                    text: qsTr("Solid outline")
+                                    checkable: true
+                                    checked: editor.shapeOutline
+                                    onTriggered: editor.shapeOutline = true
+                                }
+                            }
+                        }
+                        IconButton {
+                            objectName: "shapeFillButton"
+                            flat: true
+                            symbol: "fill"
+                            text: "⌄"
+                            display: AbstractButton.TextBesideIcon
+                            implicitWidth: 48
+                            implicitHeight: 32
+                            enabled: !editor.textActive && !editor.busy
+                            Accessible.name: qsTr("Shape fill")
+                            ToolTip.text: Accessible.name
+                            onClicked: fillMenu.open()
+                            PaintMenu {
+                                id: fillMenu
+                                objectName: "shapeFillMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    objectName: "noFillItem"
+                                    autoExclusive: true
+                                    symbol: "none"
+                                    text: qsTr("No fill")
+                                    checkable: true
+                                    checked: !editor.shapeFill
+                                    onTriggered: editor.shapeFill = false
+                                }
+                                PaintMenuItem {
+                                    objectName: "solidFillItem"
+                                    autoExclusive: true
+                                    symbol: "fill"
+                                    text: qsTr("Solid fill")
+                                    checkable: true
+                                    checked: editor.shapeFill
+                                    onTriggered: editor.shapeFill = true
+                                }
+                            }
+                        }
                     }
                 }
                 Label {
                     text: qsTr("Shapes")
                     color: Theme.secondaryText
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
             ToolSeparator {
                 Layout.fillHeight: true
             }
             ColumnLayout {
+                visible: editor.tool === Editor.Fill || editor.tool === Editor.Eraser
                 PaintSpinBox {
-                    id: sizeBox
-                    objectName: "strokeSize"
-                    from: editor.tool === Editor.Fill ? 0 : 1
-                    to: editor.tool === Editor.Fill ? 255 : 128
-                    value: editor.tool === Editor.Fill ? editor.tolerance : editor.brushSize
-                    onValueModified: {
-                        if (editor.tool === Editor.Fill)
-                            editor.tolerance = value;
-                        else
-                            editor.brushSize = value;
-                    }
-                    Accessible.name: editor.tool === Editor.Fill ? qsTr("Fill tolerance") : qsTr("Stroke size in pixels")
+                    objectName: "fillTolerance"
+                    visible: editor.tool === Editor.Fill
+                    from: 0
+                    to: 255
+                    value: editor.tolerance
+                    onValueModified: editor.tolerance = value
+                    Accessible.name: qsTr("Fill tolerance")
                     implicitWidth: 104
                 }
                 PaintCheckBox {
@@ -822,23 +1092,14 @@ ApplicationWindow {
                     checked: editor.transparentEraser
                     onToggled: editor.transparentEraser = checked
                 }
-                PaintSpinBox {
-                    objectName: "brushOpacity"
-                    visible: editor.tool === Editor.Brush
-                    from: 0
-                    to: 100
-                    value: editor.opacity
-                    onValueModified: editor.opacity = value
-                    Accessible.name: qsTr("Brush opacity percent")
-                    implicitWidth: 104
-                }
                 Label {
-                    text: editor.tool === Editor.Brush ? qsTr("Size / opacity %") : editor.tool === Editor.Fill ? qsTr("Tolerance") : qsTr("Size · px")
+                    text: editor.tool === Editor.Fill ? qsTr("Tolerance") : qsTr("Eraser")
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
                 }
             }
             ToolSeparator {
+                visible: editor.tool === Editor.Fill || editor.tool === Editor.Eraser
                 Layout.fillHeight: true
             }
             ColumnLayout {
@@ -849,9 +1110,12 @@ ApplicationWindow {
                     implicitHeight: 32
                     diameter: 26
                     swatchColor: editor.primary
-                    checked: true
-                    text: qsTr("Edit primary color")
-                    onClicked: colorDialog.begin(editor.primary, "primary")
+                    checked: !editor.editingSecondary
+                    checkable: true
+                    autoExclusive: true
+                    enabled: !editor.busy
+                    text: qsTr("Choose drawing color")
+                    onClicked: editor.editingSecondary = false
                 }
                 ColorSwatch {
                     objectName: "secondaryButton"
@@ -859,11 +1123,16 @@ ApplicationWindow {
                     implicitHeight: 32
                     diameter: 24
                     swatchColor: editor.secondary
-                    text: qsTr("Edit secondary color · right-click to draw")
-                    onClicked: colorDialog.begin(editor.secondary, "secondary")
+                    checked: editor.editingSecondary
+                    checkable: true
+                    autoExclusive: true
+                    enabled: !editor.busy
+                    text: qsTr("Choose background and fill color")
+                    onClicked: editor.editingSecondary = true
                 }
             }
             ColumnLayout {
+                Layout.alignment: Qt.AlignBottom
                 GridLayout {
                     columns: 10
                     rowSpacing: 0
@@ -874,8 +1143,8 @@ ApplicationWindow {
                             objectName: "colorSwatch"
                             required property string modelData
                             swatchColor: modelData
-                            checked: editor.primary.toString() === modelData
-                            onClicked: editor.primary = modelData
+                            checked: editor.selectedColor.toString() === modelData
+                            onClicked: editor.selectedColor = modelData
                         }
                     }
                 }
@@ -884,17 +1153,42 @@ ApplicationWindow {
                     Repeater {
                         model: 10
                         delegate: ColorSwatch {
+                            id: toolbarSlot
                             objectName: "customToolbarSwatch"
                             required property int index
-                            empty: index >= customPalette.colors.length
-                            swatchColor: empty ? "transparent" : customPalette.colors[index]
-                            checked: !empty && editor.primary.toString() === swatchColor.toString()
+                            empty: customPalette.toolbarColors[index] === ""
+                            swatchColor: empty ? "transparent" : customPalette.toolbarColors[index]
+                            checked: !empty && editor.selectedColor.toString() === swatchColor.toString()
                             text: empty ? qsTr("Empty custom slot %1 · edit colors").arg(index + 1) : qsTr("Custom color %1").arg(swatchColor.toString())
                             onClicked: {
                                 if (empty)
-                                    colorDialog.begin(editor.primary, "primary");
+                                    colorDialog.begin(editor.selectedColor, editor.editingSecondary ? "secondary" : "primary");
                                 else
-                                    editor.primary = swatchColor;
+                                    editor.selectedColor = swatchColor;
+                            }
+                            function replaceColor() {
+                                colorDialog.begin(empty ? editor.selectedColor : swatchColor, editor.editingSecondary ? "secondary" : "primary");
+                                if (!empty)
+                                    colorDialog.replacementSlot = index;
+                            }
+                            TapHandler {
+                                acceptedButtons: Qt.RightButton
+                                onTapped: slotMenu.open()
+                            }
+                            Keys.onPressed: function (event) {
+                                if (event.key === Qt.Key_Menu || (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) {
+                                    slotMenu.open();
+                                    event.accepted = true;
+                                }
+                            }
+                            PaintMenu {
+                                id: slotMenu
+                                y: parent.height
+                                PaintMenuItem {
+                                    symbol: "palette"
+                                    text: toolbarSlot.empty ? qsTr("Set color…") : qsTr("Replace color…")
+                                    onTriggered: toolbarSlot.replaceColor()
+                                }
                             }
                         }
                     }
@@ -905,20 +1199,60 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                 }
             }
-            ColumnLayout {
+            Item {
+                Layout.preferredWidth: 40
+                Layout.preferredHeight: 72
+                Layout.alignment: Qt.AlignTop
                 IconButton {
+                    id: editColorsOption
+                    objectName: "editColorsButton"
+                    background: Rectangle {
+                        radius: width / 2
+                        color: editColorsOption.down ? Theme.pressed : editColorsOption.hovered ? Theme.hover : "transparent"
+                        border.width: editColorsOption.visualFocus ? 2 : 0
+                        border.color: Theme.accent
+                    }
+                    flat: true
+                    width: 28
+                    height: 28
+                    x: 6
+                    y: 10
+                    icon.width: 26
+                    icon.height: 26
+                    padding: 1
                     symbol: "palette"
                     icon.color: "transparent"
                     text: qsTr("Edit colors")
-                    onClicked: colorDialog.begin(editor.primary, "primary")
+                    onClicked: colorDialog.begin(editor.selectedColor, editor.editingSecondary ? "secondary" : "primary")
                 }
                 IconButton {
-                    symbol: "swap"
-                    text: qsTr("Swap primary and secondary colors")
+                    id: transparencyOption
+                    objectName: "transparentBackgroundButton"
+                    background: Rectangle {
+                        anchors.centerIn: parent
+                        width: 28
+                        height: 28
+                        radius: 14
+                        color: transparencyOption.down ? Theme.pressed : transparencyOption.hovered ? Theme.hover : "transparent"
+                        border.width: transparencyOption.visualFocus ? 2 : transparencyOption.highlighted || transparencyOption.hovered ? 1 : 0
+                        border.color: Theme.accent
+                    }
+                    width: 28
+                    height: 28
+                    x: 6
+                    y: 40
+                    padding: 3
+                    icon.width: 22
+                    icon.height: 22
+                    flat: true
+                    symbol: "transparent"
+                    icon.color: "transparent"
+                    text: qsTr("Transparent background color")
+                    highlighted: editor.secondary.a === 0
+                    enabled: !editor.busy
                     onClicked: {
-                        const old = editor.primary;
-                        editor.primary = editor.secondary;
-                        editor.secondary = old;
+                        editor.editingSecondary = true;
+                        editor.selectedColor = "transparent";
                     }
                 }
             }
@@ -941,6 +1275,47 @@ ApplicationWindow {
             editor: window.editorController
             canvas: window.canvasController
         }
+        ResizeHandles {
+            anchors.fill: parent
+            editor: window.editorController
+            canvas: window.canvasController
+            z: 2
+        }
+    }
+    Column {
+        objectName: "floatingToolControls"
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.leftMargin: 12
+        anchors.topMargin: 24
+        spacing: 8
+        z: 2
+        enabled: !editor.busy
+        property real panelHeight: Math.max(120, Math.min(280, (parent.height - 64) / 2))
+        ToolSlider {
+            visible: editor.tool === Editor.Pencil || editor.tool === Editor.Brush || editor.tool === Editor.Eraser || editor.tool === Editor.Shape
+            height: parent.panelHeight
+            label: qsTr("Size")
+            symbol: "stroke-size"
+            controlName: "strokeSize"
+            minimum: 1
+            maximum: 128
+            value: editor.brushSize
+            suffix: qsTr(" px")
+            onAdjusted: value => editor.brushSize = value
+        }
+        ToolSlider {
+            visible: editor.tool === Editor.Brush
+            height: parent.panelHeight
+            label: qsTr("Opacity")
+            symbol: "opacity"
+            controlName: "brushOpacity"
+            minimum: 0
+            maximum: 100
+            value: editor.opacity
+            suffix: "%"
+            onAdjusted: value => editor.opacity = value
+        }
     }
     footer: ToolBar {
         height: 36
@@ -959,20 +1334,20 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Ctrl+Enter applies text · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }
             PaintButton {
                 objectName: "shapeOptionsButton"
                 text: qsTr("Options")
-                visible: editor.previewActive
-                onClicked: editor.floatingActive ? selectionOptions.open() : editor.textActive ? textOptions.open() : shapeOptions.open()
+                visible: editor.previewActive && !editor.textActive
+                onClicked: editor.floatingActive ? selectionOptions.open() : shapeOptions.open()
             }
             PaintButton {
                 objectName: "applyPreviewButton"
                 text: qsTr("Apply")
-                visible: editor.previewActive
+                visible: editor.previewActive && !editor.textActive
                 onClicked: {
                     editor.commitPreview();
                 }
@@ -1077,6 +1452,7 @@ ApplicationWindow {
         id: colorDialog
         paletteStore: customPalette
         onColorChosen: function (chosen) {
+            customPalette.remember(chosen, replacementSlot);
             if (colorTarget === "primary")
                 editor.primary = chosen;
             else

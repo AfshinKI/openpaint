@@ -2,6 +2,7 @@
 #include "AppInfo.h"
 #include "BuildConfig.h"
 #include <QDesktopServices>
+#include <QKeySequence>
 
 QString AppInfo::version() {
     return QStringLiteral(OPENPAINT_VERSION);
@@ -46,4 +47,16 @@ QUrl AppInfo::releaseUrl() const {
 }
 bool AppInfo::openReleases() const {
     return QDesktopServices::openUrl(releaseUrl());
+}
+
+QString AppInfo::shortcutText(const QVariant& shortcut) const {
+    if (shortcut.metaType() == QMetaType::fromType<QString>())
+        return QKeySequence::fromString(shortcut.toString(), QKeySequence::PortableText)
+            .toString(QKeySequence::NativeText);
+    bool ok = false;
+    const int key = shortcut.toInt(&ok);
+    if (!ok || key < QKeySequence::UnknownKey || key > QKeySequence::Cancel)
+        return {};
+    return QKeySequence(static_cast<QKeySequence::StandardKey>(key))
+        .toString(QKeySequence::NativeText);
 }

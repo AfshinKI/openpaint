@@ -9,8 +9,22 @@
 #include <QtConcurrent>
 #include <cmath>
 #include <numbers>
+void Editor::setEditingSecondary(bool active) {
+    if (active == editingSecondary_)
+        return;
+    editingSecondary_ = active;
+    emit settingsChanged();
+}
+void Editor::setSelectedColor(QColor color) {
+    if (!color.isValid() || color == selectedColor())
+        return;
+    if (!previewActive())
+        finish();
+    (editingSecondary_ ? secondary : primary) = color;
+    emit settingsChanged();
+}
 void Editor::setTool(Tool tool) {
-    if (textActive_)
+    if (textActive_ || (loading() && !filling_))
         return;
     if (tool == tool_ || (tool != Tool::Pencil && tool != Tool::Eraser &&
                           tool != Tool::ColorPicker && tool != Tool::Fill && tool != Tool::Brush &&
@@ -19,7 +33,10 @@ void Editor::setTool(Tool tool) {
     if (filling_)
         cancelIo();
     finish();
+    document.setSelection({});
     tool_ = tool;
+    emit pixelsChanged({});
+    emit changed();
     emit settingsChanged();
 }
 void Editor::begin(QPointF point, bool secondaryButton) {
@@ -320,7 +337,7 @@ void Editor::deleteSelection() {
     if (!canSelect() || !hasSelection())
         return;
     finish();
-    if (document.deleteSelection()) {
+    if (document.deleteSelection(secondary)) {
         emit pixelsChanged({});
         emit changed();
     }

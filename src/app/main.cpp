@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "app/Editor.h"
 #include "platform/AppInfo.h"
+#include "platform/WindowStartup.h"
 #include <QCommandLineParser>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
+#include <QSurfaceFormat>
 #include <QTimer>
 
 int main(int argc, char* argv[]) {
@@ -32,11 +34,20 @@ int main(int argc, char* argv[]) {
     if (parser.positionalArguments().size() > 1)
         parser.showHelp(2);
 
+    // The desktop window is opaque; canvas alpha is composited over its checkerboard.
+    auto surfaceFormat = QSurfaceFormat::defaultFormat();
+    surfaceFormat.setAlphaBufferSize(0);
+    QSurfaceFormat::setDefaultFormat(surfaceFormat);
+
     QQmlApplicationEngine engine;
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
         [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
     engine.loadFromModule("OpenPaint", "Main");
+    if (!engine.rootObjects().isEmpty()) {
+        if (auto* window = qobject_cast<QQuickWindow*>(engine.rootObjects().first()))
+            revealAfterFirstFrame(window);
+    }
     if (!parser.positionalArguments().isEmpty() && !engine.rootObjects().isEmpty()) {
         auto* editor = engine.rootObjects().first()->findChild<Editor*>(QStringLiteral("editor"));
         const auto url =

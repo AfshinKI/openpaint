@@ -11,12 +11,14 @@ PaintDialog {
     required property ColorPalette paletteStore
     property string colorTarget: "primary"
     property int selectedSlot: -1
+    property int replacementSlot: -1
     signal colorChosen(color chosen)
     function begin(color, target: string) {
         colorTarget = target;
         colorDraft.color = color;
         hexField.text = colorDraft.hex;
         selectedSlot = -1;
+        replacementSlot = -1;
         open();
     }
     function addColor() {
@@ -155,6 +157,7 @@ PaintDialog {
                         color: Theme.text
                     }
                     delegate: PaintMenuItem {
+                        symbol: "palette"
                         required property int index
                         highlighted: colorMode.highlightedIndex === index
                         required property string modelData
@@ -281,17 +284,20 @@ PaintDialog {
                             id: paletteMenu
                             y: managePalette.height
                             PaintMenuItem {
+                                symbol: "palette"
                                 text: qsTr("Replace selected")
                                 enabled: dialog.selectedSlot >= 0 && hexField.acceptableInput
                                 onTriggered: dialog.paletteStore.replace(dialog.selectedSlot, colorDraft.color)
                             }
                             PaintMenuItem {
+                                symbol: "delete"
                                 text: qsTr("Remove selected")
                                 enabled: dialog.selectedSlot >= 0
                                 onTriggered: if (dialog.paletteStore.remove(dialog.selectedSlot))
                                     dialog.selectedSlot = -1
                             }
                             PaintMenuItem {
+                                symbol: "delete"
                                 text: qsTr("Clear all")
                                 enabled: dialog.paletteStore.colors.length > 0
                                 onTriggered: if (dialog.paletteStore.clear())
@@ -336,7 +342,7 @@ PaintDialog {
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            text: dialog.paletteStore.error.length ? dialog.paletteStore.error : qsTr("Custom colors save immediately. Cancel discards only the drawing-color change.")
+            text: dialog.paletteStore.error.length ? dialog.paletteStore.error : qsTr("Custom colors last until you close the app. OK adds to empty slots in both palettes. Cancel discards the color draft.")
             color: Theme.secondaryText
         }
     }

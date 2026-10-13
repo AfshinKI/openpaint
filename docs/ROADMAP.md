@@ -3,7 +3,7 @@
 A usable basic source editor supports drawing, history and safe PNG files.
 M1 and M2 are complete for their validated gates. The first useful alpha is
 [published and verified](plans/0027-alpha-release.md); layered projects and recovery
-come next in M3.
+follow the [alpha UI polish checklist](plans/0028-alpha-ui-polish.md) in M3.
 See [M1 closure evidence and limits](plans/0009-m1-closure.md). See [the build guide](BUILD.md) to run the preview.
 Milestones are exit gates, not promised dates. Complete thin, usable slices before
 adding breadth. [FEATURES.md](FEATURES.md) is the implementation status ledger.

@@ -43,7 +43,7 @@ class Document {
         return selection_;
     }
     bool setSelection(const QRegion& region);
-    bool deleteSelection();
+    bool deleteSelection(QColor background = Qt::transparent);
     bool beginStroke(QPointF point, QColor color, qreal width, bool clearAlpha = false,
                      int brushStyle = -1, int opacity = 100);
     QRect extendStroke(QPointF point);

@@ -41,3 +41,8 @@ repository-tool tests pass, including launcher permissions and bundled library
 archive coverage. Workflow YAML parses; repository checks pass. CI must verify
 publication gating and build artifacts before merge. The first main run verifies
 real GitHub publication; no release has been claimed before that run completes.
+
+Pre-merge integration: the UI polish PR passed all hosted jobs, including X11
+scaling, before merging. The release branch incorporates that main commit.
+Container checkout now installs Git first so matching source archives use the
+actual checked-out commit rather than the checkout action's tarball fallback.
