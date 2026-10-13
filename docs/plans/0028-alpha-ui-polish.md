@@ -231,7 +231,7 @@ Repository and whitespace checks passed. Changes remain on the same polish branc
 
 ## Follow-up requests
 
-Items 1–5 are implemented below; items 6–11 remain pending before the final polish
+Items 1–7 are implemented below; items 8–11 remain pending before the final polish
 review. Earlier implementation evidence does not verify these requests.
 
 1. Add small square corner resize handles to active shapes, text boxes and
@@ -333,3 +333,27 @@ and separate main/dropdown actions remain intact. Dev build, three focused shell
 workflows (free-form, rectangle and ribbon action memory), formatting, strict QML
 lint and repository checks passed. Inspected the generated active-selection
 capture at minimum window width; full desktop review remains pending.
+
+### Items 6–7 acceptance
+
+Eyedropper hover shows a pointer-attached square with checkerboard alpha backing;
+leaving the image/canvas or changing tools hides it. Hover changes neither colors
+nor document/history. Tool changes commit any active move/paste preview once,
+then clear selection without adding a history entry; Undo restores edited pixels.
+Busy transforms must finish before switching tools. Explicit selections created
+while already using another tool can still clip that tool until the next switch.
+
+### Items 6–7 implementation and evidence
+
+Implemented a 28px pointer-attached hover swatch with checkerboard alpha backing,
+image-bound checks and hover-leave cleanup. Hover sampling is read-only. Tool
+changes commit pending move/paste content then clear selection without another
+undo entry; busy transforms block tool switching. Explicit clipping selections
+created after choosing a tool remain supported by the engine.
+
+Dev build passed. Editor suite (12 cases), canvas suite (24 cases/data rows), and
+both selection shell workflows passed with offscreen Qt. Coverage includes hover
+without document/color/history mutation, preview hiding, selection clearing,
+paste commit and Undo. Formatting, strict QML lint and repository checks passed.
+Full desktop/platform review remains pending. Next unfinished request: item 8,
+canvas corner resizing. Binary: `./build/dev/openpaint`.

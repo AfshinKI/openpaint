@@ -35,7 +35,10 @@ void CanvasItem::setEditor(Editor* editor) {
                            .toAlignedRect());
         });
         connect(editor_, &Editor::documentReplaced, this, &CanvasItem::fit);
-        connect(editor_, &Editor::settingsChanged, this, &CanvasItem::finishGesture);
+        connect(editor_, &Editor::settingsChanged, this, [this] {
+            finishGesture();
+            update();
+        });
     }
     emit editorChanged();
     fit();
@@ -121,6 +124,21 @@ void CanvasItem::paint(QPainter* painter) {
         painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
         painter->drawPolyline(path);
     }
+    const auto samplePoint = toDocument(hoverPoint_);
+    if (hovering_ && !space_ && !panning_ && !editor_->busy() &&
+        editor_->tool() == Editor::Tool::ColorPicker &&
+        QRectF(image.rect()).contains(samplePoint)) {
+        const auto tip = hoverPoint_;
+        const QRectF swatch(tip + QPointF(12, 16), QSizeF(28, 28));
+        painter->fillRect(swatch, QBrush(checks));
+        painter->fillRect(swatch, image.pixelColor(int(std::floor(samplePoint.x())),
+                                                   int(std::floor(samplePoint.y()))));
+        painter->setPen(QPen(Qt::black, 1));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawRect(swatch);
+        painter->setPen(QPen(Qt::white, 1));
+        painter->drawRect(swatch.adjusted(-1, -1, 1, 1));
+    }
 }
 void CanvasItem::mousePressEvent(QMouseEvent* event) {
     // A chord cannot steal an existing gesture or change its drawing color.
@@ -167,8 +185,11 @@ void CanvasItem::updateGesture(QPointF point, bool constrain) {
         editor_->extend(toDocument(point), constrain);
     }
     last_ = point;
+    hoverPoint_ = point;
     cursor_ = toDocument(point);
     emit cursorPositionChanged();
+    if (editor_ && editor_->tool() == Editor::Tool::ColorPicker)
+        update();
 }
 void CanvasItem::mouseMoveEvent(QMouseEvent* event) {
     if (gestureButton_ != Qt::NoButton && !(event->buttons() & gestureButton_)) {
@@ -194,8 +215,18 @@ void CanvasItem::mouseUngrabEvent() {
     finishGesture();
 }
 void CanvasItem::hoverMoveEvent(QHoverEvent* event) {
+    hovering_ = true;
+    hoverPoint_ = event->position();
     cursor_ = toDocument(event->position());
     emit cursorPositionChanged();
+    if (editor_ && editor_->tool() == Editor::Tool::ColorPicker)
+        update();
+}
+void CanvasItem::hoverLeaveEvent(QHoverEvent* event) {
+    hovering_ = false;
+    if (editor_ && editor_->tool() == Editor::Tool::ColorPicker)
+        update();
+    QQuickPaintedItem::hoverLeaveEvent(event);
 }
 void CanvasItem::wheelEvent(QWheelEvent* event) {
     if (event->modifiers() & Qt::ControlModifier) {

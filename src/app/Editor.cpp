@@ -24,7 +24,7 @@ void Editor::setSelectedColor(QColor color) {
     emit settingsChanged();
 }
 void Editor::setTool(Tool tool) {
-    if (textActive_)
+    if (textActive_ || (loading() && !filling_))
         return;
     if (tool == tool_ || (tool != Tool::Pencil && tool != Tool::Eraser &&
                           tool != Tool::ColorPicker && tool != Tool::Fill && tool != Tool::Brush &&
@@ -33,7 +33,10 @@ void Editor::setTool(Tool tool) {
     if (filling_)
         cancelIo();
     finish();
+    document.setSelection({});
     tool_ = tool;
+    emit pixelsChanged({});
+    emit changed();
     emit settingsChanged();
 }
 void Editor::begin(QPointF point, bool secondaryButton) {

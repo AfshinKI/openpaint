@@ -45,6 +45,7 @@ class CanvasItem : public QQuickPaintedItem {
     void mouseReleaseEvent(QMouseEvent* event) override;
     void mouseUngrabEvent() override;
     void hoverMoveEvent(QHoverEvent* event) override;
+    void hoverLeaveEvent(QHoverEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
@@ -62,6 +63,7 @@ class CanvasItem : public QQuickPaintedItem {
     QPainterPath selectionBoundary_;
     Qt::MouseButton gestureButton_ = Qt::NoButton;
     qreal zoom_ = 1;
-    QPointF origin_, last_, cursor_;
+    QPointF origin_, last_, cursor_, hoverPoint_;
+    bool hovering_ = false;
     bool space_ = false, panning_ = false, drawing_ = false, fitted_ = true;
 };

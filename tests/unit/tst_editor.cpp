@@ -13,6 +13,27 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void switchingToolsClearsSelection() {
+        Editor editor;
+        editor.selectRect(10, 10, 30, 30);
+        const auto original = editor.image();
+        editor.setTool(Editor::Tool::Brush);
+        QVERIFY(!editor.hasSelection());
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        QImage paste(10, 10, QImage::Format_ARGB32_Premultiplied);
+        paste.fill(Qt::red);
+        editor.pasteImage(paste);
+        QVERIFY(editor.floatingActive());
+        const auto preview = editor.image();
+        editor.setTool(Editor::Tool::Pencil);
+        QVERIFY(!editor.floatingActive());
+        QVERIFY(!editor.hasSelection());
+        QCOMPARE(editor.image(), preview);
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+    }
     void fixedColorRoles() {
         Editor editor;
         const auto original = editor.image();
@@ -69,6 +90,8 @@ class EditorTest : public QObject {
         editor.selectRect(-1, 0, 20, 20);
         QCOMPARE(editor.selectionRect(), QRect(20, 30, 31, 21));
         editor.setTool(Editor::Tool::Fill);
+        QVERIFY(!editor.hasSelection());
+        editor.selectRect(20, 30, 31, 21);
         editor.primary = Qt::red;
         editor.begin({30, 40}, false);
         QVERIFY(editor.filling());
@@ -80,6 +103,8 @@ class EditorTest : public QObject {
         editor.undo();
         QCOMPARE(editor.image(), base);
         editor.setTool(Editor::Tool::Shape);
+        QVERIFY(!editor.hasSelection());
+        editor.selectRect(20, 30, 31, 21);
         editor.shapeKind = 1;
         editor.shapeFill = true;
         editor.begin({0, 0}, false);

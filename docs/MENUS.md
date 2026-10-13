@@ -260,3 +260,13 @@ Selection is a compact vertical split control with a 26px icon: the icon activat
 selection mode, and the lower arrow opens its menu. Both share one rounded accent
 outline when Selection is active; idle state has no outline. Each half retains
 hover feedback, and keyboard focus strengthens the shared outline.
+
+Eyedropper hover shows a 28px color square offset beside the pointer tip, with
+checkerboard backing for transparency. It hides outside the image/canvas and
+when another tool is selected. Hover does not sample into either working color
+or change artwork/history; clicking retains the existing sampling behavior.
+
+Switching tools clears selection bounds. Pending moved or pasted content is
+committed first as one undoable edit; clearing bounds adds no history entry.
+Busy transforms block tool changes. An explicit selection created while a tool
+is already active may still clip its edits until the next tool switch.

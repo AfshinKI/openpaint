@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "render/CanvasItem.h"
 #include <QFocusEvent>
+#include <QHoverEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QWheelEvent>
 #include <QtTest>
 #include <limits>
@@ -49,6 +51,15 @@ class InputCanvas : public CanvasItem {
                           Qt::ScrollUpdate, false);
         wheelEvent(&event);
     }
+    void hover(QPointF point) {
+        const auto local = fromDocument(point);
+        QHoverEvent event(QEvent::HoverMove, local, local, local);
+        hoverMoveEvent(&event);
+    }
+    void leave() {
+        QHoverEvent event(QEvent::HoverLeave, QPointF(), QPointF(), QPointF());
+        hoverLeaveEvent(&event);
+    }
     void loseFocus() {
         QFocusEvent event(QEvent::FocusOut);
         focusOutEvent(&event);
@@ -60,6 +71,36 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void pickerHoverPreview() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        editor.setTool(Editor::Tool::ColorPicker);
+        const auto original = editor.image();
+        const auto primary = editor.primary;
+        auto render = [&] {
+            QImage result(1200, 696, QImage::Format_ARGB32_Premultiplied);
+            result.fill(Qt::transparent);
+            QPainter painter(&result);
+            canvas.paint(&painter);
+            return result;
+        };
+        const auto base = render();
+        canvas.hover({100, 100});
+        QVERIFY(render() != base);
+        QCOMPARE(editor.image(), original);
+        QCOMPARE(editor.primary, primary);
+        QVERIFY(!editor.canUndo());
+        canvas.hover({-10, -10});
+        QCOMPARE(render(), base);
+        canvas.hover({100, 100});
+        canvas.leave();
+        QCOMPARE(render(), base);
+        canvas.hover({100, 100});
+        editor.setTool(Editor::Tool::Pencil);
+        QCOMPARE(render(), base);
+    }
+
     void scrollNotifiesInlineOverlay() {
         TestEditor editor;
         InputCanvas canvas;
