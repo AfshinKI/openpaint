@@ -295,7 +295,10 @@ class ShellTest : public QObject {
         editor->finish();
         const auto artwork = editor->image();
         QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
-        QTRY_VERIFY(options->property("visible").toBool());
+        QTRY_VERIFY(options->property("opened").toBool());
+        // Keep the pointer outside the popup so scaled X11 hover events cannot
+        // override the keyboard-highlighted format.
+        QTest::mouseMove(window, QPoint(1, 1));
         QVERIFY(tabTo("exportFormat"));
         keyClick(Qt::Key_Space);
         auto* formats = window->findChild<QObject*>("exportFormatsMenu");
