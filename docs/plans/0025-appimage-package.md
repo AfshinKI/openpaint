@@ -1,6 +1,6 @@
 # Feature: audited AppImage recipe
 
-Status: implemented; protected CI/merge pending
+Status: complete; merged after protected CI
 Feature ID: F25
 Milestone: M2
 

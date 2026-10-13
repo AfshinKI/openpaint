@@ -1,6 +1,6 @@
 # Feature: sandboxed Flatpak test bundle
 
-Status: implemented; protected CI/merge pending
+Status: complete; merged after protected CI
 Feature ID: F25
 Milestone: M2
 
@@ -18,7 +18,7 @@ publication in this slice. Final release-byte testing and publication follow.
 - [x] No network, broad home access or inherited KDE configuration/bus grants.
 - [x] Portal Save, overwrite and undo/save preserve expected pixels.
 - [x] Bundle, source archive, dependency inventory and checksums are produced.
-- [ ] Tooling tests and protected CI pass before merge.
+- [x] Tooling tests and protected CI pass before merge.
 
 ## Implementation and validation
 

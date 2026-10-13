@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(OpenPaint VERSION 0.1.0 LANGUAGES CXX)
 
-set(OPENPAINT_VERSION_SUFFIX "dev" CACHE STRING "SemVer prerelease suffix; empty for stable")
+set(OPENPAINT_VERSION_SUFFIX "alpha.1" CACHE STRING "SemVer prerelease suffix; empty for stable")
 set(OPENPAINT_INSTALL_KIND "source" CACHE STRING "source, appimage, flatpak, or system")
 set_property(CACHE OPENPAINT_INSTALL_KIND PROPERTY STRINGS source appimage flatpak system)
 if(NOT OPENPAINT_INSTALL_KIND MATCHES "^(source|appimage|flatpak|system)$")

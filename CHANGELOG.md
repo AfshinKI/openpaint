@@ -1,8 +1,9 @@
 # Changelog
 
-User-visible changes will be recorded here. There are no releases yet.
+User-visible changes are recorded here. The first alpha is prepared; publication
+and final artifact verification are tracked in [the release plan](docs/plans/0027-alpha-release.md).
 
-## Unreleased
+## 0.1.0-alpha.1 — candidate
 
 - Add a restricted Flatpak test-bundle recipe with pinned runtime/SDK commits,
   source identity, permission auditing and CI review artifacts.
