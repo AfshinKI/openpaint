@@ -300,3 +300,6 @@ Updates screen (release guidance; automatic checking/installing remains planned)
 Brushes mirrors Selection: the icon and lower arrow share one rounded accent
 outline when active and a stronger shared keyboard-focus outline. Idle has no
 outline; each half retains hover/pressed feedback and its separate action.
+
+Menu-row Save, Undo and Redo use flat idle surfaces with no outlines. Undo/Redo
+use mirrored original curved-arrow icons; hover and keyboard focus remain visible.

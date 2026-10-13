@@ -559,6 +559,7 @@ ApplicationWindow {
             ToolSeparator {}
             IconButton {
                 objectName: "quickSaveButton"
+                flat: true
                 symbol: "save"
                 shortcutLabel: "Ctrl+S"
                 action: saveAction
@@ -566,6 +567,7 @@ ApplicationWindow {
             }
             IconButton {
                 objectName: "quickUndoButton"
+                flat: true
                 symbol: "undo"
                 shortcutLabel: "Ctrl+Z"
                 action: undoAction
@@ -573,6 +575,7 @@ ApplicationWindow {
             }
             IconButton {
                 objectName: "quickRedoButton"
+                flat: true
                 symbol: "redo"
                 shortcutLabel: "Ctrl+Y"
                 action: redoAction
