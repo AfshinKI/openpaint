@@ -25,6 +25,35 @@ class TransformTest : public QObject {
         return image;
     }
   private slots:
+    void canvasResizeHistory() {
+        TransformEditor editor;
+        const auto original = fixture();
+        editor.reset(original);
+        editor.secondary = QColor(10, 20, 30, 120);
+        editor.resizeCanvas(-2, -1, 9, 6);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.imageSize(), QSize(9, 6));
+        QCOMPARE(editor.image().pixel(2, 1), original.pixel(0, 0));
+        QCOMPARE(editor.image().pixel(7, 4), original.pixel(5, 3));
+        QImage fill(1, 1, original.format());
+        fill.fill(editor.secondary);
+        QCOMPARE(editor.image().pixel(0, 0), fill.pixel(0, 0));
+        const auto expanded = editor.image();
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        editor.redo();
+        QCOMPARE(editor.image(), expanded);
+        editor.undo();
+        editor.resizeCanvas(1, 1, 3, 2);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image(), original.copy(1, 1, 3, 2));
+        editor.undo();
+        editor.resizeCanvas(0, 0, 16384, 16384);
+        editor.resizeCanvas(std::numeric_limits<int>::min(), 0, 10, 10);
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.busy());
+    }
     void selectionHandlesKeepOnePreview() {
         TransformEditor editor;
         const auto original = fixture();

@@ -95,6 +95,7 @@ class Editor : public QObject {
     }
     Q_INVOKABLE void transformImage(int kind);
     QRectF resizeBounds() const;
+    Q_INVOKABLE void resizeCanvas(int x, int y, int width, int height);
     Q_INVOKABLE void resizeActiveBounds(int x, int y, int width, int height);
     Q_INVOKABLE void resizeImage(int width, int height, qreal skewX, qreal skewY, bool smooth);
     bool clipboardBusy() const {

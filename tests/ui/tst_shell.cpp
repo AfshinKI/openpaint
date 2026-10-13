@@ -723,6 +723,32 @@ class ShellTest : public QObject {
         QCOMPARE(editor->image(), draft);
     }
 
+    void canvasCornerResize() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = canvas->editor();
+        const auto original = editor->image();
+        const auto handles = visualItems(window->contentItem(), "canvasResizeCorner3");
+        QCOMPARE(handles.size(), 1);
+        auto* handle = handles.first();
+        QVERIFY(handle->isVisible());
+        const auto start = handle->mapToScene({8, 8}).toPoint();
+        const auto end = start - QPoint(70, 50);
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QCOMPARE(editor->image(), original);
+        keyClick(Qt::Key_Escape);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QCOMPARE(editor->image(), original);
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(editor->imageSize().width() < original.width());
+        QVERIFY(editor->imageSize().height() < original.height());
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->canUndo());
+    }
     void cornerResizeHandles() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();

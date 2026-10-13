@@ -175,8 +175,12 @@ Cancel restores the original artwork. Focused handles support arrow keys (Shift
 for 10px). Committed raster marks must first be selected.
 
 Use a broad neutral workspace around a rectangular, sharp-cornered image. Canvas
-resize handles are small squares at corners and edge midpoints when that feature
-is implemented. A left-side floating rail holds narrow 36px rounded Size (1–128 px) and Opacity
+resize handles are small squares at all four corners when no selection or editing
+preview is active. Dragging previews crop/expansion; releasing commits one undoable
+canvas-size change without resampling. The opposite corner stays fixed in document
+space. New space uses the background color, retaining existing pixel alpha.
+Escape cancels a drag; arrow keys resize by 1px (Shift: 10px). The canvas refits
+after commit. Dimensions are limited to 16384 per side and 32MP overall. A left-side floating rail holds narrow 36px rounded Size (1–128 px) and Opacity
 (0–100%) slider panels, with original stroke/droplet icons and accent thumbs.
 Numeric values appear in tooltips; accessible names retain each role and range. Size appears
 for pencil, brush, eraser and shapes; opacity appears for brushes. Both support
@@ -187,7 +191,7 @@ its margins and does not resize or reposition the canvas.
 The bottom status strip separates cursor/selection information from image size.
 The right side groups fit-to-window, a percentage dropdown, zoom-out, a horizontal
 zoom slider and zoom-in. Fractional percentage display should remain readable.
-Canvas resize handles and the expanded zoom dropdown remain planned. Canvas operations still belong to undoable document commands;
+The expanded zoom dropdown remains planned. Canvas operations still belong to undoable document commands;
 view-only changes never dirty the drawing.
 
 ## Settings

@@ -231,7 +231,7 @@ Repository and whitespace checks passed. Changes remain on the same polish branc
 
 ## Follow-up requests
 
-Items 1–7 are implemented below; items 8–11 remain pending before the final polish
+Items 1–8 are implemented below; items 9–11 remain pending before the final polish
 review. Earlier implementation evidence does not verify these requests.
 
 1. Add small square corner resize handles to active shapes, text boxes and
@@ -357,3 +357,27 @@ without document/color/history mutation, preview hiding, selection clearing,
 paste commit and Undo. Formatting, strict QML lint and repository checks passed.
 Full desktop/platform review remains pending. Next unfinished request: item 8,
 canvas corner resizing. Binary: `./build/dev/openpaint`.
+
+### Item 8 acceptance — canvas corner resizing
+
+Four corner handles appear when no selection or editing preview is active. Drag
+keeps the opposite corner fixed and previews bounds without changing pixels.
+Release crops/extends through the bounded transform worker, filling new space
+with the background color and preserving existing alpha without resampling.
+One commit is one Undo step; Escape/lost grab cancels a drag. Existing dimension,
+32MP and history-budget limits apply. Arrow keys retain 1px/Shift-10px access.
+
+### Item 8 implementation and evidence
+
+Canvas corner handles share the fixed-size drag/keyboard control with active
+content handles. With no selection/preview, they crop or extend the canvas via a
+bounded worker transform. Existing pixels retain exact alpha; new space uses
+secondary/background color. Release commits one dimension-aware Undo command;
+Escape cancels the bounds preview. The viewport refits after commit.
+
+Dev build, all ten transform cases, canvas/content handle shell workflows,
+formatting, strict QML lint and repository checks passed. Tests cover alpha,
+background fill, crop offsets, undo/redo, invalid/oversized dimensions, drag
+cancellation and content-handle compatibility. UI tests used offscreen rendering;
+full desktop review remains pending. Launch `./build/dev/openpaint`. Next request:
+item 9, the larger circular Edit colors icon.

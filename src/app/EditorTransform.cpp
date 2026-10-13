@@ -16,6 +16,17 @@ QRectF Editor::resizeBounds() const {
         return {floatingPosition_, floatingImage_.size()};
     return hasSelection() ? QRectF(selectionRect()) : QRectF();
 }
+void Editor::resizeCanvas(int x, int y, int width, int height) {
+    if (busy() || previewActive() || hasSelection() ||
+        !openpaint::Document::validSize({width, height}) || std::abs(qint64(x)) > 16384 ||
+        std::abs(qint64(y)) > 16384 || (x == 0 && y == 0 && imageSize() == QSize(width, height)))
+        return;
+    openpaint::TransformOptions options;
+    options.size = {width, height};
+    options.canvasOrigin = {x, y};
+    options.background = secondary;
+    startTransform(openpaint::TransformKind::CanvasResize, options);
+}
 void Editor::resizeActiveBounds(int x, int y, int width, int height) {
     const auto before = resizeBounds();
     if (before.isEmpty() || !openpaint::Document::validSize({width, height}) || x < 0 || y < 0 ||

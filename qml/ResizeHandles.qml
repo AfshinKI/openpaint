@@ -8,12 +8,14 @@ Item {
     id: handles
     required property Editor editor
     required property CanvasItem canvas
+    readonly property bool canvasMode: editor.resizeBounds.width <= 0 && !editor.previewActive && !editor.hasSelection
+    readonly property rect activeBounds: canvasMode ? Qt.rect(0, 0, editor.imageSize.width, editor.imageSize.height) : editor.resizeBounds
     property bool dragging: false
     property rect initialBounds
     property rect draftBounds
     property point pressPoint
     property int activeCorner: 0
-    readonly property rect bounds: dragging ? draftBounds : editor.resizeBounds
+    readonly property rect bounds: dragging ? draftBounds : activeBounds
     visible: bounds.width > 0 && bounds.height > 0 && !editor.busy
     function corner(rect, index) {
         return Qt.point(rect.x + (index % 2 ? rect.width : 0), rect.y + (index >= 2 ? rect.height : 0));
@@ -22,14 +24,17 @@ Item {
         const opposite = corner(initialBounds, 3 - activeCorner);
         const left = activeCorner % 2 === 0;
         const top = activeCorner < 2;
-        const x = Math.round(Math.max(left ? 0 : opposite.x + 1, Math.min(left ? opposite.x - 1 : editor.imageSize.width, point.x)));
-        const y = Math.round(Math.max(top ? 0 : opposite.y + 1, Math.min(top ? opposite.y - 1 : editor.imageSize.height, point.y)));
+        const x = Math.round(Math.max(left ? (canvasMode ? opposite.x - 16384 : 0) : opposite.x + 1, Math.min(left ? opposite.x - 1 : (canvasMode ? opposite.x + 16384 : editor.imageSize.width), point.x)));
+        const y = Math.round(Math.max(top ? (canvasMode ? opposite.y - 16384 : 0) : opposite.y + 1, Math.min(top ? opposite.y - 1 : (canvasMode ? opposite.y + 16384 : editor.imageSize.height), point.y)));
         draftBounds = Qt.rect(left ? x : opposite.x, top ? y : opposite.y, Math.abs(x - opposite.x), Math.abs(y - opposite.y));
     }
     function apply() {
         const result = draftBounds;
         dragging = false;
-        editor.resizeActiveBounds(Math.round(result.x), Math.round(result.y), Math.round(result.width), Math.round(result.height));
+        if (canvasMode)
+            editor.resizeCanvas(Math.round(result.x), Math.round(result.y), Math.round(result.width), Math.round(result.height));
+        else
+            editor.resizeActiveBounds(Math.round(result.x), Math.round(result.y), Math.round(result.width), Math.round(result.height));
     }
     Connections {
         target: handles.canvas
@@ -58,7 +63,7 @@ Item {
         delegate: Item {
             id: handle
             required property int index
-            objectName: "resizeCorner" + index
+            objectName: (handles.canvasMode ? "canvasResizeCorner" : "resizeCorner") + index
             readonly property point position: handles.corner(handles.bounds, index)
             x: handles.canvas.origin.x + position.x * handles.canvas.zoom - width / 2
             y: handles.canvas.origin.y + position.y * handles.canvas.zoom - height / 2
@@ -66,7 +71,7 @@ Item {
             height: 16
             activeFocusOnTab: true
             Accessible.role: Accessible.Button
-            Accessible.name: [qsTr("Resize top left"), qsTr("Resize top right"), qsTr("Resize bottom left"), qsTr("Resize bottom right")][index]
+            Accessible.name: (handles.canvasMode ? qsTr("Canvas: ") : "") + [qsTr("Resize top left"), qsTr("Resize top right"), qsTr("Resize bottom left"), qsTr("Resize bottom right")][index]
             Keys.onEscapePressed: event => {
                 if (handles.dragging)
                     handles.dragging = false;
@@ -86,7 +91,7 @@ Item {
                     dy = 1;
                 else
                     return;
-                handles.initialBounds = handles.editor.resizeBounds;
+                handles.initialBounds = handles.activeBounds;
                 handles.activeCorner = index;
                 const step = event.modifiers & Qt.ShiftModifier ? 10 : 1;
                 handles.adjust(Qt.point(position.x + dx * step, position.y + dy * step));
@@ -108,7 +113,7 @@ Item {
                 preventStealing: true
                 onPressed: mouse => {
                     handle.forceActiveFocus();
-                    handles.initialBounds = handles.editor.resizeBounds;
+                    handles.initialBounds = handles.activeBounds;
                     handles.draftBounds = handles.initialBounds;
                     handles.activeCorner = handle.index;
                     handles.pressPoint = mapToItem(handles.canvas, mouse.x, mouse.y);

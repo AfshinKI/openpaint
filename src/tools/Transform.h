@@ -13,12 +13,15 @@ enum class TransformKind {
     FlipHorizontal,
     FlipVertical,
     Crop,
-    ResizeSkew
+    ResizeSkew,
+    CanvasResize
 };
 struct TransformOptions {
     QSize size;
     qreal skewX = 0, skewY = 0;
     bool smooth = true;
+    QPoint canvasOrigin;
+    QColor background = Qt::white;
 };
 struct TransformResult {
     QImage image;
