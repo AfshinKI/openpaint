@@ -323,3 +323,13 @@ exercises all five operations, Undo and main-button repetition, plus both select
 icons. Inspected the generated ribbon capture. Tests used offscreen software
 rendering; the final desktop/platform regression review remains pending. Launch
 with `./build/dev/openpaint`. Next unfinished request: item 6, eyedropper preview.
+
+### Selection split-control appearance follow-up
+
+Selection now uses a compact 40×56 vertical split control with one rounded accent
+outline around both halves when active, no idle outline, per-half hover feedback
+and a stronger shared keyboard-focus outline. Rectangle/lasso mode indication
+and separate main/dropdown actions remain intact. Dev build, three focused shell
+workflows (free-form, rectangle and ribbon action memory), formatting, strict QML
+lint and repository checks passed. Inspected the generated active-selection
+capture at minimum window width; full desktop review remains pending.

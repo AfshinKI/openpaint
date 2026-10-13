@@ -255,3 +255,8 @@ and Flip retain the last operation for the current session: their main buttons
 repeat it, with matching direction/angle icons, tooltips and accessible names.
 Their dropdowns continue to expose all operations. Defaults are right 90° and
 horizontal flip. These choices do not persist between launches.
+
+Selection is a compact vertical split control: the icon activates the current
+selection mode, and the lower arrow opens its menu. Both share one rounded accent
+outline when Selection is active; idle state has no outline. Each half retains
+hover feedback, and keyboard focus strengthens the shared outline.
