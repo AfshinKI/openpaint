@@ -19,7 +19,10 @@ ApplicationWindow {
     height: 800
     minimumWidth: 1024
     minimumHeight: 640
-    visible: true
+    visible: false
+    Component.onCompleted: Qt.callLater(function () {
+        window.show();
+    })
     title: (editor.dirty ? "* " : "") + editor.fileName + qsTr(" — OpenPaint")
     color: Theme.workspace
     palette.window: Theme.window

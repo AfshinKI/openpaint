@@ -7,6 +7,7 @@
 #include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
+#include <QSurfaceFormat>
 #include <QTimer>
 
 int main(int argc, char* argv[]) {
@@ -31,6 +32,11 @@ int main(int argc, char* argv[]) {
     parser.process(app);
     if (parser.positionalArguments().size() > 1)
         parser.showHelp(2);
+
+    // The desktop window is opaque; canvas alpha is composited over its checkerboard.
+    auto surfaceFormat = QSurfaceFormat::defaultFormat();
+    surfaceFormat.setAlphaBufferSize(0);
+    QSurfaceFormat::setDefaultFormat(surfaceFormat);
 
     QQmlApplicationEngine engine;
     QObject::connect(

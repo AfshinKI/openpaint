@@ -443,3 +443,13 @@ Automatic update checking remains planned; the top-right button opens existing
 release guidance. Final desktop/platform review and protected merge remain pending.
 
 Full direct shell run: 40 passed, zero failures (offscreen software rendering).
+
+### Startup flash mitigation
+
+Keep the QML window hidden through component construction and show it on the
+next event-loop turn. The application requests a non-alpha native surface;
+canvas transparency remains internal to the opaque workspace. This addresses a
+possible early-exposure path, but does not establish the cause of compositor/GPU
+artifacts. Dev build, launch/resize, theme and quit smoke tests, formatting,
+strict QML lint and repository checks passed. Tests used offscreen rendering;
+the reported physical multi-monitor flash still needs desktop confirmation.
