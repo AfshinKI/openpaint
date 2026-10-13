@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options("-ffile-prefix-map=${CMAKE_SOURCE_DIR}=."
+        "-fdebug-prefix-map=${CMAKE_BINARY_DIR}=./build")
+endif()
 
 option(OPENPAINT_SANITIZERS "Enable address and undefined-behavior sanitizers" OFF)
 if(OPENPAINT_SANITIZERS)
@@ -85,6 +89,8 @@ file(GLOB OPENPAINT_QML_FILES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/qml/*.qml")
 # Unlike the generated all_qmllint target, this explicitly fails on warnings.
 add_custom_target(qml-lint
     COMMAND Qt6::qmllint --max-warnings 0 -I "${CMAKE_BINARY_DIR}/qml"
+        --resource "${CMAKE_BINARY_DIR}/qml/.qt/rcc/qmake_OpenPaint.qrc"
+        --resource "${CMAKE_BINARY_DIR}/qml/.qt/rcc/openpaint_ui_raw_qml_0.qrc"
         ${OPENPAINT_QML_FILES}
     DEPENDS openpaint_ui
     VERBATIM)

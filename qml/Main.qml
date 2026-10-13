@@ -106,7 +106,7 @@ ApplicationWindow {
         editor: window.editorController
         parent: Overlay.overlay
         onClosed: {
-            if (editor.textActive)
+            if (window.editorController.textActive)
                 textOverlay.focusInput();
         }
     }
@@ -921,8 +921,8 @@ ApplicationWindow {
         id: canvas
         objectName: "canvas"
         anchors.fill: parent
-        editor: editor
-        enabled: !editor.loading || editor.filling
+        editor: window.editorController
+        enabled: !window.editorController.loading || window.editorController.filling
         focus: true
         Accessible.name: qsTr("Drawing canvas")
         Accessible.role: Accessible.Canvas

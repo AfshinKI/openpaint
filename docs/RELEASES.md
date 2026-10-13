@@ -13,6 +13,10 @@ until a corresponding artifact and verification path have been tested.
 | Source | Developers and distribution packagers | User or distribution package manager |
 | deb/rpm | Deferred; add only with maintenance capacity | Distribution/package manager; never overwrite from inside the app |
 
+The native release toolchain is pinned to Qt 6.12.0; [plan 0023](plans/0023-maintained-qt.md)
+records the migration. Flatpak uses its maintained KDE runtime with exact commits
+recorded per artifact.
+
 Start x86_64. Add aarch64 only after native build, install, drawing, save, and update
 tests on that architecture. M2 tests Ubuntu 24.04 and the then-supported stable
 Fedora release; record exact versions in each release's matrix. Build AppImages
