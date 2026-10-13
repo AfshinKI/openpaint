@@ -13,8 +13,9 @@ remain planned unless the ledger says otherwise.
 ## Shared layout
 
 Use a compact menu row above the grouped command toolbar. File, Edit and View sit
-on the left, followed by quick Save, Share, Undo and Redo actions with small
-separators. Place What's new and Settings at the far right. An OpenPaint Help
+on the left, followed immediately by quick Save, Undo and Redo actions with a
+small separator. Image and Help sit on the right in the current alpha. Share is
+deferred until desktop sharing is implemented. Place What's new and Settings at the far right. An OpenPaint Help
 entry is allowed for documentation and accessibility. Window controls remain
 native Linux decorations, separate from application actions. Core editing needs
 no account; an account/profile button is not an OpenPaint requirement.

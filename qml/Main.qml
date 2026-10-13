@@ -401,7 +401,7 @@ ApplicationWindow {
         contentItem: RowLayout {
             spacing: 4
             MenuBar {
-                Layout.fillWidth: true
+                objectName: "primaryMenuBar"
                 background: Rectangle {
                     color: Theme.window
                 }
@@ -465,6 +465,68 @@ ApplicationWindow {
                     }
                 }
                 PaintMenu {
+                    title: qsTr("&View")
+                    PaintMenuItem {
+                        action: fitAction
+                    }
+                    PaintMenuItem {
+                        action: zoomInAction
+                    }
+                    PaintMenuItem {
+                        action: zoomOutAction
+                    }
+                    PaintMenu {
+                        title: qsTr("&Theme")
+                        PaintMenuItem {
+                            action: systemThemeAction
+                        }
+                        PaintMenuItem {
+                            action: lightThemeAction
+                        }
+                        PaintMenuItem {
+                            action: darkThemeAction
+                        }
+                    }
+                }
+            }
+            ToolSeparator {}
+            IconButton {
+                objectName: "quickSaveButton"
+                symbol: "save"
+                shortcutLabel: "Ctrl+S"
+                action: saveAction
+                Accessible.name: text
+            }
+            IconButton {
+                objectName: "quickUndoButton"
+                symbol: "undo"
+                shortcutLabel: "Ctrl+Z"
+                action: undoAction
+                Accessible.name: text
+            }
+            IconButton {
+                objectName: "quickRedoButton"
+                symbol: "redo"
+                shortcutLabel: "Ctrl+Y"
+                action: redoAction
+                Accessible.name: text
+            }
+            Item {
+                Layout.fillWidth: true
+            }
+            MenuBar {
+                objectName: "secondaryMenuBar"
+                background: Rectangle {
+                    color: Theme.window
+                }
+                delegate: MenuBarItem {
+                    id: secondaryEntry
+                    background: Rectangle {
+                        radius: Theme.controlRadius
+                        color: secondaryEntry.highlighted ? Theme.hover : "transparent"
+                    }
+                }
+                PaintMenu {
                     title: qsTr("&Image")
                     PaintMenuItem {
                         action: cropAction
@@ -489,30 +551,6 @@ ApplicationWindow {
                     }
                 }
                 PaintMenu {
-                    title: qsTr("&View")
-                    PaintMenuItem {
-                        action: fitAction
-                    }
-                    PaintMenuItem {
-                        action: zoomInAction
-                    }
-                    PaintMenuItem {
-                        action: zoomOutAction
-                    }
-                    PaintMenu {
-                        title: qsTr("&Theme")
-                        PaintMenuItem {
-                            action: systemThemeAction
-                        }
-                        PaintMenuItem {
-                            action: lightThemeAction
-                        }
-                        PaintMenuItem {
-                            action: darkThemeAction
-                        }
-                    }
-                }
-                PaintMenu {
                     title: qsTr("&Help")
                     PaintMenuItem {
                         objectName: "updatesMenuItem"
@@ -523,24 +561,6 @@ ApplicationWindow {
                         action: aboutAction
                     }
                 }
-            }
-            IconButton {
-                symbol: "save"
-                shortcutLabel: "Ctrl+S"
-                action: saveAction
-                Accessible.name: text
-            }
-            IconButton {
-                symbol: "undo"
-                shortcutLabel: "Ctrl+Z"
-                action: undoAction
-                Accessible.name: text
-            }
-            IconButton {
-                symbol: "redo"
-                shortcutLabel: "Ctrl+Y"
-                action: redoAction
-                Accessible.name: text
             }
         }
     }

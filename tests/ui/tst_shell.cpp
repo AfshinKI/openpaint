@@ -83,6 +83,22 @@ class ShellTest : public QObject {
         }
     }
 
+    void quickActionPlacement() {
+        auto* menu = window->findChild<QQuickItem*>(QStringLiteral("primaryMenuBar"));
+        auto* save = window->findChild<QQuickItem*>(QStringLiteral("quickSaveButton"));
+        auto* undo = window->findChild<QQuickItem*>(QStringLiteral("quickUndoButton"));
+        auto* redo = window->findChild<QQuickItem*>(QStringLiteral("quickRedoButton"));
+        QVERIFY(menu && save && undo && redo);
+        window->resize(1024, 640);
+        QGuiApplication::sync();
+        const auto right = menu->mapToScene({menu->width(), 0}).x();
+        QVERIFY(save->mapToScene({0, 0}).x() >= right);
+        QVERIFY(save->mapToScene({0, 0}).x() - right < 40);
+        QVERIFY(save->mapToScene({0, 0}).x() < undo->mapToScene({0, 0}).x());
+        QVERIFY(undo->mapToScene({0, 0}).x() < redo->mapToScene({0, 0}).x());
+        QVERIFY(tabTo("quickSaveButton"));
+    }
+
     void themeActions() {
         auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
         auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));

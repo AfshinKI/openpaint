@@ -1,1 +1,2 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><g fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v16M7 5 2 15h5V5Zm6 0 5 10h-5V5Z"/></g></svg>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later; original OpenPaint artwork -->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 3v2m0 3v2m0 3v2m0 3v3M8 6 3 18h5V6Zm8 0 5 12h-5V6Z" fill="none" stroke="#000000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>

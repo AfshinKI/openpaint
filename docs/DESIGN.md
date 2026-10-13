@@ -48,7 +48,8 @@ screen. Files, settings, and update controls are available without an account.
 
 ## Visual system
 
-Use original, consistent 20/24-unit vector icons with accessible text labels and
+Use original vector icons on a 24-unit grid, with a consistent 1.6-unit stroke,
+rounded line endings/joins and 20px rendered toolbar glyphs, with accessible text labels and
 tooltips. System UI font; no bundled proprietary fonts. Keep controls compact
 without making them difficult to hit. Spacing uses 4, 8, 12, 16, 24, and 32 logical
 pixels. Standard targets are at least 32×32; dense color palettes may use 24×24

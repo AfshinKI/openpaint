@@ -1,6 +1,6 @@
 # Feature: alpha ribbon and color workflow polish
 
-Status: in progress — step 1 implemented; validation recorded below
+Status: in progress — steps 1–3 implemented; focused validation recorded below
 Feature IDs: F01, F02, F03, F05, F06, F08, F09, F26
 Milestone: post-M2 alpha polish, before M3
 
@@ -115,7 +115,7 @@ and a group caption. Existing selection bounds/deselect entries remain available
 Two original vector glyphs identify Rotate and Flip. Existing command guards,
 preview handling and keyboard shortcuts are retained.
 
-Next: step 2 (quick-action placement). Broader theme/scale and full regression
+Next: step 4 (compact shapes gallery). Broader theme/scale and full regression
 checks are deferred until all eight steps are implemented, as requested.
 
 ### Step 1 focused evidence
@@ -126,3 +126,19 @@ cases `launchAndResize`, `imageTransformWorkflow` and `freeFormSelectionWorkflow
 passed (5 including setup/cleanup), with offscreen software rendering and no QML
 warnings. Repository and diff whitespace checks passed. This is not a full visual
 or accessibility certification; the batch review remains pending.
+
+### Steps 2 and 3
+
+Save/Undo/Redo now immediately follow File/Edit/View; Image/Help remain on the
+right. Existing actions and shortcut bindings are reused. Toolbar SVGs use one
+24-unit grid and 1.6-unit rounded strokes, with original independently authored
+glyphs and SPDX attribution. The app logo and multicolor chooser glyph are unchanged. Existing theme tinting,
+accessible labels, hit targets and focus/selected states remain in place.
+
+The dev executable was rebuilt. Focused launch/layout, quick-action placement,
+theme capture and keyboard Help checks are the validation scope for this step;
+full scale/state and accessibility review remains part of the final batch check.
+
+Focused checks passed: 6 including setup/cleanup, no QML warnings. Light/dark
+1280px captures were inspected; the chooser retains its multicolor glyph for
+contrast. Repository and diff whitespace checks passed.
