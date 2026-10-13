@@ -391,6 +391,40 @@ class ShellTest : public QObject {
         QCOMPARE(editor->image(), original);
     }
 
+    void ribbonActionMemory() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = canvas->editor();
+        auto* selection = window->findChild<QObject*>("selectionButton");
+        editor->setProperty("freeFormSelection", true);
+        QCOMPARE(selection->property("symbol").toString(), QStringLiteral("lasso"));
+        editor->setProperty("freeFormSelection", false);
+        QCOMPARE(selection->property("symbol").toString(), QStringLiteral("selection"));
+        editor->begin({15, 25}, false);
+        editor->extend({60, 40});
+        editor->endGesture();
+        const auto original = editor->image();
+        for (const auto& name :
+             {"rotateLeft", "rotateHalf", "rotateRight", "flipVertical", "flipHorizontal"}) {
+            auto* action = window->findChild<QObject*>(QString::fromLatin1(name) + "Action");
+            QVERIFY(action);
+            QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+            QTRY_VERIFY(!editor->busy());
+            const auto once = editor->image();
+            const bool rotation = QString::fromLatin1(name).startsWith("rotate");
+            auto* button = window->findChild<QObject*>(rotation ? "rotateButton" : "flipButton");
+            QCOMPARE(button->property("action").value<QObject*>(), action);
+            QCOMPARE(button->property("text"), action->property("text"));
+            editor->undo();
+            QCOMPARE(editor->image(), original);
+            QVERIFY(QMetaObject::invokeMethod(button, "click"));
+            QTRY_VERIFY(!editor->busy());
+            QCOMPARE(editor->image(), once);
+            editor->undo();
+            QCOMPARE(editor->image(), original);
+        }
+        QVERIFY(capture(QStringLiteral("ribbon-action-memory.png")));
+    }
+
     void imageTransformWorkflow() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();

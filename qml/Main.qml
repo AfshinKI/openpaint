@@ -8,6 +8,8 @@ import OpenPaint
 
 ApplicationWindow {
     id: window
+    property Action lastRotation: rotateRightAction
+    property Action lastFlip: flipHorizontalAction
     readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible
     readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
@@ -287,38 +289,58 @@ ApplicationWindow {
     }
     Action {
         id: rotateRightAction
-        icon.source: "icons/rotate.svg"
+        objectName: "rotateRightAction"
+        icon.source: "icons/rotate-right.svg"
         text: editor.hasSelection ? qsTr("Rotate selection right 90°") : qsTr("Rotate image right 90°")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(0)
+        onTriggered: {
+            window.lastRotation = rotateRightAction;
+            editor.transformImage(0);
+        }
     }
     Action {
         id: rotateLeftAction
-        icon.source: "icons/rotate.svg"
+        objectName: "rotateLeftAction"
+        icon.source: "icons/rotate-left.svg"
         text: editor.hasSelection ? qsTr("Rotate selection left 90°") : qsTr("Rotate image left 90°")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(1)
+        onTriggered: {
+            window.lastRotation = rotateLeftAction;
+            editor.transformImage(1);
+        }
     }
     Action {
         id: rotateHalfAction
-        icon.source: "icons/rotate.svg"
+        objectName: "rotateHalfAction"
+        icon.source: "icons/rotate-half.svg"
         text: editor.hasSelection ? qsTr("Rotate selection 180°") : qsTr("Rotate image 180°")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(2)
+        onTriggered: {
+            window.lastRotation = rotateHalfAction;
+            editor.transformImage(2);
+        }
     }
     Action {
         id: flipHorizontalAction
+        objectName: "flipHorizontalAction"
         icon.source: "icons/flip.svg"
         text: editor.hasSelection ? qsTr("Flip selection horizontally") : qsTr("Flip image horizontally")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(3)
+        onTriggered: {
+            window.lastFlip = flipHorizontalAction;
+            editor.transformImage(3);
+        }
     }
     Action {
         id: flipVerticalAction
-        icon.source: "icons/flip.svg"
+        objectName: "flipVerticalAction"
+        icon.source: "icons/flip-vertical.svg"
         text: editor.hasSelection ? qsTr("Flip selection vertically") : qsTr("Flip image vertically")
         enabled: editor.canSelect && !editor.busy && !window.documentOptionsOpen
-        onTriggered: editor.transformImage(4)
+        onTriggered: {
+            window.lastFlip = flipVerticalAction;
+            editor.transformImage(4);
+        }
     }
     Action {
         id: resizeAction
@@ -576,7 +598,7 @@ ApplicationWindow {
                 spacing: 0
                 IconButton {
                     objectName: "selectionButton"
-                    symbol: "selection"
+                    symbol: editor.freeFormSelection ? "lasso" : "selection"
                     text: editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
                     Accessible.name: text
                     highlighted: editor.tool === Editor.Select
@@ -670,6 +692,7 @@ ApplicationWindow {
                     rowSpacing: 2
                     columnSpacing: 4
                     IconButton {
+                        flat: true
                         symbol: "crop"
                         objectName: "cropButton"
                         action: cropAction
@@ -677,10 +700,13 @@ ApplicationWindow {
                     RowLayout {
                         spacing: 0
                         IconButton {
-                            symbol: "rotate"
-                            action: rotateRightAction
+                            flat: true
+                            objectName: "rotateButton"
+                            icon.source: window.lastRotation.icon.source
+                            action: window.lastRotation
                         }
                         PaintButton {
+                            flat: true
                             objectName: "rotateMenuButton"
                             text: "⌄"
                             Accessible.name: qsTr("Rotation options")
@@ -705,6 +731,7 @@ ApplicationWindow {
                         }
                     }
                     IconButton {
+                        flat: true
                         symbol: "resize"
                         objectName: "resizeButton"
                         action: resizeAction
@@ -712,10 +739,13 @@ ApplicationWindow {
                     RowLayout {
                         spacing: 0
                         IconButton {
-                            symbol: "flip"
-                            action: flipHorizontalAction
+                            flat: true
+                            objectName: "flipButton"
+                            icon.source: window.lastFlip.icon.source
+                            action: window.lastFlip
                         }
                         PaintButton {
+                            flat: true
                             objectName: "flipMenuButton"
                             text: "⌄"
                             Accessible.name: qsTr("Flip options")
@@ -750,6 +780,7 @@ ApplicationWindow {
                 GridLayout {
                     columns: 3
                     IconButton {
+                        flat: true
                         symbol: "pencil"
                         objectName: "pencilButton"
                         text: qsTr("Pencil")
@@ -761,6 +792,7 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        flat: true
                         symbol: "fill"
                         objectName: "fillButton"
                         text: qsTr("Fill")
@@ -772,6 +804,7 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        flat: true
                         symbol: "text"
                         objectName: "textButton"
                         text: qsTr("Text")
@@ -783,6 +816,7 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        flat: true
                         symbol: "eraser"
                         objectName: "eraserButton"
                         text: qsTr("Eraser")
@@ -794,6 +828,7 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     IconButton {
+                        flat: true
                         symbol: "eyedropper"
                         objectName: "pickerButton"
                         text: qsTr("Color picker")
@@ -817,6 +852,7 @@ ApplicationWindow {
             ColumnLayout {
                 IconButton {
                     id: brushesButton
+                    flat: true
                     objectName: "brushesButton"
                     enabled: !editor.textActive
                     symbol: "brush"
@@ -850,6 +886,7 @@ ApplicationWindow {
                         spacing: 2
                         IconButton {
                             id: shapesButton
+                            flat: true
                             objectName: "shapesButton"
                             enabled: !editor.textActive
                             symbol: "rectangle"
@@ -866,6 +903,7 @@ ApplicationWindow {
                             }
                         }
                         PaintButton {
+                            flat: true
                             text: "▾"
                             implicitWidth: 24
                             implicitHeight: 32

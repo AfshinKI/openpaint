@@ -231,7 +231,7 @@ Repository and whitespace checks passed. Changes remain on the same polish branc
 
 ## Follow-up requests
 
-Item 1 is implemented below; items 2–11 remain pending before the final polish
+Items 1–5 are implemented below; items 6–11 remain pending before the final polish
 review. Earlier implementation evidence does not verify these requests.
 
 1. Add small square corner resize handles to active shapes, text boxes and
@@ -297,5 +297,29 @@ transform cases, the polygon geometry case and four focused shell cases passed
 (including corner drag/Escape, constant-size zoom targets, text editing and image
 transforms). Formatting, strict QML lint and repository checks passed. Inspected
 the generated text-handle capture. UI checks used offscreen software rendering;
-full desktop/platform and batch regression checks remain pending. Next unfinished
-request is item 2, removing idle button outlines. Canvas resize remains item 8.
+full desktop/platform and batch regression checks remain pending. At that checkpoint the next request was item 2. Canvas resize remains item 8.
+
+### Items 2–5 acceptance — ribbon action clarity
+
+- Image, Tools, Brushes and Shapes buttons have no idle outline/background;
+  hover, pressed, selected and keyboard focus remain visible.
+- Selection shows rectangle or lasso to match its selected mode.
+- Flip and Rotate remember their last session choice. Main activation repeats
+  that action; icon, tooltip and accessible label agree with it. Menus retain
+  every operation with distinct original direction/angle icons.
+- Existing busy/preview guards and undoable transforms remain unchanged.
+
+### Items 2–5 implementation and evidence
+
+Implemented scoped flat ribbon buttons while retaining selected/hover/focus
+feedback. Rectangle/lasso selection follows the active mode. Flip and rotation
+main buttons retain their last session action and its label/icon; dropdowns use
+original horizontal/vertical and clockwise/counterclockwise 90°/180° artwork.
+Rotation angle numerals are vector paths, with no font dependency.
+
+Qt 6.12 dev build, focused shell action-memory and image-transform workflows,
+formatting, strict QML lint and repository checks passed. The action-memory case
+exercises all five operations, Undo and main-button repetition, plus both selection
+icons. Inspected the generated ribbon capture. Tests used offscreen software
+rendering; the final desktop/platform regression review remains pending. Launch
+with `./build/dev/openpaint`. Next unfinished request: item 6, eyedropper preview.

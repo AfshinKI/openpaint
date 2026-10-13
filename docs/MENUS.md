@@ -245,3 +245,13 @@ the box applies it as one undoable raster edit and consumes that click, without
 starting another text box. Clicking inside keeps editing; middle-button/Space pan
 does not commit. Escape cancels and Ctrl+Enter remains a keyboard commit shortcut.
 The text Apply/Options footer buttons are removed; other tools retain theirs.
+
+### Ribbon action feedback
+
+Image, Tools, Brushes and Shapes controls have transparent, borderless idle
+surfaces. Hover, pressed, selected and keyboard-focus states remain visible.
+Selection uses the rectangle or lasso icon matching its current mode. Rotate
+and Flip retain the last operation for the current session: their main buttons
+repeat it, with matching direction/angle icons, tooltips and accessible names.
+Their dropdowns continue to expose all operations. Defaults are right 90° and
+horizontal flip. These choices do not persist between launches.
