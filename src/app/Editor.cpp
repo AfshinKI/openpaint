@@ -337,7 +337,7 @@ void Editor::deleteSelection() {
     if (!canSelect() || !hasSelection())
         return;
     finish();
-    if (document.deleteSelection()) {
+    if (document.deleteSelection(secondary)) {
         emit pixelsChanged({});
         emit changed();
     }

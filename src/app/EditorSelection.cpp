@@ -225,8 +225,8 @@ void Editor::refreshFloating() {
         painter.translate(-rect.topLeft());
         if (floatingMove_) {
             painter.setClipRegion(floatingOriginalSelection_);
-            painter.setCompositionMode(QPainter::CompositionMode_Clear);
-            painter.fillRect(floatingOriginalSelection_.boundingRect(), Qt::transparent);
+            painter.setCompositionMode(QPainter::CompositionMode_Source);
+            painter.fillRect(floatingOriginalSelection_.boundingRect(), secondary);
         }
         painter.setClipRegion(destination);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);

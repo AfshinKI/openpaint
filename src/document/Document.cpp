@@ -186,12 +186,12 @@ bool Document::setSelection(const QRegion& region) {
     selection_ = region;
     return true;
 }
-bool Document::deleteSelection() {
+bool Document::deleteSelection(QColor background) {
     if (selection_.isEmpty() || !beginPreview())
         return false;
     const auto rect = selection_.boundingRect();
     QImage patch(rect.size(), image_.format());
-    patch.fill(Qt::transparent);
+    patch.fill(background);
     updatePreview(patch, rect);
     return commitStroke();
 }

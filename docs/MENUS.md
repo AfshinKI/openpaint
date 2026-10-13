@@ -282,3 +282,8 @@ Transparent/partially transparent swatches show checkerboard backing, distinct
 from empty custom slots. Choosing another color restores an opaque background.
 This sets the working background/fill color, including new canvas space; it does
 not erase existing pixels or add a document history entry.
+
+Cut/Delete and the source area vacated by moved or transformed selections use the
+current background color, including its alpha. Irregular masks preserve pixels
+outside the selection. Undo restores the original pixels. The two color-option
+icons sit between the three palette rows; the transparency icon is 26px.

@@ -1086,12 +1086,16 @@ ApplicationWindow {
                     Layout.alignment: Qt.AlignHCenter
                 }
             }
-            ColumnLayout {
+            Item {
+                Layout.preferredWidth: 40
+                Layout.preferredHeight: 72
+                Layout.alignment: Qt.AlignTop
                 IconButton {
                     objectName: "editColorsButton"
                     flat: true
-                    implicitWidth: 40
-                    implicitHeight: 40
+                    width: 40
+                    height: 40
+                    y: 4
                     icon.width: 32
                     icon.height: 32
                     padding: 4
@@ -1101,14 +1105,29 @@ ApplicationWindow {
                     onClicked: colorDialog.begin(editor.selectedColor, editor.editingSecondary ? "secondary" : "primary")
                 }
                 IconButton {
+                    id: transparencyOption
                     objectName: "transparentBackgroundButton"
+                    background: Rectangle {
+                        anchors.centerIn: parent
+                        width: 28
+                        height: 28
+                        radius: 14
+                        color: "transparent"
+                        border.width: transparencyOption.visualFocus ? 2 : transparencyOption.hovered ? 1 : 0
+                        border.color: Theme.accent
+                    }
+                    width: 40
+                    height: 32
+                    y: 32
+                    padding: 3
+                    icon.width: 26
+                    icon.height: 26
                     flat: true
                     symbol: "transparent"
                     icon.color: "transparent"
                     text: qsTr("Transparent background color")
                     highlighted: editor.secondary.a === 0
                     enabled: !editor.busy
-                    Layout.alignment: Qt.AlignHCenter
                     onClicked: {
                         editor.editingSecondary = true;
                         editor.selectedColor = "transparent";

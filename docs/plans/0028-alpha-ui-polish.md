@@ -395,3 +395,18 @@ lint and repository checks passed. The shell case verifies fixed color roles,
 no immediate artwork/history mutation, transparent canvas expansion and Undo.
 Inspected the generated toolbar capture. Full desktop review remains pending.
 Next unfinished request is item 10 (Brushes split control).
+
+### Background color and alignment follow-up
+
+Raised and enlarged the transparency icon to 26px, positioning both color options
+between palette rows. Cut/Delete and selection move/transform source clearing now
+replace selected pixels with background color instead of unconditional alpha
+clearing. Coverage must include opaque/transparent/partial-alpha cut, irregular
+move masks, cancellation and Undo. Clipboard fixtures choose their tool before
+selection to respect the item 7 tool-switch contract.
+
+Validation: dev build, clipboard (eight cases), editor (12 cases), transform
+(ten cases), transparent-background shell workflow, formatting, strict QML lint
+and repository checks passed. Reviewed the generated alignment capture; the
+transparency option uses circular focus/hover feedback. UI validation was
+ offscreen; full desktop review remains pending.

@@ -116,7 +116,7 @@ class EditorTest : public QObject {
         QCOMPARE(editor.image(), base);
         QVERIFY(editor.hasSelection());
         editor.deleteSelection();
-        QCOMPARE(editor.image().pixelColor(30, 40).alpha(), 0);
+        QCOMPARE(editor.image().pixelColor(30, 40), editor.secondary);
         editor.undo();
         QCOMPARE(editor.image(), base);
         editor.deselect();
