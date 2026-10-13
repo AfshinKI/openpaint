@@ -4,6 +4,9 @@ User-visible changes will be recorded here. There are no releases yet.
 
 ## Unreleased
 
+- Add Help → Updates with build identity and explicit release-page browsing, plus
+  desktop integration, an original application icon and single-image launch arguments.
+
 - Export PNG/JPEG/BMP/WebP copies with explicit quality, lossless WebP and opaque
   background choices, without changing the working drawing’s saved state.
 

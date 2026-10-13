@@ -81,6 +81,11 @@ ApplicationWindow {
             requestChange("close");
         }
     }
+    UpdatesDialog {
+        id: updatesDialog
+        objectName: "updatesDialog"
+        parent: Overlay.overlay
+    }
     ExportDialog {
         id: exportOptions
         objectName: "exportOptions"
@@ -509,6 +514,11 @@ ApplicationWindow {
                 }
                 PaintMenu {
                     title: qsTr("&Help")
+                    PaintMenuItem {
+                        objectName: "updatesMenuItem"
+                        text: qsTr("Updates…")
+                        onTriggered: updatesDialog.open()
+                    }
                     PaintMenuItem {
                         action: aboutAction
                     }

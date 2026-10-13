@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+<component type="desktop-application">
+  <id>io.github.AfshinKI.OpenPaint</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>OpenPaint</name>
+  <summary>Draw and edit images offline</summary>
+  <developer id="io.github.afshinki"><name>OpenPaint contributors</name></developer>
+  <description>
+    <p>A Linux paint editor with brushes, shapes, text, selections and undoable image transformations. Open PNG, JPEG, BMP and WebP images and export copies with explicit transparency and quality choices.</p>
+    <p>Core editing works offline without accounts or telemetry. This early version has no layers or crash recovery.</p>
+  </description>
+  <launchable type="desktop-id">io.github.AfshinKI.OpenPaint.desktop</launchable>
+  <url type="homepage">https://github.com/AfshinKI/openpaint</url>
+  <url type="bugtracker">https://github.com/AfshinKI/openpaint/issues</url>
+  <content_rating type="oars-1.1"/>
+  <supports><control>pointing</control><control>keyboard</control></supports>
+</component>

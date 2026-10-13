@@ -1,6 +1,26 @@
 cmake_minimum_required(VERSION 3.28)
 project(OpenPaint VERSION 0.1.0 LANGUAGES CXX)
 
+set(OPENPAINT_VERSION_SUFFIX "dev" CACHE STRING "SemVer prerelease suffix; empty for stable")
+set(OPENPAINT_INSTALL_KIND "source" CACHE STRING "source, appimage, flatpak, or system")
+set_property(CACHE OPENPAINT_INSTALL_KIND PROPERTY STRINGS source appimage flatpak system)
+if(NOT OPENPAINT_INSTALL_KIND MATCHES "^(source|appimage|flatpak|system)$")
+    message(FATAL_ERROR "Invalid OPENPAINT_INSTALL_KIND")
+endif()
+set(OPENPAINT_VERSION "${PROJECT_VERSION}")
+set(OPENPAINT_CHANNEL "stable")
+if(NOT OPENPAINT_VERSION_SUFFIX STREQUAL "")
+    if(NOT OPENPAINT_VERSION_SUFFIX MATCHES "^[0-9A-Za-z]+([.-][0-9A-Za-z]+)*$")
+        message(FATAL_ERROR "Invalid OPENPAINT_VERSION_SUFFIX")
+    endif()
+    string(APPEND OPENPAINT_VERSION "-${OPENPAINT_VERSION_SUFFIX}")
+    set(OPENPAINT_CHANNEL "prerelease")
+    if(OPENPAINT_VERSION_SUFFIX STREQUAL "dev")
+        set(OPENPAINT_CHANNEL "development")
+    endif()
+endif()
+configure_file(src/platform/BuildConfig.h.in generated/BuildConfig.h @ONLY)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -38,6 +58,9 @@ target_compile_options(openpaint PRIVATE -Wall -Wextra -Wpedantic)
 
 if(BUILD_TESTING)
     find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+    qt_add_executable(openpaint_appinfo_tests tests/unit/tst_appinfo.cpp)
+    target_link_libraries(openpaint_appinfo_tests PRIVATE openpaint_ui Qt6::Test)
+    add_test(NAME app-info COMMAND openpaint_appinfo_tests)
     qt_add_executable(openpaint_imageio_tests tests/unit/tst_imageio.cpp)
     target_link_libraries(openpaint_imageio_tests PRIVATE openpaint_ui Qt6::Test)
     add_test(NAME image-io COMMAND openpaint_imageio_tests)
@@ -73,24 +96,35 @@ if(BUILD_TESTING)
     set_tests_properties(shell PROPERTIES TIMEOUT 30)
     add_test(NAME cli-version COMMAND openpaint --version)
     set_tests_properties(cli-version PROPERTIES
-        PASS_REGULAR_EXPRESSION "OpenPaint 0.1.0-dev" TIMEOUT 10)
+        PASS_REGULAR_EXPRESSION "OpenPaint ${OPENPAINT_VERSION}" TIMEOUT 10)
 endif()
 
-find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
-find_program(CLANG_FORMAT NAMES clang-format-18 clang-format REQUIRED)
-add_custom_target(format-check
-    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/check_format.py"
-        --clang-format "${CLANG_FORMAT}" --qmlformat "$<TARGET_FILE:Qt6::qmlformat>"
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    VERBATIM)
+if(BUILD_TESTING)
+    find_package(Python3 3.11 REQUIRED COMPONENTS Interpreter)
+    find_program(CLANG_FORMAT NAMES clang-format-18 clang-format REQUIRED)
+    add_custom_target(format-check
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/check_format.py"
+            --clang-format "${CLANG_FORMAT}" --qmlformat "$<TARGET_FILE:Qt6::qmlformat>"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        VERBATIM)
 
-file(GLOB OPENPAINT_QML_FILES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/qml/*.qml")
+    file(GLOB OPENPAINT_QML_FILES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/qml/*.qml")
 
-# Unlike the generated all_qmllint target, this explicitly fails on warnings.
-add_custom_target(qml-lint
-    COMMAND Qt6::qmllint --max-warnings 0 -I "${CMAKE_BINARY_DIR}/qml"
-        --resource "${CMAKE_BINARY_DIR}/qml/.qt/rcc/qmake_OpenPaint.qrc"
-        --resource "${CMAKE_BINARY_DIR}/qml/.qt/rcc/openpaint_ui_raw_qml_0.qrc"
-        ${OPENPAINT_QML_FILES}
-    DEPENDS openpaint_ui
-    VERBATIM)
+    # Unlike the generated all_qmllint target, this explicitly fails on warnings.
+    add_custom_target(qml-lint
+        COMMAND Qt6::qmllint --max-warnings 0 -I "${CMAKE_BINARY_DIR}/qml"
+            --resource "${CMAKE_BINARY_DIR}/qml/.qt/rcc/qmake_OpenPaint.qrc"
+            --resource "${CMAKE_BINARY_DIR}/qml/.qt/rcc/openpaint_ui_raw_qml_0.qrc"
+            ${OPENPAINT_QML_FILES}
+        DEPENDS openpaint_ui
+        VERBATIM)
+
+endif()
+
+include(GNUInstallDirs)
+install(TARGETS openpaint RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES packaging/io.github.AfshinKI.OpenPaint.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
+install(FILES packaging/io.github.AfshinKI.OpenPaint.metainfo.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
+install(FILES qml/icons/app.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps RENAME io.github.AfshinKI.OpenPaint.svg)
+install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/io.github.AfshinKI.OpenPaint)
+install(FILES README.md CHANGELOG.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
