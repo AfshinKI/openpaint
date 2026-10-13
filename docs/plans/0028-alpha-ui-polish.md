@@ -231,7 +231,7 @@ Repository and whitespace checks passed. Changes remain on the same polish branc
 
 ## Follow-up requests
 
-Items 1–8 are implemented below; items 9–11 remain pending before the final polish
+Items 1–9 are implemented below; items 10–11 remain pending before the final polish
 review. Earlier implementation evidence does not verify these requests.
 
 1. Add small square corner resize handles to active shapes, text boxes and
@@ -381,3 +381,17 @@ background fill, crop offsets, undo/redo, invalid/oversized dimensions, drag
 cancellation and content-handle compatibility. UI tests used offscreen rendering;
 full desktop review remains pending. Launch `./build/dev/openpaint`. Next request:
 item 9, the larger circular Edit colors icon.
+
+### Item 9 acceptance and implementation
+
+Edit colors is a 32px original circular icon on a flat control. The checkerboard
+option underneath selects transparent background without changing foreground or
+existing pixels. Alpha swatches display checkerboard backing; empty palette slots
+remain empty outlines. Choosing a regular background color restores opacity.
+Canvas expansion uses the chosen alpha, and Undo restores the previous image.
+
+Validation: dev build, transparent-background shell case, formatting, strict QML
+lint and repository checks passed. The shell case verifies fixed color roles,
+no immediate artwork/history mutation, transparent canvas expansion and Undo.
+Inspected the generated toolbar capture. Full desktop review remains pending.
+Next unfinished request is item 10 (Brushes split control).

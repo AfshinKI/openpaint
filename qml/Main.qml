@@ -1089,10 +1089,30 @@ ApplicationWindow {
             ColumnLayout {
                 IconButton {
                     objectName: "editColorsButton"
+                    flat: true
+                    implicitWidth: 40
+                    implicitHeight: 40
+                    icon.width: 32
+                    icon.height: 32
+                    padding: 4
                     symbol: "palette"
                     icon.color: "transparent"
                     text: qsTr("Edit colors")
                     onClicked: colorDialog.begin(editor.selectedColor, editor.editingSecondary ? "secondary" : "primary")
+                }
+                IconButton {
+                    objectName: "transparentBackgroundButton"
+                    flat: true
+                    symbol: "transparent"
+                    icon.color: "transparent"
+                    text: qsTr("Transparent background color")
+                    highlighted: editor.secondary.a === 0
+                    enabled: !editor.busy
+                    Layout.alignment: Qt.AlignHCenter
+                    onClicked: {
+                        editor.editingSecondary = true;
+                        editor.selectedColor = "transparent";
+                    }
                 }
             }
             Item {

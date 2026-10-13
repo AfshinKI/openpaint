@@ -723,6 +723,26 @@ class ShellTest : public QObject {
         QCOMPARE(editor->image(), draft);
     }
 
+    void transparentBackgroundChoice() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = canvas->editor();
+        const auto original = editor->image();
+        const auto foreground = editor->primary;
+        auto* button = window->findChild<QObject*>("transparentBackgroundButton");
+        QVERIFY(button);
+        QVERIFY(QMetaObject::invokeMethod(button, "click"));
+        QCOMPARE(editor->secondary.alpha(), 0);
+        QCOMPARE(editor->primary, foreground);
+        QVERIFY(editor->editingSecondary());
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->canUndo());
+        editor->resizeCanvas(0, 0, original.width() + 1, original.height());
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->image().pixelColor(original.width(), 0).alpha(), 0);
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        QVERIFY(capture(QStringLiteral("transparent-background.png")));
+    }
     void canvasCornerResize() {
         auto* canvas = window->findChild<CanvasItem*>("canvas");
         auto* editor = canvas->editor();

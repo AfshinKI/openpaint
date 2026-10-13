@@ -274,3 +274,11 @@ Switching tools clears selection bounds. Pending moved or pasted content is
 committed first as one undoable edit; clearing bounds adds no history entry.
 Busy transforms block tool changes. An explicit selection created while a tool
 is already active may still clip its edits until the next tool switch.
+
+Edit colors uses a larger 32px multicolor circular icon with no idle square
+outline. A checkerboard option directly below selects transparent background
+color and activates the background editing target; foreground is unchanged.
+Transparent/partially transparent swatches show checkerboard backing, distinct
+from empty custom slots. Choosing another color restores an opaque background.
+This sets the working background/fill color, including new canvas space; it does
+not erase existing pixels or add a document history entry.
