@@ -71,6 +71,10 @@ def main():
     run('git', '-C', str(ROOT), 'archive', '--format=tar', '--prefix=openpaint/',
         f'--output={source}', commit)
     manifest = json.loads((ROOT / 'packaging/io.github.AfshinKI.OpenPaint.json').read_text())
+    if (manifest['runtime'] != lock['runtime']['id']
+            or manifest['sdk'] != lock['sdk']['id']
+            or manifest['runtime-version'] != lock['branch']):
+        raise ValueError('Manifest dependencies differ from reviewed lock')
     module = manifest['modules'][0]
     module['config-opts'] = [option for option in module['config-opts']
                              if not option.startswith('-DOPENPAINT_VERSION_SUFFIX=')]
@@ -79,7 +83,7 @@ def main():
     manifest_path = work / 'manifest.json'
     manifest_path.write_text(json.dumps(manifest, indent=2) + '\n')
     run('flatpak-builder', '--user', '--disable-download', '--sandbox',
-        f'--jobs={args.jobs}', f'--state-dir={work / "state"}', f'--repo={work / "repo"}',
+        f'--jobs={args.jobs}', f'--arch={lock["architecture"]}', f'--state-dir={work / "state"}', f'--repo={work / "repo"}',
         str(work / 'app'), str(manifest_path))
     permissions = audit_permissions((work / 'app/metadata').read_text())
     binary = work / 'app/files/bin/openpaint'
