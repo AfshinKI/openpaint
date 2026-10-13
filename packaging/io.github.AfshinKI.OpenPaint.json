@@ -1,0 +1,34 @@
+{
+  "app-id": "io.github.AfshinKI.OpenPaint",
+  "runtime": "org.kde.Platform",
+  "runtime-version": "6.11",
+  "sdk": "org.kde.Sdk",
+  "command": "openpaint",
+  "branch": "alpha",
+  "finish-args": [
+    "--no-inherit-permissions",
+    "--share=ipc",
+    "--socket=wayland",
+    "--socket=fallback-x11",
+    "--device=dri",
+    "--env=QT_QPA_PLATFORMTHEME=xdgdesktopportal"
+  ],
+  "modules": [
+    {
+      "name": "openpaint",
+      "buildsystem": "cmake-ninja",
+      "config-opts": [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_TESTING=OFF",
+        "-DOPENPAINT_INSTALL_KIND=flatpak",
+        "-DOPENPAINT_VERSION_SUFFIX=dev"
+      ],
+      "sources": [
+        {
+          "type": "archive",
+          "path": "openpaint-source.tar"
+        }
+      ]
+    }
+  ]
+}

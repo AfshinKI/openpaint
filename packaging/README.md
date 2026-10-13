@@ -75,3 +75,45 @@ authentication mechanism. Verified portable self-updates remain M5.
 
 These notices preserve upstream copyright attribution. They do not identify a
 local developer, computer or account.
+
+## Flatpak test bundle (x86_64)
+
+Install Flatpak 1.14+ and flatpak-builder 1.4+ on a Linux build machine. Add Flathub
+as a user remote and install `org.kde.Platform//6.11` and `org.kde.Sdk//6.11`.
+The reviewed commits are in [flatpak-runtime.json](flatpak-runtime.json); select
+them using `flatpak update --user --commit=COMMIT REF` before building. The recipe
+rejects different installed commits instead of silently changing dependencies.
+The CI job shows the full setup. Runtime updates require a reviewed lock change.
+
+```sh
+python3 tools/package_flatpak.py
+```
+
+Commit tracked changes first. The script archives that commit, builds without
+source downloads, and writes the bundle, matching application source, generated
+manifest, inventory and checksums under a fresh `build/flatpak/` directory.
+Use `--work` for another fresh directory and `--suffix` for a reviewed prerelease.
+The installed runtime is distributed separately by Flathub; its source/build
+recipes are maintained in the [KDE runtime repository](https://invent.kde.org/packaging/flatpak-kde-runtime).
+The inventory records the exact runtime/SDK commits. OpenPaint's GPL license and
+application metadata are installed inside the bundle.
+
+The manifest disables inherited runtime permissions. It grants Wayland, fallback
+X11, shared IPC and rendering devices; it grants neither network nor broad home
+access. Native portals grant access to files the user selects. X11 itself offers
+weaker isolation than Wayland. The build audits effective metadata, including bus
+and environment permissions, before creating the bundle.
+
+For a tested release bundle, installation and removal use:
+
+```sh
+flatpak install --user ./OpenPaint-VERSION-x86_64.flatpak
+flatpak run io.github.AfshinKI.OpenPaint
+flatpak uninstall --user io.github.AfshinKI.OpenPaint
+```
+
+This alpha-channel bundle is not a Flathub listing or an OpenPaint update remote.
+Replace it manually by installing the next verified bundle. Uninstall keeps user
+settings unless explicitly removed. No OpenPaint signing key authenticates these
+test bundles; verify downloads and checksums from the release page. Signing and
+managed update distribution remain later release gates.
