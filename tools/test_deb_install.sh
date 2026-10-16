@@ -29,7 +29,7 @@ test -f /usr/share/metainfo/io.github.AfshinKI.OpenPaint.metainfo.xml
 QT_QPA_PLATFORM=offscreen openpaint --version
 grep -q 'io.github.AfshinKI.OpenPaint.desktop' /usr/share/applications/mimeinfo.cache
 # Exercise the installed launcher and X11 plugin without any build-tree Qt.
-xvfb-run -a sh -c '
+xvfb-run -a sh -eu -c '
   openpaint &
   app=$!
   sleep 5
