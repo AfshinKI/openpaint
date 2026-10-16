@@ -90,3 +90,6 @@ Portal save filename safety is tracked in [plan 0032](plans/0032-portal-save-fil
 Missing format extensions are rejected without reporting a successful save.
 
 Same-color fill fringe cleanup is tracked in [plan 0035](plans/0035-fill-fringe.md).
+
+Canvas edge handles and border removal are tracked in [plan 0034](plans/0034-canvas-edges.md).
+Selection dismissal and canvas Select All are tracked in [plan 0033](plans/0033-selection-dismissal.md).

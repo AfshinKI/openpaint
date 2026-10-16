@@ -324,3 +324,13 @@ Fill includes a checked-by-default Smooth edges option. It cleans a one-pixel sa
 
 Fill tolerance and Smooth edges share a floating options panel to keep the ribbon
 accessible at the minimum width. Its margins consume pointer input.
+
+Canvas midpoint handles resize one axis: left/right change width, top/bottom change height. Corners retain two-axis resizing. The decorative image outline is removed; handle and preview feedback remains.
+## Selection dismissal
+
+An outside click dismisses existing selection bounds and consumes the gesture;
+pending moved/pasted pixels commit first. A subsequent gesture creates a new
+selection. Outside clicks commit retained non-polygon shapes without creating
+another shape. Polygon vertex entry is unchanged. Ctrl+A activates Selection and
+selects the entire canvas after committing non-text previews; focused text fields
+retain their own Select All. Busy operations block this action.

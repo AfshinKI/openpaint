@@ -71,6 +71,54 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void canvasDoesNotDrawOutsideArtwork() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        QImage rendered(1200, 696, QImage::Format_ARGB32_Premultiplied);
+        rendered.fill(Qt::transparent);
+        QPainter painter(&rendered);
+        canvas.paint(&painter);
+        painter.end();
+        const auto origin = canvas.origin().toPoint();
+        QCOMPARE(rendered.pixelColor(origin.x() - 1, origin.y() + 30).alpha(), 0);
+        QCOMPARE(rendered.pixelColor(origin.x() + 30, origin.y() - 1).alpha(), 0);
+        QCOMPARE(rendered.pixelColor(origin.x() + 30, origin.y() + 30), QColor(Qt::white));
+    }
+    void outsideClickDismissesWithoutNewGesture() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        const auto original = editor.image();
+        editor.setTool(Editor::Tool::Select);
+        editor.selectRect(20, 20, 40, 40);
+        canvas.press({100, 100});
+        canvas.move({200, 200});
+        canvas.release({200, 200});
+        QVERIFY(!editor.hasSelection());
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        canvas.press({100, 100});
+        canvas.release({200, 200});
+        QVERIFY(editor.hasSelection());
+        canvas.press({-10, -10});
+        canvas.release({-10, -10});
+        QVERIFY(!editor.hasSelection());
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 1;
+        canvas.press({20, 20});
+        canvas.release({60, 60});
+        const auto shape = editor.image();
+        canvas.press({100, 100});
+        canvas.release({200, 200});
+        QVERIFY(!editor.previewActive());
+        QCOMPARE(editor.image(), shape);
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), shape);
+    }
+
     void pickerHoverPreview() {
         TestEditor editor;
         InputCanvas canvas;

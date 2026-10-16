@@ -390,7 +390,7 @@ ApplicationWindow {
         objectName: "selectAllAction"
         text: qsTr("Select all")
         shortcut: "Ctrl+A"
-        enabled: editor.canSelect && !window.textInputFocused && !window.documentOptionsOpen
+        enabled: !editor.busy && !editor.textActive && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.selectAll()
     }
     Action {

@@ -74,6 +74,23 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void selectAllKeyboard() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));
+        canvas->forceActiveFocus();
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        QCOMPARE(editor->selectionRect(), editor->image().rect());
+        QCOMPARE(editor->tool(), Editor::Tool::Select);
+        QVERIFY(!editor->dirty());
+        editor->setTool(Editor::Tool::Shape);
+        editor->shapeKind = 1;
+        editor->begin({20, 20}, false);
+        editor->extend({80, 80});
+        editor->endGesture();
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        QVERIFY(!editor->previewActive());
+        QCOMPARE(editor->selectionRect(), editor->image().rect());
+    }
     void launchAndResize() {
         QVERIFY(window->isVisible());
         QVERIFY(window->title().contains(QStringLiteral("OpenPaint")));
@@ -778,6 +795,41 @@ class ShellTest : public QObject {
         editor->undo();
         QCOMPARE(editor->image(), original);
         QVERIFY(!editor->canUndo());
+        for (int index = 4; index < 8; ++index) {
+            const auto edges =
+                visualItems(window->contentItem(), "canvasResizeCorner" + QString::number(index));
+            QCOMPARE(edges.size(), 1);
+            auto* edge = edges.first();
+            QVERIFY(edge->isVisible());
+            const auto from = edge->mapToScene({8, 8}).toPoint();
+            const auto to = from + QPoint(index == 4 ? 30 : -30, index == 6 ? 20 : -20);
+            QTest::mousePress(window, Qt::LeftButton, {}, from);
+            QTest::mouseMove(window, to);
+            QCOMPARE(editor->image(), original);
+            QTest::mouseRelease(window, Qt::LeftButton, {}, to);
+            QTRY_VERIFY(!editor->busy());
+            const auto resized = editor->image();
+            if (index < 6) {
+                QVERIFY(resized.width() < original.width());
+                QCOMPARE(resized.height(), original.height());
+            } else {
+                QCOMPARE(resized.width(), original.width());
+                QVERIFY(resized.height() < original.height());
+            }
+            editor->undo();
+            QCOMPARE(editor->image(), original);
+            editor->redo();
+            QCOMPARE(editor->image(), resized);
+            editor->undo();
+        }
+        const auto right = visualItems(window->contentItem(), "canvasResizeCorner5").first();
+        right->forceActiveFocus();
+        keyClick(Qt::Key_Left);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->imageSize(), QSize(original.width() - 1, original.height()));
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        QVERIFY(capture(QStringLiteral("canvas-edge-handles.png")));
     }
     void cornerResizeHandles() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
