@@ -15,6 +15,9 @@
   <url type="homepage">https://github.com/AfshinKI/openpaint</url>
   <url type="bugtracker">https://github.com/AfshinKI/openpaint/issues</url>
   <releases>
+    <release version="1.0.0" date="2026-10-16" type="stable">
+      <description><p>Single-layer editor with Ubuntu desktop installation and versioned Linux downloads. Layers, recovery and automatic updates remain future work.</p></description>
+    </release>
     <release version="0.1.0-alpha.1" date="2026-10-13" type="development">
       <description><p>First useful alpha with drawing, selections, image transformations and static image interchange.</p></description>
     </release>

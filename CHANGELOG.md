@@ -3,8 +3,12 @@
 User-visible changes are recorded here. See [release validation](docs/plans/0027-alpha-release.md)
 for artifact hashes, tested desktops and known limits.
 
-## Unreleased
+## 1.0.0 — release preparation
 
+- Freeze the implemented single-layer editing scope for v1; layers, recovery and
+  automatic updates remain future work.
+- Publish stable DEB, Flatpak and portable downloads only from explicit, fully
+  checked release runs, with version-only titles and matching source/checksums.
 - Add an Ubuntu 24.04 amd64 DEB recipe with application-menu integration, private
   Qt runtime, generated system dependencies and isolated installation checks.
 
