@@ -85,7 +85,7 @@ class PublicationTests(unittest.TestCase):
         import os
         import subprocess
         script = Path(__file__).resolve().parents[1] / 'publish_release.sh'
-        for mode in ('published', 'upload-failure', 'success', 'wrong-target'):
+        for mode in ('published', 'upload-failure', 'success', 'wrong-target', 'tag-network-error'):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
                 (root / 'packaging').mkdir()
@@ -103,7 +103,7 @@ with open('calls', 'a') as log:
     log.write(name + ' ' + ' '.join(args) + '\\n')
 mode = os.environ['TEST_MODE']
 if name == 'git':
-    sys.exit(2)  # No pre-existing tag.
+    sys.exit(128 if mode == 'tag-network-error' else 2)
 if name == 'gh' and args[:2] == ['release', 'view']:
     print(json.dumps({'isDraft': mode != 'published', 'targetCommitish': ('b' if mode == 'wrong-target' else 'a') * 40}))
 if name == 'gh' and args[:2] == ['release', 'upload'] and mode == 'upload-failure':

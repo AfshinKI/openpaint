@@ -12,6 +12,10 @@ PYTHON
 if git ls-remote --exit-code origin "refs/tags/$tag" >/dev/null 2>&1; then
   git fetch --no-tags origin "refs/tags/$tag"
   test "$(git rev-parse 'FETCH_HEAD^{commit}')" = "$SOURCE_SHA"
+else
+  status=$?
+  # ls-remote returns 2 for an absent ref; transport errors must not bypass this gate.
+  test "$status" -eq 2
 fi
 if gh release view "$tag" --json isDraft,targetCommitish > build-release.json 2>/dev/null; then
   test "$(python3 -c 'import json; print(json.load(open("build-release.json"))["isDraft"])')" = True || {

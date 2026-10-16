@@ -14,7 +14,9 @@ an OpenPaint signing signature or an automatic updater.
 
 ## Ubuntu 24.04 installer
 
-The DEB recipe targets Ubuntu 24.04 amd64. Download `OpenPaint-<version>-ubuntu24.04-amd64.deb` and verify its checksum.
+The DEB recipe targets Ubuntu 24.04 amd64. The bundled Qt runtime requires
+SSSE3, SSE4.1, SSE4.2 and POPCNT CPU features (also expose these in virtual machines).
+Download `OpenPaint-<version>-ubuntu24.04-amd64.deb` and verify its checksum.
 Install from the download directory:
 
 ```sh

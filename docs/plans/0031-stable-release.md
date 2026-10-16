@@ -33,7 +33,9 @@ change. Downloads and dependency installation use GitHub/Flathub/Ubuntu servers.
 Installer PR #36 passed all eight checks and merged through the protected flow.
 An initial VM menu test launched a previously installed alpha Flatpak instead of
 the DEB. Its save left a hidden portal temporary file; that run is not DEB evidence.
-The VM is being retested with host CPU features and the old alpha removed.
+Retesting with host CPU features and the old alpha removed passed DEB menu launch,
+draw, portal save, independent PNG decode and file-manager Open With reopening.
+The packaged Qt runtime requires SSSE3/SSE4.1/SSE4.2/POPCNT; document this baseline.
 25 tooling tests pass, including invalid release requests, tampered/missing assets,
 wrong versions/source commits and compliance material retention.
 

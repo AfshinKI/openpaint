@@ -2,7 +2,8 @@ OpenPaint is an offline, single-layer Linux paint editor with brushes, fill, sha
 text, selections, image transformations and undo/redo. Open/export PNG, JPEG, BMP
 and WebP; save working drawings as PNG.
 
-Choose one Linux x86_64 download:
+Choose one Linux x86_64 download. Native DEB/portable packages require SSSE3,
+SSE4.1, SSE4.2 and POPCNT CPU features:
 
 - **Ubuntu 24.04:** download the `.deb`, then install with
   `sudo apt install ./OpenPaint-{VERSION}-ubuntu24.04-amd64.deb`. OpenPaint appears in
