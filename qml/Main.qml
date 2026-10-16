@@ -86,6 +86,11 @@ ApplicationWindow {
             requestChange("close");
         }
     }
+    AppearanceDialog {
+        id: appearanceDialog
+        objectName: "appearanceDialog"
+        parent: Overlay.overlay
+    }
     UpdatesDialog {
         id: updatesDialog
         objectName: "updatesDialog"
@@ -452,16 +457,15 @@ ApplicationWindow {
         rightPadding: 4
         topPadding: 2
         bottomPadding: 2
-        background: Rectangle {
-            color: Theme.window
+        background: GlassSurface {
+            radius: 0
+            border.width: 0
         }
         contentItem: RowLayout {
             spacing: 4
             MenuBar {
                 objectName: "primaryMenuBar"
-                background: Rectangle {
-                    color: Theme.window
-                }
+                background: Item {}
                 delegate: MenuBarItem {
                     id: menuEntry
                     background: Rectangle {
@@ -616,6 +620,12 @@ ApplicationWindow {
                     PaintMenuItem {
                         action: darkThemeAction
                     }
+                    MenuSeparator {}
+                    PaintMenuItem {
+                        objectName: "glassSettingsMenuItem"
+                        text: qsTr("Glass appearance…")
+                        onTriggered: appearanceDialog.open()
+                    }
                 }
             }
         }
@@ -623,12 +633,10 @@ ApplicationWindow {
     header: ToolBar {
         objectName: "mainToolbar"
         height: 112
-        background: Rectangle {
+        background: GlassSurface {
+            objectName: "ribbonSurface"
             anchors.fill: parent
             anchors.margins: 4
-            radius: Theme.surfaceRadius
-            color: Theme.panel
-            border.color: Theme.divider
         }
         RowLayout {
             anchors.fill: parent
@@ -1350,6 +1358,10 @@ ApplicationWindow {
     }
     footer: ToolBar {
         height: 36
+        background: GlassSurface {
+            radius: 0
+            border.width: 0
+        }
         RowLayout {
             anchors.fill: parent
             anchors.leftMargin: 16

@@ -236,3 +236,5 @@ Their hit areas remain fixed at screen scale. Resizing preserves the active
 preview until committed; cancellation restores the original artwork. See the
 [control specification](MENUS.md#workspace-and-status-bar). Canvas corners separately crop or extend the image without resampling,
 using an undoable worker transform.
+
+Glass appearance adds translucent gradients and fine highlights to shared UI surfaces. Settings → Glass appearance can disable it or set 40–100% surface opacity (default 85%). It affects backgrounds only; artwork, text and controls retain their own opacity. This supersedes the flat-surface target, without adding desktop transparency or blur.

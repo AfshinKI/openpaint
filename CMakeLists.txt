@@ -122,7 +122,8 @@ if(BUILD_TESTING)
         fileDialogCancel
         nativePortalWorkflow
         keyboardFileWorkflow
-        topRightControls)
+        topRightControls
+        glassAppearanceSettings)
     add_test(NAME shell-controls COMMAND openpaint_shell_tests
         brushMainActivation
         ribbonShapeKeyboard

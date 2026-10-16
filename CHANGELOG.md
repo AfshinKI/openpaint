@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — glass appearance
+
+- Add glass-style surfaces with a persistent toggle and opacity slider in Settings.
+- Keep artwork opacity independent of appearance settings.
+
 ## Unreleased — fill edges
 
 - Clean same-color antialias fringes during fill; retain an exact-match option.

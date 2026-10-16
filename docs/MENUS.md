@@ -320,6 +320,8 @@ The dialogs preserve the exact filename authorized by the desktop portal. They d
 not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
 
+Settings includes Glass appearance with a persistent toggle, 40–100% surface opacity slider, Restore defaults and Close. Defaults are enabled/85%; disabling restores opaque surfaces. No artwork edit or history entry occurs.
+
 Fill includes a checked-by-default Smooth edges option. It cleans a one-pixel same-color antialias fringe without expanding flood connectivity. Disable it for exact matching; tolerance remains separately adjustable.
 
 Fill tolerance and Smooth edges share a floating options panel to keep the ribbon

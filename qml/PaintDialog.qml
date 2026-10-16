@@ -19,10 +19,8 @@ Dialog {
         wrapMode: Text.WordWrap
     }
     padding: 20
-    background: Rectangle {
+    background: GlassSurface {
         radius: Theme.dialogRadius
-        color: Theme.panel
-        border.color: Theme.divider
     }
     footer: DialogButtonBox {
         padding: 12
