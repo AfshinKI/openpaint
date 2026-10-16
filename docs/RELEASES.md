@@ -13,7 +13,8 @@ keys or automatic in-app installer exists yet.
 | Flatpak | Installed Linux app; GNOME and KDE | Configured Flatpak repository and desktop software manager |
 | AppImage | Portable download from GitHub Releases | OpenPaint's verified portable updater from M5 |
 | Source | Developers and distribution packagers | User or distribution package manager |
-| deb/rpm | Deferred; add only with maintenance capacity | Distribution/package manager; never overwrite from inside the app |
+| DEB | Ubuntu 24.04 amd64 installer; validation in [plan 0030](plans/0030-debian-installer.md) | APT; manual download until an update repository exists |
+| RPM | Deferred; Flatpak available for other distributions | Distribution/package manager |
 
 The native release toolchain is pinned to Qt 6.12.0; [plan 0023](plans/0023-maintained-qt.md)
 records the migration. Flatpak uses its maintained KDE runtime with exact commits

@@ -117,3 +117,25 @@ Replace it manually by installing the next verified bundle. Uninstall keeps user
 settings unless explicitly removed. No OpenPaint signing key authenticates these
 test bundles; verify downloads and checksums from the release page. Signing and
 managed update distribution remain later release gates.
+
+## Ubuntu DEB (amd64)
+
+Use the same pinned Ubuntu container and Qt toolchain as AppImage, plus `dpkg-dev`
+and `binutils`. Build with a fresh working directory:
+
+```sh
+python3 tools/package_appimage.py --qt build/qt/6.12.0/gcc_64 --work build/deb --kind system --collect-system-sources
+```
+
+The public directory contains the DEB, matching source/notices archive and checksums.
+The intermediate AppImage is retained for audit only and has system identity.
+`package_deb.py` preserves the audited layout privately under `/usr/lib/openpaint`;
+only the launcher and desktop registration enter shared system locations. Every
+ELF object is scanned for host dependencies; unresolved libraries fail packaging.
+No maintainer script deletes user data or changes default image associations.
+
+Run `bash tools/test_deb_install.sh PACKAGE.deb` only in a disposable Ubuntu test
+machine with sudo, Xvfb and xauth. It installs/reinstalls/removes the package and
+checks launcher survival and generated-file preservation. Desktop menu and actual
+draw/save checks remain separate release acceptance cases in
+[plan 0030](../docs/plans/0030-debian-installer.md).

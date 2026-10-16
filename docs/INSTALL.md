@@ -12,6 +12,26 @@ directory, run `sha256sum --ignore-missing -c SHA256SUMS`. Every downloaded entr
 must report OK. Checksums detect changed bytes; these alpha artifacts do not have
 an OpenPaint signing signature or an automatic updater.
 
+## Ubuntu installer (pending release publication)
+
+The DEB recipe targets Ubuntu 24.04 amd64. Once a release includes the asset,
+download `OpenPaint-<version>-ubuntu24.04-amd64.deb` and verify its checksum.
+Install from the download directory:
+
+```sh
+sudo apt install ./OpenPaint-<version>-ubuntu24.04-amd64.deb
+```
+
+OpenPaint appears in the application menu and image Open With choices. The package
+does not change the default image viewer. Its Qt libraries are private to the app.
+APT may download system dependencies; drawing remains offline.
+
+Install a newer downloaded DEB with the same command to update. Save your work and
+close OpenPaint first. No OpenPaint APT repository or automatic update feed is
+configured. Remove with `sudo apt remove openpaint`; saved artwork is untouched.
+Other distributions should use Flatpak or a tested portable build. A `.deb` suffix
+alone does not establish Debian or older Ubuntu compatibility.
+
 ## Recommended: portable Linux archive
 
 Download the `OpenPaint-<version>-linux-x86_64.tar.gz` asset. Extract it with your
