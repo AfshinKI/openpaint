@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — canvas edges
+
+- Add single-axis canvas midpoint resize handles and remove the decorative border.
+
 User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
 for artifact hashes, tested desktops and known limits.
 

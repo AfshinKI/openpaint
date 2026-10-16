@@ -319,3 +319,5 @@ Save requires a `.png` filename; Export requires the selected format's extension
 The dialogs preserve the exact filename authorized by the desktop portal. They do
 not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
+
+Canvas midpoint handles resize one axis: left/right change width, top/bottom change height. Corners retain two-axis resizing. The decorative image outline is removed; handle and preview feedback remains.
