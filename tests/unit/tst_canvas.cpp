@@ -71,6 +71,20 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void canvasDoesNotDrawOutsideArtwork() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        QImage rendered(1200, 696, QImage::Format_ARGB32_Premultiplied);
+        rendered.fill(Qt::transparent);
+        QPainter painter(&rendered);
+        canvas.paint(&painter);
+        painter.end();
+        const auto origin = canvas.origin().toPoint();
+        QCOMPARE(rendered.pixelColor(origin.x() - 1, origin.y() + 30).alpha(), 0);
+        QCOMPARE(rendered.pixelColor(origin.x() + 30, origin.y() - 1).alpha(), 0);
+        QCOMPARE(rendered.pixelColor(origin.x() + 30, origin.y() + 30), QColor(Qt::white));
+    }
     void outsideClickDismissesWithoutNewGesture() {
         TestEditor editor;
         InputCanvas canvas;

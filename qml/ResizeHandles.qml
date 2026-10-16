@@ -18,9 +18,21 @@ Item {
     readonly property rect bounds: dragging ? draftBounds : activeBounds
     visible: bounds.width > 0 && bounds.height > 0 && !editor.busy
     function corner(rect, index) {
+        if (index >= 4)
+            return [Qt.point(rect.x, rect.y + rect.height / 2), Qt.point(rect.x + rect.width, rect.y + rect.height / 2), Qt.point(rect.x + rect.width / 2, rect.y), Qt.point(rect.x + rect.width / 2, rect.y + rect.height)][index - 4];
         return Qt.point(rect.x + (index % 2 ? rect.width : 0), rect.y + (index >= 2 ? rect.height : 0));
     }
     function adjust(point) {
+        if (activeCorner >= 4) {
+            const b = initialBounds;
+            const horizontal = activeCorner < 6;
+            const leading = activeCorner === 4 || activeCorner === 6;
+            const fixed = horizontal ? (leading ? b.x + b.width : b.x) : (leading ? b.y + b.height : b.y);
+            const coordinate = horizontal ? point.x : point.y;
+            const edge = Math.round(Math.max(leading ? fixed - 16384 : fixed + 1, Math.min(leading ? fixed - 1 : fixed + 16384, coordinate)));
+            draftBounds = horizontal ? Qt.rect(leading ? edge : fixed, b.y, Math.abs(edge - fixed), b.height) : Qt.rect(b.x, leading ? edge : fixed, b.width, Math.abs(edge - fixed));
+            return;
+        }
         const opposite = corner(initialBounds, 3 - activeCorner);
         const left = activeCorner % 2 === 0;
         const top = activeCorner < 2;
@@ -59,10 +71,11 @@ Item {
         visible: handles.dragging
     }
     Repeater {
-        model: 4
+        model: 8
         delegate: Item {
             id: handle
             required property int index
+            visible: index < 4 || handles.canvasMode
             objectName: (handles.canvasMode ? "canvasResizeCorner" : "resizeCorner") + index
             readonly property point position: handles.corner(handles.bounds, index)
             x: handles.canvas.origin.x + position.x * handles.canvas.zoom - width / 2
@@ -71,7 +84,7 @@ Item {
             height: 16
             activeFocusOnTab: true
             Accessible.role: Accessible.Button
-            Accessible.name: (handles.canvasMode ? qsTr("Canvas: ") : "") + [qsTr("Resize top left"), qsTr("Resize top right"), qsTr("Resize bottom left"), qsTr("Resize bottom right")][index]
+            Accessible.name: (handles.canvasMode ? qsTr("Canvas: ") : "") + [qsTr("Resize top left"), qsTr("Resize top right"), qsTr("Resize bottom left"), qsTr("Resize bottom right"), qsTr("Resize left edge"), qsTr("Resize right edge"), qsTr("Resize top edge"), qsTr("Resize bottom edge")][index]
             Keys.onEscapePressed: event => {
                 if (handles.dragging)
                     handles.dragging = false;
@@ -109,7 +122,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton
-                cursorShape: handle.index === 0 || handle.index === 3 ? Qt.SizeFDiagCursor : Qt.SizeBDiagCursor
+                cursorShape: handle.index >= 6 ? Qt.SizeVerCursor : handle.index >= 4 ? Qt.SizeHorCursor : handle.index === 0 || handle.index === 3 ? Qt.SizeFDiagCursor : Qt.SizeBDiagCursor
                 preventStealing: true
                 onPressed: mouse => {
                     handle.forceActiveFocus();

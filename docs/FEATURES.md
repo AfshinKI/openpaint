@@ -89,4 +89,5 @@ Implemented subset evidence: [canvas](plans/0002-drawing-canvas.md) and
 Portal save filename safety is tracked in [plan 0032](plans/0032-portal-save-filenames.md).
 Missing format extensions are rejected without reporting a successful save.
 
+Canvas edge handles and border removal are tracked in [plan 0034](plans/0034-canvas-edges.md).
 Selection dismissal and canvas Select All are tracked in [plan 0033](plans/0033-selection-dismissal.md).
