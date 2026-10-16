@@ -1148,6 +1148,48 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
+    void glassAppearanceSettings() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        const auto artwork = editor->image();
+        auto* dialog = window->findChild<QObject*>("appearanceDialog");
+        auto* surface = window->findChild<QObject*>("ribbonSurface");
+        auto* toggle = window->findChild<QObject*>("glassEnabled");
+        auto* slider = window->findChild<QObject*>("glassOpacity");
+        QVERIFY(dialog && surface && toggle && slider);
+        QVERIFY(QMetaObject::invokeMethod(dialog, "open"));
+        QVERIFY(tabTo("restoreAppearance"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(slider->property("value").toInt(), 85);
+        QVERIFY(tabTo("glassOpacity"));
+        keyClick(Qt::Key_Left);
+        QCOMPARE(slider->property("value").toInt(), 84);
+        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.84);
+        QVERIFY(tabTo("glassEnabled"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 1.0);
+        QVERIFY(!slider->property("enabled").toBool());
+        QVERIFY(capture("glass-disabled.png"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.84);
+        QCOMPARE(canvas->opacity(), 1.0);
+        QCOMPARE(editor->image(), artwork);
+        QVERIFY(!editor->dirty());
+        QVERIFY(!editor->canUndo());
+        window->resize(1024, 640);
+        QVERIFY(capture("glass-settings-light-1024.png"));
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("darkThemeAction"), "trigger",
+                                          Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture("glass-settings-dark-1024.png"));
+        QVERIFY(tabTo("restoreAppearance"));
+        keyClick(Qt::Key_Space);
+        keyClick(Qt::Key_Escape);
+        window->resize(1280, 800);
+        QVERIFY(capture("glass-dark-1280.png"));
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("lightThemeAction"),
+                                          "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture("glass-light-1280.png"));
+    }
     void topRightControls() {
         auto* settings = window->findChild<QObject*>("settingsButton");
         auto* updates = window->findChild<QObject*>("quickUpdatesButton");

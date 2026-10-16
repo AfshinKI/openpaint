@@ -71,3 +71,5 @@ other. Never upload suspected secrets to a third-party checker to validate them.
 If private data is exposed, revoke affected credentials first, remove the material,
 and coordinate history cleanup. A deletion commit alone does not erase history,
 forks, caches, or previously downloaded copies.
+
+Glass enablement and opacity persist locally in XDG configuration. These preferences contain no artwork or identifiers and cause no network requests.

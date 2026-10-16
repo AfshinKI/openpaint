@@ -122,6 +122,7 @@ if(BUILD_TESTING)
         nativePortalWorkflow
         keyboardFileWorkflow
         topRightControls
+        glassAppearanceSettings
         brushMainActivation
         ribbonShapeKeyboard
         shapeStyleMenus

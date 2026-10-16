@@ -319,3 +319,5 @@ Save requires a `.png` filename; Export requires the selected format's extension
 The dialogs preserve the exact filename authorized by the desktop portal. They do
 not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
+
+Settings includes Glass appearance with a persistent toggle, 40–100% surface opacity slider, Restore defaults and Close. Defaults are enabled/85%; disabling restores opaque surfaces. No artwork edit or history entry occurs.

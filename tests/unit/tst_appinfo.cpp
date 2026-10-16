@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "platform/AppInfo.h"
+#include "platform/Appearance.h"
 #include <QDesktopServices>
+#include <QTemporaryDir>
 #include <QtTest>
 
 class AppInfoTest : public QObject {
@@ -11,6 +13,26 @@ class AppInfoTest : public QObject {
         received = url;
     }
   private slots:
+    void appearancePersistenceAndBounds() {
+        QTemporaryDir dir;
+        const auto file = dir.filePath("appearance.ini");
+        Appearance first(file);
+        QVERIFY(first.glassEnabled());
+        QCOMPARE(first.surfaceOpacity(), 85);
+        first.setGlassEnabled(false);
+        first.setSurfaceOpacity(62);
+        Appearance restored(file);
+        QVERIFY(!restored.glassEnabled());
+        QCOMPARE(restored.surfaceOpacity(), 62);
+        restored.setSurfaceOpacity(-5);
+        QCOMPARE(restored.surfaceOpacity(), 40);
+        restored.setSurfaceOpacity(200);
+        QCOMPARE(restored.surfaceOpacity(), 100);
+        restored.restoreDefaults();
+        Appearance defaults(file);
+        QVERIFY(defaults.glassEnabled());
+        QCOMPARE(defaults.surfaceOpacity(), 85);
+    }
     void explicitBrowserRequest() {
         QDesktopServices::setUrlHandler("https", this, "capture");
         AppInfo info;

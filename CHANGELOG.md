@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — glass appearance
+
+- Add glass-style surfaces with a persistent toggle and opacity slider in Settings.
+- Keep artwork opacity independent of appearance settings.
+
 User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
 for artifact hashes, tested desktops and known limits.
 

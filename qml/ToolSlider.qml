@@ -5,7 +5,7 @@ import QtQuick.Controls.impl
 import QtQuick.Layouts
 import OpenPaint
 
-Rectangle {
+GlassSurface {
     id: panel
     required property string label
     required property string symbol
@@ -18,8 +18,6 @@ Rectangle {
     implicitWidth: 36
     implicitHeight: 204
     radius: Theme.surfaceRadius
-    color: Theme.panel
-    border.color: Theme.divider
     // The floating panel consumes input so its margins never paint the canvas.
     MouseArea {
         anchors.fill: parent

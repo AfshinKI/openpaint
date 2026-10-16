@@ -88,3 +88,5 @@ Implemented subset evidence: [canvas](plans/0002-drawing-canvas.md) and
 
 Portal save filename safety is tracked in [plan 0032](plans/0032-portal-save-filenames.md).
 Missing format extensions are rejected without reporting a successful save.
+
+Adjustable glass appearance is tracked in [plan 0036](plans/0036-glass-appearance.md).
