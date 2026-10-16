@@ -93,6 +93,18 @@ class UpdatesTest : public QObject {
             QVERIFY(!valid);
         }
     }
+    void invalidConsentStaysOffline() {
+        QTemporaryDir directory;
+        const auto file = directory.filePath("settings.ini");
+        QSettings settings(file, QSettings::IniFormat);
+        settings.setValue("updates/automatic", "invalid");
+        settings.sync();
+        FakeNetwork network;
+        UpdateService service(&network, file, [] { return 1700000000; });
+        QVERIFY(!service.automatic());
+        service.checkAutomatic();
+        QVERIFY(network.requests.isEmpty());
+    }
     void explicitCheckAndRequestPolicy() {
         QTemporaryDir directory;
         FakeNetwork network;
@@ -166,6 +178,7 @@ class UpdatesTest : public QObject {
         QTemporaryDir directory;
         FakeNetwork network;
         network.next.status = 429;
+        network.next.body = QByteArray(256 * 1024 + 1, 'x');
         network.next.headers = {{"Retry-After", "7200"}};
         qint64 now = 1700000000;
         const auto file = directory.filePath("settings.ini");

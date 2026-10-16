@@ -27,7 +27,7 @@ UpdateService::UpdateService(QNetworkAccessManager* network, const QString& file
                     ? std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
                                                   "OpenPaint", "OpenPaint")
                     : std::make_unique<QSettings>(file, QSettings::IniFormat);
-    automatic_ = supported() && settings_->value("updates/automatic", false).toBool();
+    automatic_ = supported() && settings_->value("updates/automatic", false).toString() == "true";
     lastAttempt_ = settings_->value("updates/lastAttempt", 0).toLongLong();
     retryAt_ = settings_->value("updates/retryAt", 0).toLongLong();
     if (lastAttempt_ < 0 || lastAttempt_ > clock_() + 365 * Day)
@@ -162,10 +162,6 @@ void UpdateService::finish() {
     const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     const auto error = reply->error();
     reply->deleteLater();
-    if (tooLarge_ || body_.size() > MaxResponse) {
-        setMessage(tr("GitHub returned excessive release metadata. No update was accepted."));
-        return;
-    }
     if (status == 403 || status == 429) {
         const auto now = clock_();
         bool ok = false;
@@ -183,6 +179,10 @@ void UpdateService::finish() {
         settings_->setValue("updates/retryAt", retryAt_);
         settings_->sync();
         setMessage(tr("GitHub limited this request. Try again later; automatic checks will wait."));
+        return;
+    }
+    if (tooLarge_ || body_.size() > MaxResponse) {
+        setMessage(tr("GitHub returned excessive release metadata. No update was accepted."));
         return;
     }
     if (timedOut_ || error != QNetworkReply::NoError) {

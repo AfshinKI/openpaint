@@ -54,3 +54,9 @@ request succeeded. No token or artwork was used.
 
 Packaged TLS/CA validation and real-desktop checks remain outstanding; packaging
 CI must pass before merge. Next: protected PR review. Independent of glass/editing PRs.
+
+A temporary integration tree combining PRs #41–#45 passed all 14 CTest suites.
+Mechanical merge resolutions retained both new canvas tests, both QML service/dialog
+declarations and both CMake source lists; appended documentation was combined.
+Final release-check review added fail-closed malformed consent and preserved rate
+backoff on oversized responses, covered by focused tests.
