@@ -123,7 +123,7 @@ def main() -> None:
     parser.add_argument('--qt', type=Path, required=True)
     parser.add_argument('--work', type=Path, default=ROOT / 'build/appimage')
     parser.add_argument('--suffix', default='dev')
-    parser.add_argument('--kind', choices=['appimage', 'portable'], default='appimage')
+    parser.add_argument('--kind', choices=['appimage', 'portable', 'system'], default='appimage')
     parser.add_argument('--jobs', type=int, default=2)
     parser.add_argument('--collect-system-sources', action='store_true', help='Requires signed deb-src indexes; mandatory before release')
     args = parser.parse_args()
@@ -218,14 +218,23 @@ def main() -> None:
            'components': components}
     bom_path = work / 'bom.cdx.json'
     bom_path.write_text(json.dumps(bom, indent=2) + '\n')
-    portable = portable_archive(appdir, work, version)
+    if args.kind == 'system':
+        from package_deb import build_deb
+        portable = build_deb(appdir, work, version)
+        bom['metadata']['component']['hashes'] = [{'alg': 'SHA-256', 'content': digest(portable)}]
+        bom_path.write_text(json.dumps(bom, indent=2) + '\n')
+    else:
+        portable = portable_archive(appdir, work, version)
     # Keep public downloads small in number, retaining all corresponding sources.
     own_source = work / 'openpaint-source.tar'
     with own_source.open('wb') as output:
         subprocess.run(['git', '-C', str(ROOT), 'archive', '--format=tar', 'HEAD'], stdout=output, check=True)
     compliance = work / f'OpenPaint-{version}-sources-and-notices.tar'
+    compliance_files = [source_bundle, own_source, work / 'dependency-inventory.json', bom_path]
+    if args.kind == 'system':
+        compliance_files.append(work / 'deb-inventory.json')
     with tarfile.open(compliance, 'w') as archive:
-        for path in [source_bundle, own_source, work / 'dependency-inventory.json', bom_path]:
+        for path in compliance_files:
             archive.add(path, arcname=path.name, filter=public_tar_info)
     public = work / 'public'
     public.mkdir()

@@ -3,6 +3,11 @@
 User-visible changes are recorded here. See [release validation](docs/plans/0027-alpha-release.md)
 for artifact hashes, tested desktops and known limits.
 
+## Unreleased
+
+- Add an Ubuntu 24.04 amd64 DEB recipe with application-menu integration, private
+  Qt runtime, generated system dependencies and isolated installation checks.
+
 ## 0.1.0-alpha.1 — 2026-10-13
 
 - Add a restricted Flatpak test-bundle recipe with pinned runtime/SDK commits,
