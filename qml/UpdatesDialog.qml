@@ -6,11 +6,12 @@ import OpenPaint
 
 PaintDialog {
     id: dialog
+    required property UpdateService service
     property string browserError: ""
     title: qsTr("Updates")
     modal: true
     anchors.centerIn: parent
-    width: 480
+    width: Math.min(parent.width - 48, 520)
     standardButtons: Dialog.Close
     onOpened: browserError = ""
     contentItem: ColumnLayout {
@@ -33,7 +34,41 @@ PaintDialog {
             color: Theme.text
         }
         Label {
-            text: qsTr("Automatic update checking and installation are not available in this version.")
+            objectName: "releaseCheckStatus"
+            text: dialog.service.message
+            textFormat: Text.PlainText
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            color: Theme.secondaryText
+        }
+        RowLayout {
+            PaintButton {
+                objectName: "checkReleaseButton"
+                text: qsTr("Check now")
+                enabled: dialog.service.supported && !dialog.service.busy
+                onClicked: dialog.service.check()
+            }
+            PaintButton {
+                text: qsTr("Cancel check")
+                visible: dialog.service.busy
+                onClicked: dialog.service.cancel()
+            }
+        }
+        Label {
+            text: qsTr("Checks api.github.com for stable releases. GitHub receives your IP address and ordinary request metadata; no artwork or document information is sent.")
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            color: Theme.secondaryText
+        }
+        PaintCheckBox {
+            objectName: "automaticReleaseChecks"
+            text: qsTr("Check daily while OpenPaint is running")
+            enabled: dialog.service.supported
+            checked: dialog.service.automatic
+            onToggled: dialog.service.automatic = checked
+        }
+        Label {
+            text: qsTr("Updates are downloaded and installed manually. A GitHub release may not yet be available in your package manager.")
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             color: Theme.secondaryText
@@ -42,7 +77,7 @@ PaintDialog {
             objectName: "viewReleasesButton"
             text: qsTr("View releases")
             onClicked: {
-                if (!AppInfo.openReleases())
+                if (!(dialog.service.available ? dialog.service.openRelease() : AppInfo.openReleases()))
                     dialog.browserError = qsTr("The browser could not be opened. Open the address below manually.");
             }
         }

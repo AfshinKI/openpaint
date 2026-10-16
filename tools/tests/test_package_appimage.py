@@ -71,6 +71,31 @@ class PackageTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Unsafe source archive'):
                 PACKAGE.license_files(archive, root / 'licenses')
 
+    def test_tls_runtime_is_required_for_release_checks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in [
+                'usr/bin/openpaint', 'usr/plugins/platforms/libqwayland.so',
+                'usr/plugins/platforms/libqxcb.so',
+                'usr/plugins/platformthemes/libqxdgdesktopportal.so',
+                'usr/plugins/imageformats/libqwebp.so',
+                'usr/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.so',
+                'usr/plugins/wayland-shell-integration/libxdg-shell.so',
+                'usr/lib/libssl.so.3', 'usr/lib/libcrypto.so.3',
+            ]:
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b'fixture')
+            with self.assertRaisesRegex(ValueError, 'tls/libqopensslbackend'):
+                PACKAGE.audit(root, [])
+            tls = root / 'usr/plugins/tls/libqopensslbackend.so'
+            tls.parent.mkdir(parents=True)
+            tls.write_bytes(b'fixture')
+            self.assertTrue(PACKAGE.audit(root, []))
+            (root / 'usr/lib/libssl.so.3').unlink()
+            with self.assertRaisesRegex(ValueError, 'libssl'):
+                PACKAGE.audit(root, [])
+
     def test_artifact_paths_and_required_plugins(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

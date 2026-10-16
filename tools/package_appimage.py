@@ -71,6 +71,8 @@ def audit(appdir: Path, private_prefixes: list[bytes]) -> list[dict]:
     for required in ['usr/bin/openpaint', 'usr/plugins/platforms/libqwayland.so',
                      'usr/plugins/platforms/libqxcb.so', 'usr/plugins/platformthemes/libqxdgdesktopportal.so',
                      'usr/plugins/imageformats/libqwebp.so',
+                     'usr/plugins/tls/libqopensslbackend.so',
+                     'usr/lib/libssl.so.3', 'usr/lib/libcrypto.so.3',
                      'usr/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.so',
                      'usr/plugins/wayland-shell-integration/libxdg-shell.so']:
         if not (appdir / required).is_file():
@@ -154,11 +156,13 @@ def main() -> None:
     run(['cmake', '--build', work / 'compile', '--parallel', args.jobs])
     install_env = dict(env, DESTDIR=str(appdir))
     subprocess.run(['cmake', '--install', str(work / 'compile'), '--prefix', '/usr', '--strip'], env=install_env, check=True)
-    # Qt 6.12 Wayland helpers are not discovered by this linuxdeploy Qt plugin.
-    for directory in ['wayland-graphics-integration-client', 'wayland-shell-integration', 'wayland-decoration-client']:
+    # Explicitly include Wayland helpers and the TLS backend needed for release checks.
+    for directory in ['wayland-graphics-integration-client', 'wayland-shell-integration', 'wayland-decoration-client', 'tls']:
         shutil.copytree(qt / 'plugins' / directory, appdir / 'usr/plugins' / directory)
     run([cache / 'linuxdeploy-x86_64.AppImage', '--appdir', appdir, '--plugin', 'qt',
-         '--library', '/usr/lib/x86_64-linux-gnu/libOpenGL.so.0'])
+         '--library', '/usr/lib/x86_64-linux-gnu/libOpenGL.so.0',
+         '--library', '/usr/lib/x86_64-linux-gnu/libssl.so.3',
+         '--library', '/usr/lib/x86_64-linux-gnu/libcrypto.so.3'])
     launcher = appdir / 'AppRun'
     launcher.unlink()
     shutil.copyfile(ROOT / 'packaging/AppRun', launcher)

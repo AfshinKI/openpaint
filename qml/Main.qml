@@ -86,6 +86,11 @@ ApplicationWindow {
             requestChange("close");
         }
     }
+    UpdateService {
+        id: updateService
+        objectName: "updateService"
+        onUpdateFound: updateNotice.dismissed = false
+    }
     AppearanceDialog {
         id: appearanceDialog
         objectName: "appearanceDialog"
@@ -93,6 +98,7 @@ ApplicationWindow {
     }
     UpdatesDialog {
         id: updatesDialog
+        service: updateService
         objectName: "updatesDialog"
         parent: Overlay.overlay
     }
@@ -592,7 +598,8 @@ ApplicationWindow {
                 objectName: "quickUpdatesButton"
                 flat: true
                 symbol: "update"
-                text: qsTr("Check for updates")
+                text: updateService.available ? qsTr("OpenPaint %1 is available").arg(updateService.latestVersion) : qsTr("Check for updates")
+                highlighted: updateService.available
                 onClicked: updatesDialog.open()
             }
             IconButton {
@@ -1278,6 +1285,51 @@ ApplicationWindow {
             editor: window.editorController
             canvas: window.canvasController
             z: 2
+        }
+    }
+    Rectangle {
+        id: updateNotice
+        property bool dismissed: false
+        visible: updateService.available && !dismissed
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 12
+        width: Math.min(380, parent.width - 24)
+        height: noticeContent.implicitHeight + 24
+        radius: Theme.surfaceRadius
+        color: Theme.panel
+        border.color: Theme.accent
+        z: 4
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.AllButtons
+            onWheel: wheel => wheel.accepted = true
+        }
+        ColumnLayout {
+            id: noticeContent
+            anchors.fill: parent
+            anchors.margins: 12
+            Label {
+                text: qsTr("OpenPaint %1 is available").arg(updateService.latestVersion)
+                textFormat: Text.PlainText
+                color: Theme.text
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+                Accessible.role: Accessible.StaticText
+            }
+            RowLayout {
+                PaintButton {
+                    text: qsTr("Details")
+                    onClicked: {
+                        updateNotice.dismissed = true;
+                        updatesDialog.open();
+                    }
+                }
+                PaintButton {
+                    text: qsTr("Dismiss")
+                    onClicked: updateNotice.dismissed = true
+                }
+            }
         }
     }
     Column {

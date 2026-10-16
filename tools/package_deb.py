@@ -56,7 +56,7 @@ def dependencies(stage: Path, work: Path) -> str:
     match = re.search(r'^shlibs:Depends=(.+)$', result, re.MULTILINE)
     if not match:
         raise ValueError('Missing generated system dependencies')
-    return match[1] + ', desktop-file-utils, shared-mime-info, hicolor-icon-theme, xdg-desktop-portal'
+    return match[1] + ', ca-certificates, desktop-file-utils, shared-mime-info, hicolor-icon-theme, xdg-desktop-portal'
 
 
 def build_deb(appdir: Path, work: Path, version: str) -> Path:

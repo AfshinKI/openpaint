@@ -48,7 +48,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F22 | Sticker generation | R5 | M6 | Planned |
 | F23 | Coloring-page generation | R3 preview, hardware/account restrictions in reference | M6 | Planned |
 | F24 | Collapsible command toolbar | Persistent/auto-hide modes specified visually; timing and focus behavior need validation | M4 | Planned |
-| F25 | Linux installers, portable downloads and Updates screen | Linux-specific product choice | M2–M5 | Manual Updates screen and install metadata implemented in [plan 0024](plans/0024-install-updates.md); AppImage recipe in [plan 0025](plans/0025-appimage-package.md); Flatpak recipe in [plan 0026](plans/0026-flatpak-package.md); alpha downloads and validation in [plan 0027](plans/0027-alpha-release.md); Ubuntu DEB installer in [plan 0030](plans/0030-debian-installer.md); v1.0.0 publication and Ubuntu 24.04 GNOME/X11 evidence in [plan 0031](plans/0031-stable-release.md); verified automatic updates remain M5. |
+| F25 | Linux installers, portable downloads and Updates screen | Linux-specific product choice | M2–M5 | Updates screen, bounded manual/opt-in daily release checks ([plan 0037](plans/0037-release-notifications.md)) and install metadata implemented in [plan 0024](plans/0024-install-updates.md); AppImage recipe in [plan 0025](plans/0025-appimage-package.md); Flatpak recipe in [plan 0026](plans/0026-flatpak-package.md); alpha downloads and validation in [plan 0027](plans/0027-alpha-release.md); Ubuntu DEB installer in [plan 0030](plans/0030-debian-installer.md); v1.0.0 publication and Ubuntu 24.04 GNOME/X11 evidence in [plan 0031](plans/0031-stable-release.md); verified automatic updates remain M5. |
 | F26 | Privacy controls, metadata removal, accessible keyboard UI | Product choice | M1–M5 | In progress: offline PNG metadata removal, keyboard lifecycle, accessible names/roles and GNOME portal workflow tested; see [desktop workflow](plans/0008-keyboard-desktop-workflow.md); Orca usability certification remains M4. |
 | F27 | Printing through the Linux print dialog | Product choice; reference details need observation | M4 | Planned |
 
@@ -88,6 +88,8 @@ Implemented subset evidence: [canvas](plans/0002-drawing-canvas.md) and
 
 Portal save filename safety is tracked in [plan 0032](plans/0032-portal-save-filenames.md).
 Missing format extensions are rejected without reporting a successful save.
+
+Bounded GitHub release notifications are tracked in [plan 0037](plans/0037-release-notifications.md). Automatic installation remains planned.
 
 Adjustable glass appearance is tracked in [plan 0036](plans/0036-glass-appearance.md).
 

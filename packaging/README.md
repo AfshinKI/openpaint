@@ -34,7 +34,9 @@ Qt source digests are checked against its official release checksum endpoints.
 ICU and runtime source pins were recorded from their official HTTPS release URLs.
 The upstream runtime pins libfuse and squashfuse source checksums in its build recipe.
 
-The bundle includes X11, Wayland, desktop-portal, SVG and image-codec plugins. The
+The bundle includes X11, Wayland, desktop-portal, SVG, image-codec and OpenSSL TLS plugins. The OpenSSL runtime libraries
+are explicitly bundled for release checks, and the host supplies trusted CA
+certificates (the DEB requires ca-certificates). The
 vendor-neutral OpenGL dispatch library is explicitly included because a minimal
 Fedora GNOME installation does not necessarily provide it. Graphics drivers,
 glibc and the desktop/session services remain owned by the host. Do not bundle
