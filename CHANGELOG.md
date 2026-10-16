@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — release notifications
+
+- Add manual and opt-in daily GitHub stable-release checks with dismissible notices.
+- Keep update installation manual and Flatpak network permissions unchanged.
+
 User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
 for artifact hashes, tested desktops and known limits.
 

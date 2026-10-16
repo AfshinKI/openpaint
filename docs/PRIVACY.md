@@ -1,7 +1,8 @@
 # Privacy and public-repository hygiene
 
-These are product requirements. The current native editor has no network operations. It opens local PNG/JPEG/BMP/WebP images and saves PNG
-files or exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strips source metadata. File → Updates opens the public GitHub Releases page only after the explicit View releases action. The browser makes an ordinary request to GitHub; no artwork or document information is included. Recovery and automatic update checks below are still planned.
+These are product requirements. The editor keeps core editing offline. Explicit or opt-in release checks contact
+api.github.com; see the release-check disclosure below. It opens local PNG/JPEG/BMP/WebP images and saves PNG
+files or exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strips source metadata. File → Updates opens the public GitHub Releases page only after the explicit View releases action. The browser makes an ordinary request to GitHub; no artwork or document information is included. Recovery remains planned; bounded release notifications are implemented.
 
 ## Current local settings
 
@@ -71,3 +72,12 @@ other. Never upload suspected secrets to a third-party checker to validate them.
 If private data is exposed, revoke affected credentials first, remove the material,
 and coordinate history cleanup. A deletion commit alone does not erase history,
 forks, caches, or previously downloaded copies.
+
+## Release-check disclosure
+
+Check now sends a bounded HTTPS request to api.github.com. GitHub receives the IP
+address and ordinary connection metadata with a fixed application User-Agent; no
+artwork, paths, credentials or installation identifier is sent. Automatic checks
+are off by default, at most daily while the app runs, and can be disabled in Updates.
+Local XDG settings retain consent and request/backoff timestamps. Browser navigation
+requires an explicit action. Flatpak retains no network permission and manual links.

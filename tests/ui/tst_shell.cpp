@@ -253,6 +253,10 @@ class ShellTest : public QObject {
         auto* action = window->findChild<QObject*>(QStringLiteral("updatesMenuItem"));
         auto* dialog = window->findChild<QObject*>(QStringLiteral("updatesDialog"));
         QVERIFY(editor && action && dialog);
+        auto* service = window->findChild<QObject*>("updateService");
+        QVERIFY(service);
+        QVERIFY(!service->property("automatic").toBool());
+        QVERIFY(!service->property("busy").toBool());
         editor->begin({30, 30}, false);
         editor->extend({80, 50});
         editor->finish();

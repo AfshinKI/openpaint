@@ -60,9 +60,10 @@ Installed version, source, and channel come from trusted build/package metadata.
 Do not infer write authority merely because a file is writable. An unrecognized
 installation gets a release-page link and manual instructions.
 
-All builds provide an Updates screen with a manual Check action and release
-notes. Current builds use a clearly labeled “View releases” action and report
-that automatic checking/installation is not implemented. Do not show simulated
+All builds provide an Updates screen and an explicit “View releases” action.
+Network-capable builds add Check now and optional daily stable-release notifications;
+Flatpak retains browser-only checking because it has no network permission.
+Automatic installation is not implemented. Do not show simulated
 network results or claim “up to date” without a successful authoritative check.
 
 Automatic checks are off by default. An opt-in permits at most a daily check while
@@ -197,3 +198,5 @@ Before dispatching a stable version, record desktop install/draw/save/reopen tes
 and known limitations in the release plan. The automated pipeline does not replace
 manual desktop acceptance. Full GNOME/KDE, Wayland/X11 and input/accessibility
 certification remains future work; report exact tested environments.
+
+Release notification implementation and limits: [plan 0037](plans/0037-release-notifications.md) and [ADR 0004](decisions/0004-release-checks.md).

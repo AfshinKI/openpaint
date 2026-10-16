@@ -211,3 +211,5 @@ local, with user-only permissions and a visible Clear Recovery Data control.
   and one undoable command. Worker failure leaves the document untouched.
 - Translate user-facing strings with Qt's translation tools from the first UI.
 - No public binary plugin ABI in 1.0. Keep internal interfaces simple and testable.
+
+Release notifications use a GUI-thread Qt Network service with bounded asynchronous requests, immutable parsed version strings and local schedule preferences. See [ADR 0004](decisions/0004-release-checks.md); document mutations and installation remain outside this service.

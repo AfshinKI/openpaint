@@ -319,3 +319,5 @@ Save requires a `.png` filename; Export requires the selected format's extension
 The dialogs preserve the exact filename authorized by the desktop portal. They do
 not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
+
+Updates provides Check now, Cancel check, an off-by-default daily-check option and View releases. A newer stable release produces a dismissible in-app notice; it never interrupts or restarts editing. Flatpak retains manual browser links.
