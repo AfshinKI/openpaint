@@ -31,3 +31,7 @@ Dev build, repository checks, formatting and QML lint passed. Document/editor
 tests and shell-more passed; fillOptionsLayout was rerun after moving the controls.
 Inspected light/dark 1024px captures; palette and fill options fit. Offscreen/software
 evidence only; real-desktop validation remains outstanding. Next: protected PR review.
+
+Integration CI exposed the expanded shell-more group reaching its 30-second budget
+under ASan after its assertions had passed. The control tests now run as a separate
+shell-controls suite, preserving every case and the same 30-second per-suite limit.
