@@ -193,6 +193,48 @@ class DocumentTest : public QObject {
         QVERIFY(!opacity.beginStroke({16, 16}, Qt::red, 12, false, 9, 100));
     }
 
+    void fillSmoothSameColorFringe() {
+        using namespace openpaint;
+        Document doc({64, 64});
+        QVERIFY(doc.beginStroke({10.25, 12.75}, Qt::black, 3));
+        doc.extendStroke({49.25, 43.75});
+        QVERIFY(doc.commitStroke());
+        const auto line = doc.image();
+        const auto token = std::make_shared<std::atomic_bool>(false);
+        const auto exact = fillRegion(line, {0, 0}, Qt::black, 0, token);
+        bool fringe = false;
+        for (int y = 0; y < 64; ++y)
+            for (int x = 0; x < 64; ++x)
+                fringe |= exact.image.pixelColor(x, y) != QColor(Qt::black);
+        QVERIFY(fringe);
+        const auto smooth = fillRegion(line, {0, 0}, Qt::black, 0, token, {}, true);
+        for (int y = 0; y < 64; ++y)
+            for (int x = 0; x < 64; ++x)
+                QCOMPARE(smooth.image.pixelColor(x, y), QColor(Qt::black));
+        QVERIFY(doc.applyPatch(smooth.image, smooth.rect, doc.revision()));
+        QVERIFY(doc.undo());
+        QCOMPARE(doc.image(), line);
+        QVERIFY(doc.redo());
+        QCOMPARE(doc.image(), smooth.image);
+
+        QImage boundary(6, 3, QImage::Format_ARGB32_Premultiplied);
+        boundary.fill(Qt::white);
+        for (int y = 0; y < 3; ++y) {
+            boundary.setPixelColor(1, y, QColor(180, 180, 180));
+            boundary.setPixelColor(2, y, Qt::black);
+        }
+        boundary.setPixelColor(1, 1, Qt::red);
+        const auto bounded = fillRegion(boundary, {0, 0}, Qt::black, 0, token, {}, true);
+        QCOMPARE(bounded.image.pixelColor(1, 0), QColor(Qt::black));
+        QCOMPARE(bounded.image.pixelColor(1, 1), QColor(Qt::red));
+        QCOMPARE(bounded.image.pixelColor(3, 0), QColor(Qt::white));
+        const auto selected =
+            fillRegion(boundary, {0, 0}, Qt::black, 0, token, QRegion(QRect(0, 0, 1, 3)), true);
+        QCOMPARE(selected.image.pixelColor(1, 0), boundary.pixelColor(1, 0));
+        token->store(true);
+        QVERIFY(fillRegion(boundary, {0, 0}, Qt::black, 0, token, {}, true).image.isNull());
+    }
+
     void fillConnectivityToleranceAndHistory() {
         using namespace openpaint;
         Document doc({5, 3});

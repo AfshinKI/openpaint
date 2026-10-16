@@ -320,6 +320,11 @@ The dialogs preserve the exact filename authorized by the desktop portal. They d
 not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
 
+Fill includes a checked-by-default Smooth edges option. It cleans a one-pixel same-color antialias fringe without expanding flood connectivity. Disable it for exact matching; tolerance remains separately adjustable.
+
+Fill tolerance and Smooth edges share a floating options panel to keep the ribbon
+accessible at the minimum width. Its margins consume pointer input.
+
 Canvas midpoint handles resize one axis: left/right change width, top/bottom change height. Corners retain two-axis resizing. The decorative image outline is removed; handle and preview feedback remains.
 ## Selection dismissal
 

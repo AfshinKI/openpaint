@@ -1347,6 +1347,12 @@ class ShellTest : public QObject {
     void fillOptionsLayout() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         editor->setTool(Editor::Tool::Fill);
+        QVERIFY(editor->fillSmoothEdges);
+        QVERIFY(tabTo("fillSmoothEdges"));
+        keyClick(Qt::Key_Space);
+        QVERIFY(!editor->fillSmoothEdges);
+        keyClick(Qt::Key_Space);
+        QVERIFY(editor->fillSmoothEdges);
         window->setWidth(1024);
         window->setHeight(640);
         QVERIFY(QMetaObject::invokeMethod(

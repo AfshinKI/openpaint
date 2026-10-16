@@ -111,10 +111,10 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         emit changed();
         fillWatcher_.setFuture(
             QtConcurrent::run([snapshot, color, point, tolerance = tolerance, token = cancellation_,
-                               selection = document.selection()] {
+                               selection = document.selection(), smoothEdges = fillSmoothEdges] {
                 return openpaint::fillRegion(
                     snapshot, QPoint(int(std::floor(point.x())), int(std::floor(point.y()))), color,
-                    tolerance, token, selection);
+                    tolerance, token, selection, smoothEdges);
             }));
         return;
     }

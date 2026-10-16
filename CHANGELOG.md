@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — fill edges
+
+- Clean same-color antialias fringes during fill; retain an exact-match option.
+
 ## Unreleased — canvas edges
 
 - Add single-axis canvas midpoint resize handles and remove the decorative border.
