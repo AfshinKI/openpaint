@@ -71,6 +71,40 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void outsideClickDismissesWithoutNewGesture() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        const auto original = editor.image();
+        editor.setTool(Editor::Tool::Select);
+        editor.selectRect(20, 20, 40, 40);
+        canvas.press({100, 100});
+        canvas.move({200, 200});
+        canvas.release({200, 200});
+        QVERIFY(!editor.hasSelection());
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        canvas.press({100, 100});
+        canvas.release({200, 200});
+        QVERIFY(editor.hasSelection());
+        canvas.press({-10, -10});
+        canvas.release({-10, -10});
+        QVERIFY(!editor.hasSelection());
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = 1;
+        canvas.press({20, 20});
+        canvas.release({60, 60});
+        const auto shape = editor.image();
+        canvas.press({100, 100});
+        canvas.release({200, 200});
+        QVERIFY(!editor.previewActive());
+        QCOMPARE(editor.image(), shape);
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), shape);
+    }
+
     void pickerHoverPreview() {
         TestEditor editor;
         InputCanvas canvas;

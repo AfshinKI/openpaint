@@ -319,3 +319,12 @@ Save requires a `.png` filename; Export requires the selected format's extension
 The dialogs preserve the exact filename authorized by the desktop portal. They do
 not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
+
+## Selection dismissal
+
+An outside click dismisses existing selection bounds and consumes the gesture;
+pending moved/pasted pixels commit first. A subsequent gesture creates a new
+selection. Outside clicks commit retained non-polygon shapes without creating
+another shape. Polygon vertex entry is unchanged. Ctrl+A activates Selection and
+selects the entire canvas after committing non-text previews; focused text fields
+retain their own Select All. Busy operations block this action.
