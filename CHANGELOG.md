@@ -1,9 +1,9 @@
 # Changelog
 
-User-visible changes are recorded here. See [release validation](docs/plans/0027-alpha-release.md)
+User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
 for artifact hashes, tested desktops and known limits.
 
-## 1.0.0 — release preparation
+## 1.0.0 — 2026-10-16
 
 - Preserve portal-selected filenames on save/export; reject missing extensions
   instead of reporting success for a hidden, unauthorized sibling file.
