@@ -122,7 +122,8 @@ if(BUILD_TESTING)
         fileDialogCancel
         nativePortalWorkflow
         keyboardFileWorkflow
-        topRightControls
+        topRightControls)
+    add_test(NAME shell-controls COMMAND openpaint_shell_tests
         brushMainActivation
         ribbonShapeKeyboard
         shapeStyleMenus
@@ -134,7 +135,7 @@ if(BUILD_TESTING)
         toolbarSlotAndRoleWorkflow
         renderTiming
         quitClosesWindow)
-    set_tests_properties(shell shell-more PROPERTIES TIMEOUT 30)
+    set_tests_properties(shell shell-more shell-controls PROPERTIES TIMEOUT 30)
     add_test(NAME cli-version COMMAND openpaint --version)
     set_tests_properties(cli-version PROPERTIES
         PASS_REGULAR_EXPRESSION "OpenPaint ${OPENPAINT_VERSION}" TIMEOUT 10)
