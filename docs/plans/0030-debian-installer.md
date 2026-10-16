@@ -1,6 +1,6 @@
 # Feature: Ubuntu desktop installer
 
-Status: in progress
+Status: implemented and verified
 Feature IDs: F25
 
 ## User outcome and scope
@@ -32,8 +32,8 @@ See [the packaging decision](../decisions/0003-private-debian-runtime.md).
 - [x] Missing host libraries fail dependency generation instead of being ignored.
 - [x] Clean Ubuntu install launches without a development Qt installation.
 - [x] Replacement and removal preserve a generated user artwork fixture.
-- [ ] Desktop launch, image opening and draw/save/reopen pass on a desktop VM.
-- [ ] Tooling tests and all required CI jobs pass before protected merge.
+- [x] Desktop launch, image opening and draw/save/reopen pass on a desktop VM.
+- [x] Tooling tests and all required CI jobs pass before protected merge.
 
 ## Validation and evidence
 
@@ -48,11 +48,14 @@ app payload, so this is not historical application-version compatibility evidenc
 All 21 repository-tool tests pass, including an actual ELF linked to an absent
 library that must fail dependency generation. Repository/privacy checks, whitespace
 checks, shell syntax and workflow YAML parsing pass. The packaged GUI stayed alive
-under Xvfb; no interactive GNOME/KDE menu, Wayland or draw/save check is claimed.
-Hosted CI and desktop release acceptance remain pending.
+under Xvfb; desktop evidence below was gathered separately.
+PR #36 subsequently passed all eight hosted checks and merged. Ubuntu 24.04.5
+GNOME/X11 VM with host CPU features and no competing alpha Flatpak: menu launch,
+draw, portal save and file-manager Open With reopening passed. Pillow independently
+decoded the saved 1152×648 PNG; the running executable resolved inside the installed
+private runtime. Wayland/KDE checks for this package are not claimed.
 
 ## Progress and handoff
 
-Next: submit the installer PR and complete hosted checks and desktop acceptance. After protected merge,
-prepare stable release automation and reconcile the roadmap with the maintainer's
-chosen single-layer v1 scope. No stable package has been published by this plan.
+Installer PR #36 is merged. Next: complete [stable release preparation](0031-stable-release.md)
+and verify final public downloads. No stable package has been published by this plan.

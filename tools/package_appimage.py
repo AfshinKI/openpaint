@@ -190,7 +190,8 @@ def main() -> None:
     if len(ROOT.parts) > 2:
         private_prefixes.append(str(ROOT).encode())
     files = audit(appdir, private_prefixes)
-    inventory = {'version': version, 'architecture': 'x86_64', 'qt': '6.12.0', 'icu': '73.2',
+    commit = subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()
+    inventory = {'version': version, 'source_commit': commit, 'architecture': 'x86_64', 'qt': '6.12.0', 'icu': '73.2',
                  'tools': tools, 'upstreamSources': sources, 'notices': notices, 'systemPackages': packages,
                  'systemSourcesIncluded': args.collect_system_sources, 'files': files}
     (work / 'dependency-inventory.json').write_text(json.dumps(inventory, indent=2) + '\n')

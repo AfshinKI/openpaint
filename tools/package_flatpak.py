@@ -52,7 +52,7 @@ def main():
     parser.add_argument('--suffix', default='dev')
     parser.add_argument('--jobs', type=int, default=2)
     args = parser.parse_args()
-    if not re.fullmatch(r'[0-9A-Za-z]+([.-][0-9A-Za-z]+)*', args.suffix) or args.jobs < 1:
+    if (args.suffix and not re.fullmatch(r'[0-9A-Za-z]+([.-][0-9A-Za-z]+)*', args.suffix)) or args.jobs < 1:
         parser.error('Use a valid prerelease suffix and positive job count')
     if output('git', '-C', str(ROOT), 'status', '--porcelain', '--untracked-files=no'):
         raise ValueError('Commit tracked changes before packaging')
@@ -75,6 +75,7 @@ def main():
             or manifest['sdk'] != lock['sdk']['id']
             or manifest['runtime-version'] != lock['branch']):
         raise ValueError('Manifest dependencies differ from reviewed lock')
+    manifest['branch'] = 'alpha' if args.suffix else 'stable'
     module = manifest['modules'][0]
     module['config-opts'] = [option for option in module['config-opts']
                              if not option.startswith('-DOPENPAINT_VERSION_SUFFIX=')]
@@ -91,10 +92,11 @@ def main():
         if len(prefix) > 5 and prefix in binary.read_bytes():
             raise ValueError('Local build path in Flatpak executable')
     version = re.search(r'project\(OpenPaint VERSION ([0-9.]+)', (ROOT / 'CMakeLists.txt').read_text())[1]
-    bundle = work / f'OpenPaint-{version}-{args.suffix}-{lock["architecture"]}.flatpak'
+    version += f'-{args.suffix}' if args.suffix else ''
+    bundle = work / f'OpenPaint-{version}-{lock["architecture"]}.flatpak'
     run('flatpak', 'build-bundle', f'--runtime-repo={lock["remote"]}',
-        str(work / 'repo'), str(bundle), APP_ID, 'alpha')
-    inventory = {'application': APP_ID, 'version': f'{version}-{args.suffix}',
+        str(work / 'repo'), str(bundle), APP_ID, manifest['branch'])
+    inventory = {'application': APP_ID, 'version': version,
                  'source_commit': commit, 'source_sha256': digest(source),
                  'bundle_sha256': digest(bundle), 'dependencies': dependencies,
                  'permissions': permissions, 'flatpak': output('flatpak', '--version'),

@@ -6,18 +6,18 @@ OpenPaint is an independent, open-source desktop painting app inspired by modern
 Microsoft Paint: quick sketches, easy image edits, and a canvas that gets out of
 your way.
 
-**First useful alpha: 0.1.0-alpha.1 · Linux x86_64**
+**Single-layer Linux editor · v1.0.0 release preparation · x86_64**
 
-[Download AppImage or Flatpak](https://github.com/AfshinKI/openpaint/releases/tag/v0.1.0-alpha.1) ·
+[Download available releases](https://github.com/AfshinKI/openpaint/releases) ·
 [Install / update / remove](docs/INSTALL.md) · [Build from source](docs/BUILD.md)
 
 Draw with brushes and fill, add shapes and text, select/copy/paste, crop and resize.
 Open and export PNG, JPEG, BMP and WebP. Undo/redo, zoom/pan, light/dark themes,
 and session custom colors are included. Editing works offline without an account.
 
-This is an early alpha. Layers, project files, crash recovery and automatic updates
-come later. Keep copies of important originals. See [capabilities and limits](docs/FEATURES.md)
-and [release validation](docs/plans/0027-alpha-release.md).
+Version 1.0.0 targets the current single-layer feature set. Layers, project files,
+crash recovery and automatic updates come later. Keep copies of important originals. See [capabilities and limits](docs/FEATURES.md)
+and [release preparation and evidence](docs/plans/0031-stable-release.md).
 
 ![OpenPaint alpha editor in light mode](docs/assets/m2-editor-light-1280.png)
 
@@ -26,7 +26,7 @@ and [release validation](docs/plans/0027-alpha-release.md).
 - Familiar drawing tools, shapes, text, selections, and color controls.
 - Layers, transparency, editable projects, and dependable undo and recovery.
 - A clean, accessible interface with light and dark themes.
-- Linux downloads through Flatpak and AppImage, with an in-app Updates screen.
+- Linux downloads through Ubuntu DEB, Flatpak and portable archives, with an in-app Updates screen.
 - Offline editing, no account requirement, and no telemetry. Optional AI tools come later.
 
 ### The plan

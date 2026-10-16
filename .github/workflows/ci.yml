@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Stable version matching CMake (for example 1.0.0); blank validates only'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -14,6 +19,23 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  identity:
+    name: Validate release identity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      suffix: ${{ steps.version.outputs.suffix }}
+      publish: ${{ steps.version.outputs.publish }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: version
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: python3 tools/release.py identity
+
   repository:
     name: Documentation and privacy checks
     runs-on: ubuntu-24.04
@@ -29,6 +51,7 @@ jobs:
         run: python3 -m unittest discover -s tools/tests -v
 
   native:
+    needs: identity
     name: Native shell (${{ matrix.compiler }}, ${{ matrix.preset }})
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -44,6 +67,7 @@ jobs:
             preset: asan
     env:
       CXX: ${{ matrix.compiler }}
+      VERSION_SUFFIX: ${{ needs.identity.outputs.suffix }}
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -64,7 +88,7 @@ jobs:
           echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/build/qt/6.12.0/gcc_64" >> "$GITHUB_ENV"
       - name: Configure and build
         run: |
-          cmake --preset "${{ matrix.preset }}"
+          cmake --preset "${{ matrix.preset }}" -DOPENPAINT_VERSION_SUFFIX="$VERSION_SUFFIX"
           cmake --build --preset "${{ matrix.preset }}" --parallel 2
       - name: Check C++ and QML
         run: cmake --build --preset "${{ matrix.preset }}" --target format-check qml-lint
@@ -80,6 +104,7 @@ jobs:
           done
 
   appimage:
+    needs: identity
     name: ${{ matrix.kind == 'portable' && 'AppImage package and inventory' || 'Ubuntu package and inventory' }}
     strategy:
       fail-fast: false
@@ -87,6 +112,7 @@ jobs:
         kind: [portable, system]
     env:
       CXX: g++-13
+      VERSION_SUFFIX: ${{ needs.identity.outputs.suffix }}
     runs-on: ubuntu-24.04
     container:
       image: ubuntu@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55
@@ -123,7 +149,7 @@ jobs:
           git rev-parse --verify HEAD
           desktop-file-validate packaging/io.github.AfshinKI.OpenPaint.desktop
           appstreamcli validate --no-net packaging/io.github.AfshinKI.OpenPaint.metainfo.xml
-          python3 tools/package_appimage.py --qt build/qt/6.12.0/gcc_64 --collect-system-sources --kind "${{ matrix.kind }}" --suffix "alpha.${GITHUB_RUN_NUMBER}"
+          python3 tools/package_appimage.py --qt build/qt/6.12.0/gcc_64 --collect-system-sources --kind "${{ matrix.kind }}" --suffix "$VERSION_SUFFIX"
           QT_QPA_PLATFORM=offscreen APPIMAGE_EXTRACT_AND_RUN=1 build/appimage/*.AppImage --version
           if test '${{ matrix.kind }}' = portable; then
             mkdir -p build/portable-smoke
@@ -170,6 +196,9 @@ jobs:
           bash tools/test_deb_install.sh artifacts/public/*.deb
 
   flatpak:
+    needs: identity
+    env:
+      VERSION_SUFFIX: ${{ needs.identity.outputs.suffix }}
     name: Flatpak bundle and sandbox
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -194,7 +223,7 @@ jobs:
           PY
       - name: Build and inspect sandboxed package
         run: |
-          python3 tools/package_flatpak.py
+          python3 tools/package_flatpak.py --suffix "$VERSION_SUFFIX"
           flatpak install --user -y --noninteractive build/flatpak/*.flatpak
           flatpak run --env=QT_QPA_PLATFORM=offscreen io.github.AfshinKI.OpenPaint --version
           cd build/flatpak
@@ -212,11 +241,14 @@ jobs:
             build/flatpak/SHA256SUMS
 
   publish:
-    name: Publish tested alpha
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [repository, native, appimage, deb-install, flatpak]
+    name: Publish tested stable release
+    if: needs.identity.outputs.publish == 'true'
+    needs: [identity, repository, native, appimage, deb-install, flatpak]
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
+    concurrency:
+      group: stable-release-${{ needs.identity.outputs.version }}
+      cancel-in-progress: false
     permissions:
       contents: write
       actions: read
@@ -225,32 +257,22 @@ jobs:
       GH_REPO: ${{ github.repository }}
       RUN_ID: ${{ github.run_id }}
       SOURCE_SHA: ${{ github.sha }}
+      RELEASE_VERSION: ${{ needs.identity.outputs.version }}
     steps:
+      - name: Check out reviewed source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Download this run's tested packages
-        run: gh run download "$RUN_ID" --name appimage-development-x86_64 --dir artifacts
-      - name: Publish immutable alpha assets
-        shell: bash
         run: |
-          set -euo pipefail
-          cd artifacts/public
-          sha256sum -c SHA256SUMS
-          archive=(OpenPaint-*-linux-x86_64.tar.gz)
-          test "${#archive[@]}" -eq 1
-          version="${archive[0]#OpenPaint-}"
-          version="${version%-linux-x86_64.tar.gz}"
-          tag="v${version}"
-          cat > notes.md <<'NOTES'
-          Linux x86_64 alpha (Ubuntu 24.04 or newer compatible desktop).
-
-          **Download the `linux-x86_64.tar.gz` archive**, extract it, then run `openpaint` inside the extracted folder. Keep the entire folder together. No installation, administrator access, FUSE, or AppImage runtime is required.
-
-          `sources-and-notices.tar` is for developers and license compliance, not installation. `SHA256SUMS` verifies downloads. Automatic in-app updating is not implemented; close the app and extract a newer archive to update. Alpha software: keep copies of important drawings.
-          NOTES
-          # Draft first: a failed upload never leaves a partial published release.
-          if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$SOURCE_SHA" --draft --prerelease --title "OpenPaint $version" --notes-file notes.md
-          fi
-          if test "$(gh release view "$tag" --json isDraft --jq .isDraft)" = true; then
-            gh release upload "$tag" "${archive[0]}" OpenPaint-*-sources-and-notices.tar SHA256SUMS --clobber
-            gh release edit "$tag" --draft=false --prerelease --latest=false
-          fi
+          gh run download "$RUN_ID" --name appimage-development-x86_64 --dir downloads/portable
+          gh run download "$RUN_ID" --name deb-development-x86_64 --dir downloads/deb
+          gh run download "$RUN_ID" --name flatpak-development-x86_64 --dir artifacts/flatpak
+          mkdir -p artifacts
+          mv downloads/portable/public artifacts/portable
+          mv downloads/deb/public artifacts/deb
+      - name: Verify and consolidate release assets
+        run: python3 tools/release.py stage --artifacts artifacts --destination release --version "$RELEASE_VERSION" --commit "$SOURCE_SHA"
+      - name: Publish immutable stable assets
+        shell: bash
+        run: bash tools/publish_release.sh

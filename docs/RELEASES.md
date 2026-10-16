@@ -1,17 +1,17 @@
 # Releases and in-app updates
 
-Status: the first alpha provides AppImage and Flatpak test-bundle downloads,
-manual Updates UI and installation metadata. Main pushes now publish tested alpha portable archives after all CI jobs pass. See [installation](INSTALL.md) and
-[release evidence](plans/0027-alpha-release.md). No OpenPaint update feed, signing
-keys or automatic in-app installer exists yet.
+Status: Ubuntu installer PR #36 is merged. Stable v1.0.0 preparation is tracked in
+[plan 0031](plans/0031-stable-release.md). Ordinary CI runs validate development
+packages; explicit main-branch release runs publish only after every check passes.
+No signing keys, OpenPaint update feed or automatic in-app installer exists.
 
 ## Distribution strategy
 
 | Format | Initial audience | Update owner |
 | --- | --- | --- |
-| Portable tar.gz | Primary GitHub download; extract and run | Manual replacement |
-| Flatpak | Installed Linux app; GNOME and KDE | Configured Flatpak repository and desktop software manager |
-| AppImage | Portable download from GitHub Releases | OpenPaint's verified portable updater from M5 |
+| Portable tar.gz | Uninstalled GitHub download; extract and run | Manual replacement |
+| Flatpak | Installed Linux app; GNOME and KDE | Manual bundle replacement; no OpenPaint remote yet |
+| AppImage | Portable download from GitHub Releases | Manual replacement; historical alpha format |
 | Source | Developers and distribution packagers | User or distribution package manager |
 | DEB | Ubuntu 24.04 amd64 installer; validation in [plan 0030](plans/0030-debian-installer.md) | APT; manual download until an update repository exists |
 | RPM | Deferred; Flatpak available for other distributions | Distribution/package manager |
@@ -46,8 +46,8 @@ prerelease enrollment is explicit. Downgrades are never automatic.
 A release contains versioned architecture-specific binaries, SHA-256 checksums,
 matching source/build recipes, third-party notices, a software bill of materials,
 release notes, supported systems, installation instructions, and known limitations.
-Flatpak commits use repository signing. AppImage update metadata has a separate
-verification signature; checksums alone do not authenticate a release.
+Current downloads are unsigned; checksums detect corruption but do not authenticate
+a release. Repository signing and signed update metadata remain future M5 work.
 
 Binary paths/debug metadata must not include a developer's home directory; build in
 controlled paths and use compiler prefix mapping as appropriate. Do not ship local
@@ -61,7 +61,7 @@ Do not infer write authority merely because a file is writable. An unrecognized
 installation gets a release-page link and manual instructions.
 
 All builds provide an Updates screen with a manual Check action and release
-notes. Initial alpha builds use a clearly labeled “View releases” action and report
+notes. Current builds use a clearly labeled “View releases” action and report
 that automatic checking/installation is not implemented. Do not show simulated
 network results or claim “up to date” without a successful authoritative check.
 
@@ -144,7 +144,8 @@ multiple windows/processes, unsaved work, failed save, and failed startup/rollba
 ## Release pipeline
 
 Current CI runs repository checks, native builds/tests, formatting/QML checks,
-AppImage source/inventory packaging and Flatpak sandbox packaging. M5 adds signed
+portable/DEB source/inventory packaging, Ubuntu package lifecycle checks and Flatpak
+sandbox packaging. M5 adds signed
 publishing/update jobs.
 Do not commit a workflow that pretends to build targets that do not exist.
 
@@ -169,15 +170,30 @@ where available, and protected release environment. These are setup tasks, not
 effects of committing YAML. A sole maintainer can configure review requirements
 appropriately without pretending an independent reviewer exists.
 
-Before 1.0, declare the support policy: initially the latest stable minor line
-receives fixes, prereleases have no stability promise. Never call a build supported
+Support policy: the latest stable minor line receives fixes; prereleases have no
+stability promise. Never call a build supported
 without its installation and update evidence.
 
-## Alpha publishing automation
+## Stable publishing automation
 
-The Repository checks workflow publishes only successful pushes to main, after
-all validation and packaging jobs succeed. Version suffix is `alpha.<run number>`.
-A draft release receives the tested portable archive, a consolidated sources and
-notices archive, and SHA256SUMS before publication. Reruns preserve published
-releases. Internal inventories and extra package formats remain Actions artifacts.
-See [the execution plan](plans/0029-automatic-alpha-releases.md).
+In Actions → Repository checks → Run workflow, select `main` and enter the exact
+CMake version (for example `1.0.0`) in `release_version`. Blank means validation
+only. Tags and release titles are exactly `v<version>`; stable builds have no suffix.
+PR/push builds share a `dev.<run number>` suffix across all formats and never publish.
+
+The release job waits for repository checks, all three native builds, portable,
+DEB, Flatpak and clean Ubuntu install/upgrade/remove tests. It downloads artifacts
+from that same run, verifies their checksums and source identities, then combines
+format-specific sources/notices/inventories into one compliance archive. The five
+public assets are DEB, Flatpak, portable tar.gz, sources-and-notices.tar and SHA256SUMS.
+
+The job uploads to a draft first and then publishes it as stable/latest. A failed
+upload leaves a draft; rerun the same source commit to resume. Existing published
+assets are never overwritten. An existing tag must resolve to the tested commit.
+Concurrent promotions of the same version are serialized. Release write permissions
+are confined to this job; no PR has a publishing token or signing secret.
+
+Before dispatching a stable version, record desktop install/draw/save/reopen tests
+and known limitations in the release plan. The automated pipeline does not replace
+manual desktop acceptance. Full GNOME/KDE, Wayland/X11 and input/accessibility
+certification remains future work; report exact tested environments.
