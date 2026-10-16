@@ -50,6 +50,7 @@ class Editor : public QObject {
     Q_PROPERTY(int brushStyle MEMBER brushStyle NOTIFY settingsChanged)
     Q_PROPERTY(int opacity MEMBER opacity NOTIFY settingsChanged)
     Q_PROPERTY(int tolerance MEMBER tolerance NOTIFY settingsChanged)
+    Q_PROPERTY(bool fillSmoothEdges MEMBER fillSmoothEdges NOTIFY settingsChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY changed)
     Q_PROPERTY(QString fileName READ fileName NOTIFY changed)
     Q_PROPERTY(QUrl fileUrl READ fileUrl NOTIFY changed)
@@ -216,6 +217,7 @@ class Editor : public QObject {
     Q_INVOKABLE void undo();
     Q_INVOKABLE void redo();
     QColor primary = Qt::black, secondary = Qt::white;
+    bool fillSmoothEdges = true;
     int brushSize = 3, tolerance = 0, brushStyle = 0, opacity = 100;
     bool freeFormSelection = false, transparentSelection = false;
     bool transparentEraser = false, shapeOutline = true, shapeFill = false;

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — fill edges
+
+- Clean same-color antialias fringes during fill; retain an exact-match option.
+
 User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
 for artifact hashes, tested desktops and known limits.
 

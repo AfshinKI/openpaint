@@ -1075,17 +1075,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
             ColumnLayout {
-                visible: editor.tool === Editor.Fill || editor.tool === Editor.Eraser
-                PaintSpinBox {
-                    objectName: "fillTolerance"
-                    visible: editor.tool === Editor.Fill
-                    from: 0
-                    to: 255
-                    value: editor.tolerance
-                    onValueModified: editor.tolerance = value
-                    Accessible.name: qsTr("Fill tolerance")
-                    implicitWidth: 104
-                }
+                visible: editor.tool === Editor.Eraser
                 PaintCheckBox {
                     text: qsTr("Transparent")
                     visible: editor.tool === Editor.Eraser
@@ -1093,13 +1083,13 @@ ApplicationWindow {
                     onToggled: editor.transparentEraser = checked
                 }
                 Label {
-                    text: editor.tool === Editor.Fill ? qsTr("Tolerance") : qsTr("Eraser")
+                    text: qsTr("Eraser")
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
                 }
             }
             ToolSeparator {
-                visible: editor.tool === Editor.Fill || editor.tool === Editor.Eraser
+                visible: editor.tool === Editor.Eraser
                 Layout.fillHeight: true
             }
             ColumnLayout {
@@ -1292,6 +1282,47 @@ ApplicationWindow {
         z: 2
         enabled: !editor.busy
         property real panelHeight: Math.max(120, Math.min(280, (parent.height - 64) / 2))
+        Rectangle {
+            visible: editor.tool === Editor.Fill
+            width: 132
+            height: fillControls.implicitHeight + 16
+            radius: Theme.surfaceRadius
+            color: Theme.panel
+            border.color: Theme.divider
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.AllButtons
+                onWheel: wheel => wheel.accepted = true
+            }
+            ColumnLayout {
+                id: fillControls
+                anchors.fill: parent
+                anchors.margins: 8
+                Label {
+                    text: qsTr("Fill tolerance")
+                    color: Theme.text
+                }
+                PaintSpinBox {
+                    objectName: "fillTolerance"
+                    visible: editor.tool === Editor.Fill
+                    from: 0
+                    to: 255
+                    value: editor.tolerance
+                    onValueModified: editor.tolerance = value
+                    Accessible.name: qsTr("Fill tolerance")
+                    implicitWidth: 104
+                }
+                PaintCheckBox {
+                    objectName: "fillSmoothEdges"
+                    text: qsTr("Smooth edges")
+                    visible: editor.tool === Editor.Fill
+                    checked: editor.fillSmoothEdges
+                    onToggled: editor.fillSmoothEdges = checked
+                    Accessible.name: qsTr("Smooth same-color fill edges")
+                }
+            }
+        }
+
         ToolSlider {
             visible: editor.tool === Editor.Pencil || editor.tool === Editor.Brush || editor.tool === Editor.Eraser || editor.tool === Editor.Shape
             height: parent.panelHeight
