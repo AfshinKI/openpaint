@@ -3,7 +3,8 @@
 A usable basic source editor supports drawing, history and safe PNG files.
 M1 and M2 are complete for their validated gates. The first useful alpha is
 [published and verified](plans/0027-alpha-release.md); layered projects and recovery
-follow the [alpha UI polish checklist](plans/0028-alpha-ui-polish.md) in M3.
+remain future work after the current editor. The maintainer selected this
+single-layer feature set for v1.0.0; see [the stable release plan](plans/0031-stable-release.md).
 See [M1 closure evidence and limits](plans/0009-m1-closure.md). See [the build guide](BUILD.md) to run the preview.
 Milestones are exit gates, not promised dates. Complete thin, usable slices before
 adding breadth. [FEATURES.md](FEATURES.md) is the implementation status ledger.
@@ -15,20 +16,20 @@ adding breadth. [FEATURES.md](FEATURES.md) is the implementation status ledger.
 | M2 — useful alpha (complete) | Brush options, fill, shapes/text, selections/clipboard, crop/resize/rotate, common image formats; first downloadable alpha | Workflow tests; transparency/lossy export prompts; clean-VM AppImage and test Flatpak install; Updates screen with manual release link |
 | M3 — layered beta | Layer operations, .ora projects, tiled storage as needed, bounded history, crash recovery | Cross-tool .ora round-trip; crash/recovery and disk-full tests; large-document budget; full project save fidelity |
 | M4 — desktop completeness | Freeform rotation, rulers/grid, stylus/touch, printing, accessibility, adaptive UI and translation infrastructure | GNOME/KDE Wayland and X11 matrix; Orca and keyboard tests; print preview; scale/theme screenshots; input-device tests |
-| M5 — 1.0 release quality | Signed portable updates, package-managed update UX, trustworthy downloads, release/support process | Upgrade + failed-upgrade matrix; all core feature gates; licenses/SBOM/source artifacts; no open data-loss/security blockers |
+| M5 — future signed updates | Signed portable updates, package-managed update UX, trustworthy downloads, release/support process | Upgrade + failed-upgrade matrix; all core feature gates; licenses/SBOM/source artifacts; no open data-loss/security blockers |
 | M6 — optional intelligent tools | Background removal first, object selection, then generative workflows | Separate plans and model-license review; offline/consent tests; memory/latency measurements; cancel/undo and model-deletion checks |
 
 M1 is specified in [the foundation plan](plans/0001-foundation.md). M2 depends on
 M1; M3 and release packaging improvements can progress independently once their
 interfaces stabilize. M4 depends on editing and document contracts from M2/M3.
-M5 requires M1–M4. M6 may be researched earlier, but must not delay core reliability.
+These future gates are not prerequisites for the scoped single-layer v1. M6 may be researched earlier, but must not delay core reliability.
 
 ## Release progression
 
-M1 is a development checkpoint. M2 produces an explicitly unstable `0.1.0-alpha.1`
-when its gate passes. M3/M4 may produce further alpha/beta releases. M5 produces
-`1.0.0` only after the non-generative scope passes. Exact later version numbers
-are assigned at release time; milestone numbers are not version numbers.
+M1/M2 produced the first alpha. Version 1.0.0 keeps the implemented single-layer
+editing scope and adds an installed Ubuntu package and deliberate stable releases.
+M3–M6 remain later work; their completion is not implied by the v1 label. Stable
+publication requires the scoped package, document-safety and release checks below.
 
 Keep alpha/stable channels distinct. Nightly artifacts, if added, are development
 outputs with no automatic stable-update eligibility. Publish an actual support
@@ -82,7 +83,9 @@ records exact binaries, public-download verification and remaining limits.
 
 ## Definition of 1.0
 
-All M1–M5 acceptance cases pass on the published support matrix. No known
+The implemented M1/M2 editor and scoped installation/release acceptance cases pass
+on the published support matrix. Layers, project files, recovery, printing, full
+accessibility/input certification and signed automatic updates are deferred. No known
 reproducible document-loss defect, unverified update installation path, or critical
 security issue remains open. Downloads, corresponding source, license notices,
 release notes, install/update/uninstall instructions, and limitations are available.

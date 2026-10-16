@@ -4,7 +4,9 @@ Pending alpha corrections are specified in the [eight-step UI polish plan](plans
 It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
 current shipped behavior remains unchanged until implementation is verified.
 
-Audit date: 2026-10-12. **The single-layer alpha editor is implemented.**
+Audit date: 2026-10-12. **The single-layer editor is implemented.**
+The maintainer selected this feature scope for [v1.0.0](plans/0031-stable-release.md);
+future feature rows below remain planned.
 The M1 source-editor checkpoint is complete; see [validation and limits](plans/0009-m1-closure.md).
 M2 editing tools and package recipes are implemented; release evidence is recorded
 in [the alpha plan](plans/0027-alpha-release.md). Later features remain planned.
