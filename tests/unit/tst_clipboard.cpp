@@ -47,6 +47,7 @@ class ClipboardTest : public QObject {
         ClipboardEditor editor;
         editor.setTool(Editor::Tool::Select);
         editor.selectRect(5, 5, 10, 10);
+        editor.deselect();
         const auto prior = editor.selection();
         editor.freeFormSelection = true;
         editor.begin({100, 100}, false);
@@ -70,15 +71,16 @@ class ClipboardTest : public QObject {
         QVERIFY(editor.selection().contains(QPoint(180, 180)));
         editor.invertSelection();
         QCOMPARE(editor.selection(), triangle);
+        editor.deselect();
         editor.begin({400, 100}, false);
         editor.extend({410, 110});
         editor.endGesture();
-        QCOMPARE(editor.selection(), triangle); // Degenerate path restores prior selection.
+        QCOMPARE(editor.selection(), prior); // Degenerate path restores empty selection.
         editor.begin({400, 100}, false);
         editor.extend({450, 100});
         editor.extend({450, 160});
         editor.cancel();
-        QCOMPARE(editor.selection(), triangle);
+        QCOMPARE(editor.selection(), prior);
         editor.select(prior);
         editor.begin({400, 100}, false);
         for (int i = 0; i < 4097; ++i)

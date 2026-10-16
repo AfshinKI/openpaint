@@ -95,6 +95,7 @@ if(BUILD_TESTING)
     # Keep each bounded shell shard below 30 seconds as coverage grows.
     add_test(NAME shell COMMAND openpaint_shell_tests
         launchAndResize
+        selectAllKeyboard
         floatingToolControls
         quickActionPlacement
         themeActions
