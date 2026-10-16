@@ -43,8 +43,26 @@ void Editor::begin(QPointF point, bool secondaryButton) {
     shapeInputBlocked_ = false;
     if (loading() || textActive_)
         return;
-    if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || point.x() < 0 || point.y() < 0 ||
-        point.x() >= image().width() || point.y() >= image().height())
+    if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || std::abs(point.x()) > 1000000 ||
+        std::abs(point.y()) > 1000000)
+        return;
+    // A dismissal consumes the complete gesture, including presses in the workspace.
+    if (tool_ == Tool::Select && hasSelection() &&
+        !selection().contains(QPoint(int(std::floor(point.x())), int(std::floor(point.y()))))) {
+        finish();
+        document.setSelection({});
+        emit pixelsChanged({});
+        emit changed();
+        return;
+    }
+    if (shapeActive_ && shapeKind != openpaint::PolygonShape) {
+        if (!resizeBounds().contains(point))
+            finish();
+        shapeInputBlocked_ = true;
+        return;
+    }
+    if (point.x() < 0 || point.y() < 0 || point.x() >= image().width() ||
+        point.y() >= image().height())
         return;
     if (tool_ == Tool::Select) {
         const QPoint pixel(int(std::floor(point.x())), int(std::floor(point.y())));
@@ -323,6 +341,10 @@ void Editor::selectRect(int x, int y, int width, int height) {
     emit changed();
 }
 void Editor::selectAll() {
+    if (loading() || textActive_)
+        return;
+    finish();
+    setTool(Tool::Select);
     selectRect(0, 0, image().width(), image().height());
 }
 void Editor::deselect() {

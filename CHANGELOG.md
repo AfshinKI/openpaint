@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — selection interaction
+
+- Outside clicks dismiss selections and commit shapes without starting another.
+- Ctrl+A activates Selection and selects the whole canvas.
+
 User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
 for artifact hashes, tested desktops and known limits.
 
