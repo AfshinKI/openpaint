@@ -74,6 +74,23 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void selectAllKeyboard() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));
+        canvas->forceActiveFocus();
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        QCOMPARE(editor->selectionRect(), editor->image().rect());
+        QCOMPARE(editor->tool(), Editor::Tool::Select);
+        QVERIFY(!editor->dirty());
+        editor->setTool(Editor::Tool::Shape);
+        editor->shapeKind = 1;
+        editor->begin({20, 20}, false);
+        editor->extend({80, 80});
+        editor->endGesture();
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        QVERIFY(!editor->previewActive());
+        QCOMPARE(editor->selectionRect(), editor->image().rect());
+    }
     void launchAndResize() {
         QVERIFY(window->isVisible());
         QVERIFY(window->title().contains(QStringLiteral("OpenPaint")));

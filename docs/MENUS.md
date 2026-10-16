@@ -321,3 +321,11 @@ not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
 
 Canvas midpoint handles resize one axis: left/right change width, top/bottom change height. Corners retain two-axis resizing. The decorative image outline is removed; handle and preview feedback remains.
+## Selection dismissal
+
+An outside click dismisses existing selection bounds and consumes the gesture;
+pending moved/pasted pixels commit first. A subsequent gesture creates a new
+selection. Outside clicks commit retained non-polygon shapes without creating
+another shape. Polygon vertex entry is unchanged. Ctrl+A activates Selection and
+selects the entire canvas after committing non-text previews; focused text fields
+retain their own Select All. Busy operations block this action.
