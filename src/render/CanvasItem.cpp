@@ -93,8 +93,6 @@ void CanvasItem::paint(QPainter* painter) {
     painter->fillRect(target, QBrush(checks));
     painter->setRenderHint(QPainter::SmoothPixmapTransform, zoom_ < 1);
     painter->drawImage(target, image);
-    painter->setPen(QColor("#9299a3"));
-    painter->drawRect(target.adjusted(-1, -1, 1, 1));
     if (editor_->hasSelection()) {
         const auto offset = editor_->floatingActive() ? editor_->floatingPosition() : QPoint();
         const auto localRegion = editor_->selection().translated(-offset);

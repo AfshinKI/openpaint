@@ -5,9 +5,30 @@
 #include <cmath>
 #include <vector>
 namespace openpaint {
+namespace {
+// Recognize a coverage blend of the seed background and the replacement ink.
+// Only a one-pixel fringe is painted: these pixels never expand the flood.
+bool coverageBlend(QRgb pixel, QRgb background, QRgb ink) {
+    const int p[] = {qRed(pixel), qGreen(pixel), qBlue(pixel), qAlpha(pixel)};
+    const int b[] = {qRed(background), qGreen(background), qBlue(background), qAlpha(background)};
+    const int f[] = {qRed(ink), qGreen(ink), qBlue(ink), qAlpha(ink)};
+    int axis = 0;
+    for (int i = 1; i < 4; ++i)
+        if (std::abs(f[i] - b[i]) > std::abs(f[axis] - b[axis]))
+            axis = i;
+    const int delta = f[axis] - b[axis], step = p[axis] - b[axis];
+    if (!delta || step * delta <= 0 || std::abs(step) >= std::abs(delta))
+        return false;
+    for (int i = 0; i < 4; ++i)
+        if (std::abs((p[i] - b[i]) * delta - (f[i] - b[i]) * step) > std::abs(delta))
+            return false;
+    return true;
+}
+} // namespace
+
 FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int tolerance,
-                      const std::shared_ptr<std::atomic_bool>& cancelled,
-                      const QRegion& selection) {
+                      const std::shared_ptr<std::atomic_bool>& cancelled, const QRegion& selection,
+                      bool smoothEdges) {
     if (!Document::validSize(source.size()) || !source.rect().contains(seed) ||
         source.format() != QImage::Format_ARGB32_Premultiplied || !color.isValid() ||
         tolerance < 0 || tolerance > 255 || !cancelled)
@@ -25,6 +46,7 @@ FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int toler
         std::vector<unsigned char> seen(size_t(width) * height, 0);
         std::vector<int> queue;
         queue.reserve(size_t(width) * height);
+        QRect changed;
         auto visit = [&](int x, int y) {
             const int index = y * width + x;
             if (seen[index])
@@ -38,9 +60,12 @@ FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int toler
                           std::abs(qBlue(pixel) - qBlue(target)),
                           std::abs(qAlpha(pixel) - qAlpha(target))}) <= tolerance)
                 queue.push_back(index);
+            else if (smoothEdges && coverageBlend(pixel, target, replacement)) {
+                reinterpret_cast<QRgb*>(output.scanLine(y))[x] = replacement;
+                changed = changed.united(QRect(x, y, 1, 1));
+            }
         };
         visit(seed.x(), seed.y());
-        QRect changed;
         for (size_t i = 0; i < queue.size(); ++i) {
             if ((i & 4095) == 0 && cancelled->load())
                 return {};
@@ -57,6 +82,20 @@ FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int toler
                 visit(x, y - 1);
             if (y + 1 < height)
                 visit(x, y + 1);
+            if (smoothEdges) {
+                for (int dy : {-1, 1})
+                    for (int dx : {-1, 1}) {
+                        const QPoint neighbor(x + dx, y + dy);
+                        if (!source.rect().contains(neighbor) ||
+                            (!selection.isEmpty() && !selection.contains(neighbor)))
+                            continue;
+                        if (coverageBlend(source.pixel(neighbor), target, replacement)) {
+                            reinterpret_cast<QRgb*>(output.scanLine(neighbor.y()))[neighbor.x()] =
+                                replacement;
+                            changed = changed.united(QRect(neighbor, QSize(1, 1)));
+                        }
+                    }
+            }
         }
         if (cancelled->load() || changed.isEmpty())
             return {};

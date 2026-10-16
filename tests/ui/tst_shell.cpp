@@ -74,6 +74,23 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void selectAllKeyboard() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));
+        canvas->forceActiveFocus();
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        QCOMPARE(editor->selectionRect(), editor->image().rect());
+        QCOMPARE(editor->tool(), Editor::Tool::Select);
+        QVERIFY(!editor->dirty());
+        editor->setTool(Editor::Tool::Shape);
+        editor->shapeKind = 1;
+        editor->begin({20, 20}, false);
+        editor->extend({80, 80});
+        editor->endGesture();
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        QVERIFY(!editor->previewActive());
+        QCOMPARE(editor->selectionRect(), editor->image().rect());
+    }
     void launchAndResize() {
         QVERIFY(window->isVisible());
         QVERIFY(window->title().contains(QStringLiteral("OpenPaint")));
@@ -782,6 +799,41 @@ class ShellTest : public QObject {
         editor->undo();
         QCOMPARE(editor->image(), original);
         QVERIFY(!editor->canUndo());
+        for (int index = 4; index < 8; ++index) {
+            const auto edges =
+                visualItems(window->contentItem(), "canvasResizeCorner" + QString::number(index));
+            QCOMPARE(edges.size(), 1);
+            auto* edge = edges.first();
+            QVERIFY(edge->isVisible());
+            const auto from = edge->mapToScene({8, 8}).toPoint();
+            const auto to = from + QPoint(index == 4 ? 30 : -30, index == 6 ? 20 : -20);
+            QTest::mousePress(window, Qt::LeftButton, {}, from);
+            QTest::mouseMove(window, to);
+            QCOMPARE(editor->image(), original);
+            QTest::mouseRelease(window, Qt::LeftButton, {}, to);
+            QTRY_VERIFY(!editor->busy());
+            const auto resized = editor->image();
+            if (index < 6) {
+                QVERIFY(resized.width() < original.width());
+                QCOMPARE(resized.height(), original.height());
+            } else {
+                QCOMPARE(resized.width(), original.width());
+                QVERIFY(resized.height() < original.height());
+            }
+            editor->undo();
+            QCOMPARE(editor->image(), original);
+            editor->redo();
+            QCOMPARE(editor->image(), resized);
+            editor->undo();
+        }
+        const auto right = visualItems(window->contentItem(), "canvasResizeCorner5").first();
+        right->forceActiveFocus();
+        keyClick(Qt::Key_Left);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->imageSize(), QSize(original.width() - 1, original.height()));
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        QVERIFY(capture(QStringLiteral("canvas-edge-handles.png")));
     }
     void cornerResizeHandles() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
@@ -1152,6 +1204,48 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
+    void glassAppearanceSettings() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        const auto artwork = editor->image();
+        auto* dialog = window->findChild<QObject*>("appearanceDialog");
+        auto* surface = window->findChild<QObject*>("ribbonSurface");
+        auto* toggle = window->findChild<QObject*>("glassEnabled");
+        auto* slider = window->findChild<QObject*>("glassOpacity");
+        QVERIFY(dialog && surface && toggle && slider);
+        QVERIFY(QMetaObject::invokeMethod(dialog, "open"));
+        QVERIFY(tabTo("restoreAppearance"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(slider->property("value").toInt(), 85);
+        QVERIFY(tabTo("glassOpacity"));
+        keyClick(Qt::Key_Left);
+        QCOMPARE(slider->property("value").toInt(), 84);
+        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.84);
+        QVERIFY(tabTo("glassEnabled"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 1.0);
+        QVERIFY(!slider->property("enabled").toBool());
+        QVERIFY(capture("glass-disabled.png"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.84);
+        QCOMPARE(canvas->opacity(), 1.0);
+        QCOMPARE(editor->image(), artwork);
+        QVERIFY(!editor->dirty());
+        QVERIFY(!editor->canUndo());
+        window->resize(1024, 640);
+        QVERIFY(capture("glass-settings-light-1024.png"));
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("darkThemeAction"), "trigger",
+                                          Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture("glass-settings-dark-1024.png"));
+        QVERIFY(tabTo("restoreAppearance"));
+        keyClick(Qt::Key_Space);
+        keyClick(Qt::Key_Escape);
+        window->resize(1280, 800);
+        QVERIFY(capture("glass-dark-1280.png"));
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("lightThemeAction"),
+                                          "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(capture("glass-light-1280.png"));
+    }
     void topRightControls() {
         auto* settings = window->findChild<QObject*>("settingsButton");
         auto* updates = window->findChild<QObject*>("quickUpdatesButton");
@@ -1299,6 +1393,12 @@ class ShellTest : public QObject {
     void fillOptionsLayout() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         editor->setTool(Editor::Tool::Fill);
+        QVERIFY(editor->fillSmoothEdges);
+        QVERIFY(tabTo("fillSmoothEdges"));
+        keyClick(Qt::Key_Space);
+        QVERIFY(!editor->fillSmoothEdges);
+        keyClick(Qt::Key_Space);
+        QVERIFY(editor->fillSmoothEdges);
         window->setWidth(1024);
         window->setHeight(640);
         QVERIFY(QMetaObject::invokeMethod(

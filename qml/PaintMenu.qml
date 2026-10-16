@@ -7,10 +7,8 @@ Menu {
     implicitWidth: 248
     padding: 6
     popupType: Popup.Item
-    background: Rectangle {
+    background: GlassSurface {
         radius: Theme.surfaceRadius
-        color: Theme.panel
-        border.color: Theme.divider
     }
     delegate: PaintMenuItem {}
 }

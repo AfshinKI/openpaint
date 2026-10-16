@@ -81,3 +81,5 @@ artwork, paths, credentials or installation identifier is sent. Automatic checks
 are off by default, at most daily while the app runs, and can be disabled in Updates.
 Local XDG settings retain consent and request/backoff timestamps. Browser navigation
 requires an explicit action. Flatpak retains no network permission and manual links.
+
+Glass enablement and opacity persist locally in XDG configuration. These preferences contain no artwork or identifiers and cause no network requests.

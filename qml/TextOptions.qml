@@ -5,15 +5,13 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 import OpenPaint
 
-Rectangle {
+GlassSurface {
     id: dialog
     required property Editor editor
     signal returnToText
     width: Math.min(parent.width - 32, 820)
     height: controls.implicitHeight + 16
     radius: Theme.surfaceRadius
-    color: Theme.panel
-    border.color: Theme.divider
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.AllButtons
