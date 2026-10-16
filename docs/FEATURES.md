@@ -83,3 +83,6 @@ Microsoft ships another preview. Record the gap and prioritize it explicitly.
 
 Implemented subset evidence: [canvas](plans/0002-drawing-canvas.md) and
 [PNG lifecycle](plans/0003-png-file-workflow.md).
+
+Portal save filename safety is tracked in [plan 0032](plans/0032-portal-save-filenames.md).
+Missing format extensions are rejected without reporting a successful save.

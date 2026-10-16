@@ -5,6 +5,9 @@ for artifact hashes, tested desktops and known limits.
 
 ## Unreleased
 
+- Preserve portal-selected filenames on save/export; reject missing extensions
+  instead of reporting success for a hidden, unauthorized sibling file.
+
 - Add an Ubuntu 24.04 amd64 DEB recipe with application-menu integration, private
   Qt runtime, generated system dependencies and isolated installation checks.
 

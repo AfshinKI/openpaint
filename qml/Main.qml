@@ -1403,18 +1403,20 @@ ApplicationWindow {
     FileDialog {
         id: exportDialog
         objectName: "exportFileDialog"
-        title: qsTr("Export copy")
+        title: qsTr("Export copy (.%1)").arg(exportOptions.suffix)
         fileMode: FileDialog.SaveFile
-        defaultSuffix: exportOptions.suffix
+        // Preserve the exact portal grant; C++ validates the required extension.
+        defaultSuffix: ""
         nameFilters: [exportOptions.fileFilter]
         onAccepted: editor.exportFile(selectedFile, exportOptions.formatIndex, exportOptions.quality, exportOptions.lossless, exportOptions.flatten, exportOptions.backgroundColor)
     }
     FileDialog {
         id: saveDialog
         objectName: "saveDialog"
-        title: qsTr("Save PNG")
+        title: qsTr("Save PNG (.png)")
         fileMode: FileDialog.SaveFile
-        defaultSuffix: "png"
+        // Appending a suffix after portal selection writes outside its file grant.
+        defaultSuffix: ""
         nameFilters: [qsTr("PNG images (*.png)")]
         onAccepted: editor.saveFile(selectedFile)
         onRejected: window.pendingAction = ""
