@@ -1,6 +1,6 @@
 # Feature: preserve the portal-selected save filename
 
-Status: in progress
+Status: complete — protected PR merged and restricted desktop acceptance passed
 Feature IDs: F15, F16
 
 ## User outcome and scope
@@ -23,7 +23,7 @@ atomic replacement and original-file preservation remain in place.
 - [x] Extensionless portal-style URLs remain exact and are rejected without saving.
 - [x] Save/export failures preserve pixels, dirty state and existing destinations.
 - [x] Explicit PNG extension saves and reopens in a restricted Flatpak desktop.
-- [ ] Existing keyboard save/export and native CI checks pass.
+- [x] Existing keyboard save/export and native CI checks pass.
 
 ## Validation and evidence
 
@@ -36,9 +36,11 @@ save/export workflows pass locally on Qt 6.12. All 13 local CTest groups pass, a
 The fixed restricted Flatpak correctly rejects an extensionless portal destination,
 shows the required-extension error, leaves the drawing dirty and creates no host
 output. An explicit `fixed.png` saved visibly, decoded independently as nonblank 1152×648
-RGBA, and reopened through the portal with the same drawing. Hosted checks remain
-pending.
+RGBA, and reopened through the portal with the same drawing. PR #38 passed all nine checks on the integrated base in run `38833792664`
+and merged as `94746329065874e3acd95e816db67297d70b7256`.
+A further stroke saved successfully to the reopened visible PNG.
 
 ## Progress and handoff
 
-Next: protected PR checks on the integrated release-runner base. Stable publication remains pending until this defect is resolved.
+This defect is resolved. Stable publication and public-download acceptance are
+tracked in [plan 0031](0031-stable-release.md).

@@ -87,6 +87,9 @@ flatpak run io.github.AfshinKI.OpenPaint
 The first installation obtains the KDE runtime from Flathub and requires an
 internet connection. Editing works offline afterward. The app has no network or
 broad home-directory permission; open/save dialogs grant selected-file access.
+Save and export filenames must include the selected format extension (for example
+`drawing.png`). Missing extensions are rejected and the drawing remains unsaved;
+retry with the extension included.
 This bundle is not a Flathub listing and does not configure an OpenPaint update
 feed. Install a newer verified bundle manually to replace it. Stable bundles use
 the `stable` branch; old alpha installations use `alpha`. To avoid duplicate menu
