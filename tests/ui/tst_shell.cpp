@@ -340,7 +340,7 @@ class ShellTest : public QObject {
         keyClick(Qt::Key_Space);
         QTRY_COMPARE(closed.size(), 2);
         QTRY_VERIFY(file->property("visible").toBool());
-        QCOMPARE(file->property("defaultSuffix").toString(), QString("png"));
+        QVERIFY(file->property("defaultSuffix").toString().isEmpty());
         QVERIFY(tabTo("fileNameTextField"));
         for (char key : std::string("export.png"))
             keyClick(key);
@@ -956,6 +956,47 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(dialog, "reject"));
         QTRY_VERIFY(!dialog->property("visible").toBool());
         QVERIFY(window->isVisible());
+    }
+
+    void saveDialogsPreserveAuthorizedFilename() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
+        auto* save = window->findChild<QObject*>(QStringLiteral("saveDialog"));
+        auto* exportFile = window->findChild<QObject*>(QStringLiteral("exportFileDialog"));
+        auto* error = window->findChild<QObject*>(QStringLiteral("errorDialog"));
+        QVERIFY(editor && save && exportFile && error);
+        QTemporaryDir directory;
+        const auto path = directory.filePath("authorized-name");
+        QFile original(path);
+        QVERIFY(original.open(QIODevice::WriteOnly));
+        QCOMPARE(original.write("original"), 8);
+        original.close();
+        const auto url = QUrl::fromLocalFile(path);
+        editor->begin({40, 40}, false);
+        editor->extend({90, 90});
+        editor->finish();
+        const auto artwork = editor->image();
+        QSignalSpy saved(editor, &Editor::saved);
+        QSignalSpy exported(editor, &Editor::exported);
+        for (auto* dialog : {save, exportFile}) {
+            QVERIFY(dialog->setProperty("selectedFile", url));
+            QCOMPARE(dialog->property("selectedFile").toUrl(), url);
+            QVERIFY(QMetaObject::invokeMethod(dialog, "accepted"));
+            QTRY_VERIFY(error->property("visible").toBool());
+            QVERIFY(!editor->busy());
+            QVERIFY(editor->dirty());
+            QVERIFY(editor->fileUrl().isEmpty());
+            QCOMPARE(editor->image(), artwork);
+            QVERIFY(!QFile::exists(path + ".png"));
+            QVERIFY(original.open(QIODevice::ReadOnly));
+            QCOMPARE(original.readAll(), QByteArray("original"));
+            original.close();
+            QVERIFY(QMetaObject::invokeMethod(error, "accept"));
+            QTRY_VERIFY(!error->property("visible").toBool());
+        }
+        QCOMPARE(saved.size(), 1);
+        QCOMPARE(saved.first().first().toBool(), false);
+        QCOMPARE(exported.size(), 1);
+        QCOMPARE(exported.first().first().toBool(), false);
     }
 
     void nativePortalWorkflow() {

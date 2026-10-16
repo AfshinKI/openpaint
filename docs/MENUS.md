@@ -312,3 +312,10 @@ reflect the supported renderer styles and update active shape previews.
 Outline and Fill choices are exclusive: activating the already selected entry
 keeps its checkmark. Ribbon group captions share a common bottom baseline,
 including Selection and Brushes.
+
+## Save/export filename safety
+
+Save requires a `.png` filename; Export requires the selected format's extension.
+The dialogs preserve the exact filename authorized by the desktop portal. They do
+not append extensions after selection. A missing/wrong extension shows an error
+and preserves the current drawing and saved state; choose again with the extension.

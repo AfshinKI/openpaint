@@ -5,6 +5,8 @@ for artifact hashes, tested desktops and known limits.
 
 ## 1.0.0 — release preparation
 
+- Preserve portal-selected filenames on save/export; reject missing extensions
+  instead of reporting success for a hidden, unauthorized sibling file.
 - Freeze the implemented single-layer editing scope for v1; layers, recovery and
   automatic updates remain future work.
 - Publish stable DEB, Flatpak and portable downloads only from explicit, fully
