@@ -1,26 +1,14 @@
 # Changelog
 
-## Unreleased — release notifications
+## 1.1.0 — 2026-10-16
 
-- Add manual and opt-in daily GitHub stable-release checks with dismissible notices.
-- Keep update installation manual and Flatpak network permissions unchanged.
-
-## Unreleased — glass appearance
-
-- Add glass-style surfaces with a persistent toggle and opacity slider in Settings.
-- Keep artwork opacity independent of appearance settings.
-
-## Unreleased — fill edges
-
-- Clean same-color antialias fringes during fill; retain an exact-match option.
-
-## Unreleased — canvas edges
-
-- Add single-axis canvas midpoint resize handles and remove the decorative border.
-## Unreleased — selection interaction
-
-- Outside clicks dismiss selections and commit shapes without starting another.
-- Ctrl+A activates Selection and selects the whole canvas.
+- Add adjustable glass-style surfaces in Settings, independent of artwork opacity.
+- Dismiss selections and commit shapes on outside clicks without starting another gesture.
+- Make Ctrl+A activate Selection and select the entire canvas.
+- Clean same-color antialias fringes during fill, with an exact-match option.
+- Add single-axis canvas edge resize handles and remove the decorative border.
+- Add manual and opt-in daily GitHub stable-release notifications. Installation
+  remains manual; Flatpak retains its no-network sandbox and browser links.
 
 User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
 for artifact hashes, tested desktops and known limits.
