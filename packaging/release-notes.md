@@ -1,3 +1,15 @@
+## New in {VERSION}
+
+- Glass appearance with an enable switch and surface opacity slider in Settings;
+  paper and artwork keep their own opacity. Desktop blur is not included.
+- Outside clicks dismiss selections or commit shapes before starting a new gesture;
+  Ctrl+A selects the whole canvas.
+- Same-color fill edge cleanup, with a Smooth edges toggle for exact matching.
+- Canvas midpoint handles resize one axis; the decorative canvas border is removed.
+- Manual and optional daily GitHub stable-release checks with dismissible notices.
+  Automatic checks are off by default and send no artwork or document information.
+  Flatpak keeps browser-only checks. Downloads and installation remain manual.
+
 OpenPaint is an offline, single-layer Linux paint editor with brushes, fill, shapes,
 text, selections, image transformations and undo/redo. Open/export PNG, JPEG, BMP
 and WebP; save working drawings as PNG.
@@ -21,7 +33,7 @@ Download `SHA256SUMS` and verify downloaded files with
 matching source, dependency licenses and inventories for all formats; it is not an
 installer. Checksums are not signing signatures.
 
-Layers, editable project files, crash recovery, printing and automatic updates are
+Layers, editable project files, crash recovery, printing and automatic update installation are
 not included. Save frequently and keep copies of important originals. The latest
 stable minor line receives fixes. Broader desktop/input/accessibility certification
 remains future work; see the installation guide and release evidence in the source.
