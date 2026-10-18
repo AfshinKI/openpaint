@@ -1544,8 +1544,11 @@ class ShellTest : public QObject {
         QGuiApplication::sync();
         auto frame = window->grabWindow();
         const auto sample = [&](int x, int y) {
-            const auto scene = item->mapToScene(QPointF(x, y)) * frame.devicePixelRatio();
-            return frame.pixelColor(qRound(scene.x()), qRound(scene.y())).red();
+            // grabWindow metadata can round fractional DPR on the software backend.
+            const auto scene = item->mapToScene(QPointF(x, y));
+            const qreal scaleX = qreal(frame.width()) / window->width();
+            const qreal scaleY = qreal(frame.height()) / window->height();
+            return frame.pixelColor(qRound(scene.x() * scaleX), qRound(scene.y() * scaleY)).red();
         };
         const auto contrast = [&](int offset) {
             int low = 255, high = 0;
