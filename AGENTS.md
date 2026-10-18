@@ -47,7 +47,8 @@ with [the decision template](docs/templates/DECISION.md).
 - Before each release, review the website and README against the release UI.
   Refresh light/dark screenshots and changed controls from the release build,
   using generated artwork and a staged redistributable backdrop; show glass at
-  40% surface opacity in both themes. Preserve open artwork and user settings;
+  40% surface opacity in both themes. Crop to the app window with transparent
+  rounded outer corners, preserving the captured UI. Preserve open artwork and user settings;
   record the source version and capture method in docs/assets/README.md and
   website/release.json. Never relabel old screenshots as a new release.
   Follow the website checklist in docs/RELEASES.md and verify the deployed page.

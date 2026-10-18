@@ -58,3 +58,18 @@ renders are separate from the installed glass screenshots used for publication.
 
 The maintainer explicitly authorizes merging once all checks pass. Next: verify
 CI on the updated PR head, merge through branch protection, and activate Pages.
+
+## Rounded glass presentation
+
+The maintainer requested softer, rounded website surfaces and app-only imagery.
+The page now uses pill controls, rounded translucent panels and subtle tinted
+backgrounds. All four installed captures are cropped to the app bounds with
+22px transparent rounded corners; captured UI and glass pixels are preserved.
+Acceptance: no surrounding desktop border, rounded image corners in README and
+website, readable glass surfaces, working FAQ keyboard controls, and no narrow
+screen overflow. Recheck these plus repository/site checks before merging.
+
+Validation: site build, repository validation and all 27 tooling tests pass.
+Desktop and 390px browser review confirms cropped rounded images, readable
+surfaces, no horizontal overflow and keyboard FAQ expansion. PNG alpha corners
+and empty metadata are verified for all four images. Updated CI is pending.

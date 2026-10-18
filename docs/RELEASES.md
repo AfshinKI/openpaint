@@ -219,6 +219,9 @@ Before publication of every version:
    Surface opacity to 40% in both themes. Use an original or redistributable
    backdrop in a staged region; exclude personal windows, desktop icons, recent
    paths and metadata. Preserve open artwork and restore any desktop changes.
+   Crop to the app window without surrounding desktop; use transparent rounded
+   outer corners and record the crop/mask treatment. Keep the captured glass
+   appearance intact; do not paint over controls or synthesize application UI.
 3. Name images with the release version. Record the application source commit,
    capture method, theme and rendering conditions in the asset provenance notes.
    Do not claim harness captures came from the installed executable.

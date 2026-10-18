@@ -34,7 +34,11 @@ appearance dialog. The setting describes opacity, not a 40% transparency value.
 GNOME/X11 supplies the desktop composition. An original illustrated sunset and
 mountain backdrop was displayed in a temporary window behind the app. This is
 actual composed window transparency, not a backdrop composited into screenshots.
-The app, its shadows and the staged region were captured at 1550 × 1140 pixels.
+The staged region was captured at 1550 × 1140 pixels, then cropped to the app
+window at (40, 60, 1489, 1105), yielding 1449 × 1045 pixels. A 22px rounded
+alpha mask (4× supersampled) removes the outer corners. No surrounding desktop
+border remains. The composed app pixels are unchanged, including the scenery
+visible through its glass; rounding is a presentation treatment, not an app UI change.
 No private windows, icons or personal wallpaper are included. The user's original
 OpenPaint instance, artwork, settings and wallpaper were left untouched; the
 capture instance and backdrop window were closed afterward.

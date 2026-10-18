@@ -11,7 +11,8 @@
   "surface_opacity_percent": 40,
   "installed_package": "1.2.0-1",
   "capture_size": [
-    1550,
-    1140
-  ]
+    1449,
+    1045
+  ],
+  "presentation": "Cropped to app window; 22px antialiased transparent outer corners; original composed app pixels preserved"
 }

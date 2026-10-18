@@ -37,4 +37,7 @@ The build rejects a version mismatch with CMake; repository CI runs that check.
 Capture filenames identify the verified installed release version. Record the
 exact rendering conditions in the asset provenance notes; use glass enabled at
 40% surface opacity and a staged original backdrop in light and dark mode.
+Crop away the surrounding desktop and use transparent rounded outer corners.
+Keep plain copy, rounded controls and soft translucent surfaces; preserve contrast
+and visible keyboard focus. App screenshots remain real captures, not mockups.
 A matching version number is not proof of accurate images: inspect every capture.

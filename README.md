@@ -11,6 +11,8 @@ Free and open source. Editing works offline—no account or telemetry.
 
 ## OpenPaint 1.2.0
 
+Screenshots are cropped to the app window with rounded outer corners.
+
 ### Light mode
 
 ![OpenPaint 1.2.0 in light mode](docs/assets/openpaint-1.2.0-light.png)
