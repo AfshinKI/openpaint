@@ -3,9 +3,9 @@ name: Project website
 on:
   push:
     branches: [main]
-    paths: ['website/**', 'tools/build_site.py', 'qml/icons/**', 'docs/assets/**', 'LICENSE', '.github/workflows/pages.yml']
+    paths: ['website/**', 'tools/build_site.py', 'qml/icons/**', 'docs/assets/**', 'LICENSE', 'CMakeLists.txt', '.github/workflows/pages.yml']
   pull_request:
-    paths: ['website/**', 'tools/build_site.py', 'qml/icons/**', 'docs/assets/**', 'LICENSE', '.github/workflows/pages.yml']
+    paths: ['website/**', 'tools/build_site.py', 'qml/icons/**', 'docs/assets/**', 'LICENSE', 'CMakeLists.txt', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:

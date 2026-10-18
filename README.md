@@ -9,12 +9,19 @@ Free and open source. Editing works offline—no account or telemetry.
 [Installation guide](docs/INSTALL.md) ·
 [Report an issue](https://github.com/AfshinKI/openpaint/issues)
 
-![OpenPaint frosted appearance — light theme, translucent controls and blurred Brush menu](docs/assets/openpaint-frost-light.png)
+## OpenPaint 1.2.0
 
-*Development preview with generated demo artwork on a generated multicolor backdrop.
-Desktop blur requires compositor support; on GNOME, use an extension such as
-[Blur My Shell](https://extensions.gnome.org/extension/3193/blur-my-shell/).
-OpenPaint does not install or configure desktop extensions.*
+### Light mode
+
+![OpenPaint 1.2.0 in light mode](docs/assets/openpaint-1.2.0-light.png)
+
+### Dark mode
+
+![OpenPaint 1.2.0 in dark mode](docs/assets/openpaint-1.2.0-dark.png)
+
+*Captured from installed OpenPaint v1.2.0 with glass enabled at 40% surface
+opacity, generated demo artwork and an original illustrated backdrop. See [capture provenance](docs/assets/README.md).
+Glass appearance is optional; desktop blur requires compositor support.*
 
 ## Make it yours
 

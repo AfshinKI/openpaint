@@ -39,3 +39,22 @@ rerun because no application behavior changed.
 Next: protected PR checks, merge, then Pages activation and endpoint verification.
 Repository Pages settings are separate from committing the workflow. No public
 deployment is claimed until verified.
+
+## Release screenshot refresh
+
+The maintainer requested installed v1.2.0 light/dark glass screenshots and approved
+local capture utilities. Four reviewed images now come from installed DEB 1.2.0-1,
+with glass enabled and Surface opacity 40%, over an original illustrated backdrop.
+No personal desktop content was saved. A separate app instance used isolated
+preferences; original artwork and settings remained untouched. Capture provenance
+and the original-art generator are included. Website and README use these images.
+
+Release policy now requires website/README review, versioned images, 40% glass
+captures and post-publication verification. Repository CI checks website release
+metadata against CMake. A regression test proves stale metadata fails. All 27
+Python tests and formatting checks pass. The optional source screenshot harness
+builds and its targeted offscreen test passes (3 QtTest phases); those opaque test
+renders are separate from the installed glass screenshots used for publication.
+
+The maintainer explicitly authorizes merging once all checks pass. Next: verify
+CI on the updated PR head, merge through branch protection, and activate Pages.

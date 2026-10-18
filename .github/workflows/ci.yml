@@ -47,6 +47,8 @@ jobs:
           persist-credentials: false
       - name: Validate repository
         run: python3 tools/check_repo.py
+      - name: Check website release version and assets
+        run: python3 tools/build_site.py
       - name: Test validation tooling
         run: python3 -m unittest discover -s tools/tests -v
 

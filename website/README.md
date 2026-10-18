@@ -28,3 +28,13 @@ advertising it. Repository settings are not changed by adding the workflow.
 Download links point to the latest GitHub release rather than fixed filenames.
 Update page claims when the shipped feature scope changes. Check desktop and
 narrow layouts, FAQ keyboard behavior, and relative asset paths before merging.
+
+## Release maintenance
+
+Follow the [release checklist](../docs/RELEASES.md#website-and-readme-release-checklist).
+`release.json` records the application version, source commit and screenshot set.
+The build rejects a version mismatch with CMake; repository CI runs that check.
+Capture filenames identify the verified installed release version. Record the
+exact rendering conditions in the asset provenance notes; use glass enabled at
+40% surface opacity and a staged original backdrop in light and dark mode.
+A matching version number is not proof of accurate images: inspect every capture.

@@ -207,3 +207,26 @@ The static product page and GitHub Pages publishing instructions are in
 [website/README.md](../website/README.md). Its separate workflow stages selected
 public assets and deploys only main-branch website changes; PRs only build.
 Website publication does not publish application releases or change the updater.
+
+### Website and README release checklist
+
+Before publication of every version:
+
+1. Compare page claims, download instructions and README with the release build.
+   Keep planned features explicitly separate from shipped features.
+2. Capture light and dark mode plus every illustrated control that changed. Use
+   generated artwork and isolated settings. For glass images, enable glass and set
+   Surface opacity to 40% in both themes. Use an original or redistributable
+   backdrop in a staged region; exclude personal windows, desktop icons, recent
+   paths and metadata. Preserve open artwork and restore any desktop changes.
+3. Name images with the release version. Record the application source commit,
+   capture method, theme and rendering conditions in the asset provenance notes.
+   Do not claim harness captures came from the installed executable.
+4. Update website/release.json, website image references, captions and README
+   together. Run the site build and check desktop/mobile layouts and links.
+   Repository CI rejects a website release version that differs from CMake.
+   This guard does not replace visual review of the images.
+5. Merge through protected review, publish the application, and verify the GitHub
+   Pages workflow and public page show the intended version and working downloads.
+   Record deployment evidence in the release plan; a commit alone is not proof
+   of publication. Refresh or clearly label any older screenshot retained in docs.

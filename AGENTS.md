@@ -44,6 +44,13 @@ with [the decision template](docs/templates/DECISION.md).
 - Use generated, redistributable fixtures. Record third-party sources and licenses.
 - Add targeted behavioral tests for engine, persistence, input, and updater changes.
   Docs-only changes need documentation checks, not artificial application tests.
+- Before each release, review the website and README against the release UI.
+  Refresh light/dark screenshots and changed controls from the release build,
+  using generated artwork and a staged redistributable backdrop; show glass at
+  40% surface opacity in both themes. Preserve open artwork and user settings;
+  record the source version and capture method in docs/assets/README.md and
+  website/release.json. Never relabel old screenshots as a new release.
+  Follow the website checklist in docs/RELEASES.md and verify the deployed page.
 - Update the relevant spec and feature status in the same change as behavior.
   Never mark a feature verified without recorded evidence.
 - Do not weaken checks to make a task pass. Report missing dependencies or skipped
