@@ -130,8 +130,8 @@ class ShellTest : public QObject {
         QVERIFY(!editor->dirty());
         window->resize(1024, 640);
         QVERIFY(capture(QStringLiteral("floating-controls-1024.png")));
-        const auto bounds = rail->mapRectToScene(rail->boundingRect());
-        QVERIFY(QRectF(0, 0, window->width(), window->height()).contains(bounds));
+        QTRY_VERIFY(QRectF(0, 0, window->width(), window->height())
+                        .contains(rail->mapRectToScene(rail->boundingRect())));
         editor->setTool(Editor::Tool::Fill);
         auto* size = window->findChild<QQuickItem*>(QStringLiteral("strokeSize"));
         QVERIFY(size && !size->isVisible());
