@@ -15,6 +15,9 @@
   <url type="homepage">https://github.com/AfshinKI/openpaint</url>
   <url type="bugtracker">https://github.com/AfshinKI/openpaint/issues</url>
   <releases>
+    <release version="1.2.0" date="2026-10-18" type="stable">
+      <description><p>Translucent windows and layered frosted menus, persistent theme preferences, clearer dark controls, blinking text caret and automatic smooth fill edges. Desktop blur requires compositor support.</p></description>
+    </release>
     <release version="1.1.0" date="2026-10-16" type="stable">
       <description><p>Adjustable glass appearance, improved selection and canvas resizing, same-color fill edge cleanup, and optional stable-release notifications. Update installation remains manual.</p></description>
     </release>

@@ -1,14 +1,16 @@
 ## New in {VERSION}
 
-- Glass appearance with an enable switch and surface opacity slider in Settings;
-  paper and artwork keep their own opacity. Desktop blur is not included.
-- Outside clicks dismiss selections or commit shapes before starting a new gesture;
-  Ctrl+A selects the whole canvas.
-- Same-color fill edge cleanup, with a Smooth edges toggle for exact matching.
-- Canvas midpoint handles resize one axis; the decorative canvas border is removed.
-- Manual and optional daily GitHub stable-release checks with dismissible notices.
-  Automatic checks are off by default and send no artwork or document information.
-  Flatpak keeps browser-only checks. Downloads and installation remain manual.
+- Translucent windows and layered frosted menus and floating controls, with lighter
+  light-mode tint and clearer dark-mode text and buttons. The paper stays opaque.
+- Theme choice, glass enablement and opacity are saved between launches.
+- A blinking text cursor follows the displayed font height.
+- Fill always uses smooth edges and exact color matching, with no floating options panel.
+- A 1449 × 1008 default window size and a refreshed Brush-menu appearance preview.
+
+Desktop blur requires compositor support. On GNOME, an extension such as Blur My
+Shell is needed; OpenPaint does not install or configure it. Without compositor
+blur, the desktop remains sharp behind translucent areas. Disable glass or set
+opacity to 100% for an opaque window. Software rendering uses solid menus/dialogs.
 
 OpenPaint is an offline, single-layer Linux paint editor with brushes, fill, shapes,
 text, selections, image transformations and undo/redo. Open/export PNG, JPEG, BMP
