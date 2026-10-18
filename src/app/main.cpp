@@ -34,9 +34,10 @@ int main(int argc, char* argv[]) {
     if (parser.positionalArguments().size() > 1)
         parser.showHelp(2);
 
-    // The desktop window is opaque; canvas alpha is composited over its checkerboard.
+    // Allow translucent UI backgrounds; artwork still composites over its checkerboard.
+    QQuickWindow::setDefaultAlphaBuffer(true);
     auto surfaceFormat = QSurfaceFormat::defaultFormat();
-    surfaceFormat.setAlphaBufferSize(0);
+    surfaceFormat.setAlphaBufferSize(8);
     QSurfaceFormat::setDefaultFormat(surfaceFormat);
 
     QQmlApplicationEngine engine;

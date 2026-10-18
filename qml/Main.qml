@@ -14,9 +14,11 @@ ApplicationWindow {
     readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
     readonly property CanvasItem canvasController: canvas
+    readonly property list<Item> glassOverlayBackdropLayers: [window.background, window.menuBar, window.header, window.footer, canvas, floatingControls, textOptions, updateNotice]
+    readonly property list<Item> glassBackdropLayers: [window.background, window.menuBar, window.header, window.footer, canvas]
     objectName: "mainWindow"
-    width: 1280
-    height: 800
+    width: 1449
+    height: 1008
     minimumWidth: 1024
     minimumHeight: 640
     visible: false
@@ -24,7 +26,12 @@ ApplicationWindow {
         window.show();
     })
     title: (editor.dirty ? "* " : "") + editor.fileName + qsTr(" — OpenPaint")
-    color: Theme.workspace
+    readonly property real backgroundAlpha: Appearance.glassEnabled ? Appearance.surfaceOpacity / 100 : 1
+    color: backgroundAlpha < 1 ? "transparent" : Theme.workspace
+    background: Rectangle {
+        objectName: "workspaceSurface"
+        color: Qt.rgba(Theme.workspace.r, Theme.workspace.g, Theme.workspace.b, window.backgroundAlpha)
+    }
     palette.window: Theme.window
     palette.windowText: Theme.text
     palette.base: Theme.panel
@@ -436,7 +443,7 @@ ApplicationWindow {
             text: qsTr("&System")
             checkable: true
             checked: Theme.mode === 0
-            onTriggered: Theme.mode = 0
+            onTriggered: Appearance.themeMode = 0
         }
         Action {
             id: lightThemeAction
@@ -445,7 +452,7 @@ ApplicationWindow {
             text: qsTr("&Light")
             checkable: true
             checked: Theme.mode === 1
-            onTriggered: Theme.mode = 1
+            onTriggered: Appearance.themeMode = 1
         }
         Action {
             id: darkThemeAction
@@ -454,7 +461,7 @@ ApplicationWindow {
             text: qsTr("&Dark")
             checkable: true
             checked: Theme.mode === 2
-            onTriggered: Theme.mode = 2
+            onTriggered: Appearance.themeMode = 2
         }
     }
 
@@ -464,6 +471,8 @@ ApplicationWindow {
         topPadding: 2
         bottomPadding: 2
         background: GlassSurface {
+            backdropSource: null
+            raisedSurface: false
             radius: 0
             border.width: 0
         }
@@ -642,6 +651,8 @@ ApplicationWindow {
         height: 112
         background: GlassSurface {
             objectName: "ribbonSurface"
+            backdropSource: null
+            raisedSurface: false
             anchors.fill: parent
             anchors.margins: 4
         }
@@ -1333,6 +1344,7 @@ ApplicationWindow {
         }
     }
     Column {
+        id: floatingControls
         objectName: "floatingToolControls"
         anchors.left: parent.left
         anchors.top: parent.top
@@ -1342,47 +1354,6 @@ ApplicationWindow {
         z: 2
         enabled: !editor.busy
         property real panelHeight: Math.max(120, Math.min(280, (parent.height - 64) / 2))
-        Rectangle {
-            visible: editor.tool === Editor.Fill
-            width: 132
-            height: fillControls.implicitHeight + 16
-            radius: Theme.surfaceRadius
-            color: Theme.panel
-            border.color: Theme.divider
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.AllButtons
-                onWheel: wheel => wheel.accepted = true
-            }
-            ColumnLayout {
-                id: fillControls
-                anchors.fill: parent
-                anchors.margins: 8
-                Label {
-                    text: qsTr("Fill tolerance")
-                    color: Theme.text
-                }
-                PaintSpinBox {
-                    objectName: "fillTolerance"
-                    visible: editor.tool === Editor.Fill
-                    from: 0
-                    to: 255
-                    value: editor.tolerance
-                    onValueModified: editor.tolerance = value
-                    Accessible.name: qsTr("Fill tolerance")
-                    implicitWidth: 104
-                }
-                PaintCheckBox {
-                    objectName: "fillSmoothEdges"
-                    text: qsTr("Smooth edges")
-                    visible: editor.tool === Editor.Fill
-                    checked: editor.fillSmoothEdges
-                    onToggled: editor.fillSmoothEdges = checked
-                    Accessible.name: qsTr("Smooth same-color fill edges")
-                }
-            }
-        }
-
         ToolSlider {
             visible: editor.tool === Editor.Pencil || editor.tool === Editor.Brush || editor.tool === Editor.Eraser || editor.tool === Editor.Shape
             height: parent.panelHeight
@@ -1411,6 +1382,9 @@ ApplicationWindow {
     footer: ToolBar {
         height: 36
         background: GlassSurface {
+            backdropSource: null
+            raisedSurface: false
+            baseTintPower: 3
             radius: 0
             border.width: 0
         }
@@ -1434,12 +1408,14 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             PaintButton {
+                flat: Appearance.glassEnabled
                 objectName: "shapeOptionsButton"
                 text: qsTr("Options")
                 visible: editor.previewActive && !editor.textActive
                 onClicked: editor.floatingActive ? selectionOptions.open() : shapeOptions.open()
             }
             PaintButton {
+                flat: Appearance.glassEnabled
                 objectName: "applyPreviewButton"
                 text: qsTr("Apply")
                 visible: editor.previewActive && !editor.textActive
@@ -1448,6 +1424,7 @@ ApplicationWindow {
                 }
             }
             PaintButton {
+                flat: Appearance.glassEnabled
                 text: qsTr("Cancel")
                 visible: editor.previewActive
                 onClicked: editor.cancel()
@@ -1464,11 +1441,13 @@ ApplicationWindow {
                 onClicked: editor.cancelIo()
             }
             IconButton {
+                flat: Appearance.glassEnabled
                 symbol: "fit"
                 shortcutLabel: "Ctrl+0"
                 action: fitAction
             }
             IconButton {
+                flat: Appearance.glassEnabled
                 symbol: "zoom-out"
                 shortcutLabel: "Ctrl+-"
                 action: zoomOutAction
@@ -1480,6 +1459,7 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
             }
             IconButton {
+                flat: Appearance.glassEnabled
                 symbol: "zoom-in"
                 shortcutLabel: "Ctrl++"
                 action: zoomInAction

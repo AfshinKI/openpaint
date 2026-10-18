@@ -11,6 +11,7 @@ class Appearance : public QObject {
     QML_SINGLETON
     Q_PROPERTY(bool glassEnabled READ glassEnabled WRITE setGlassEnabled NOTIFY changed)
     Q_PROPERTY(int surfaceOpacity READ surfaceOpacity WRITE setSurfaceOpacity NOTIFY changed)
+    Q_PROPERTY(int themeMode READ themeMode WRITE setThemeMode NOTIFY changed)
   public:
     explicit Appearance(QObject* parent = nullptr);
     explicit Appearance(const QString& settingsFile, QObject* parent = nullptr);
@@ -20,6 +21,10 @@ class Appearance : public QObject {
     int surfaceOpacity() const {
         return surfaceOpacity_;
     }
+    int themeMode() const {
+        return themeMode_;
+    }
+    void setThemeMode(int mode);
     void setGlassEnabled(bool enabled);
     void setSurfaceOpacity(int opacity);
     Q_INVOKABLE void restoreDefaults();
@@ -31,4 +36,5 @@ class Appearance : public QObject {
     std::unique_ptr<QSettings> settings_;
     bool glassEnabled_ = true;
     int surfaceOpacity_ = 85;
+    int themeMode_ = 0;
 };

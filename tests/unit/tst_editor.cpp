@@ -13,6 +13,27 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void fillAlwaysSmoothAndExact() {
+        SampleEditor editor;
+        QImage fixture(12, 8, QImage::Format_ARGB32_Premultiplied);
+        fixture.fill(Qt::white);
+        for (int y = 0; y < fixture.height(); ++y) {
+            fixture.setPixelColor(5, y, QColor(128, 128, 128));
+            fixture.setPixelColor(6, y, Qt::black);
+        }
+        fixture.setPixelColor(2, 2, QColor(255, 254, 255));
+        fixture.setColorSpace(QColorSpace::SRgb);
+        editor.reset(fixture);
+        editor.primary = Qt::black;
+        editor.setTool(Editor::Tool::Fill);
+        editor.begin({0, 0}, false);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image().pixelColor(5, 3), QColor(Qt::black));
+        QCOMPARE(editor.image().pixelColor(10, 3), QColor(Qt::white));
+        QCOMPARE(editor.image().pixelColor(2, 2), QColor(255, 254, 255));
+        editor.undo();
+        QCOMPARE(editor.image(), fixture);
+    }
     void switchingToolsClearsSelection() {
         Editor editor;
         editor.selectRect(10, 10, 30, 30);

@@ -10,8 +10,8 @@ Rectangle {
     implicitWidth: 172
     implicitHeight: 76
     radius: Theme.controlRadius
-    color: Theme.panel
-    border.color: Theme.divider
+    color: Appearance.glassEnabled ? "transparent" : Theme.panel
+    border.color: Appearance.glassEnabled ? Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.12) : Theme.divider
     Flickable {
         id: scroll
         anchors.fill: parent

@@ -21,9 +21,11 @@ class AppInfoTest : public QObject {
         QCOMPARE(first.surfaceOpacity(), 85);
         first.setGlassEnabled(false);
         first.setSurfaceOpacity(62);
+        first.setThemeMode(2);
         Appearance restored(file);
         QVERIFY(!restored.glassEnabled());
         QCOMPARE(restored.surfaceOpacity(), 62);
+        QCOMPARE(restored.themeMode(), 2);
         restored.setSurfaceOpacity(-5);
         QCOMPARE(restored.surfaceOpacity(), 40);
         restored.setSurfaceOpacity(200);

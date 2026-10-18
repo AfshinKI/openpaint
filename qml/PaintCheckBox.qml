@@ -6,6 +6,9 @@ import OpenPaint
 CheckBox {
     id: control
     implicitHeight: 32
+    palette.windowText: Theme.text
+    palette.text: Theme.text
+    palette.buttonText: Theme.text
     indicator: Rectangle {
         x: control.leftPadding
         y: (control.height - height) / 2

@@ -20,6 +20,8 @@ Dialog {
     }
     padding: 20
     background: GlassSurface {
+        opaqueBackdrop: true
+        backdropLayers: backdropSource && hostWindow ? hostWindow.glassOverlayBackdropLayers : []
         radius: Theme.dialogRadius
     }
     footer: DialogButtonBox {

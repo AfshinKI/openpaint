@@ -2,6 +2,7 @@
 #include "color/ColorPalette.h"
 #include "color/ColorSpectrum.h"
 #include "io/ImageIo.h"
+#include "platform/Appearance.h"
 #include "platform/WindowStartup.h"
 #include "render/CanvasItem.h"
 #include <QAccessible>
@@ -10,11 +11,15 @@
 #include <QDir>
 #include <QElapsedTimer>
 #include <QGuiApplication>
+#include <QPainter>
+#include <QPainterPath>
 #include <QQmlApplicationEngine>
+#include <QQmlComponent>
 #include <QQmlError>
 #include <QQmlExpression>
 #include <QQuickStyle>
 #include <QQuickWindow>
+#include <QSGRendererInterface>
 #include <QScopeGuard>
 #include <QSemaphore>
 #include <QSignalSpy>
@@ -125,14 +130,12 @@ class ShellTest : public QObject {
         QVERIFY(!editor->dirty());
         window->resize(1024, 640);
         QVERIFY(capture(QStringLiteral("floating-controls-1024.png")));
-        const auto bounds = rail->mapRectToScene(rail->boundingRect());
-        QVERIFY(QRectF(0, 0, window->width(), window->height()).contains(bounds));
+        QTRY_VERIFY(QRectF(0, 0, window->width(), window->height())
+                        .contains(rail->mapRectToScene(rail->boundingRect())));
         editor->setTool(Editor::Tool::Fill);
         auto* size = window->findChild<QQuickItem*>(QStringLiteral("strokeSize"));
         QVERIFY(size && !size->isVisible());
-        QVERIFY(tabTo("fillTolerance"));
-        keyClick(Qt::Key_Up);
-        QCOMPARE(editor->tolerance, 1);
+        QVERIFY(!window->findChild<QObject*>("fillTolerance"));
         QCOMPARE(editor->brushSize, 4);
         QCOMPARE(editor->opacity, 99);
     }
@@ -157,9 +160,11 @@ class ShellTest : public QObject {
         auto* light = window->findChild<QObject*>(QStringLiteral("lightThemeAction"));
         auto* dark = window->findChild<QObject*>(QStringLiteral("darkThemeAction"));
         auto* system = window->findChild<QObject*>(QStringLiteral("systemThemeAction"));
-        QVERIFY(light && dark && system);
+        auto* workspace = window->findChild<QObject*>(QStringLiteral("workspaceSurface"));
+        QVERIFY(light && dark && system && workspace);
         QVERIFY(QMetaObject::invokeMethod(dark, "trigger", Q_ARG(QObject*, nullptr)));
-        QTRY_COMPARE(window->color(), QColor("#111418"));
+        QTRY_COMPARE(workspace->property("color").value<QColor>().name(),
+                     QStringLiteral("#111418"));
         QVERIFY(dark->property("checked").toBool());
         QVERIFY(!light->property("checked").toBool());
         QVERIFY(capture(QStringLiteral("shell-dark-1280.png")));
@@ -177,7 +182,8 @@ class ShellTest : public QObject {
         window->resize(1024, 640);
         QVERIFY(capture(QStringLiteral("shell-dark-1024.png")));
         QVERIFY(QMetaObject::invokeMethod(light, "trigger", Q_ARG(QObject*, nullptr)));
-        QTRY_COMPARE(window->color(), QColor("#E2E5EA"));
+        QTRY_COMPARE(workspace->property("color").value<QColor>().name(),
+                     QStringLiteral("#e2e5ea"));
         QVERIFY(light->property("checked").toBool());
         QVERIFY(!dark->property("checked").toBool());
         QVERIFY(capture(QStringLiteral("shell-light-1024.png")));
@@ -667,6 +673,11 @@ class ShellTest : public QObject {
         QTest::mouseRelease(window, Qt::LeftButton, {}, at({400, 180}));
         QTRY_VERIFY(editor->textReady());
         QTRY_VERIFY(input->hasActiveFocus());
+        QTRY_VERIFY(!visualItems(input, "textCaret").isEmpty());
+        auto* caret = visualItems(input, "textCaret").first();
+        QVERIFY(caret->height() > 0);
+        const bool firstBlink = caret->property("blinkOn").toBool();
+        QTRY_VERIFY(caret->property("blinkOn").toBool() != firstBlink);
         QVERIFY(editor->textRect().width() >= 319);
         for (char c : std::string("OpenPaint"))
             keyClick(c);
@@ -1212,7 +1223,8 @@ class ShellTest : public QObject {
         auto* surface = window->findChild<QObject*>("ribbonSurface");
         auto* toggle = window->findChild<QObject*>("glassEnabled");
         auto* slider = window->findChild<QObject*>("glassOpacity");
-        QVERIFY(dialog && surface && toggle && slider);
+        auto* workspace = window->findChild<QObject*>("workspaceSurface");
+        QVERIFY(dialog && surface && toggle && slider && workspace);
         QVERIFY(QMetaObject::invokeMethod(dialog, "open"));
         QVERIFY(tabTo("restoreAppearance"));
         keyClick(Qt::Key_Space);
@@ -1221,14 +1233,42 @@ class ShellTest : public QObject {
         keyClick(Qt::Key_Left);
         QCOMPARE(slider->property("value").toInt(), 84);
         QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.84);
+        QVERIFY(qAbs(workspace->property("color").value<QColor>().alphaF() - 0.84) < 0.005);
+        QCOMPARE(window->color().alpha(), 0);
+        // The base covers the toolbar margins too; no clear slit between bars.
+        auto* base = qobject_cast<QQuickItem*>(workspace);
+        QVERIFY(base);
+        QCOMPARE(base->width(), qreal(window->width()));
+        QCOMPARE(base->height(), qreal(window->height()));
+        auto* toolbar = window->findChild<QQuickItem*>("mainToolbar");
+        const auto gap = toolbar->mapToScene(QPointF(toolbar->width() / 2, 1));
+        const auto gapAlpha = [&] {
+            const auto frame = window->grabWindow();
+            const auto scale = frame.devicePixelRatio();
+            return frame.pixelColor(qRound(gap.x() * scale), qRound(gap.y() * scale)).alphaF();
+        };
+        QTRY_VERIFY(gapAlpha() > 0.8);
+        QVERIFY(capture("glass-toolbar-gap.png"));
         QVERIFY(tabTo("glassEnabled"));
         keyClick(Qt::Key_Space);
         QCOMPARE(surface->property("surfaceAlpha").toDouble(), 1.0);
+        QCOMPARE(workspace->property("color").value<QColor>().alpha(), 255);
+        QCOMPARE(window->color().alpha(), 255);
         QVERIFY(!slider->property("enabled").toBool());
         QVERIFY(capture("glass-disabled.png"));
         keyClick(Qt::Key_Space);
         QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.84);
+        QVERIFY(tabTo("glassOpacity"));
+        for (int step = 0; step < 16; ++step)
+            keyClick(Qt::Key_Right);
+        QCOMPARE(slider->property("value").toInt(), 100);
+        QCOMPARE(window->color().alpha(), 255);
+        QCOMPARE(workspace->property("color").value<QColor>().alpha(), 255);
+        keyClick(Qt::Key_Left);
+        QCOMPARE(slider->property("value").toInt(), 99);
+        QCOMPARE(window->color().alpha(), 0);
         QCOMPARE(canvas->opacity(), 1.0);
+        QCOMPARE(window->findChild<QQuickItem*>("settingsButton")->opacity(), 1.0);
         QCOMPARE(editor->image(), artwork);
         QVERIFY(!editor->dirty());
         QVERIFY(!editor->canUndo());
@@ -1245,6 +1285,290 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("lightThemeAction"),
                                           "trigger", Q_ARG(QObject*, nullptr)));
         QVERIFY(capture("glass-light-1280.png"));
+    }
+    // Explicit documentation capture, not part of CTest. Uses only generated content.
+    void readmeFrostPreview() {
+        window->resize(1449, 1008);
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        appearance->setGlassEnabled(true);
+        appearance->setSurfaceOpacity(54);
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("lightThemeAction"),
+                                          "trigger", Q_ARG(QObject*, nullptr)));
+        // Staged multicolor backdrop, generated locally without desktop capture.
+        QQmlComponent backdrop(engine.get());
+        backdrop.setData(R"QML(import QtQuick
+            Rectangle {
+                width: 1449; height: 1008; z: -100
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0; color: "#234A70" }
+                    GradientStop { position: 0.35; color: "#B17D98" }
+                    GradientStop { position: 0.65; color: "#DDB777" }
+                    GradientStop { position: 1; color: "#398B89" }
+                }
+            })QML",
+                         QUrl());
+        QScopedPointer<QObject> backing(backdrop.create());
+        QVERIFY(backing);
+        qobject_cast<QQuickItem*>(backing.data())->setParentItem(window->contentItem());
+        QImage art(1152, 648, QImage::Format_RGB32);
+        QPainter painter(&art);
+        painter.setRenderHint(QPainter::Antialiasing);
+        QLinearGradient sky(0, 0, 0, 648);
+        sky.setColorAt(0, QColor("#303D72"));
+        sky.setColorAt(0.6, QColor("#DC9C9C"));
+        sky.setColorAt(1, QColor("#F4DDBB"));
+        painter.fillRect(art.rect(), sky);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor("#FFE7AD"));
+        painter.drawEllipse(QPointF(785, 208), 82, 82);
+        painter.setBrush(QColor("#82779D"));
+        painter.drawPolygon(QPolygonF{{0, 430},
+                                      {165, 245},
+                                      {310, 370},
+                                      {470, 188},
+                                      {660, 391},
+                                      {870, 281},
+                                      {1152, 422},
+                                      {1152, 648},
+                                      {0, 648}});
+        painter.setBrush(QColor("#375F7C"));
+        painter.drawPolygon(QPolygonF{{0, 505},
+                                      {246, 355},
+                                      {430, 480},
+                                      {695, 326},
+                                      {970, 475},
+                                      {1152, 379},
+                                      {1152, 648},
+                                      {0, 648}});
+        QPainterPath foreground;
+        foreground.moveTo(0, 530);
+        foreground.cubicTo(270, 435, 415, 610, 660, 504);
+        foreground.cubicTo(890, 405, 1040, 550, 1152, 510);
+        foreground.lineTo(1152, 648);
+        foreground.lineTo(0, 648);
+        foreground.closeSubpath();
+        painter.fillPath(foreground, QColor("#204E59"));
+        painter.end();
+        QTemporaryDir dir;
+        const auto path = dir.filePath("Frost study.png");
+        QVERIFY(art.save(path));
+        auto* editor = window->findChild<Editor*>("editor");
+        editor->openFile(QUrl::fromLocalFile(path));
+        QTRY_VERIFY(!editor->loading());
+        QCOMPARE(editor->image().size(), art.size());
+        auto* menu = window->findChild<QObject*>("brushesMenu");
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QTest::qWait(250);
+        QVERIFY(capture("openpaint-frost-light.png"));
+    }
+    void fileMenuBackdropBlur_data() {
+        QTest::addColumn<bool>("dark");
+        QTest::newRow("light") << false;
+        QTest::newRow("dark") << true;
+    }
+    void fileMenuBackdropBlur() {
+        QFETCH(bool, dark);
+        auto* theme = window->findChild<QObject*>(dark ? "darkThemeAction" : "lightThemeAction");
+        QVERIFY(QMetaObject::invokeMethod(theme, "trigger", Q_ARG(QObject*, nullptr)));
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        appearance->setSurfaceOpacity(40);
+        appearance->setGlassEnabled(true);
+        auto* toolbar = window->findChild<QQuickItem*>("mainToolbar");
+        auto* menu = window->findChild<QObject*>("fileMenu");
+        QVERIFY(toolbar && menu);
+        QQmlComponent component(engine.get());
+        component.setData(R"(
+            import QtQuick
+            Item {
+                anchors.fill: parent; z: 100; opacity: 0.6
+                Repeater {
+                    model: 20
+                    Rectangle {
+                        required property int index
+                        y: index * 8; height: 8; width: parent.width
+                        color: index % 2 ? "white" : "black"
+                    }
+                }
+            }
+        )",
+                          QUrl("qrc:/toolbar-stripes.qml"));
+        std::unique_ptr<QObject> fixture(component.create());
+        QVERIFY2(fixture != nullptr, qPrintable(component.errorString()));
+        qobject_cast<QQuickItem*>(fixture.get())->setParentItem(toolbar);
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        auto* panel = menu->property("background").value<QQuickItem*>();
+        QVERIFY(panel);
+        const bool software =
+            window->rendererInterface()->graphicsApi() == QSGRendererInterface::Software;
+        QTRY_COMPARE(panel->property("backdropBlurEnabled").toBool(), !software);
+        if (software) {
+            QCOMPARE(panel->property("surfaceAlpha").toDouble(), 1.0);
+            QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+            return;
+        }
+        const auto contrast = [&](const QImage& frame) {
+            int low = 255, high = 0;
+            const auto left = panel->mapToScene(QPointF(panel->width() - 4, 0)).x();
+            for (int y = 16; y < int(toolbar->height()) - 16; ++y) {
+                const auto sceneY = toolbar->mapToScene(QPointF(0, y)).y();
+                const auto scale = frame.devicePixelRatio();
+                const int v = frame.pixelColor(qRound(left * scale), qRound(sceneY * scale)).red();
+                low = std::min(low, v);
+                high = std::max(high, v);
+            }
+            return high - low;
+        };
+        QTest::qWait(200);
+        const auto blurred = window->grabWindow();
+        QVERIFY(capture(dark ? "file-menu-dark-blurred.png" : "file-menu-light-blurred.png"));
+        panel->setProperty("backdropSource", QVariant::fromValue<QQuickItem*>(nullptr));
+        QTest::qWait(200);
+        const auto plain = window->grabWindow();
+        QVERIFY(capture(dark ? "file-menu-dark-plain.png" : "file-menu-light-plain.png"));
+        QVERIFY(contrast(plain) > 50);
+        if (!software)
+            QVERIFY2(contrast(blurred) < contrast(plain) / 3,
+                     "File menu must blur the toolbar behind it");
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+    }
+    void actualFloatingPanelBlur_data() {
+        QTest::addColumn<bool>("fillPanel");
+        QTest::newRow("size") << false;
+    }
+    void actualFloatingPanelBlur() {
+        QFETCH(bool, fillPanel);
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        QVERIFY(editor && canvas && appearance);
+        appearance->setSurfaceOpacity(40);
+        appearance->setGlassEnabled(true);
+        QTemporaryDir dir;
+        QImage stripes(1152, 648, QImage::Format_RGB32);
+        for (int y = 0; y < stripes.height(); ++y)
+            for (int x = 0; x < stripes.width(); ++x)
+                stripes.setPixelColor(x, y, (y / 8) % 2 ? Qt::white : Qt::black);
+        const auto path = dir.filePath("stripes.png");
+        QVERIFY(stripes.save(path));
+        editor->openFile(QUrl::fromLocalFile(path));
+        QTRY_VERIFY(!editor->loading());
+        QCOMPARE(editor->image().size(), stripes.size());
+        canvas->zoomBy(2);
+        auto* rail = window->findChild<QQuickItem*>("floatingToolControls");
+        auto* slider = window->findChild<QQuickItem*>("strokeSize");
+        QVERIFY(rail && slider);
+        QQuickItem* panel = slider;
+        while (panel && panel->metaObject()->indexOfProperty("backdropSource") < 0)
+            panel = panel->parentItem();
+        if (fillPanel) {
+            editor->setTool(Editor::Tool::Fill);
+            panel = window->findChild<QQuickItem*>("fillControlsSurface");
+        }
+        QVERIFY(panel);
+        QCOMPARE(panel->property("backdropSource").value<QQuickItem*>(), canvas);
+        const bool software =
+            window->rendererInterface()->graphicsApi() == QSGRendererInterface::Software;
+        QTRY_COMPARE(panel->property("backdropBlurEnabled").toBool(), !software);
+        QTest::qWait(200);
+        const auto contrast = [&](const QImage& frame) {
+            int low = 255, high = 0;
+            for (int y = 28; y < std::min(180, int(panel->height()) - 12); ++y) {
+                const auto p = panel->mapToScene(QPointF(5, y)) * frame.devicePixelRatio();
+                const int v = frame.pixelColor(qRound(p.x()), qRound(p.y())).red();
+                low = std::min(low, v);
+                high = std::max(high, v);
+            }
+            return high - low;
+        };
+        const auto blurred = window->grabWindow();
+        QVERIFY(capture(fillPanel ? "actual-fill-blurred.png" : "actual-size-blurred.png"));
+        panel->setProperty("backdropSource", QVariant::fromValue<QQuickItem*>(nullptr));
+        QTest::qWait(200);
+        const auto plain = window->grabWindow();
+        QVERIFY(capture(fillPanel ? "actual-fill-plain.png" : "actual-size-plain.png"));
+        QVERIFY(contrast(plain) > 100);
+        if (!software)
+            QVERIFY(contrast(blurred) < contrast(plain) / 3);
+        QVERIFY(!editor->dirty());
+        QVERIFY(!editor->canUndo());
+    }
+    void glassBackdropRendering() {
+        QQmlComponent component(engine.get());
+        component.setData(R"(
+            import QtQuick
+            import OpenPaint
+            Item {
+                width: 512; height: 200; z: 100
+                Component.onCompleted: {
+                    Appearance.glassEnabled = true;
+                    Appearance.surfaceOpacity = 40;
+                    Appearance.themeMode = 1;
+                }
+                Item {
+                    id: stripes
+                    anchors.fill: parent
+                    Repeater {
+                        model: 64
+                        Rectangle {
+                            required property int index
+                            x: index * 8; width: 8; height: 200
+                            color: index % 2 ? "white" : "black"
+                        }
+                    }
+                }
+                GlassSurface {
+                    objectName: "blurredFixture"
+                    width: 256; height: 200
+                    backdropSource: stripes
+                    Rectangle { x: 60; y: 130; width: 80; height: 4; color: "black" }
+                }
+                GlassSurface { x: 256; width: 256; height: 200; backdropSource: null }
+            }
+        )",
+                          QUrl("qrc:/glass-fixture.qml"));
+        QVERIFY2(component.isReady(), qPrintable(component.errorString()));
+        std::unique_ptr<QObject> fixture(component.create());
+        QVERIFY(fixture);
+        auto* item = qobject_cast<QQuickItem*>(fixture.get());
+        QVERIFY(item);
+        item->setParentItem(window->contentItem());
+        auto* panel = fixture->findChild<QObject*>("blurredFixture");
+        QVERIFY(panel);
+        const bool software =
+            window->rendererInterface()->graphicsApi() == QSGRendererInterface::Software;
+        QTRY_COMPARE(panel->property("backdropBlurEnabled").toBool(), !software);
+        QTest::qWait(100);
+        QGuiApplication::sync();
+        auto frame = window->grabWindow();
+        const auto sample = [&](int x, int y) {
+            // grabWindow metadata can round fractional DPR on the software backend.
+            const auto scene = item->mapToScene(QPointF(x, y));
+            const qreal scaleX = qreal(frame.width()) / window->width();
+            const qreal scaleY = qreal(frame.height()) / window->height();
+            return frame.pixelColor(qRound(scene.x() * scaleX), qRound(scene.y() * scaleY)).red();
+        };
+        const auto contrast = [&](int offset) {
+            int low = 255, high = 0;
+            for (int x = 64; x < 192; ++x) {
+                const auto value = sample(x + offset, 90);
+                low = std::min(low, value);
+                high = std::max(high, value);
+            }
+            return high - low;
+        };
+        // The threaded renderer may still return the preceding frame initially.
+        QTRY_VERIFY(([&] {
+            frame = window->grabWindow();
+            return contrast(256) > 100;
+        })());
+        if (!software)
+            QVERIFY2(contrast(0) < contrast(256) / 3,
+                     "Backdrop stripes must be blurred, not just tinted");
+        QCOMPARE(sample(90, 132), 0); // Foreground content stays sharp and opaque.
+        QVERIFY(capture("glass-backdrop-comparison.png"));
     }
     void topRightControls() {
         auto* settings = window->findChild<QObject*>("settingsButton");
@@ -1393,12 +1717,7 @@ class ShellTest : public QObject {
     void fillOptionsLayout() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         editor->setTool(Editor::Tool::Fill);
-        QVERIFY(editor->fillSmoothEdges);
-        QVERIFY(tabTo("fillSmoothEdges"));
-        keyClick(Qt::Key_Space);
-        QVERIFY(!editor->fillSmoothEdges);
-        keyClick(Qt::Key_Space);
-        QVERIFY(editor->fillSmoothEdges);
+        QVERIFY(!window->findChild<QObject*>("fillControlsSurface"));
         window->setWidth(1024);
         window->setHeight(640);
         QVERIFY(QMetaObject::invokeMethod(
@@ -1439,9 +1758,7 @@ class ShellTest : public QObject {
         QVERIFY(tabTo("fillButton"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Fill);
-        QVERIFY(tabTo("fillTolerance"));
-        keyClick(Qt::Key_Up);
-        QCOMPARE(editor->tolerance, 1);
+        QVERIFY(!window->findChild<QObject*>("fillTolerance"));
         QVERIFY(tabTo("pencilButton"));
         keyClick(Qt::Key_Space);
         QVERIFY(tabTo("editColorsButton"));
@@ -1847,6 +2164,7 @@ int main(int argc, char* argv[]) {
     if (!settings.isValid())
         return 1;
     qputenv("XDG_CONFIG_HOME", settings.path().toUtf8());
+    QQuickWindow::setDefaultAlphaBuffer(true);
     QGuiApplication app(argc, argv);
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     ShellTest test;

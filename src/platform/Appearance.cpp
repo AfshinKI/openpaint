@@ -7,12 +7,14 @@ Appearance::Appearance(const QString& file, QObject* parent) : QObject(parent) {
                     ? std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
                                                   "OpenPaint", "OpenPaint")
                     : std::make_unique<QSettings>(file, QSettings::IniFormat);
+    themeMode_ = std::clamp(settings_->value("appearance/theme", 0).toInt(), 0, 2);
     glassEnabled_ = settings_->value("appearance/glass", true).toBool();
     bool ok = false;
     const int value = settings_->value("appearance/opacity", 85).toInt(&ok);
     surfaceOpacity_ = ok ? std::clamp(value, 40, 100) : 85;
 }
 void Appearance::save() {
+    settings_->setValue("appearance/theme", themeMode_);
     settings_->setValue("appearance/glass", glassEnabled_);
     settings_->setValue("appearance/opacity", surfaceOpacity_);
     settings_->sync();
@@ -34,5 +36,13 @@ void Appearance::setSurfaceOpacity(int opacity) {
 void Appearance::restoreDefaults() {
     glassEnabled_ = true;
     surfaceOpacity_ = 85;
+    save();
+}
+
+void Appearance::setThemeMode(int mode) {
+    mode = std::clamp(mode, 0, 2);
+    if (mode == themeMode_)
+        return;
+    themeMode_ = mode;
     save();
 }

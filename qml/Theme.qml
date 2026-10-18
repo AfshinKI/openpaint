@@ -2,16 +2,17 @@
 pragma Singleton
 
 import QtQuick
+import OpenPaint
 
 QtObject {
-    // 0 follows the desktop, 1 is light, 2 is dark. Session-only in this preview.
+    // 0 follows the desktop, 1 is light, 2 is dark. Persisted with appearance preferences.
     readonly property int controlRadius: 6
     readonly property int surfaceRadius: 8
     readonly property int dialogRadius: 12
     readonly property color hover: dark ? "#343B45" : "#E9EDF2"
     readonly property color pressed: dark ? "#46515E" : "#D9E0E8"
     readonly property color selected: dark ? "#294C45" : "#D9EEE8"
-    property int mode: 0
+    readonly property int mode: Appearance.themeMode
     readonly property bool dark: mode === 2 || (mode === 0 && Application.styleHints.colorScheme === Qt.ColorScheme.Dark)
     readonly property color window: dark ? "#181B20" : "#F5F6F8"
     readonly property color panel: dark ? "#22262D" : "#FFFFFF"

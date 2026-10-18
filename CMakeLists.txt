@@ -126,7 +126,10 @@ if(BUILD_TESTING)
         nativePortalWorkflow
         keyboardFileWorkflow
         topRightControls
-        glassAppearanceSettings)
+        glassAppearanceSettings
+        glassBackdropRendering
+        actualFloatingPanelBlur
+        fileMenuBackdropBlur)
     add_test(NAME shell-controls COMMAND openpaint_shell_tests
         brushMainActivation
         ribbonShapeKeyboard
