@@ -19,7 +19,7 @@ Rectangle {
     // Fixed bars already sit on a tint. Over artwork, retain enough light material
     // to keep dark labels readable even when the blurred source is black.
     readonly property real lightPopupTint: menuSurface ? Math.pow(surfaceAlpha, 5) : 0.18 + 0.82 * surfaceAlpha * surfaceAlpha * surfaceAlpha
-    readonly property real tintAlpha: Theme.dark ? surfaceAlpha : opaqueBackdrop ? lightPopupTint : raisedSurface ? 0.45 + 0.55 * surfaceAlpha * surfaceAlpha : Math.pow(surfaceAlpha, baseTintPower)
+    readonly property real tintAlpha: Theme.dark ? (opaqueBackdrop ? Math.max(0.72, surfaceAlpha) : surfaceAlpha) : opaqueBackdrop ? lightPopupTint : raisedSurface ? 0.45 + 0.55 * surfaceAlpha * surfaceAlpha : Math.pow(surfaceAlpha, baseTintPower)
     radius: Theme.surfaceRadius
     color: Theme.panel
     border.color: Appearance.glassEnabled ? (Theme.dark ? "#687887" : "#383D454D") : Theme.divider

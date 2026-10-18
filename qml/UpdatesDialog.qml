@@ -25,7 +25,7 @@ PaintDialog {
         Label {
             objectName: "updateIdentity"
             text: qsTr("%1 · %2").arg(AppInfo.channel).arg(AppInfo.installation)
-            color: Theme.secondaryText
+            color: Theme.text
         }
         Label {
             text: AppInfo.instructions
@@ -39,7 +39,7 @@ PaintDialog {
             textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            color: Theme.secondaryText
+            color: Theme.text
         }
         RowLayout {
             PaintButton {
@@ -58,7 +58,7 @@ PaintDialog {
             text: qsTr("Checks api.github.com for stable releases. GitHub receives your IP address and ordinary request metadata; no artwork or document information is sent.")
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            color: Theme.secondaryText
+            color: Theme.text
         }
         PaintCheckBox {
             objectName: "automaticReleaseChecks"
@@ -71,7 +71,7 @@ PaintDialog {
             text: qsTr("Updates are downloaded and installed manually. A GitHub release may not yet be available in your package manager.")
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            color: Theme.secondaryText
+            color: Theme.text
         }
         PaintButton {
             objectName: "viewReleasesButton"
@@ -85,7 +85,7 @@ PaintDialog {
             text: qsTr("Opens GitHub in your browser. GitHub receives ordinary browser request information.")
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
-            color: Theme.secondaryText
+            color: Theme.text
         }
         Label {
             text: AppInfo.releaseUrl.toString()

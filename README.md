@@ -9,9 +9,9 @@ Free and open source. Editing works offline—no account or telemetry.
 [Installation guide](docs/INSTALL.md) ·
 [Report an issue](https://github.com/AfshinKI/openpaint/issues)
 
-![OpenPaint frosted appearance — light theme, translucent controls and blurred File menu](docs/assets/openpaint-frost-light.png)
+![OpenPaint frosted appearance — light theme, translucent controls and blurred Brush menu](docs/assets/openpaint-frost-light.png)
 
-*Development preview with generated demo artwork on a neutral backdrop.
+*Development preview with generated demo artwork on a generated multicolor backdrop.
 Desktop blur requires compositor support; on GNOME, use an extension such as
 [Blur My Shell](https://extensions.gnome.org/extension/3193/blur-my-shell/).
 OpenPaint does not install or configure desktop extensions.*

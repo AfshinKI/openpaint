@@ -37,7 +37,7 @@ implemented. Software rendering uses solid menus/dialogs and tinted other surfac
 ## Acceptance and evidence
 
 - [x] Continuous base covers toolbar gaps; off/100% are opaque.
-- [x] Actual File menu blurs translucent toolbar content in light and dark themes.
+- [x] Actual Brush menu blurs translucent toolbar content in light and dark themes.
 - [x] Actual size and Fill panels blur generated canvas artwork on the GPU.
 - [x] Foreground controls, saved artwork, dirty state and undo history remain unchanged.
 - [x] Shape-gallery and footer keyboard/accessibility checks pass.
@@ -57,7 +57,7 @@ were used for visual evidence. No broad compositor/Wayland support is claimed.
 ## Documentation image
 
 The README image is rendered by `readmeFrostPreview` using project-authored
-procedural artwork and a neutral window backing. It captures only the test window;
+procedural artwork and a generated multicolor window backing. It captures only the test window;
 no private desktop, user drawing, external asset or personal metadata is included.
 See [asset provenance](../assets/README.md) for the regeneration command and license.
 
@@ -66,3 +66,15 @@ See [asset provenance](../assets/README.md) for the regeneration command and lic
 Commit and push the reviewed branch, open a PR, and inspect required checks.
 Do not merge or publish a release as part of this change; release is the next
 maintainer-directed step.
+
+## Review follow-up
+
+Theme choice now persists alongside glass settings. Updates text uses explicit theme
+colors, dark buttons are brighter, and dark popup tint has a readability floor over
+white artwork. Text uses a blinking caret at the displayed font height. Fill always
+uses zero tolerance and smooth edges, with no options panel. The README preview
+opens the Brush menu over a generated multicolor backing.
+
+Acceptance: restart persistence, caret blinking, exact smooth fill with undo,
+minimum-size dialog layout, and the revised screenshot are covered by targeted
+tests and visual inspection. Final suite results are recorded with the PR.

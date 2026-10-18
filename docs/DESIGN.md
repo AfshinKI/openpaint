@@ -85,7 +85,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | --- | --- |
 | Draw | Capture pointer, show preview immediately, commit one undo step on release |
 | Brushes | Nine named styles with generated previews; floating size and 0–100% stroke opacity; fixed-distance path sampling, one undo step |
-| Fill | Left/right press fills with primary/secondary; tolerance 0–255 replaces the size input; busy indicator and Cancel/Escape leave original pixels intact |
+| Fill | Left/right press fills with primary/secondary; exact color matching with automatic smooth edges; busy indicator and Cancel/Escape leave original pixels intact |
 | Color picker | Select once per press: left sets primary, right sets secondary; exact containing artwork pixel including alpha; stays selected, never paints or changes history |
 | Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
 | Escape | Cancel active preview/transform; otherwise dismiss the topmost transient UI |
@@ -258,3 +258,7 @@ an extension such as Blur My Shell; it is not installed or configured by OpenPai
 Without desktop blur, transparency alone remains visible. This is frosted glass,
 not optical refraction. See [implementation and validation](plans/0039-window-transparency.md)
 and [rendering decision](decisions/0005-local-panel-blur.md).
+
+Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
+across restarts. Inline text displays a blinking caret at the scaled font height.
+The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.

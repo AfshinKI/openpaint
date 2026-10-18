@@ -135,9 +135,7 @@ class ShellTest : public QObject {
         editor->setTool(Editor::Tool::Fill);
         auto* size = window->findChild<QQuickItem*>(QStringLiteral("strokeSize"));
         QVERIFY(size && !size->isVisible());
-        QVERIFY(tabTo("fillTolerance"));
-        keyClick(Qt::Key_Up);
-        QCOMPARE(editor->tolerance, 1);
+        QVERIFY(!window->findChild<QObject*>("fillTolerance"));
         QCOMPARE(editor->brushSize, 4);
         QCOMPARE(editor->opacity, 99);
     }
@@ -675,6 +673,11 @@ class ShellTest : public QObject {
         QTest::mouseRelease(window, Qt::LeftButton, {}, at({400, 180}));
         QTRY_VERIFY(editor->textReady());
         QTRY_VERIFY(input->hasActiveFocus());
+        QTRY_VERIFY(!visualItems(input, "textCaret").isEmpty());
+        auto* caret = visualItems(input, "textCaret").first();
+        QVERIFY(caret->height() > 0);
+        const bool firstBlink = caret->property("blinkOn").toBool();
+        QTRY_VERIFY(caret->property("blinkOn").toBool() != firstBlink);
         QVERIFY(editor->textRect().width() >= 319);
         for (char c : std::string("OpenPaint"))
             keyClick(c);
@@ -1291,8 +1294,23 @@ class ShellTest : public QObject {
         appearance->setSurfaceOpacity(54);
         QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("lightThemeAction"),
                                           "trigger", Q_ARG(QObject*, nullptr)));
-        // Neutral demo backing for the alpha window; never sample the desktop.
-        window->setColor(QColor("#72919F"));
+        // Staged multicolor backdrop, generated locally without desktop capture.
+        QQmlComponent backdrop(engine.get());
+        backdrop.setData(R"QML(import QtQuick
+            Rectangle {
+                width: 1449; height: 1008; z: -100
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0; color: "#234A70" }
+                    GradientStop { position: 0.35; color: "#B17D98" }
+                    GradientStop { position: 0.65; color: "#DDB777" }
+                    GradientStop { position: 1; color: "#398B89" }
+                }
+            })QML",
+                         QUrl());
+        QScopedPointer<QObject> backing(backdrop.create());
+        QVERIFY(backing);
+        qobject_cast<QQuickItem*>(backing.data())->setParentItem(window->contentItem());
         QImage art(1152, 648, QImage::Format_RGB32);
         QPainter painter(&art);
         painter.setRenderHint(QPainter::Antialiasing);
@@ -1339,7 +1357,7 @@ class ShellTest : public QObject {
         editor->openFile(QUrl::fromLocalFile(path));
         QTRY_VERIFY(!editor->loading());
         QCOMPARE(editor->image().size(), art.size());
-        auto* menu = window->findChild<QObject*>("fileMenu");
+        auto* menu = window->findChild<QObject*>("brushesMenu");
         QVERIFY(QMetaObject::invokeMethod(menu, "open"));
         QTRY_VERIFY(menu->property("visible").toBool());
         QTest::qWait(250);
@@ -1419,7 +1437,6 @@ class ShellTest : public QObject {
     void actualFloatingPanelBlur_data() {
         QTest::addColumn<bool>("fillPanel");
         QTest::newRow("size") << false;
-        QTest::newRow("fill") << true;
     }
     void actualFloatingPanelBlur() {
         QFETCH(bool, fillPanel);
@@ -1488,7 +1505,7 @@ class ShellTest : public QObject {
                 Component.onCompleted: {
                     Appearance.glassEnabled = true;
                     Appearance.surfaceOpacity = 40;
-                    Theme.mode = 1;
+                    Appearance.themeMode = 1;
                 }
                 Item {
                     id: stripes
@@ -1697,12 +1714,7 @@ class ShellTest : public QObject {
     void fillOptionsLayout() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         editor->setTool(Editor::Tool::Fill);
-        QVERIFY(editor->fillSmoothEdges);
-        QVERIFY(tabTo("fillSmoothEdges"));
-        keyClick(Qt::Key_Space);
-        QVERIFY(!editor->fillSmoothEdges);
-        keyClick(Qt::Key_Space);
-        QVERIFY(editor->fillSmoothEdges);
+        QVERIFY(!window->findChild<QObject*>("fillControlsSurface"));
         window->setWidth(1024);
         window->setHeight(640);
         QVERIFY(QMetaObject::invokeMethod(
@@ -1743,9 +1755,7 @@ class ShellTest : public QObject {
         QVERIFY(tabTo("fillButton"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Fill);
-        QVERIFY(tabTo("fillTolerance"));
-        keyClick(Qt::Key_Up);
-        QCOMPARE(editor->tolerance, 1);
+        QVERIFY(!window->findChild<QObject*>("fillTolerance"));
         QVERIFY(tabTo("pencilButton"));
         keyClick(Qt::Key_Space);
         QVERIFY(tabTo("editColorsButton"));

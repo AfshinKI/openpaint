@@ -184,8 +184,7 @@ after commit. Dimensions are limited to 16384 per side and 32MP overall. A left-
 (0–100%) slider panels, with original stroke/droplet icons and accent thumbs.
 Numeric values appear in tooltips; accessible names retain each role and range. Size appears
 for pencil, brush, eraser and shapes; opacity appears for brushes. Both support
-keyboard arrows and are disabled while busy. Fill tolerance remains a separately
-labeled ribbon control. The rail consumes pointer input without painting through
+keyboard arrows and are disabled while busy. Fill uses exact color matching with automatic smooth edges. The rail consumes pointer input without painting through
 its margins and does not resize or reposition the canvas.
 
 The bottom status strip separates cursor/selection information from image size.
@@ -211,7 +210,7 @@ A separate generated-content settings card is a later M6 concern. Its intended
 role is a clearly explained watermark/export preference with a dropdown; the
 complete option list and export effects require a separate contract. Do not add
 an inactive AI settings card before the corresponding feature ships. Current
-session-only themes are not yet a complete Settings-page implementation.
+persistent themes are not yet a complete Settings-page implementation.
 
 ## What's new
 
@@ -324,10 +323,9 @@ Updates provides Check now, Cancel check, an off-by-default daily-check option a
 
 Settings includes Glass appearance with a persistent toggle, 40–100% surface opacity slider, Restore defaults and Close. Defaults are enabled/85%; disabling restores opaque surfaces. No artwork edit or history entry occurs.
 
-Fill includes a checked-by-default Smooth edges option. It cleans a one-pixel same-color antialias fringe without expanding flood connectivity. Disable it for exact matching; tolerance remains separately adjustable.
+Fill always cleans a one-pixel same-color antialias fringe without expanding flood connectivity. Color tolerance is fixed at zero.
 
-Fill tolerance and Smooth edges share a floating options panel to keep the ribbon
-accessible at the minimum width. Its margins consume pointer input.
+Fill has no floating options panel.
 
 Canvas midpoint handles resize one axis: left/right change width, top/bottom change height. Corners retain two-axis resizing. The decorative image outline is removed; handle and preview feedback remains.
 ## Selection dismissal
@@ -358,3 +356,7 @@ an extension such as Blur My Shell; it is not installed or configured by OpenPai
 Without desktop blur, transparency alone remains visible. This is frosted glass,
 not optical refraction. See [implementation and validation](plans/0039-window-transparency.md)
 and [rendering decision](decisions/0005-local-panel-blur.md).
+
+Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
+across restarts. Inline text displays a blinking caret at the scaled font height.
+The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.

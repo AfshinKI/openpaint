@@ -110,8 +110,8 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         busy_ = filling_ = true;
         emit changed();
         fillWatcher_.setFuture(
-            QtConcurrent::run([snapshot, color, point, tolerance = tolerance, token = cancellation_,
-                               selection = document.selection(), smoothEdges = fillSmoothEdges] {
+            QtConcurrent::run([snapshot, color, point, tolerance = 0, token = cancellation_,
+                               selection = document.selection(), smoothEdges = true] {
                 return openpaint::fillRegion(
                     snapshot, QPoint(int(std::floor(point.x())), int(std::floor(point.y()))), color,
                     tolerance, token, selection, smoothEdges);

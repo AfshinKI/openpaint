@@ -443,7 +443,7 @@ ApplicationWindow {
             text: qsTr("&System")
             checkable: true
             checked: Theme.mode === 0
-            onTriggered: Theme.mode = 0
+            onTriggered: Appearance.themeMode = 0
         }
         Action {
             id: lightThemeAction
@@ -452,7 +452,7 @@ ApplicationWindow {
             text: qsTr("&Light")
             checkable: true
             checked: Theme.mode === 1
-            onTriggered: Theme.mode = 1
+            onTriggered: Appearance.themeMode = 1
         }
         Action {
             id: darkThemeAction
@@ -461,7 +461,7 @@ ApplicationWindow {
             text: qsTr("&Dark")
             checkable: true
             checked: Theme.mode === 2
-            onTriggered: Theme.mode = 2
+            onTriggered: Appearance.themeMode = 2
         }
     }
 
@@ -1354,46 +1354,6 @@ ApplicationWindow {
         z: 2
         enabled: !editor.busy
         property real panelHeight: Math.max(120, Math.min(280, (parent.height - 64) / 2))
-        GlassSurface {
-            objectName: "fillControlsSurface"
-            visible: editor.tool === Editor.Fill
-            width: 132
-            height: fillControls.implicitHeight + 16
-            radius: Theme.surfaceRadius
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.AllButtons
-                onWheel: wheel => wheel.accepted = true
-            }
-            ColumnLayout {
-                id: fillControls
-                anchors.fill: parent
-                anchors.margins: 8
-                Label {
-                    text: qsTr("Fill tolerance")
-                    color: Theme.text
-                }
-                PaintSpinBox {
-                    objectName: "fillTolerance"
-                    visible: editor.tool === Editor.Fill
-                    from: 0
-                    to: 255
-                    value: editor.tolerance
-                    onValueModified: editor.tolerance = value
-                    Accessible.name: qsTr("Fill tolerance")
-                    implicitWidth: 104
-                }
-                PaintCheckBox {
-                    objectName: "fillSmoothEdges"
-                    text: qsTr("Smooth edges")
-                    visible: editor.tool === Editor.Fill
-                    checked: editor.fillSmoothEdges
-                    onToggled: editor.fillSmoothEdges = checked
-                    Accessible.name: qsTr("Smooth same-color fill edges")
-                }
-            }
-        }
-
         ToolSlider {
             visible: editor.tool === Editor.Pencil || editor.tool === Editor.Brush || editor.tool === Editor.Eraser || editor.tool === Editor.Shape
             height: parent.panelHeight

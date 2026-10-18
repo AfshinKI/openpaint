@@ -2,9 +2,9 @@
 
 `openpaint-frost-light.png` is a capture of the real OpenPaint Qt Quick UI at
 1449 × 1008 in light mode with glass enabled at 54%. The landscape is procedural
-project-authored QPainter artwork. A neutral solid window backing demonstrates
+project-authored QPainter artwork. A generated multicolor window backing demonstrates
 alpha surfaces without capturing the desktop; it is not a photograph or a claim
-of native compositor blur. The File menu uses the actual app-layer blur shader.
+of native compositor blur. The Brush menu uses the actual app-layer blur shader.
 
 The image and generator are GPL-3.0-or-later, like the project. No third-party assets,
 user documents, private desktop content or embedded author/EXIF metadata are used.

@@ -66,10 +66,26 @@ Rectangle {
         }
         Accessible.name: qsTr("Text on canvas")
         cursorDelegate: Rectangle {
+            id: caret
+            objectName: "textCaret"
+            property bool blinkOn: true
+            Timer {
+                interval: 500
+                repeat: true
+                running: input.activeFocus && box.editor.textReady
+                onTriggered: caret.blinkOn = !caret.blinkOn
+                onRunningChanged: caret.blinkOn = true
+            }
+            Connections {
+                target: input
+                function onCursorPositionChanged() {
+                    caret.blinkOn = true;
+                }
+            }
             width: 1
-            height: input.cursorRectangle.height
+            height: Math.max(1, input.font.pixelSize)
             color: Theme.accent
-            visible: input.cursorVisible
+            visible: input.activeFocus && input.selectionStart === input.selectionEnd && blinkOn
         }
     }
     Rectangle {
