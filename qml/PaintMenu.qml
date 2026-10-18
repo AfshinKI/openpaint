@@ -8,6 +8,9 @@ Menu {
     padding: 6
     popupType: Popup.Item
     background: GlassSurface {
+        opaqueBackdrop: true
+        menuSurface: true
+        backdropLayers: backdropSource && hostWindow ? hostWindow.glassOverlayBackdropLayers : []
         radius: Theme.surfaceRadius
     }
     delegate: PaintMenuItem {}

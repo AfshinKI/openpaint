@@ -97,3 +97,23 @@ Same-color fill fringe cleanup is tracked in [plan 0035](plans/0035-fill-fringe.
 
 Canvas edge handles and border removal are tracked in [plan 0034](plans/0034-canvas-edges.md).
 Selection dismissal and canvas Select All are tracked in [plan 0033](plans/0033-selection-dismissal.md).
+
+## Frosted appearance
+
+Glass appearance uses a continuous translucent window base with separate tinted
+bars. Floating controls blur lower app layers on shader-capable renderers; menus
+and dialogs also include the fixed bars and floating controls beneath them.
+Popup backdrops are flattened to prevent sharp content leaking through the blur.
+Software rendering uses solid popups. The paper/checkerboard, text, and icons keep
+their own opacity; appearance changes do not affect artwork or undo history.
+
+Light menus use very little white tint. The shape gallery and footer buttons
+have transparent idle backgrounds when glass is enabled, with hover and focus
+feedback preserved. Disabling glass or choosing 100% restores opaque surfaces.
+The startup client size is 1449 × 1008; the minimum remains 1024 × 640.
+
+Desktop blur is supplied by the compositor, not by screen capture. GNOME requires
+an extension such as Blur My Shell; it is not installed or configured by OpenPaint.
+Without desktop blur, transparency alone remains visible. This is frosted glass,
+not optical refraction. See [implementation and validation](plans/0039-window-transparency.md)
+and [rendering decision](decisions/0005-local-panel-blur.md).

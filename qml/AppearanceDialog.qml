@@ -34,7 +34,7 @@ PaintDialog {
             onMoved: Appearance.surfaceOpacity = Math.round(value)
         }
         Label {
-            text: qsTr("Applies to toolbars, menus and panels. Your artwork keeps its original opacity. Preferences are saved on this device.")
+            text: qsTr("Reveal the desktop through the workspace and glass surfaces. Text and paper stay opaque; transparent artwork shows a checkerboard. Floating panels blur artwork beneath them; desktop blur depends on your desktop setup. Preferences are saved on this device.")
             color: Theme.text
             wrapMode: Text.WordWrap
             Layout.fillWidth: true

@@ -237,4 +237,24 @@ preview until committed; cancellation restores the original artwork. See the
 [control specification](MENUS.md#workspace-and-status-bar). Canvas corners separately crop or extend the image without resampling,
 using an undoable worker transform.
 
-Glass appearance adds translucent gradients and fine highlights to shared UI surfaces. Settings → Glass appearance can disable it or set 40–100% surface opacity (default 85%). It affects backgrounds only; artwork, text and controls retain their own opacity. This supersedes the flat-surface target, without adding desktop transparency or blur.
+Glass appearance adds translucent gradients and fine highlights to shared UI surfaces. Settings → Glass appearance can disable it or set 40–100% surface opacity (default 85%). It affects backgrounds only; artwork, text and controls retain their own opacity. This supersedes the flat-surface target; the frosted behavior is described below.
+
+## Frosted appearance
+
+Glass appearance uses a continuous translucent window base with separate tinted
+bars. Floating controls blur lower app layers on shader-capable renderers; menus
+and dialogs also include the fixed bars and floating controls beneath them.
+Popup backdrops are flattened to prevent sharp content leaking through the blur.
+Software rendering uses solid popups. The paper/checkerboard, text, and icons keep
+their own opacity; appearance changes do not affect artwork or undo history.
+
+Light menus use very little white tint. The shape gallery and footer buttons
+have transparent idle backgrounds when glass is enabled, with hover and focus
+feedback preserved. Disabling glass or choosing 100% restores opaque surfaces.
+The startup client size is 1449 × 1008; the minimum remains 1024 × 640.
+
+Desktop blur is supplied by the compositor, not by screen capture. GNOME requires
+an extension such as Blur My Shell; it is not installed or configured by OpenPaint.
+Without desktop blur, transparency alone remains visible. This is frosted glass,
+not optical refraction. See [implementation and validation](plans/0039-window-transparency.md)
+and [rendering decision](decisions/0005-local-panel-blur.md).

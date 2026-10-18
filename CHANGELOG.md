@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add translucent window backgrounds and layered frosted app surfaces, with lighter
+  menus and transparent shape/footer control wells. Desktop blur requires compositor support.
+- Use a 1449 × 1008 initial client window and refresh the README appearance preview.
+
 ## 1.1.0 — 2026-10-16
 
 - Add adjustable glass-style surfaces in Settings, independent of artwork opacity.
