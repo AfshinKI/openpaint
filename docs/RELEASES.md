@@ -200,3 +200,10 @@ manual desktop acceptance. Full GNOME/KDE, Wayland/X11 and input/accessibility
 certification remains future work; report exact tested environments.
 
 Release notification implementation and limits: [plan 0037](plans/0037-release-notifications.md) and [ADR 0004](decisions/0004-release-checks.md).
+
+## Project website
+
+The static product page and GitHub Pages publishing instructions are in
+[website/README.md](../website/README.md). Its separate workflow stages selected
+public assets and deploys only main-branch website changes; PRs only build.
+Website publication does not publish application releases or change the updater.

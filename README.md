@@ -33,6 +33,7 @@ See the [installation guide](docs/INSTALL.md) for requirements, checksums and up
 OpenPaint is a single-layer editor. Layers, editable project files, crash
 recovery and automatic update installation are not included yet.
 
+[Website source and publishing](website/README.md) ·
 [Build from source](docs/BUILD.md) · [Contribute](CONTRIBUTING.md) ·
 [Roadmap](docs/ROADMAP.md) · [GPL-3.0-or-later](LICENSE)
 
