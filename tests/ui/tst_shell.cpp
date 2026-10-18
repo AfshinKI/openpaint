@@ -2,6 +2,7 @@
 #include "color/ColorPalette.h"
 #include "color/ColorSpectrum.h"
 #include "io/ImageIo.h"
+#include "platform/AppInfo.h"
 #include "platform/Appearance.h"
 #include "platform/WindowStartup.h"
 #include "render/CanvasItem.h"
@@ -1362,6 +1363,85 @@ class ShellTest : public QObject {
         QTRY_VERIFY(menu->property("visible").toBool());
         QTest::qWait(250);
         QVERIFY(capture("openpaint-frost-light.png"));
+    }
+    // Explicit release screenshots; isolated settings and generated artwork only.
+    void websiteReleasePreview() {
+        const auto prefix = QStringLiteral("openpaint-") + AppInfo::version();
+        window->resize(1449, 1008);
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        appearance->setGlassEnabled(false);
+        appearance->setSurfaceOpacity(54);
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("lightThemeAction"),
+                                          "trigger", Q_ARG(QObject*, nullptr)));
+        QImage art(1152, 648, QImage::Format_RGB32);
+        QPainter painter(&art);
+        painter.setRenderHint(QPainter::Antialiasing);
+        QLinearGradient sky(0, 0, 0, 648);
+        sky.setColorAt(0, QColor("#303D72"));
+        sky.setColorAt(0.6, QColor("#DC9C9C"));
+        sky.setColorAt(1, QColor("#F4DDBB"));
+        painter.fillRect(art.rect(), sky);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor("#FFE7AD"));
+        painter.drawEllipse(QPointF(785, 208), 82, 82);
+        painter.setBrush(QColor("#82779D"));
+        painter.drawPolygon(QPolygonF{{0, 430},
+                                      {165, 245},
+                                      {310, 370},
+                                      {470, 188},
+                                      {660, 391},
+                                      {870, 281},
+                                      {1152, 422},
+                                      {1152, 648},
+                                      {0, 648}});
+        painter.setBrush(QColor("#375F7C"));
+        painter.drawPolygon(QPolygonF{{0, 505},
+                                      {246, 355},
+                                      {430, 480},
+                                      {695, 326},
+                                      {970, 475},
+                                      {1152, 379},
+                                      {1152, 648},
+                                      {0, 648}});
+        QPainterPath foreground;
+        foreground.moveTo(0, 530);
+        foreground.cubicTo(270, 435, 415, 610, 660, 504);
+        foreground.cubicTo(890, 405, 1040, 550, 1152, 510);
+        foreground.lineTo(1152, 648);
+        foreground.lineTo(0, 648);
+        foreground.closeSubpath();
+        painter.fillPath(foreground, QColor("#204E59"));
+        painter.end();
+        QTemporaryDir dir;
+        const auto path = dir.filePath("Frost study.png");
+        QVERIFY(art.save(path));
+        auto* editor = window->findChild<Editor*>("editor");
+        editor->openFile(QUrl::fromLocalFile(path));
+        QTRY_VERIFY(!editor->loading());
+        QCOMPARE(editor->image().size(), art.size());
+        for (const auto& theme : {QStringLiteral("light"), QStringLiteral("dark")}) {
+            auto* action = window->findChild<QObject*>(theme + "ThemeAction");
+            QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+            QTest::qWait(250);
+            QVERIFY(capture(prefix + "-" + theme + ".png"));
+        }
+        auto* colorDialog = window->findChild<QObject*>("colorEditor");
+        QVERIFY(colorDialog);
+        QVERIFY(
+            QMetaObject::invokeMethod(window->findChild<QObject*>("editColorsButton"), "clicked"));
+        QTRY_VERIFY(colorDialog->property("visible").toBool());
+        QTest::qWait(250);
+        QVERIFY(capture(prefix + "-colors-dark.png"));
+        QVERIFY(QMetaObject::invokeMethod(colorDialog, "close"));
+        QTRY_VERIFY(!colorDialog->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("lightThemeAction"),
+                                          "trigger", Q_ARG(QObject*, nullptr)));
+        auto* resizeDialog = window->findChild<QObject*>("resizeDialog");
+        QVERIFY(resizeDialog);
+        QVERIFY(QMetaObject::invokeMethod(resizeDialog, "open"));
+        QTRY_VERIFY(resizeDialog->property("visible").toBool());
+        QTest::qWait(250);
+        QVERIFY(capture(prefix + "-resize-light.png"));
     }
     void fileMenuBackdropBlur_data() {
         QTest::addColumn<bool>("dark");

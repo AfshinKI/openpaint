@@ -83,3 +83,13 @@ Local XDG settings retain consent and request/backoff timestamps. Browser naviga
 requires an explicit action. Flatpak retains no network permission and manual links.
 
 Theme choice, glass enablement and opacity persist locally in XDG configuration. These preferences contain no artwork or identifiers and cause no network requests.
+
+## Public website screenshots
+
+Release screenshots follow the [website checklist](RELEASES.md#website-and-readme-release-checklist).
+Use generated artwork with no private content and record the capture method.
+Inspect visible text and PNG metadata before committing. Use a separate installed
+app instance with isolated settings for release marketing captures. Crop to the
+app and deliberately staged original backdrop; never include private desktop
+content or interrupt a user's unsaved document. A source harness is allowed for
+clearly labeled test evidence, but must not be presented as an installed capture.

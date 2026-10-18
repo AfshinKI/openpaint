@@ -1,0 +1,18 @@
+{
+  "version": "1.2.0",
+  "application_source": "4fb7f036987dd80a9e485ae9aee2ed8536a6f510",
+  "capture_method": "Installed OpenPaint DEB 1.2.0-1 on GNOME/X11; staged original illustrated backdrop; glass enabled; surface opacity 40%",
+  "screenshots": [
+    "openpaint-1.2.0-light.png",
+    "openpaint-1.2.0-dark.png",
+    "openpaint-1.2.0-colors-dark.png",
+    "openpaint-1.2.0-resize-light.png"
+  ],
+  "surface_opacity_percent": 40,
+  "installed_package": "1.2.0-1",
+  "capture_size": [
+    1449,
+    1045
+  ],
+  "presentation": "Cropped to app window; 22px antialiased transparent outer corners; original composed app pixels preserved"
+}
