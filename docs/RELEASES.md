@@ -1,7 +1,7 @@
 # Releases and in-app updates
 
-Status: Ubuntu installer PR #36 is merged. Stable v1.0.0 preparation is tracked in
-[plan 0031](plans/0031-stable-release.md). Ordinary CI runs validate development
+Status: stable v1.2.0 preparation is tracked in
+[plan 0040](plans/0040-release-1.2.0.md). Ordinary CI runs validate development
 packages; explicit main-branch release runs publish only after every check passes.
 No signing keys, OpenPaint update feed or automatic in-app installer exists.
 

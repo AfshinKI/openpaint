@@ -1,6 +1,6 @@
 # Feature: frosted window and layered surfaces
 
-Status: implemented; PR review and packaged validation pending
+Status: merged in PR #47; v1.2.0 release preparation follows
 Feature IDs: F01
 
 ## Outcome and behavior
@@ -43,7 +43,7 @@ implemented. Software rendering uses solid menus/dialogs and tinted other surfac
 - [x] Shape-gallery and footer keyboard/accessibility checks pass.
 - [x] Maintainer reviewed the local appearance and requested publication.
 - [x] Final full validation after startup-size and README capture changes.
-- [ ] PR checks and packaged validation before release.
+- [x] PR checks and packaged validation before release (run `39156488388`).
 
 Final validation passed with Qt 6.12: all 15 CTest suites, 26 tooling tests,
 format/QML lint, repository checks, and seven focused X11/OpenGL test results.
@@ -63,9 +63,8 @@ See [asset provenance](../assets/README.md) for the regeneration command and lic
 
 ## Next step
 
-Commit and push the reviewed branch, open a PR, and inspect required checks.
-Do not merge or publish a release as part of this change; release is the next
-maintainer-directed step.
+PR #47 merged after all checks passed. Continue the maintainer-requested
+[stable v1.2.0 release](0040-release-1.2.0.md).
 
 ## Review follow-up
 
