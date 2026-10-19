@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Round the application client corners, retaining square maximized edges.
+
 ## 1.2.0 — 2026-10-18
 
 - Persist theme selection, improve dark Updates controls, show a blinking text caret,

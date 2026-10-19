@@ -121,3 +121,6 @@ and [rendering decision](decisions/0005-local-panel-blur.md).
 Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
 across restarts. Inline text displays a blinking caret at the scaled font height.
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
+
+Development windows use 12px rounded client corners and matching input masks;
+maximized/fullscreen edges are square. Native decorations remain desktop-owned.

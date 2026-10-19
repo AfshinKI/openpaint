@@ -126,6 +126,7 @@ if(BUILD_TESTING)
         nativePortalWorkflow
         keyboardFileWorkflow
         topRightControls
+        roundedClientCorners
         glassAppearanceSettings
         glassBackdropRendering
         actualFloatingPanelBlur
