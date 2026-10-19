@@ -121,3 +121,6 @@ and [rendering decision](decisions/0005-local-panel-blur.md).
 Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
 across restarts. Inline text displays a blinking caret at the scaled font height.
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
+
+Development text editing uses a dashed black/white box outline and a blinking
+black caret at the scaled text height; neither overlay is saved in the artwork.
