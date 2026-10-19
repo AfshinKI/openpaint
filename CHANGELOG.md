@@ -5,6 +5,8 @@
 - Default glass opacity to 40%, preserving saved preferences.
 - Use a consistent searchable font picker with family previews.
 - Use a dashed text-box outline and blinking black caret.
+- Default release checks on at startup and daily, preserving saved opt-outs and backoff.
+  Flatpak retains browser-only checking.
 
 ## 1.2.0 — 2026-10-18
 

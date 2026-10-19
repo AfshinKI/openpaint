@@ -319,7 +319,7 @@ The dialogs preserve the exact filename authorized by the desktop portal. They d
 not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
 
-Updates provides Check now, Cancel check, an off-by-default daily-check option and View releases. A newer stable release produces a dismissible in-app notice; it never interrupts or restarts editing. Flatpak retains manual browser links.
+Updates provides Check now, Cancel check, a default-on startup/daily-check option and View releases. A newer stable release produces a dismissible in-app notice; it never interrupts or restarts editing. Flatpak retains manual browser links.
 
 Settings includes Glass appearance with a persistent toggle, 40–100% surface opacity slider, Restore defaults and Close. Defaults are enabled/40%; disabling restores opaque surfaces. No artwork edit or history entry occurs.
 

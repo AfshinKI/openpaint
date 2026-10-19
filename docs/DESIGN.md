@@ -142,8 +142,9 @@ Settings sections: Appearance, Canvas, Files & Recovery, Updates, Privacy, About
 Keep advanced technical information in an expandable diagnostic view.
 
 Updates shows installed version, installation source, channel, last-check time,
-and one primary action. Manual checks are always available; automatic checks are
-off initially. Offer an opt-in check at most daily, with no background daemon.
+and one primary action. Manual checks are always available; automatic checks default on
+for network-capable builds, at startup and daily while running. Preserve saved
+opt-outs and persisted cooldown/backoff; no background daemon.
 
 | State | User-facing behavior |
 | --- | --- |

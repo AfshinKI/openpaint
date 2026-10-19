@@ -62,7 +62,7 @@ PaintDialog {
         }
         PaintCheckBox {
             objectName: "automaticReleaseChecks"
-            text: qsTr("Check daily while OpenPaint is running")
+            text: qsTr("Check at startup and daily while running")
             enabled: dialog.service.supported
             checked: dialog.service.automatic
             onToggled: dialog.service.automatic = checked
