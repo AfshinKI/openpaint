@@ -262,3 +262,6 @@ and [rendering decision](decisions/0005-local-panel-blur.md).
 Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
 across restarts. Inline text displays a blinking caret at the scaled font height.
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
+
+Development glass selection uses stronger neutral frost and light outlines instead
+of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.

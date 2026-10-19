@@ -667,6 +667,15 @@ ApplicationWindow {
                     Layout.preferredWidth: 40
                     Layout.preferredHeight: 56
                     Layout.alignment: Qt.AlignHCenter
+                    GlassSurface {
+                        objectName: "selectSelectedSurface"
+                        anchors.fill: parent
+                        selectedSurface: true
+                        radius: Theme.controlRadius
+                        visible: Appearance.glassEnabled && editor.tool === Editor.Select
+                        backdropLayers: [window.background, canvas]
+                        border.width: 0
+                    }
                     IconButton {
                         id: selectionMain
                         icon.width: 26
@@ -761,7 +770,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         radius: Theme.controlRadius
                         color: "transparent"
-                        border.color: Theme.accent
+                        border.color: Appearance.glassEnabled ? Theme.selectionOutline : Theme.accent
                         border.width: selectionMain.visualFocus || selectionDropdown.visualFocus ? 2 : editor.tool === Editor.Select ? 1 : 0
                     }
                 }
@@ -948,6 +957,15 @@ ApplicationWindow {
                     Layout.preferredWidth: 40
                     Layout.preferredHeight: 56
                     Layout.alignment: Qt.AlignHCenter
+                    GlassSurface {
+                        objectName: "brushSelectedSurface"
+                        anchors.fill: parent
+                        selectedSurface: true
+                        radius: Theme.controlRadius
+                        visible: Appearance.glassEnabled && editor.tool === Editor.Brush
+                        backdropLayers: [window.background, canvas]
+                        border.width: 0
+                    }
                     IconButton {
                         id: brushesButton
                         flat: true
@@ -993,7 +1011,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         radius: Theme.controlRadius
                         color: "transparent"
-                        border.color: Theme.accent
+                        border.color: Appearance.glassEnabled ? Theme.selectionOutline : Theme.accent
                         border.width: brushesButton.visualFocus || brushDropdown.visualFocus ? 2 : editor.tool === Editor.Brush ? 1 : 0
                     }
                 }
