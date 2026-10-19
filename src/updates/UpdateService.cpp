@@ -27,7 +27,7 @@ UpdateService::UpdateService(QNetworkAccessManager* network, const QString& file
                     ? std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
                                                   "OpenPaint", "OpenPaint")
                     : std::make_unique<QSettings>(file, QSettings::IniFormat);
-    automatic_ = supported() && settings_->value("updates/automatic", false).toString() == "true";
+    automatic_ = supported() && settings_->value("updates/automatic", true).toString() == "true";
     lastAttempt_ = settings_->value("updates/lastAttempt", 0).toLongLong();
     retryAt_ = settings_->value("updates/retryAt", 0).toLongLong();
     if (lastAttempt_ < 0 || lastAttempt_ > clock_() + 365 * Day)
@@ -50,7 +50,11 @@ UpdateService::UpdateService(QNetworkAccessManager* network, const QString& file
     });
     if (automatic_)
         timer_.start();
-    QTimer::singleShot(1500, this, &UpdateService::checkAutomatic);
+    QTimer::singleShot(1500, this, [this] {
+        // Check once per launch, retaining persisted cooldown and server backoff.
+        if (automatic_ && !busy() && clock_() >= retryAt_)
+            request();
+    });
 }
 bool UpdateService::supported() const {
     return QStringLiteral(OPENPAINT_INSTALL_KIND) != "flatpak";

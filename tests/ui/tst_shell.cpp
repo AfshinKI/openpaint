@@ -23,6 +23,7 @@
 #include <QSGRendererInterface>
 #include <QScopeGuard>
 #include <QSemaphore>
+#include <QSettings>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
@@ -52,6 +53,10 @@ class ShellTest : public QObject {
   private slots:
     void init() {
         warnings.clear();
+        // Shell tests never contact the network; updater policy has fake-transport tests.
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "OpenPaint", "OpenPaint");
+        settings.setValue("updates/automatic", false);
+        settings.sync();
         engine = std::make_unique<QQmlApplicationEngine>();
         connect(engine.get(), &QQmlApplicationEngine::warnings, this,
                 [this](const QList<QQmlError>& errors) {

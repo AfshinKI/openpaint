@@ -105,12 +105,45 @@ class UpdatesTest : public QObject {
         service.checkAutomatic();
         QVERIFY(network.requests.isEmpty());
     }
+    void defaultStartupAndSavedOptOut() {
+        QTemporaryDir directory;
+        FakeNetwork network;
+        qint64 now = 1700000000;
+        const auto file = directory.filePath("settings.ini");
+        {
+            UpdateService first(&network, file, [&] { return now; });
+            QVERIFY(first.automatic());
+            QVERIFY(network.requests.isEmpty()); // Constructor does not block startup.
+            QTRY_COMPARE_WITH_TIMEOUT(network.requests.size(), 1, 2500);
+            QTRY_VERIFY(!first.busy());
+        }
+        {
+            UpdateService rapidRestart(&network, file, [&] { return now; });
+            QTest::qWait(1700);
+            QCOMPARE(network.requests.size(), 1); // Persisted cooldown.
+        }
+        now += 61;
+        {
+            UpdateService restarted(&network, file, [&] { return now; });
+            QTRY_COMPARE_WITH_TIMEOUT(network.requests.size(), 2, 2500);
+            QTRY_VERIFY(!restarted.busy()); // Startup need not wait a full day.
+            restarted.setAutomatic(false);
+        }
+        now += 86400;
+        UpdateService optedOut(&network, file, [&] { return now; });
+        QVERIFY(!optedOut.automatic());
+        QTest::qWait(1700);
+        QCOMPARE(network.requests.size(), 2);
+        optedOut.checkAutomatic();
+        QCOMPARE(network.requests.size(), 2);
+    }
     void explicitCheckAndRequestPolicy() {
         QTemporaryDir directory;
         FakeNetwork network;
         qint64 now = 1700000000;
         UpdateService service(&network, directory.filePath("settings.ini"), [&] { return now; });
-        QVERIFY(!service.automatic());
+        QVERIFY(service.automatic());
+        service.setAutomatic(false);
         service.checkAutomatic();
         QVERIFY(network.requests.isEmpty());
         QSignalSpy found(&service, &UpdateService::updateFound);
@@ -191,6 +224,8 @@ class UpdatesTest : public QObject {
         }
         UpdateService restarted(&network, file, [&] { return now; });
         QVERIFY(restarted.automatic());
+        QTest::qWait(1700); // Startup must respect the persisted server backoff.
+        QCOMPARE(network.requests.size(), 1);
         now += 3600;
         restarted.check();
         restarted.checkAutomatic();

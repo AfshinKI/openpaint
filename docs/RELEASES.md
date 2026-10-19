@@ -61,13 +61,14 @@ Do not infer write authority merely because a file is writable. An unrecognized
 installation gets a release-page link and manual instructions.
 
 All builds provide an Updates screen and an explicit “View releases” action.
-Network-capable builds add Check now and optional daily stable-release notifications;
+Network-capable builds add Check now and default-on startup/daily stable-release notifications;
 Flatpak retains browser-only checking because it has no network permission.
 Automatic installation is not implemented. Do not show simulated
 network results or claim “up to date” without a successful authoritative check.
 
-Automatic checks are off by default. An opt-in permits at most a daily check while
-the app is running. No background service. Describe the host contacted, the IP/
+Automatic checks default on, with one deferred startup attempt and at most daily
+checks while running. Saved opt-outs, cooldowns and server backoff survive restart.
+No background service. Describe the host contacted, the IP/
 ordinary request metadata it will receive, and how to turn checks off. The editor
 remains usable offline. Use backoff/timeouts and distinguish offline, rate limit,
 invalid metadata, and no update. Do not render active HTML from release notes.
