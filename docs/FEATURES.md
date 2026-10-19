@@ -1,8 +1,9 @@
 # Feature checklist and reference audit
 
-Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
-It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
-current shipped behavior remains unchanged until implementation is verified.
+Alpha corrections shipped through PR #34; the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md)
+records implementation evidence and remaining desktop-validation limits. It
+supersedes the earlier shared custom-palette, Swap-button and left-rail targets.
+The current release is [v1.2.0](plans/0040-release-1.2.0.md).
 
 Audit date: 2026-10-12. **The single-layer editor is implemented.**
 The maintainer selected this feature scope for [v1.0.0](plans/0031-stable-release.md);

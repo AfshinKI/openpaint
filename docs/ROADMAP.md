@@ -24,6 +24,23 @@ M1; M3 and release packaging improvements can progress independently once their
 interfaces stabilize. M4 depends on editing and document contracts from M2/M3.
 These future gates are not prerequisites for the scoped single-layer v1. M6 may be researched earlier, but must not delay core reliability.
 
+## Current handoff toward v2
+
+Stable [v1.1.0](plans/0038-release-1.1.0.md) and
+[v1.2.0](plans/0040-release-1.2.0.md) are published. Their closure records separate
+release evidence from remaining platform certification. Alpha UI polish and
+post-v1 fixes are merged; historical progress notes are not an active feature queue.
+
+The next development milestone is M3. Define a bounded feature plan and acceptance
+cases first, including the carried renderer/memory performance concern before
+large multilayer documents. The v2 feature scope and detailed sequence are not
+yet approved. For this development cycle, validate feature work locally before
+proceeding to PR checks and eventual v2 release runs. Release dispatch and
+publication remain separate from local acceptance; protected checks still apply.
+
+Next unfinished step: agree the first M3/v2 feature slice and record its acceptance
+cases. No v2 feature implementation or release dispatch is part of this docs closure.
+
 ## Release progression
 
 M1/M2 produced the first alpha. Version 1.0.0 keeps the implemented single-layer

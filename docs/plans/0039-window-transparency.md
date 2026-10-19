@@ -1,6 +1,6 @@
 # Feature: frosted window and layered surfaces
 
-Status: merged in PR #47; v1.2.0 release preparation follows
+Status: merged in PR #47; shipped in v1.2.0
 Feature IDs: F01
 
 ## Outcome and behavior
@@ -63,8 +63,9 @@ See [asset provenance](../assets/README.md) for the regeneration command and lic
 
 ## Next step
 
-PR #47 merged after all checks passed. Continue the maintainer-requested
-[stable v1.2.0 release](0040-release-1.2.0.md).
+PR #47 merged after all checks passed and shipped in
+[stable v1.2.0](0040-release-1.2.0.md). Release closure is recorded there;
+broader compositor/Wayland certification remains future work.
 
 ## Review follow-up
 
