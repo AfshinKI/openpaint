@@ -8,6 +8,7 @@
 - Default release checks on at startup and daily, preserving saved opt-outs and backoff.
   Flatpak retains browser-only checking.
 - Round the application client corners, retaining square maximized edges.
+- Show selected tools with neutral frosted surfaces and light outlines in glass mode.
 
 ## 1.2.0 — 2026-10-18
 

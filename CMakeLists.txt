@@ -128,6 +128,7 @@ if(BUILD_TESTING)
         keyboardFileWorkflow
         topRightControls
         roundedClientCorners
+        frostedToolSelection
         glassAppearanceSettings
         glassBackdropRendering
         actualFloatingPanelBlur

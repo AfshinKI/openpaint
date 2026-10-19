@@ -1301,6 +1301,48 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!window->isVisible());
     }
 
+    void frostedToolSelection() {
+        auto* editor = window->findChild<Editor*>("editor");
+        const auto image = editor->image();
+        auto* pencil = window->findChild<QQuickItem*>("pencilButton");
+        auto* eraser = window->findChild<QQuickItem*>("eraserButton");
+        QVERIFY(pencil && eraser);
+        const auto pencilSurfaces = visualItems(pencil, "selectedToolSurface");
+        const auto eraserSurfaces = visualItems(eraser, "selectedToolSurface");
+        QVERIFY(!pencilSurfaces.isEmpty() && !eraserSurfaces.isEmpty());
+        QQmlExpression glass(qmlContext(pencil), pencil,
+                             "Appearance.glassEnabled = true; Appearance.surfaceOpacity = 40");
+        glass.evaluate();
+        QVERIFY(!glass.hasError());
+        editor->setTool(Editor::Tool::Pencil);
+        QVERIFY(pencilSurfaces.first()->isVisible());
+        QVERIFY(!eraserSurfaces.first()->isVisible());
+        QVERIFY(tabTo("eraserButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->tool(), Editor::Tool::Eraser);
+        QVERIFY(!pencilSurfaces.first()->isVisible());
+        QVERIFY(eraserSurfaces.first()->isVisible());
+        window->resize(1024, 640);
+        for (const auto& theme : {QString("light"), QString("dark")}) {
+            QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>(theme + "ThemeAction"),
+                                              "trigger", Q_ARG(QObject*, nullptr)));
+            QVERIFY(capture("frosted-selection-" + theme + ".png"));
+        }
+        editor->setTool(Editor::Tool::Select);
+        QVERIFY(window->findChild<QQuickItem*>("selectSelectedSurface")->isVisible());
+        editor->setTool(Editor::Tool::Brush);
+        QVERIFY(window->findChild<QQuickItem*>("brushSelectedSurface")->isVisible());
+        QQmlExpression solid(qmlContext(pencil), pencil, "Appearance.glassEnabled = false");
+        solid.evaluate();
+        QVERIFY(!solid.hasError());
+        editor->setTool(Editor::Tool::Eraser);
+        QVERIFY(!eraserSurfaces.first()->isVisible());
+        QVERIFY(capture("selection-glass-disabled.png"));
+        QCOMPARE(editor->image(), image);
+        QVERIFY(!editor->dirty());
+        QVERIFY(!editor->canUndo());
+    }
+
     void glassAppearanceSettings() {
         auto* editor = window->findChild<Editor*>("editor");
         auto* canvas = window->findChild<CanvasItem*>("canvas");

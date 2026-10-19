@@ -12,6 +12,7 @@ Rectangle {
     property bool opaqueBackdrop: false
     property bool menuSurface: false
     property bool raisedSurface: true
+    property bool selectedSurface: false
     property real baseTintPower: 2
     property list<Item> backdropLayers: !backdropSource ? [] : hostWindow && backdropSource === hostWindow.canvasController ? hostWindow.glassBackdropLayers : [backdropSource]
     readonly property bool backdropBlurEnabled: Appearance.glassEnabled && surfaceAlpha < 1 && hostWindow !== null && backdropSource !== null && GraphicsInfo.api !== GraphicsInfo.Software
@@ -19,10 +20,10 @@ Rectangle {
     // Fixed bars already sit on a tint. Over artwork, retain enough light material
     // to keep dark labels readable even when the blurred source is black.
     readonly property real lightPopupTint: menuSurface ? Math.pow(surfaceAlpha, 5) : 0.18 + 0.82 * surfaceAlpha * surfaceAlpha * surfaceAlpha
-    readonly property real tintAlpha: Theme.dark ? (opaqueBackdrop ? Math.max(0.72, surfaceAlpha) : surfaceAlpha) : opaqueBackdrop ? lightPopupTint : raisedSurface ? 0.45 + 0.55 * surfaceAlpha * surfaceAlpha : Math.pow(surfaceAlpha, baseTintPower)
+    readonly property real tintAlpha: selectedSurface ? (surfaceAlpha >= 1 ? 1 : Theme.dark ? 0.68 : 0.72) : Theme.dark ? (opaqueBackdrop ? Math.max(0.72, surfaceAlpha) : surfaceAlpha) : opaqueBackdrop ? lightPopupTint : raisedSurface ? 0.45 + 0.55 * surfaceAlpha * surfaceAlpha : Math.pow(surfaceAlpha, baseTintPower)
     radius: Theme.surfaceRadius
     color: Theme.panel
-    border.color: Appearance.glassEnabled ? (Theme.dark ? "#687887" : "#383D454D") : Theme.divider
+    border.color: selectedSurface ? Theme.selectionOutline : Appearance.glassEnabled ? (Theme.dark ? "#687887" : "#383D454D") : Theme.divider
     gradient: Appearance.glassEnabled ? sheen : null
     Loader {
         anchors.fill: parent
@@ -72,7 +73,7 @@ Rectangle {
                 blurEnabled: true
                 blurMax: 64
                 blur: 1
-                blurMultiplier: !Theme.dark && surface.opaqueBackdrop ? 0.75 : 0
+                blurMultiplier: surface.selectedSurface ? 1 : !Theme.dark && surface.opaqueBackdrop ? 0.75 : 0
                 autoPaddingEnabled: false
                 maskEnabled: surface.radius > 0
                 maskSource: roundedMask

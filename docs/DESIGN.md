@@ -268,3 +268,5 @@ Development text editing uses a dashed black/white box outline and a blinking
 black caret at the scaled text height; neither overlay is saved in the artwork.
 Development windows use 12px rounded client corners and matching input masks;
 maximized/fullscreen edges are square. Native decorations remain desktop-owned.
+Development glass selection uses stronger neutral frost and light outlines instead
+of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
