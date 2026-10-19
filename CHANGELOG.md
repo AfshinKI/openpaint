@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Default glass opacity to 40%, preserving saved preferences.
+
 ## 1.2.0 — 2026-10-18
 
 - Persist theme selection, improve dark Updates controls, show a blinking text caret,

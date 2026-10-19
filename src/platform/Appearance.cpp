@@ -10,8 +10,8 @@ Appearance::Appearance(const QString& file, QObject* parent) : QObject(parent) {
     themeMode_ = std::clamp(settings_->value("appearance/theme", 0).toInt(), 0, 2);
     glassEnabled_ = settings_->value("appearance/glass", true).toBool();
     bool ok = false;
-    const int value = settings_->value("appearance/opacity", 85).toInt(&ok);
-    surfaceOpacity_ = ok ? std::clamp(value, 40, 100) : 85;
+    const int value = settings_->value("appearance/opacity", 40).toInt(&ok);
+    surfaceOpacity_ = ok ? std::clamp(value, 40, 100) : 40;
 }
 void Appearance::save() {
     settings_->setValue("appearance/theme", themeMode_);
@@ -35,7 +35,7 @@ void Appearance::setSurfaceOpacity(int opacity) {
 }
 void Appearance::restoreDefaults() {
     glassEnabled_ = true;
-    surfaceOpacity_ = 85;
+    surfaceOpacity_ = 40;
     save();
 }
 

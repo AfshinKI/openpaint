@@ -321,7 +321,7 @@ and preserves the current drawing and saved state; choose again with the extensi
 
 Updates provides Check now, Cancel check, an off-by-default daily-check option and View releases. A newer stable release produces a dismissible in-app notice; it never interrupts or restarts editing. Flatpak retains manual browser links.
 
-Settings includes Glass appearance with a persistent toggle, 40–100% surface opacity slider, Restore defaults and Close. Defaults are enabled/85%; disabling restores opaque surfaces. No artwork edit or history entry occurs.
+Settings includes Glass appearance with a persistent toggle, 40–100% surface opacity slider, Restore defaults and Close. Defaults are enabled/40%; disabling restores opaque surfaces. No artwork edit or history entry occurs.
 
 Fill always cleans a one-pixel same-color antialias fringe without expanding flood connectivity. Color tolerance is fixed at zero.
 

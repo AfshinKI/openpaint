@@ -121,3 +121,5 @@ and [rendering decision](decisions/0005-local-panel-blur.md).
 Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
 across restarts. Inline text displays a blinking caret at the scaled font height.
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
+
+Development default: glass starts at 40% opacity; saved user choices are retained.

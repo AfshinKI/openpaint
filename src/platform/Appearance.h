@@ -35,6 +35,6 @@ class Appearance : public QObject {
     void save();
     std::unique_ptr<QSettings> settings_;
     bool glassEnabled_ = true;
-    int surfaceOpacity_ = 85;
+    int surfaceOpacity_ = 40;
     int themeMode_ = 0;
 };
