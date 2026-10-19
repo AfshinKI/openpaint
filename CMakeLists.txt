@@ -113,6 +113,7 @@ if(BUILD_TESTING)
         freeFormSelectionWorkflow
         clipboardMoveWorkflow
         rectangularSelectionWorkflow
+        fontPickerWorkflow
         inlineTextWorkflow
         transparentBackgroundChoice
         canvasCornerResize

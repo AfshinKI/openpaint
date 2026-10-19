@@ -659,6 +659,56 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(options, "close"));
     }
 
+    void fontPickerWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* input = window->findChild<QQuickItem*>("inlineTextInput");
+        auto* picker = window->findChild<QObject*>("fontPicker");
+        auto* search = window->findChild<QQuickItem*>("fontSearch");
+        auto* list = window->findChild<QQuickItem*>("fontList");
+        QVERIFY(editor && picker && search && list);
+        editor->setTool(Editor::Tool::Text);
+        editor->begin({80, 80}, false);
+        editor->extend({400, 180});
+        editor->endGesture();
+        QTRY_VERIFY(editor->textReady());
+        editor->setTextDraft("Font preview");
+        const auto family = editor->textFamily;
+        const auto size = editor->textSize;
+        const bool dirty = editor->dirty();
+        const bool undo = editor->canUndo();
+        QVERIFY(QMetaObject::invokeMethod(picker, "open"));
+        QTRY_VERIFY(search->hasActiveFocus());
+        search->setProperty("text", "no-such-font-987654321");
+        QCOMPARE(list->property("count").toInt(), 0);
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!picker->property("visible").toBool());
+        QCOMPARE(editor->textFamily, family);
+        QTRY_VERIFY(input->hasActiveFocus());
+        QVERIFY(QMetaObject::invokeMethod(picker, "open"));
+        search->setProperty("text", "");
+        QVERIFY(list->property("count").toInt() > 0);
+        keyClick(Qt::Key_Down);
+        QTRY_VERIFY(list->hasActiveFocus());
+        keyClick(Qt::Key_Space);
+        const auto chosen = picker->property("draftFamily").toString();
+        QVERIFY(!chosen.isEmpty());
+        window->resize(1024, 640);
+        for (const auto& theme : {QString("light"), QString("dark")}) {
+            QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>(theme + "ThemeAction"),
+                                              "trigger", Q_ARG(QObject*, nullptr)));
+            QVERIFY(capture("font-picker-" + theme + "-1024.png"));
+        }
+        list->forceActiveFocus();
+        keyClick(Qt::Key_Return);
+        QTRY_VERIFY(!picker->property("visible").toBool());
+        QCOMPARE(editor->textFamily, chosen);
+        QCOMPARE(editor->textSize, size);
+        QVERIFY(editor->textActive());
+        QTRY_VERIFY(input->hasActiveFocus());
+        QCOMPARE(editor->dirty(), dirty);
+        QCOMPARE(editor->canUndo(), undo);
+    }
+
     void inlineTextWorkflow() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();

@@ -121,3 +121,6 @@ and [rendering decision](decisions/0005-local-panel-blur.md).
 Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
 across restarts. Inline text displays a blinking caret at the scaled font height.
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
+
+Development font picker replaces the native dialog with searchable family previews;
+see [plan 0043](plans/0043-font-picker.md).
