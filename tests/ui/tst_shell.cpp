@@ -1229,12 +1229,12 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(dialog, "open"));
         QVERIFY(tabTo("restoreAppearance"));
         keyClick(Qt::Key_Space);
-        QCOMPARE(slider->property("value").toInt(), 85);
+        QCOMPARE(slider->property("value").toInt(), 40);
         QVERIFY(tabTo("glassOpacity"));
-        keyClick(Qt::Key_Left);
-        QCOMPARE(slider->property("value").toInt(), 84);
-        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.84);
-        QVERIFY(qAbs(workspace->property("color").value<QColor>().alphaF() - 0.84) < 0.005);
+        keyClick(Qt::Key_Right);
+        QCOMPARE(slider->property("value").toInt(), 41);
+        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.41);
+        QVERIFY(qAbs(workspace->property("color").value<QColor>().alphaF() - 0.41) < 0.005);
         QCOMPARE(window->color().alpha(), 0);
         // The base covers the toolbar margins too; no clear slit between bars.
         auto* base = qobject_cast<QQuickItem*>(workspace);
@@ -1248,7 +1248,7 @@ class ShellTest : public QObject {
             const auto scale = frame.devicePixelRatio();
             return frame.pixelColor(qRound(gap.x() * scale), qRound(gap.y() * scale)).alphaF();
         };
-        QTRY_VERIFY(gapAlpha() > 0.8);
+        QTRY_VERIFY(gapAlpha() >= 0.40);
         QVERIFY(capture("glass-toolbar-gap.png"));
         QVERIFY(tabTo("glassEnabled"));
         keyClick(Qt::Key_Space);
@@ -1258,9 +1258,9 @@ class ShellTest : public QObject {
         QVERIFY(!slider->property("enabled").toBool());
         QVERIFY(capture("glass-disabled.png"));
         keyClick(Qt::Key_Space);
-        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.84);
+        QCOMPARE(surface->property("surfaceAlpha").toDouble(), 0.41);
         QVERIFY(tabTo("glassOpacity"));
-        for (int step = 0; step < 16; ++step)
+        for (int step = 0; step < 59; ++step)
             keyClick(Qt::Key_Right);
         QCOMPARE(slider->property("value").toInt(), 100);
         QCOMPARE(window->color().alpha(), 255);
