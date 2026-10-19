@@ -56,6 +56,7 @@ class CanvasItem : public QQuickPaintedItem {
     void cursorPositionChanged();
 
   private:
+    void updateToolCursor();
     void finishGesture();
     void updateGesture(QPointF point, bool constrain = false);
     QPointer<Editor> editor_;

@@ -31,15 +31,17 @@ Stable [v1.1.0](plans/0038-release-1.1.0.md) and
 release evidence from remaining platform certification. Alpha UI polish and
 post-v1 fixes are merged; historical progress notes are not an active feature queue.
 
-The next development milestone is M3. Define a bounded feature plan and acceptance
+M3 remains the next editing milestone. The current v2 preparation first delivers
+the [seven requested editor refinements](plans/0049-editor-refinements.md), one
+locally validated feature at a time. Define a bounded M3 feature plan and acceptance
 cases first, including the carried renderer/memory performance concern before
 large multilayer documents. The v2 feature scope and detailed sequence are not
 yet approved. For this development cycle, validate feature work locally before
 proceeding to PR checks and eventual v2 release runs. Release dispatch and
 publication remain separate from local acceptance; protected checks still apply.
 
-Next unfinished step: agree the first M3/v2 feature slice and record its acceptance
-cases. No v2 feature implementation or release dispatch is part of this docs closure.
+Next requested step after the editor refinements: the new application icon.
+PR checks and v2 publication remain deferred; M3 scope still needs its own plan.
 
 ## Release progression
 

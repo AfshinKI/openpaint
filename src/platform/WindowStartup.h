@@ -10,14 +10,25 @@
 // Match the rounded client surface's input region. Native decorations stay owned
 // by the compositor; maximized/fullscreen clients use the whole rectangle.
 inline void updateWindowInputRegion(QQuickWindow* window) {
+#ifdef Q_OS_LINUX
     if (window->windowState() == Qt::WindowMaximized ||
         window->windowState() == Qt::WindowFullScreen) {
         window->setMask({});
         return;
     }
     QPainterPath path;
-    path.addRoundedRect(QRectF(0, 0, window->width(), window->height()), 12, 12);
+    const qreal w = window->width(), h = window->height(), r = 12;
+    path.moveTo(0, 0);
+    path.lineTo(w, 0);
+    path.lineTo(w, h - r);
+    path.quadTo(w, h, w - r, h);
+    path.lineTo(r, h);
+    path.quadTo(0, h, 0, h - r);
+    path.closeSubpath();
     window->setMask(QRegion(path.toFillPolygon().toPolygon()));
+#else
+    Q_UNUSED(window);
+#endif
 }
 
 inline void centerStartupWindow(QQuickWindow* window) {

@@ -66,7 +66,8 @@ Rectangle {
             }
         }
         Accessible.name: qsTr("Text on canvas")
-        cursorDelegate: Rectangle {
+        cursorDelegate: Item {}
+        Rectangle {
             id: caret
             objectName: "textCaret"
             property bool blinkOn: true
@@ -83,7 +84,9 @@ Rectangle {
                     caret.blinkOn = true;
                 }
             }
-            width: 1
+            x: Math.max(1, input.cursorRectangle.x)
+            y: input.cursorRectangle.y
+            width: 2
             height: Math.max(1, input.font.pixelSize)
             color: "black"
             visible: input.activeFocus && input.selectionStart === input.selectionEnd && blinkOn

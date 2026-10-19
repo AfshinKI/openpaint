@@ -27,15 +27,17 @@ ApplicationWindow {
     })
     title: (editor.dirty ? "* " : "") + editor.fileName + qsTr(" — OpenPaint")
     readonly property real backgroundAlpha: Appearance.glassEnabled ? Appearance.surfaceOpacity / 100 : 1
-    readonly property real clientRadius: visibility === Window.Maximized || visibility === Window.FullScreen ? 0 : 12
+    readonly property real clientRadius: Qt.platform.os !== "linux" || visibility === Window.Maximized || visibility === Window.FullScreen ? 0 : 12
     color: "transparent"
     Overlay.modal: Rectangle {
         color: "#66000000"
-        radius: window.clientRadius
+        bottomLeftRadius: window.clientRadius
+        bottomRightRadius: window.clientRadius
     }
     background: Rectangle {
         objectName: "workspaceSurface"
-        radius: window.clientRadius
+        bottomLeftRadius: window.clientRadius
+        bottomRightRadius: window.clientRadius
         color: Qt.rgba(Theme.workspace.r, Theme.workspace.g, Theme.workspace.b, window.backgroundAlpha)
     }
     palette.window: Theme.window
@@ -480,8 +482,8 @@ ApplicationWindow {
             backdropSource: null
             raisedSurface: false
             radius: 0
-            topLeftRadius: window.clientRadius
-            topRightRadius: window.clientRadius
+            topLeftRadius: 0
+            topRightRadius: 0
             border.width: 0
         }
         contentItem: RowLayout {
@@ -491,8 +493,11 @@ ApplicationWindow {
                 background: Item {}
                 delegate: MenuBarItem {
                     id: menuEntry
-                    background: Rectangle {
+                    background: GlassSurface {
+                        backdropLayers: [window.background, canvas]
                         radius: Theme.controlRadius
+                        selectedSurface: menuEntry.highlighted
+                        visible: selectedSurface || menuEntry.visualFocus
                         color: menuEntry.highlighted ? Theme.hover : "transparent"
                     }
                 }
@@ -693,8 +698,11 @@ ApplicationWindow {
                         symbol: editor.freeFormSelection ? "lasso" : "selection"
                         text: editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
                         Accessible.name: text
-                        background: Rectangle {
+                        background: GlassSurface {
+                            backdropLayers: [window.background, canvas]
                             radius: Theme.controlRadius
+                            selectedSurface: editor.tool === Editor.Select || selectionMain.down || selectionMain.hovered
+                            visible: selectedSurface || selectionMain.visualFocus
                             color: selectionMain.down ? Theme.pressed : selectionMain.hovered ? Theme.hover : "transparent"
                         }
                         enabled: editor.canSelect
@@ -710,8 +718,11 @@ ApplicationWindow {
                         y: 36
                         width: parent.width
                         height: 20
-                        background: Rectangle {
+                        background: GlassSurface {
+                            backdropLayers: [window.background, canvas]
                             radius: Theme.controlRadius
+                            selectedSurface: editor.tool === Editor.Select || selectionDropdown.down || selectionDropdown.hovered
+                            visible: selectedSurface || selectionDropdown.visualFocus
                             color: selectionDropdown.down ? Theme.pressed : selectionDropdown.hovered ? Theme.hover : "transparent"
                         }
                         enabled: editor.canSelect || editor.floatingActive
@@ -986,8 +997,11 @@ ApplicationWindow {
                         height: 36
                         padding: 4
                         text: qsTr("Brush")
-                        background: Rectangle {
+                        background: GlassSurface {
+                            backdropLayers: [window.background, canvas]
                             radius: Theme.controlRadius
+                            selectedSurface: editor.tool === Editor.Brush || brushesButton.down || brushesButton.hovered
+                            visible: selectedSurface || brushesButton.visualFocus
                             color: brushesButton.down ? Theme.pressed : brushesButton.hovered ? Theme.hover : "transparent"
                         }
                         onClicked: editor.tool = Editor.Brush
@@ -1001,8 +1015,11 @@ ApplicationWindow {
                         width: 40
                         height: 20
                         y: 36
-                        background: Rectangle {
+                        background: GlassSurface {
+                            backdropLayers: [window.background, canvas]
                             radius: Theme.controlRadius
+                            selectedSurface: editor.tool === Editor.Brush || brushDropdown.down || brushDropdown.hovered
+                            visible: selectedSurface || brushDropdown.visualFocus
                             color: brushDropdown.down ? Theme.pressed : brushDropdown.hovered ? Theme.hover : "transparent"
                         }
                         enabled: !editor.textActive && !editor.busy
@@ -1046,13 +1063,13 @@ ApplicationWindow {
                         IconButton {
                             objectName: "shapeOutlineButton"
                             flat: true
-                            symbol: "shape-outline"
+                            symbol: editor.shapeOutline ? "shape-outline" : "shape-outline-off"
                             text: "⌄"
                             display: AbstractButton.TextBesideIcon
                             implicitWidth: 48
                             implicitHeight: 32
                             enabled: !editor.textActive && !editor.busy
-                            Accessible.name: qsTr("Shape outline")
+                            Accessible.name: editor.shapeOutline ? qsTr("Shape outline: solid") : qsTr("Shape outline: off")
                             ToolTip.text: Accessible.name
                             onClicked: outlineMenu.open()
                             PaintMenu {
@@ -1082,13 +1099,13 @@ ApplicationWindow {
                         IconButton {
                             objectName: "shapeFillButton"
                             flat: true
-                            symbol: "fill"
+                            symbol: editor.shapeFill ? "fill-solid" : "fill"
                             text: "⌄"
                             display: AbstractButton.TextBesideIcon
                             implicitWidth: 48
                             implicitHeight: 32
                             enabled: !editor.textActive && !editor.busy
-                            Accessible.name: qsTr("Shape fill")
+                            Accessible.name: editor.shapeFill ? qsTr("Shape fill: solid") : qsTr("Shape fill: none")
                             ToolTip.text: Accessible.name
                             onClicked: fillMenu.open()
                             PaintMenu {
@@ -1107,7 +1124,7 @@ ApplicationWindow {
                                 PaintMenuItem {
                                     objectName: "solidFillItem"
                                     autoExclusive: true
-                                    symbol: "fill"
+                                    symbol: "fill-solid"
                                     text: qsTr("Solid fill")
                                     checkable: true
                                     checked: editor.shapeFill
@@ -1248,8 +1265,11 @@ ApplicationWindow {
                 IconButton {
                     id: editColorsOption
                     objectName: "editColorsButton"
-                    background: Rectangle {
+                    background: GlassSurface {
+                        backdropLayers: [window.background, canvas]
                         radius: width / 2
+                        selectedSurface: editColorsOption.down || editColorsOption.hovered
+                        visible: selectedSurface || editColorsOption.visualFocus
                         color: editColorsOption.down ? Theme.pressed : editColorsOption.hovered ? Theme.hover : "transparent"
                         border.width: editColorsOption.visualFocus ? 2 : 0
                         border.color: Theme.accent
@@ -1270,11 +1290,14 @@ ApplicationWindow {
                 IconButton {
                     id: transparencyOption
                     objectName: "transparentBackgroundButton"
-                    background: Rectangle {
+                    background: GlassSurface {
+                        backdropLayers: [window.background, canvas]
                         anchors.centerIn: parent
                         width: 28
                         height: 28
                         radius: 14
+                        selectedSurface: transparencyOption.highlighted || transparencyOption.down || transparencyOption.hovered
+                        visible: selectedSurface || transparencyOption.visualFocus
                         color: transparencyOption.down ? Theme.pressed : transparencyOption.hovered ? Theme.hover : "transparent"
                         border.width: transparencyOption.visualFocus ? 2 : transparencyOption.highlighted || transparencyOption.hovered ? 1 : 0
                         border.color: Theme.accent
@@ -1463,7 +1486,7 @@ ApplicationWindow {
                 implicitWidth: 24
                 implicitHeight: 24
             }
-            ToolButton {
+            PaintButton {
                 text: qsTr("Cancel")
                 visible: editor.busy
                 onClicked: editor.cancelIo()

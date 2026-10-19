@@ -4,11 +4,15 @@
 
 - Default glass opacity to 40%, preserving saved preferences.
 - Use a consistent searchable font picker with family previews.
-- Use a dashed text-box outline and blinking black caret.
+- Use a dashed text-box outline and immediately blinking black caret in empty boxes.
 - Default release checks on at startup and daily, preserving saved opt-outs and backoff.
   Flatpak retains browser-only checking.
-- Round the application client corners, retaining square maximized edges.
+- Round only Linux bottom client corners, retaining square maximized edges.
 - Show selected tools with neutral frosted surfaces and light outlines in glass mode.
+- Clarify pencil/eyedropper icons and show tool-shaped canvas cursors.
+- Indicate solid shape fill and disabled outline directly on their toolbar icons.
+- Use neutral frosted checkmarks and bright color-selection rings; keep flat idle
+  controls transparent and retain the 40% glass default without a tint control.
 - Credit designer Afshin Kashani, PhD, P.Eng in Updates.
 
 ## 1.2.0 — 2026-10-18

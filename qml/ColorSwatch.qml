@@ -24,11 +24,21 @@ Button {
             visible: !control.empty && control.swatchColor.a < 1
         }
         Rectangle {
+            objectName: "swatchSelectionRing"
+            anchors.fill: parent
+            anchors.margins: -3
+            radius: width / 2
+            color: "transparent"
+            border.width: control.visualFocus ? 3 : 2
+            border.color: "#F4FAFF"
+            visible: control.checked || control.visualFocus
+        }
+        Rectangle {
             anchors.fill: parent
             radius: width / 2
             color: control.empty ? "transparent" : control.swatchColor
-            border.width: control.visualFocus || control.checked ? 3 : control.hovered ? 2 : 1
-            border.color: control.visualFocus || control.checked ? Theme.accent : control.empty ? Theme.secondaryText : Theme.divider
+            border.width: control.hovered ? 2 : 1
+            border.color: control.empty ? Theme.secondaryText : Theme.divider
         }
     }
     ToolTip.visible: hovered

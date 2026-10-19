@@ -129,7 +129,8 @@ PaintDialog {
                     Accessible.name: qsTr("Hexadecimal color")
                     onTextEdited: if (acceptableInput)
                         colorDraft.setHex(text)
-                    background: Rectangle {
+                    background: GlassSurface {
+                        backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
                         radius: Theme.controlRadius
                         color: Theme.hover
                         border.width: hexField.activeFocus ? 2 : 1
@@ -145,7 +146,8 @@ PaintDialog {
                     Accessible.name: qsTr("Color model")
                     palette.buttonText: Theme.text
                     palette.text: Theme.text
-                    background: Rectangle {
+                    background: GlassSurface {
+                        backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
                         radius: Theme.controlRadius
                         color: Theme.hover
                         border.color: colorMode.visualFocus ? Theme.accent : Theme.divider
@@ -358,12 +360,7 @@ PaintDialog {
             objectName: "acceptColor"
             text: qsTr("OK")
             enabled: hexField.acceptableInput
-            palette.buttonText: Theme.accentText
-            background: Rectangle {
-                radius: Theme.controlRadius
-                color: acceptButton.down ? Theme.pressed : Theme.accent
-                border.color: acceptButton.visualFocus ? Theme.text : Theme.accent
-            }
+            highlighted: true
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
         PaintButton {

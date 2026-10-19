@@ -18,6 +18,7 @@
 #include <QQmlComponent>
 #include <QQmlError>
 #include <QQmlExpression>
+#include <QQmlProperty>
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QSGRendererInterface>
@@ -102,19 +103,98 @@ class ShellTest : public QObject {
         QVERIFY(!editor->previewActive());
         QCOMPARE(editor->selectionRect(), editor->image().rect());
     }
+    void toolCursorsAndIndicators() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = canvas->editor();
+        const auto original = editor->image();
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        appearance->restoreDefaults();
+        QImage cursors(128, 40, QImage::Format_ARGB32_Premultiplied);
+        cursors.fill(Qt::white);
+        QPainter painter(&cursors);
+        int column = 0;
+        QImage previous;
+        for (auto tool : {Editor::Tool::Pencil, Editor::Tool::ColorPicker, Editor::Tool::Eraser,
+                          Editor::Tool::Brush}) {
+            editor->setTool(tool);
+            QCOMPARE(canvas->cursor().shape(), Qt::BitmapCursor);
+            QVERIFY(!canvas->cursor().pixmap().isNull());
+            const auto glyph = canvas->cursor().pixmap().toImage();
+            QVERIFY(glyph != previous);
+            previous = glyph;
+            QCOMPARE(canvas->cursor().hotSpot(),
+                     tool == Editor::Tool::Eraser ? QPoint(6, 16) : QPoint(6, 22));
+            painter.drawPixmap(column++ * 32, 6, canvas->cursor().pixmap());
+            canvas->forceActiveFocus();
+            QTest::keyPress(window, Qt::Key_Space);
+            QCOMPARE(canvas->cursor().shape(), Qt::OpenHandCursor);
+            QTest::keyRelease(window, Qt::Key_Space);
+            QCOMPARE(canvas->cursor().shape(), Qt::BitmapCursor);
+            QCOMPARE(canvas->cursor().pixmap().toImage(), glyph);
+            const auto point = canvas->mapToScene(canvas->fromDocument({100, 100})).toPoint();
+            QTest::mousePress(window, Qt::MiddleButton, {}, point);
+            QCOMPARE(canvas->cursor().shape(), Qt::ClosedHandCursor);
+            QTest::mouseRelease(window, Qt::MiddleButton, {}, point);
+            QCOMPARE(canvas->cursor().shape(), Qt::BitmapCursor);
+        }
+        painter.end();
+        const auto directory = qEnvironmentVariable("OPENPAINT_CAPTURE_DIR");
+        if (!directory.isEmpty()) {
+            QVERIFY(QDir().mkpath(directory));
+            QVERIFY(cursors.save(directory + "/tool-cursors.png"));
+        }
+        editor->setTool(Editor::Tool::Shape);
+        QCOMPARE(canvas->cursor().shape(), Qt::CrossCursor);
+        editor->setProperty("shapeOutline", false);
+        QCOMPARE(window->findChild<QObject*>("shapeOutlineButton")->property("symbol").toString(),
+                 QString("shape-outline-off"));
+        editor->setProperty("shapeFill", true);
+        QCOMPARE(window->findChild<QObject*>("shapeFillButton")->property("symbol").toString(),
+                 QString("fill-solid"));
+        auto* primary = window->findChild<QQuickItem*>("primaryButton");
+        auto* secondary = window->findChild<QQuickItem*>("secondaryButton");
+        QVERIFY(primary && secondary);
+        const auto primaryRings = visualItems(primary, "swatchSelectionRing");
+        const auto secondaryRings = visualItems(secondary, "swatchSelectionRing");
+        QVERIFY(primaryRings.size() == 1 && secondaryRings.size() == 1);
+        QCOMPARE(QQmlProperty::read(primaryRings.first(), "border.color").value<QColor>(),
+                 QColor("#F4FAFF"));
+        editor->setEditingSecondary(false);
+        QVERIFY(primaryRings.first()->isVisible());
+        QVERIFY(!secondaryRings.first()->isVisible());
+        editor->setEditingSecondary(true);
+        QVERIFY(!primaryRings.first()->isVisible());
+        QVERIFY(secondaryRings.first()->isVisible());
+        editor->setTool(Editor::Tool::Pencil);
+        const auto idleShapes = visualItems(window->contentItem(), "ribbonShape0");
+        QVERIFY(!idleShapes.isEmpty());
+        const auto idleSurfaces = visualItems(idleShapes.first(), "selectedToolSurface");
+        QVERIFY(!idleSurfaces.isEmpty());
+        QVERIFY(!idleSurfaces.first()->isVisible());
+        for (const auto& theme : {QString("light"), QString("dark")}) {
+            QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>(theme + "ThemeAction"),
+                                              "trigger", Q_ARG(QObject*, nullptr)));
+            QVERIFY(capture("tool-indicators-" + theme + ".png"));
+        }
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->dirty());
+        QVERIFY(!editor->canUndo());
+    }
+
     void roundedClientCorners() {
         auto* editor = window->findChild<Editor*>("editor");
         const auto image = editor->image();
         window->resize(1024, 640);
-        QVERIFY(!window->mask().contains({0, 0}));
+        QVERIFY(window->mask().contains({0, 0}));
+        QTRY_VERIFY(!window->mask().contains({0, window->height() - 1}));
         QVERIFY(window->mask().contains({100, 100}));
         for (const auto& theme : {QString("light"), QString("dark")}) {
             QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>(theme + "ThemeAction"),
                                               "trigger", Q_ARG(QObject*, nullptr)));
             QVERIFY(capture("rounded-window-" + theme + ".png"));
             const auto frame = window->grabWindow();
-            QCOMPARE(frame.pixelColor(0, 0).alpha(), 0);
-            QCOMPARE(frame.pixelColor(frame.width() - 1, 0).alpha(), 0);
+            QVERIFY(frame.pixelColor(0, 0).alpha() > 0);
+            QVERIFY(frame.pixelColor(frame.width() - 1, 0).alpha() > 0);
             QCOMPARE(frame.pixelColor(0, frame.height() - 1).alpha(), 0);
             QCOMPARE(frame.pixelColor(frame.width() - 1, frame.height() - 1).alpha(), 0);
         }
@@ -124,7 +204,8 @@ class ShellTest : public QObject {
         QCOMPARE(window->property("clientRadius").toDouble(), 0.0);
         window->showNormal();
         QTRY_COMPARE(window->windowState(), Qt::WindowNoState);
-        QVERIFY(!window->mask().contains({0, 0}));
+        QVERIFY(window->mask().contains({0, 0}));
+        QTRY_VERIFY(!window->mask().contains({0, window->height() - 1}));
         QCOMPARE(editor->image(), image);
         QVERIFY(!editor->dirty());
     }
@@ -735,6 +816,7 @@ class ShellTest : public QObject {
             QVERIFY(capture("font-picker-" + theme + "-1024.png"));
         }
         list->forceActiveFocus();
+        QTRY_VERIFY(list->hasActiveFocus());
         keyClick(Qt::Key_Return);
         QTRY_VERIFY(!picker->property("visible").toBool());
         QCOMPARE(editor->textFamily, chosen);
@@ -743,6 +825,13 @@ class ShellTest : public QObject {
         QTRY_VERIFY(input->hasActiveFocus());
         QCOMPARE(editor->dirty(), dirty);
         QCOMPARE(editor->canUndo(), undo);
+        QVERIFY(QMetaObject::invokeMethod(picker, "open"));
+        picker->setProperty("draftFamily", family);
+        QVERIFY(tabToButton("Apply"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!picker->property("visible").toBool());
+        QCOMPARE(editor->textFamily, family);
+        QTRY_VERIFY(input->hasActiveFocus());
     }
 
     void inlineTextWorkflow() {
@@ -766,8 +855,17 @@ class ShellTest : public QObject {
         QCOMPARE(caret->property("color").value<QColor>(), QColor(Qt::black));
         auto* outline = window->findChild<QQuickItem*>("textOutline");
         QVERIFY(outline && outline->isVisible());
-        const bool firstBlink = caret->property("blinkOn").toBool();
-        QTRY_VERIFY(caret->property("blinkOn").toBool() != firstBlink);
+        QVERIFY(editor->textDraft().isEmpty());
+        const auto caretPixel = [&] {
+            const auto frame = window->grabWindow();
+            const auto point = caret->mapToScene({1, caret->height() / 2});
+            return frame.pixelColor(qRound(point.x() * frame.devicePixelRatio()),
+                                    qRound(point.y() * frame.devicePixelRatio()));
+        };
+        QTRY_VERIFY(caretPixel().lightness() < 30);
+        QVERIFY(capture("empty-text-caret.png"));
+        QTRY_VERIFY(caretPixel().lightness() > 220);
+        QTRY_VERIFY(caretPixel().lightness() < 30);
         QVERIFY(editor->textRect().width() >= 319);
         for (char c : std::string("OpenPaint"))
             keyClick(c);
@@ -1320,11 +1418,11 @@ class ShellTest : public QObject {
         QVERIFY(!glass.hasError());
         editor->setTool(Editor::Tool::Pencil);
         QVERIFY(pencilSurfaces.first()->isVisible());
-        QVERIFY(!eraserSurfaces.first()->isVisible());
+        QVERIFY(!eraserSurfaces.first()->property("selectedSurface").toBool());
         QVERIFY(tabTo("eraserButton"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Eraser);
-        QVERIFY(!pencilSurfaces.first()->isVisible());
+        QVERIFY(!pencilSurfaces.first()->property("selectedSurface").toBool());
         QVERIFY(eraserSurfaces.first()->isVisible());
         window->resize(1024, 640);
         for (const auto& theme : {QString("light"), QString("dark")}) {
@@ -1361,6 +1459,8 @@ class ShellTest : public QObject {
         QVERIFY(tabTo("restoreAppearance"));
         keyClick(Qt::Key_Space);
         QCOMPARE(slider->property("value").toInt(), 40);
+        QCOMPARE(slider->property("from").toInt(), 40);
+        QVERIFY(!window->findChild<QObject*>("glassTint"));
         QVERIFY(tabTo("glassOpacity"));
         keyClick(Qt::Key_Right);
         QCOMPARE(slider->property("value").toInt(), 41);

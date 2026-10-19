@@ -16,9 +16,8 @@ PaintDialog {
     width: Math.min(parent.width - 48, 560)
     height: Math.min(parent.height - 48, 520)
     anchors.centerIn: parent
-    standardButtons: Dialog.Ok | Dialog.Cancel
+    standardButtons: Dialog.Apply | Dialog.Cancel
     onOpened: {
-        standardButton(Dialog.Ok).text = qsTr("Apply");
         draftFamily = editor.textFamily;
         search.clear();
         fonts.currentIndex = matches.indexOf(draftFamily);
@@ -27,6 +26,10 @@ PaintDialog {
         search.forceActiveFocus();
     }
     onAccepted: editor.textFamily = draftFamily
+    onApplied: {
+        editor.textFamily = draftFamily;
+        close();
+    }
     contentItem: ColumnLayout {
         spacing: 10
         TextField {
@@ -75,6 +78,15 @@ PaintDialog {
                 clip: true
                 highlighted: ListView.isCurrentItem
                 Accessible.name: modelData
+                Keys.onReturnPressed: {
+                    picker.draftFamily = modelData;
+                    picker.accept();
+                }
+                Keys.onEnterPressed: {
+                    picker.draftFamily = modelData;
+                    picker.accept();
+                }
+                Keys.onSpacePressed: picker.draftFamily = modelData
                 onClicked: {
                     fonts.currentIndex = index;
                     picker.draftFamily = modelData;

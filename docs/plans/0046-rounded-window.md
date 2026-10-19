@@ -24,3 +24,6 @@ glassAppearanceSettings passed with Qt 6.12/offscreen software. Inspected genera
 light/dark captures; pixel assertions verify all four clear corners. Offscreen
 reports unsupported native masks, so native input-region enforcement still needs
 desktop/package review. Next: later PR validation.
+
+Follow-up: [0050](0050-appearance-refinements.md) limits rounding to Linux bottom
+client corners; the top corners remain square.

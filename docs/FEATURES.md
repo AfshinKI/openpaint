@@ -127,10 +127,24 @@ Development default: glass starts at 40% opacity; saved user choices are retaine
 Development font picker replaces the native dialog with searchable family previews;
 see [plan 0043](plans/0043-font-picker.md).
 Development text editing uses a dashed black/white box outline and a blinking
-black caret at the scaled text height; neither overlay is saved in the artwork.
+black caret immediately in an empty box at the scaled text height; neither overlay is saved in the artwork.
 Development startup release-check policy is recorded in [plan 0045](plans/0045-startup-updates.md).
-Development windows use 12px rounded client corners and matching input masks;
+Development Linux windows use 12px rounded bottom client corners and matching input masks;
+top corners stay square, and other platforms receive no custom corner mask.
 maximized/fullscreen edges are square. Native decorations remain desktop-owned.
 Development glass selection uses stronger neutral frost and light outlines instead
 of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
 Development Updates attribution is recorded in [plan 0048](plans/0048-designer-credit.md).
+
+
+Development refinements retain the 40–100% glass range with a 40% default and no
+separate tint control. Flat toolbar buttons stay clear when idle; selected controls
+use stronger frost and light outlines. Checkmarks use neutral frosted colors, and
+selected color swatches use a bright outer ring without recoloring the swatch.
+The font picker retains its searchable per-family previews.
+
+Pencil, brush, eraser and eyedropper cursors identify the active tool over the canvas,
+with white contrast edges and tip-aligned hotspots. Space/middle-button panning
+uses a hand and restores the tool cursor afterward. Shape controls show a solid
+filled drop when solid fill is active, and a small × on the outline icon when
+outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).
