@@ -2,8 +2,23 @@
 #pragma once
 #include <QCursor>
 #include <QGuiApplication>
+#include <QPainterPath>
 #include <QQuickWindow>
+#include <QRegion>
 #include <QScreen>
+
+// Match the rounded client surface's input region. Native decorations stay owned
+// by the compositor; maximized/fullscreen clients use the whole rectangle.
+inline void updateWindowInputRegion(QQuickWindow* window) {
+    if (window->windowState() == Qt::WindowMaximized ||
+        window->windowState() == Qt::WindowFullScreen) {
+        window->setMask({});
+        return;
+    }
+    QPainterPath path;
+    path.addRoundedRect(QRectF(0, 0, window->width(), window->height()), 12, 12);
+    window->setMask(QRegion(path.toFillPolygon().toPolygon()));
+}
 
 inline void centerStartupWindow(QQuickWindow* window) {
     if (auto* screen = window->screen()) {
@@ -18,6 +33,13 @@ inline void centerStartupWindow(QQuickWindow* window) {
 // Map an invisible native window so Qt can render, then reveal only a submitted
 // frame. Keep the opacity change on the GUI thread, not the render thread.
 inline void revealAfterFirstFrame(QQuickWindow* window) {
+    updateWindowInputRegion(window);
+    QObject::connect(window, &QWindow::widthChanged, window,
+                     [window] { updateWindowInputRegion(window); });
+    QObject::connect(window, &QWindow::heightChanged, window,
+                     [window] { updateWindowInputRegion(window); });
+    QObject::connect(window, &QWindow::windowStateChanged, window,
+                     [window] { updateWindowInputRegion(window); });
     auto* screen = QGuiApplication::screenAt(QCursor::pos());
     if (!screen)
         screen = QGuiApplication::primaryScreen();

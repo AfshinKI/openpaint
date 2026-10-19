@@ -102,6 +102,33 @@ class ShellTest : public QObject {
         QVERIFY(!editor->previewActive());
         QCOMPARE(editor->selectionRect(), editor->image().rect());
     }
+    void roundedClientCorners() {
+        auto* editor = window->findChild<Editor*>("editor");
+        const auto image = editor->image();
+        window->resize(1024, 640);
+        QVERIFY(!window->mask().contains({0, 0}));
+        QVERIFY(window->mask().contains({100, 100}));
+        for (const auto& theme : {QString("light"), QString("dark")}) {
+            QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>(theme + "ThemeAction"),
+                                              "trigger", Q_ARG(QObject*, nullptr)));
+            QVERIFY(capture("rounded-window-" + theme + ".png"));
+            const auto frame = window->grabWindow();
+            QCOMPARE(frame.pixelColor(0, 0).alpha(), 0);
+            QCOMPARE(frame.pixelColor(frame.width() - 1, 0).alpha(), 0);
+            QCOMPARE(frame.pixelColor(0, frame.height() - 1).alpha(), 0);
+            QCOMPARE(frame.pixelColor(frame.width() - 1, frame.height() - 1).alpha(), 0);
+        }
+        window->showMaximized();
+        QTRY_COMPARE(window->windowState(), Qt::WindowMaximized);
+        QVERIFY(window->mask().isEmpty());
+        QCOMPARE(window->property("clientRadius").toDouble(), 0.0);
+        window->showNormal();
+        QTRY_COMPARE(window->windowState(), Qt::WindowNoState);
+        QVERIFY(!window->mask().contains({0, 0}));
+        QCOMPARE(editor->image(), image);
+        QVERIFY(!editor->dirty());
+    }
+
     void launchAndResize() {
         QVERIFY(window->isVisible());
         QVERIFY(window->title().contains(QStringLiteral("OpenPaint")));
@@ -1312,7 +1339,7 @@ class ShellTest : public QObject {
         keyClick(Qt::Key_Space);
         QCOMPARE(surface->property("surfaceAlpha").toDouble(), 1.0);
         QCOMPARE(workspace->property("color").value<QColor>().alpha(), 255);
-        QCOMPARE(window->color().alpha(), 255);
+        QCOMPARE(window->color().alpha(), 0); // Clear corners; client surface is opaque.
         QVERIFY(!slider->property("enabled").toBool());
         QVERIFY(capture("glass-disabled.png"));
         keyClick(Qt::Key_Space);
@@ -1321,7 +1348,7 @@ class ShellTest : public QObject {
         for (int step = 0; step < 59; ++step)
             keyClick(Qt::Key_Right);
         QCOMPARE(slider->property("value").toInt(), 100);
-        QCOMPARE(window->color().alpha(), 255);
+        QCOMPARE(window->color().alpha(), 0); // Clear corners; client surface is opaque.
         QCOMPARE(workspace->property("color").value<QColor>().alpha(), 255);
         keyClick(Qt::Key_Left);
         QCOMPARE(slider->property("value").toInt(), 99);

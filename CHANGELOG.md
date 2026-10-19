@@ -7,6 +7,7 @@
 - Use a dashed text-box outline and blinking black caret.
 - Default release checks on at startup and daily, preserving saved opt-outs and backoff.
   Flatpak retains browser-only checking.
+- Round the application client corners, retaining square maximized edges.
 
 ## 1.2.0 — 2026-10-18
 

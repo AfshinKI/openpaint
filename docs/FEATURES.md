@@ -129,3 +129,5 @@ see [plan 0043](plans/0043-font-picker.md).
 Development text editing uses a dashed black/white box outline and a blinking
 black caret at the scaled text height; neither overlay is saved in the artwork.
 Development startup release-check policy is recorded in [plan 0045](plans/0045-startup-updates.md).
+Development windows use 12px rounded client corners and matching input masks;
+maximized/fullscreen edges are square. Native decorations remain desktop-owned.

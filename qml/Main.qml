@@ -27,9 +27,15 @@ ApplicationWindow {
     })
     title: (editor.dirty ? "* " : "") + editor.fileName + qsTr(" — OpenPaint")
     readonly property real backgroundAlpha: Appearance.glassEnabled ? Appearance.surfaceOpacity / 100 : 1
-    color: backgroundAlpha < 1 ? "transparent" : Theme.workspace
+    readonly property real clientRadius: visibility === Window.Maximized || visibility === Window.FullScreen ? 0 : 12
+    color: "transparent"
+    Overlay.modal: Rectangle {
+        color: "#66000000"
+        radius: window.clientRadius
+    }
     background: Rectangle {
         objectName: "workspaceSurface"
+        radius: window.clientRadius
         color: Qt.rgba(Theme.workspace.r, Theme.workspace.g, Theme.workspace.b, window.backgroundAlpha)
     }
     palette.window: Theme.window
@@ -466,14 +472,16 @@ ApplicationWindow {
     }
 
     menuBar: ToolBar {
-        leftPadding: 4
-        rightPadding: 4
+        leftPadding: 12
+        rightPadding: 12
         topPadding: 2
         bottomPadding: 2
         background: GlassSurface {
             backdropSource: null
             raisedSurface: false
             radius: 0
+            topLeftRadius: window.clientRadius
+            topRightRadius: window.clientRadius
             border.width: 0
         }
         contentItem: RowLayout {
@@ -1386,6 +1394,8 @@ ApplicationWindow {
             raisedSurface: false
             baseTintPower: 3
             radius: 0
+            bottomLeftRadius: window.clientRadius
+            bottomRightRadius: window.clientRadius
             border.width: 0
         }
         RowLayout {

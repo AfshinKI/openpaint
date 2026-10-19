@@ -366,3 +366,5 @@ Arrow keys browse, Space selects, Enter applies, and Escape cancels. Applying a
 family preserves size/style and returns to the active text preview.
 Development text editing uses a dashed black/white box outline and a blinking
 black caret at the scaled text height; neither overlay is saved in the artwork.
+Development windows use 12px rounded client corners and matching input masks;
+maximized/fullscreen edges are square. Native decorations remain desktop-owned.
