@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Default glass opacity to 40%, preserving saved preferences.
+- Use a consistent searchable font picker with family previews.
 
 ## 1.2.0 — 2026-10-18
 

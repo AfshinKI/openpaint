@@ -124,3 +124,5 @@ across restarts. Inline text displays a blinking caret at the scaled font height
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
 
 Development default: glass starts at 40% opacity; saved user choices are retained.
+Development font picker replaces the native dialog with searchable family previews;
+see [plan 0043](plans/0043-font-picker.md).
