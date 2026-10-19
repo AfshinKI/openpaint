@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add an eraser crosshair and compact Paper white/Transparent dropdown; erasing
+  no longer uses the selected background/fill color.
+
 - Default glass opacity to 40%, preserving saved preferences.
 - Use a consistent searchable font picker with family previews.
 - Use a dashed text-box outline and immediately blinking black caret in empty boxes.

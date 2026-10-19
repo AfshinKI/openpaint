@@ -148,3 +148,9 @@ with white contrast edges and tip-aligned hotspots. Space/middle-button panning
 uses a hand and restores the tool cursor afterward. Shape controls show a solid
 filled drop when solid fill is active, and a small × on the outline icon when
 outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).
+
+Eraser modes are Paper white (opaque white, independent of the background/fill
+swatch) and Transparent. A small dropdown beside the eraser replaces the separate
+ribbon options group. The eraser cursor's + marks the actual erase point. Both
+mouse buttons honor the chosen mode; strokes retain undo/redo and cancellation.
+See [eraser acceptance](plans/0051-eraser-target.md).

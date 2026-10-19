@@ -13,6 +13,35 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void eraserUsesPaperOrTransparency() {
+        SampleEditor editor;
+        QImage fixture(24, 24, QImage::Format_ARGB32_Premultiplied);
+        fixture.fill(Qt::red);
+        fixture.setColorSpace(QColorSpace::SRgb);
+        editor.reset(fixture);
+        editor.secondary = Qt::green;
+        editor.brushSize = 5;
+        editor.setTool(Editor::Tool::Eraser);
+        for (const bool transparent : {false, true}) {
+            editor.transparentEraser = transparent;
+            for (const bool rightButton : {false, true}) {
+                editor.begin({12, 12}, rightButton);
+                editor.endGesture();
+                const auto erased = editor.image();
+                QCOMPARE(erased.pixelColor(12, 12),
+                         transparent ? QColor(Qt::transparent) : QColor(Qt::white));
+                QCOMPARE(erased.pixelColor(0, 0), QColor(Qt::red));
+                editor.undo();
+                QCOMPARE(editor.image(), fixture);
+                editor.redo();
+                QCOMPARE(editor.image(), erased);
+                editor.undo();
+                editor.begin({12, 12}, rightButton);
+                editor.cancel();
+                QCOMPARE(editor.image(), fixture);
+            }
+        }
+    }
     void fillAlwaysSmoothAndExact() {
         SampleEditor editor;
         QImage fixture(12, 8, QImage::Format_ARGB32_Premultiplied);

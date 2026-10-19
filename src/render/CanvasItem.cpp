@@ -62,7 +62,7 @@ void CanvasItem::updateToolCursor() {
             break;
         case Editor::Tool::Eraser:
             symbol = "eraser";
-            hotSpot = {6, 16};
+            hotSpot = {5, 22};
             break;
         case Editor::Tool::ColorPicker:
             symbol = "eyedropper";
@@ -107,6 +107,15 @@ void CanvasItem::updateToolCursor() {
                 for (int y = 1; y <= 3; ++y)
                     painter.drawPixmap(x, y, halo);
             painter.drawPixmap(2, 2, glyph);
+            if (symbol == "eraser") {
+                // The cross marks the actual stroke center, separate from the glyph.
+                painter.setPen(QPen(Qt::white, 3));
+                painter.drawLine(hotSpot + QPoint(-3, 0), hotSpot + QPoint(3, 0));
+                painter.drawLine(hotSpot + QPoint(0, -3), hotSpot + QPoint(0, 3));
+                painter.setPen(QPen(Qt::black, 1));
+                painter.drawLine(hotSpot + QPoint(-3, 0), hotSpot + QPoint(3, 0));
+                painter.drawLine(hotSpot + QPoint(0, -3), hotSpot + QPoint(0, 3));
+            }
         }
         cursors.insert(key, QCursor(bitmap, hotSpot.x(), hotSpot.y()));
     }

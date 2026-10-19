@@ -99,6 +99,7 @@ if(BUILD_TESTING)
     add_test(NAME shell COMMAND openpaint_shell_tests
         launchAndResize
         toolCursorsAndIndicators
+        eraserModeMenu
         selectAllKeyboard
         floatingToolControls
         quickActionPlacement

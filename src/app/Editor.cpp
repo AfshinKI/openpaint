@@ -156,10 +156,10 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         return;
     }
     const bool eraser = tool_ == Tool::Eraser;
-    if (document.beginStroke(point, eraser ? secondary : (secondaryButton ? secondary : primary),
-                             brushSize, eraser && transparentEraser,
-                             tool_ == Tool::Brush ? brushStyle : -1,
-                             tool_ == Tool::Brush ? opacity : 100)) {
+    if (document.beginStroke(
+            point, eraser ? QColor(Qt::white) : (secondaryButton ? secondary : primary), brushSize,
+            eraser && transparentEraser, tool_ == Tool::Brush ? brushStyle : -1,
+            tool_ == Tool::Brush ? opacity : 100)) {
         emit pixelsChanged(QRect());
         emit changed();
     }

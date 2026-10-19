@@ -935,17 +935,53 @@ ApplicationWindow {
                         onClicked: editor.tool = Editor.Text
                         Accessible.name: text
                     }
-                    IconButton {
-                        flat: true
-                        symbol: "eraser"
-                        objectName: "eraserButton"
-                        text: qsTr("Eraser")
-                        enabled: !editor.textActive
-                        checkable: true
-                        autoExclusive: true
-                        checked: editor.tool === Editor.Eraser
-                        onClicked: editor.tool = Editor.Eraser
-                        Accessible.name: text
+                    Row {
+                        spacing: 0
+                        IconButton {
+                            flat: true
+                            symbol: "eraser"
+                            objectName: "eraserButton"
+                            text: qsTr("Eraser")
+                            enabled: !editor.textActive && !editor.busy
+                            checkable: true
+                            autoExclusive: true
+                            checked: editor.tool === Editor.Eraser
+                            onClicked: editor.tool = Editor.Eraser
+                            Accessible.name: text
+                        }
+                        PaintButton {
+                            objectName: "eraserMenuButton"
+                            text: "⌄"
+                            flat: true
+                            width: 16
+                            implicitWidth: 16
+                            height: 32
+                            padding: 0
+                            enabled: !editor.textActive && !editor.busy
+                            Accessible.name: editor.transparentEraser ? qsTr("Eraser mode: transparent") : qsTr("Eraser mode: paper white")
+                            ToolTip.visible: hovered
+                            ToolTip.text: Accessible.name
+                            onClicked: eraserMenu.open()
+                            PaintMenu {
+                                id: eraserMenu
+                                objectName: "eraserMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    objectName: "erasePaperItem"
+                                    text: qsTr("Paper white")
+                                    checkable: true
+                                    checked: !editor.transparentEraser
+                                    onTriggered: editor.transparentEraser = false
+                                }
+                                PaintMenuItem {
+                                    objectName: "eraseTransparentItem"
+                                    text: qsTr("Transparent")
+                                    checkable: true
+                                    checked: editor.transparentEraser
+                                    onTriggered: editor.transparentEraser = true
+                                }
+                            }
+                        }
                     }
                     IconButton {
                         flat: true
@@ -1141,24 +1177,6 @@ ApplicationWindow {
                 }
             }
             ToolSeparator {
-                Layout.fillHeight: true
-            }
-            ColumnLayout {
-                visible: editor.tool === Editor.Eraser
-                PaintCheckBox {
-                    text: qsTr("Transparent")
-                    visible: editor.tool === Editor.Eraser
-                    checked: editor.transparentEraser
-                    onToggled: editor.transparentEraser = checked
-                }
-                Label {
-                    text: qsTr("Eraser")
-                    color: Theme.secondaryText
-                    Layout.alignment: Qt.AlignHCenter
-                }
-            }
-            ToolSeparator {
-                visible: editor.tool === Editor.Eraser
                 Layout.fillHeight: true
             }
             ColumnLayout {

@@ -123,7 +123,7 @@ class ShellTest : public QObject {
             QVERIFY(glyph != previous);
             previous = glyph;
             QCOMPARE(canvas->cursor().hotSpot(),
-                     tool == Editor::Tool::Eraser ? QPoint(6, 16) : QPoint(6, 22));
+                     tool == Editor::Tool::Eraser ? QPoint(5, 22) : QPoint(6, 22));
             painter.drawPixmap(column++ * 32, 6, canvas->cursor().pixmap());
             canvas->forceActiveFocus();
             QTest::keyPress(window, Qt::Key_Space);
@@ -176,6 +176,40 @@ class ShellTest : public QObject {
                                               "trigger", Q_ARG(QObject*, nullptr)));
             QVERIFY(capture("tool-indicators-" + theme + ".png"));
         }
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->dirty());
+        QVERIFY(!editor->canUndo());
+    }
+
+    void eraserModeMenu() {
+        auto* editor = window->findChild<Editor*>("editor");
+        const auto original = editor->image();
+        QVERIFY(tabTo("eraserButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->tool(), Editor::Tool::Eraser);
+        keyClick(Qt::Key_Space);
+        QVERIFY(window->findChild<QObject*>("eraserButton")->property("checked").toBool());
+        const auto toolbarWidth = window->findChild<QQuickItem*>("mainToolbar")->width();
+        QVERIFY(tabTo("eraserMenuButton"));
+        keyClick(Qt::Key_Space);
+        auto* menu = window->findChild<QObject*>("eraserMenu");
+        QTRY_VERIFY(menu->property("visible").toBool());
+        auto* paper = window->findChild<QObject*>("erasePaperItem");
+        auto* transparent = window->findChild<QObject*>("eraseTransparentItem");
+        QVERIFY(paper && transparent);
+        QVERIFY(paper->property("checked").toBool());
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Return);
+        QTRY_VERIFY(editor->transparentEraser);
+        QVERIFY(transparent->property("checked").toBool());
+        QVERIFY(!paper->property("checked").toBool());
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(capture("eraser-menu.png"));
+        QVERIFY(QMetaObject::invokeMethod(paper, "click"));
+        QVERIFY(!editor->transparentEraser);
+        QCOMPARE(window->findChild<QQuickItem*>("mainToolbar")->width(), toolbarWidth);
         QCOMPARE(editor->image(), original);
         QVERIFY(!editor->dirty());
         QVERIFY(!editor->canUndo());
