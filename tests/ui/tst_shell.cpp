@@ -183,6 +183,13 @@ class ShellTest : public QObject {
     }
 
     void eraserModeMenu() {
+        auto* pickerPosition = window->findChild<QQuickItem*>("pickerButton");
+        auto* eraserPosition = window->findChild<QQuickItem*>("eraserButton");
+        QVERIFY(pickerPosition && eraserPosition);
+        const auto pickerPoint = pickerPosition->mapToScene(QPointF());
+        const auto eraserPoint = eraserPosition->mapToScene(QPointF());
+        QCOMPARE(pickerPoint.y(), eraserPoint.y());
+        QVERIFY(pickerPoint.x() < eraserPoint.x());
         auto* editor = window->findChild<Editor*>("editor");
         const auto original = editor->image();
         QVERIFY(tabTo("eraserButton"));
@@ -1824,6 +1831,9 @@ class ShellTest : public QObject {
         const bool software =
             window->rendererInterface()->graphicsApi() == QSGRendererInterface::Software;
         QTRY_COMPARE(panel->property("backdropBlurEnabled").toBool(), !software);
+        // Neutral menu material must protect text from saturated/dark artwork.
+        QVERIFY(panel->property("tintAlpha").toDouble() >= 0.72);
+        QCOMPARE(appearance->surfaceOpacity(), 40);
         if (software) {
             QCOMPARE(panel->property("surfaceAlpha").toDouble(), 1.0);
             QVERIFY(QMetaObject::invokeMethod(menu, "close"));

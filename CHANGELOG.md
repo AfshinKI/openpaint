@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Swap color picker and eraser positions, keeping the eraser dropdown attached.
+- Strengthen light floating-menu tint for readability over strong background colors.
+
 - Distinguish paper-white and transparent eraser modes with matching button/menu icons.
 - Adopt the Open palette application icon with live light/dark/system variants.
 - Add an open multi-point Spline with preview, Backspace, apply/cancel and undo/redo.

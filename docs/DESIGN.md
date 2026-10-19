@@ -249,7 +249,8 @@ Popup backdrops are flattened to prevent sharp content leaking through the blur.
 Software rendering uses solid popups. The paper/checkerboard, text, and icons keep
 their own opacity; appearance changes do not affect artwork or undo history.
 
-Light menus use very little white tint. The shape gallery and footer buttons
+Floating menus retain at least 72% neutral tint for readable labels over strong
+background colors, while the interface opacity setting remains 40% by default. The shape gallery and footer buttons
 have transparent idle backgrounds when glass is enabled, with hover and focus
 feedback preserved. Disabling glass or choosing 100% restores opaque surfaces.
 The startup client size is 1449 × 1008; the minimum remains 1024 × 640.

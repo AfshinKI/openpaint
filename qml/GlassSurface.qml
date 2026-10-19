@@ -19,7 +19,7 @@ Rectangle {
     readonly property real surfaceAlpha: Appearance.glassEnabled && !(opaqueBackdrop && GraphicsInfo.api === GraphicsInfo.Software) ? Appearance.surfaceOpacity / 100 : 1
     // Fixed bars already sit on a tint. Over artwork, retain enough light material
     // to keep dark labels readable even when the blurred source is black.
-    readonly property real lightPopupTint: menuSurface ? Math.pow(surfaceAlpha, 5) : 0.18 + 0.82 * surfaceAlpha * surfaceAlpha * surfaceAlpha
+    readonly property real lightPopupTint: menuSurface ? 0.72 + 0.28 * surfaceAlpha * surfaceAlpha * surfaceAlpha : 0.18 + 0.82 * surfaceAlpha * surfaceAlpha * surfaceAlpha
     readonly property real tintAlpha: selectedSurface ? (surfaceAlpha >= 1 ? 1 : Theme.dark ? 0.68 : 0.72) : Theme.dark ? (opaqueBackdrop ? Math.max(0.72, surfaceAlpha) : surfaceAlpha) : opaqueBackdrop ? lightPopupTint : raisedSurface ? 0.45 + 0.55 * surfaceAlpha * surfaceAlpha : Math.pow(surfaceAlpha, baseTintPower)
     radius: Theme.surfaceRadius
     color: Theme.panel

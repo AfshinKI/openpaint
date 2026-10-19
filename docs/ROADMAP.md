@@ -42,7 +42,8 @@ publication remain separate from local acceptance; protected checks still apply.
 
 The selected theme-aware Open palette icon and added spline are implemented with
 local evidence in [plan 0052](plans/0052-icon-and-spline.md). Next: maintainer local
-review and scoped PR/CI preparation.
+review and scoped PR/CI preparation. The tool-position and floating-menu tint
+follow-up is recorded in [plan 0053](plans/0053-menu-readability.md).
 PR checks and v2 publication remain deferred; M3 scope still needs its own plan.
 
 ## Release progression

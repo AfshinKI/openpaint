@@ -935,6 +935,18 @@ ApplicationWindow {
                         onClicked: editor.tool = Editor.Text
                         Accessible.name: text
                     }
+                    IconButton {
+                        flat: true
+                        symbol: "eyedropper"
+                        objectName: "pickerButton"
+                        text: qsTr("Color picker")
+                        enabled: !editor.textActive
+                        checkable: true
+                        autoExclusive: true
+                        checked: editor.tool === Editor.ColorPicker
+                        onClicked: editor.tool = Editor.ColorPicker
+                        Accessible.name: text
+                    }
                     Row {
                         spacing: 0
                         IconButton {
@@ -984,18 +996,6 @@ ApplicationWindow {
                                 }
                             }
                         }
-                    }
-                    IconButton {
-                        flat: true
-                        symbol: "eyedropper"
-                        objectName: "pickerButton"
-                        text: qsTr("Color picker")
-                        enabled: !editor.textActive
-                        checkable: true
-                        autoExclusive: true
-                        checked: editor.tool === Editor.ColorPicker
-                        onClicked: editor.tool = Editor.ColorPicker
-                        Accessible.name: text
                     }
                 }
                 Label {
