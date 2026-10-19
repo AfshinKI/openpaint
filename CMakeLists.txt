@@ -100,6 +100,8 @@ if(BUILD_TESTING)
         launchAndResize
         toolCursorsAndIndicators
         eraserModeMenu
+        themedApplicationIcon
+        splineKeyboardWorkflow
         selectAllKeyboard
         floatingToolControls
         quickActionPlacement

@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Appearance.h"
+#include <QGuiApplication>
+#include <QIcon>
+#include <QStyleHints>
+#include <QWindow>
 #include <algorithm>
 Appearance::Appearance(QObject* parent) : Appearance(QString{}, parent) {}
 Appearance::Appearance(const QString& file, QObject* parent) : QObject(parent) {
@@ -12,12 +16,36 @@ Appearance::Appearance(const QString& file, QObject* parent) : QObject(parent) {
     bool ok = false;
     const int value = settings_->value("appearance/opacity", 40).toInt(&ok);
     surfaceOpacity_ = ok ? std::clamp(value, 40, 100) : 40;
+    if (qGuiApp) {
+        systemDark_ = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark;
+        connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this,
+                [this](Qt::ColorScheme scheme) {
+                    systemDark_ = scheme == Qt::ColorScheme::Dark;
+                    updateApplicationIcon();
+                    emit changed();
+                });
+        updateApplicationIcon();
+    }
+}
+QUrl Appearance::applicationIcon() const {
+    const bool dark = themeMode_ == 2 || (themeMode_ == 0 && systemDark_);
+    return QUrl(dark ? "qrc:/qt/qml/OpenPaint/icons/app-dark.svg"
+                     : "qrc:/qt/qml/OpenPaint/icons/app.svg");
+}
+void Appearance::updateApplicationIcon() {
+    if (!qGuiApp)
+        return;
+    const QIcon icon(":" + applicationIcon().path());
+    QGuiApplication::setWindowIcon(icon);
+    for (auto* window : QGuiApplication::topLevelWindows())
+        window->setIcon(icon);
 }
 void Appearance::save() {
     settings_->setValue("appearance/theme", themeMode_);
     settings_->setValue("appearance/glass", glassEnabled_);
     settings_->setValue("appearance/opacity", surfaceOpacity_);
     settings_->sync();
+    updateApplicationIcon();
     emit changed();
 }
 void Appearance::setGlassEnabled(bool enabled) {

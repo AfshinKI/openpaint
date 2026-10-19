@@ -939,7 +939,7 @@ ApplicationWindow {
                         spacing: 0
                         IconButton {
                             flat: true
-                            symbol: "eraser"
+                            symbol: editor.transparentEraser ? "eraser" : "eraser-paper"
                             objectName: "eraserButton"
                             text: qsTr("Eraser")
                             enabled: !editor.textActive && !editor.busy
@@ -968,6 +968,7 @@ ApplicationWindow {
                                 y: parent.height
                                 PaintMenuItem {
                                     objectName: "erasePaperItem"
+                                    symbol: "eraser-paper"
                                     text: qsTr("Paper white")
                                     checkable: true
                                     checked: !editor.transparentEraser
@@ -975,6 +976,7 @@ ApplicationWindow {
                                 }
                                 PaintMenuItem {
                                     objectName: "eraseTransparentItem"
+                                    symbol: "eraser"
                                     text: qsTr("Transparent")
                                     checkable: true
                                     checked: editor.transparentEraser
@@ -1472,7 +1474,7 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? ((editor.shapeKind === 15 || editor.shapeKind === 19) ? qsTr("Add points · Backspace removes · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }

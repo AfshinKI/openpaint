@@ -290,7 +290,7 @@ icons sit between the three palette rows; the transparency icon is 22px, with se
 Brushes has a centered 28px icon: main activation selects the retained brush;
 the separate lower arrow opens brush styles. Pencil remains independent. Brush
 shows opacity below size in the left rail. The ribbon shape gallery is seven
-columns by three rows, exposing all 19 shapes without scrolling.
+columns by three rows, exposing all 20 shapes without scrolling.
 
 The menu row ends with Check for updates and Settings icon buttons. Settings
 exposes System/Light/Dark appearance. The update shortcut opens the existing
@@ -391,3 +391,18 @@ swatch) and Transparent. A small dropdown beside the eraser replaces the separat
 ribbon options group. The eraser cursor's + marks the actual erase point. Both
 mouse buttons honor the chosen mode; strokes retain undo/redo and cancellation.
 See [eraser acceptance](plans/0051-eraser-target.md).
+
+The eraser button/cursor shows a small filled patch in Paper white mode; Transparent
+uses the hollow eraser. Both menu choices carry the corresponding eraser icon.
+
+The selected original Open palette application icon has light and dark variants.
+The running window and Updates dialog follow Light/Dark/System immediately. The
+installed launcher icon is the light variant; shell-controlled launcher/dock icons
+may not follow an application's theme preference.
+
+Spline is a separate open multi-point shape, alongside the two-bend Curve. Click or
+drag the first segment, then click to add points. Backspace removes the last point;
+Enter applies and Escape cancels. It interpolates the clicked points smoothly,
+uses outline color/width, and ignores fill. Endpoints and overall bounds remain
+editable; undo/redo and PNG saving use the existing document pipeline.
+See [icon and spline acceptance](plans/0052-icon-and-spline.md).

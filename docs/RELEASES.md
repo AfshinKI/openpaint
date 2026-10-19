@@ -234,3 +234,8 @@ Before publication of every version:
    Pages workflow and public page show the intended version and working downloads.
    Record deployment evidence in the release plan; a commit alone is not proof
    of publication. Refresh or clearly label any older screenshot retained in docs.
+
+Development icon update: the original Open palette light SVG is the installed
+launcher fallback. The running application selects light/dark artwork from its
+Light/Dark/System preference. Launcher/dock adoption of window icons depends on
+the desktop and must be checked during package QA.

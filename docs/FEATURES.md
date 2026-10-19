@@ -30,7 +30,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F03 | Additional brush styles, stroke opacity | R1, R2; nine-style inventory in the menu/control specification | M2 | Implemented: nine original deterministic raster styles, generated previews and per-stroke opacity; [plan 0012](plans/0012-brush-styles.md). Proprietary simulation parity and pressure remain unverified. |
 | F04 | Fill with smooth edges | R1 | M2 | Implemented: cancellable four-connected fill, exact color matching, automatic smooth edges and alpha replacement; [plan 0011](plans/0011-fill-tolerance.md). Selection clipping is implemented in [plan 0016](plans/0016-rectangular-selection.md). |
 | F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | Implemented: primary/secondary rectangular spectrum, brightness, HEX/RGB/HSV, 24 session custom colors and right-button secondary drawing. Alpha polish adds a fixed foreground/background pair with selectable editing target, automatic 10/24 session palette insertion, transparent-background choice with checkerboard swatches, and removes Swap; see [plan 0028](plans/0028-alpha-ui-polish.md). Behavioral and visual evidence in the [reference layout plan](plans/0005-reference-color-layout.md); pointer-attached hover swatch and canvas eyedropper implemented with alpha-preserving primary/secondary sampling; see [plan 0010](plans/0010-canvas-eyedropper.md). |
-| F06 | Lines, rectangles, ellipses, shape palette | R1; partial visible shape inventory specified, full palette still unverified | M2 | Implemented: 19-shape 7×3 ribbon gallery with separate Outline and Fill menus, retained previews, outline/fill, numeric geometry, curve bends, polygon entry and Shift constraints; [basic previews](plans/0013-basic-shapes.md) and [palette](plans/0014-shape-palette.md). Exact full-reference inventory remains unverified. |
+| F06 | Lines, rectangles, ellipses, shape palette | R1; partial visible shape inventory specified, full palette still unverified | M2 | Implemented: 20-shape 7×3 ribbon gallery with separate Outline and Fill menus, retained previews, outline/fill, numeric geometry, curve bends, polygon and spline entry and Shift constraints; [basic previews](plans/0013-basic-shapes.md) and [palette](plans/0014-shape-palette.md). Exact full-reference inventory remains unverified. |
 | F07 | Text, font/style/size/alignment and background | R1; detailed control behavior needs observation | M2 | Implemented: inline plain text, system font/style/alignment, optional background, floating formatting toolbar and outside-click/Ctrl+Enter raster commit; [plan 0015](plans/0015-inline-text.md). |
 | F08 | Rectangle/free-form selection; copy/cut/paste | R1 | M2 | Implemented: rectangle/free-form selection, inversion, color-key transparency, numeric bounds, selection clearing on tool changes and undoable background-color deletion; [plan 0016](plans/0016-rectangular-selection.md). Move and PNG clipboard: [plan 0017](plans/0017-selection-clipboard.md); free-form and transparent selection: [plan 0018](plans/0018-freeform-selection.md). |
 | F09 | Crop, resize/skew, flip, right-angle rotate | R1 supports crop/resize/flip/rotate; skew needs observation | M2 | Implemented: crop, flips and right-angle rotations for image/selection, with dimension-aware undo; [plan 0019](plans/0019-crop-rotate-flip.md). Canvas crop/expand and active selection, shape and text corner handles: [alpha polish](plans/0028-alpha-ui-polish.md). Pixel/percent resize, resampling and bounded skew: [plan 0020](plans/0020-resize-skew.md). |
@@ -154,3 +154,18 @@ swatch) and Transparent. A small dropdown beside the eraser replaces the separat
 ribbon options group. The eraser cursor's + marks the actual erase point. Both
 mouse buttons honor the chosen mode; strokes retain undo/redo and cancellation.
 See [eraser acceptance](plans/0051-eraser-target.md).
+
+The eraser button/cursor shows a small filled patch in Paper white mode; Transparent
+uses the hollow eraser. Both menu choices carry the corresponding eraser icon.
+
+The selected original Open palette application icon has light and dark variants.
+The running window and Updates dialog follow Light/Dark/System immediately. The
+installed launcher icon is the light variant; shell-controlled launcher/dock icons
+may not follow an application's theme preference.
+
+Spline is a separate open multi-point shape, alongside the two-bend Curve. Click or
+drag the first segment, then click to add points. Backspace removes the last point;
+Enter applies and Escape cancels. It interpolates the clicked points smoothly,
+uses outline color/width, and ignores fill. Endpoints and overall bounds remain
+editable; undo/redo and PNG saving use the existing document pipeline.
+See [icon and spline acceptance](plans/0052-icon-and-spline.md).

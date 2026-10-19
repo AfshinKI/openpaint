@@ -16,11 +16,22 @@ PaintDialog {
     onOpened: browserError = ""
     contentItem: ColumnLayout {
         spacing: 12
-        Label {
-            text: qsTr("OpenPaint %1").arg(AppInfo.version)
-            font.pixelSize: 20
-            font.bold: true
-            color: Theme.text
+        RowLayout {
+            spacing: 12
+            Image {
+                objectName: "applicationIcon"
+                source: Appearance.applicationIcon
+                sourceSize: Qt.size(48, 48)
+                Layout.preferredWidth: 48
+                Layout.preferredHeight: 48
+                Accessible.name: qsTr("OpenPaint icon")
+            }
+            Label {
+                text: qsTr("OpenPaint %1").arg(AppInfo.version)
+                font.pixelSize: 20
+                font.bold: true
+                color: Theme.text
+            }
         }
         Label {
             objectName: "designerCredit"

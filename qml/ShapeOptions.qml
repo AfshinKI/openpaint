@@ -20,7 +20,9 @@ PaintDialog {
     contentItem: ColumnLayout {
         spacing: 12
         Label {
-            text: qsTr("Adjust the preview, then Apply or Cancel.")
+            text: dialog.editor.shapeKind === 19 ? qsTr("Spline passes through your points. Adjust endpoints, then Apply or Cancel.") : qsTr("Adjust the preview, then Apply or Cancel.")
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
             color: Theme.text
         }
         GridLayout {
@@ -107,6 +109,7 @@ PaintDialog {
         }
         PaintCheckBox {
             text: qsTr("Fill")
+            enabled: dialog.editor.shapeKind !== 19 && dialog.editor.shapeKind !== 14 && dialog.editor.shapeKind !== 0
             checked: dialog.editor.shapeFill
             onToggled: dialog.editor.shapeFill = checked
         }

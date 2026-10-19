@@ -55,6 +55,7 @@ Earlier superseded tint/compact-font runs are not evidence for this final behavi
 
 ## Handoff
 
-Next: the new application icon, then maintainer-directed PR/release-v2 checks.
+Follow-up icon and spline work is complete in [0052](0052-icon-and-spline.md).
+Next: maintainer-directed local review and PR/release-v2 checks.
 Installed package and Wayland validation remain pending. Native title-bar corners
 and desktop blur remain compositor-owned. No release or PR was created.

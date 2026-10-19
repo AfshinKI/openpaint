@@ -55,7 +55,7 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         emit changed();
         return;
     }
-    if (shapeActive_ && shapeKind != openpaint::PolygonShape) {
+    if (shapeActive_ && !openpaint::isPointShape(shapeKind)) {
         if (!resizeBounds().contains(point))
             finish();
         shapeInputBlocked_ = true;
@@ -134,10 +134,10 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         return;
     }
     if (tool_ == Tool::Shape) {
-        if (shapeActive_ && shapeKind == openpaint::PolygonShape) {
+        if (shapeActive_ && openpaint::isPointShape(shapeKind)) {
             if (shapePoints_.size() >= 4096) {
                 shapeInputBlocked_ = true;
-                fail(tr("A polygon can contain at most 4096 points."));
+                fail(tr("A point-based shape can contain at most 4096 points."));
                 return;
             }
             shapePoints_.append(point);
@@ -215,12 +215,12 @@ void Editor::extend(QPointF point, bool constrain) {
         if (!std::isfinite(point.x()) || !std::isfinite(point.y()))
             return;
         if (constrain) {
-            const QPointF anchor = shapeKind == openpaint::PolygonShape && shapePoints_.size() >= 2
+            const QPointF anchor = openpaint::isPointShape(shapeKind) && shapePoints_.size() >= 2
                                        ? shapePoints_[shapePoints_.size() - 2]
                                        : shapeStart_;
             auto delta = point - anchor;
             if (shapeKind == 0 || shapeKind == openpaint::CurveShape ||
-                shapeKind == openpaint::PolygonShape) {
+                openpaint::isPointShape(shapeKind)) {
                 const auto angle =
                     std::round(std::atan2(delta.y(), delta.x()) / (std::numbers::pi / 4)) *
                     (std::numbers::pi / 4);
@@ -261,7 +261,7 @@ void Editor::endGesture() {
         finish();
 }
 void Editor::removeShapePoint() {
-    if (!shapeActive_ || shapeKind != openpaint::PolygonShape || shapePoints_.size() <= 2)
+    if (!shapeActive_ || !openpaint::isPointShape(shapeKind) || shapePoints_.size() <= 2)
         return;
     shapePoints_.removeLast();
     shapeEnd_ = shapePoints_.last();

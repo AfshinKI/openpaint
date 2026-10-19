@@ -45,5 +45,7 @@ The compositor still owns native title bars and desktop blur; the new corner
 geometry covers the application client area. The existing eraser ribbon can
 overflow its palette at 1024px width; track this separately from selected styling.
 
-Next requested outcome: define and create the new application icon. The pencil/eyedropper refinements are included in plan 0050; the application icon
-is deferred. M3 layers/project/recovery work remains outside this UI batch.
+The selected application icon and subsequent spline/eraser refinements are complete
+with local evidence in [0052](0052-icon-and-spline.md). Next: maintainer local review
+before scoped PR/CI and v2 release preparation. M3 layers/project/recovery remain
+outside this UI batch.

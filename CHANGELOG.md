@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Distinguish paper-white and transparent eraser modes with matching button/menu icons.
+- Adopt the Open palette application icon with live light/dark/system variants.
+- Add an open multi-point Spline with preview, Backspace, apply/cancel and undo/redo.
+
 - Add an eraser crosshair and compact Paper white/Transparent dropdown; erasing
   no longer uses the selected background/fill color.
 

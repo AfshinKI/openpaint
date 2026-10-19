@@ -40,7 +40,9 @@ yet approved. For this development cycle, validate feature work locally before
 proceeding to PR checks and eventual v2 release runs. Release dispatch and
 publication remain separate from local acceptance; protected checks still apply.
 
-Next requested step after the editor refinements: the new application icon.
+The selected theme-aware Open palette icon and added spline are implemented with
+local evidence in [plan 0052](plans/0052-icon-and-spline.md). Next: maintainer local
+review and scoped PR/CI preparation.
 PR checks and v2 publication remain deferred; M3 scope still needs its own plan.
 
 ## Release progression

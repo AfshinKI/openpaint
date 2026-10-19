@@ -26,6 +26,7 @@
 #include <QSemaphore>
 #include <QSettings>
 #include <QSignalSpy>
+#include <QStyleHints>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QTimer>
@@ -197,11 +198,20 @@ class ShellTest : public QObject {
         auto* paper = window->findChild<QObject*>("erasePaperItem");
         auto* transparent = window->findChild<QObject*>("eraseTransparentItem");
         QVERIFY(paper && transparent);
+        QCOMPARE(paper->property("symbol").toString(), QString("eraser-paper"));
+        QCOMPARE(transparent->property("symbol").toString(), QString("eraser"));
+        auto* eraser = window->findChild<QObject*>("eraserButton");
+        QCOMPARE(eraser->property("symbol").toString(), QString("eraser-paper"));
+        const auto paperCursor =
+            window->findChild<CanvasItem*>("canvas")->cursor().pixmap().toImage();
         QVERIFY(paper->property("checked").toBool());
         keyClick(Qt::Key_Down);
         keyClick(Qt::Key_Down);
         keyClick(Qt::Key_Return);
         QTRY_VERIFY(editor->transparentEraser);
+        QCOMPARE(eraser->property("symbol").toString(), QString("eraser"));
+        QVERIFY(window->findChild<CanvasItem*>("canvas")->cursor().pixmap().toImage() !=
+                paperCursor);
         QVERIFY(transparent->property("checked").toBool());
         QVERIFY(!paper->property("checked").toBool());
         QVERIFY(QMetaObject::invokeMethod(menu, "open"));
@@ -213,6 +223,71 @@ class ShellTest : public QObject {
         QCOMPARE(editor->image(), original);
         QVERIFY(!editor->dirty());
         QVERIFY(!editor->canUndo());
+    }
+
+    void themedApplicationIcon() {
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        const auto image = window->findChild<Editor*>("editor")->image();
+        appearance->setThemeMode(1);
+        QVERIFY(appearance->applicationIcon().path().endsWith("/app.svg"));
+        const auto light = QGuiApplication::windowIcon().pixmap(64, 64).toImage();
+        QVERIFY(!light.isNull());
+        appearance->setThemeMode(2);
+        QVERIFY(appearance->applicationIcon().path().endsWith("/app-dark.svg"));
+        const auto dark = QGuiApplication::windowIcon().pixmap(64, 64).toImage();
+        QVERIFY(!dark.isNull());
+        QVERIFY(dark != light);
+        QCOMPARE(window->icon().pixmap(64, 64).toImage(), dark);
+        const auto originalScheme = QGuiApplication::styleHints()->colorScheme();
+        const auto notifyScheme = [](Qt::ColorScheme scheme) {
+            return QMetaObject::invokeMethod(QGuiApplication::styleHints(), "colorSchemeChanged",
+                                             Q_ARG(Qt::ColorScheme, scheme));
+        };
+        const auto resetScheme = qScopeGuard([&] { notifyScheme(originalScheme); });
+        appearance->setThemeMode(0);
+        // Inject platform notifications: the offscreen plugin cannot change an OS theme.
+        QVERIFY(notifyScheme(Qt::ColorScheme::Dark));
+        QTRY_VERIFY(appearance->applicationIcon().path().endsWith("/app-dark.svg"));
+        QCOMPARE(QGuiApplication::windowIcon().pixmap(64, 64).toImage(), dark);
+        QVERIFY(notifyScheme(Qt::ColorScheme::Light));
+        QTRY_VERIFY(appearance->applicationIcon().path().endsWith("/app.svg"));
+        QCOMPARE(QGuiApplication::windowIcon().pixmap(64, 64).toImage(), light);
+        QCOMPARE(window->findChild<Editor*>("editor")->image(), image);
+    }
+
+    void splineKeyboardWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        const auto original = editor->image();
+        QVERIFY(tabTo("ribbonShape19"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->shapeKind, 19);
+        QCOMPARE(editor->tool(), Editor::Tool::Shape);
+        const auto at = [&](QPointF p) {
+            return canvas->mapToScene(canvas->fromDocument(p)).toPoint();
+        };
+        QTest::mousePress(window, Qt::LeftButton, {}, at({80, 100}));
+        QTest::mouseMove(window, at({180, 40}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({180, 40}));
+        QTest::mouseClick(window, Qt::LeftButton, {}, at({280, 160}));
+        const auto threePoints = editor->image();
+        QTest::mouseClick(window, Qt::LeftButton, {}, at({380, 70}));
+        QVERIFY(editor->image() != threePoints);
+        keyClick(Qt::Key_Backspace);
+        QCOMPARE(editor->image(), threePoints);
+        QVERIFY(capture("spline-preview.png"));
+        keyClick(Qt::Key_Return);
+        QVERIFY(!editor->previewActive());
+        QCOMPARE(editor->image(), threePoints);
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QCOMPARE(editor->image(), original);
+        keyClick(Qt::Key_Y, Qt::ControlModifier);
+        QCOMPARE(editor->image(), threePoints);
+        QTest::mousePress(window, Qt::LeftButton, {}, at({80, 200}));
+        QTest::mouseMove(window, at({180, 240}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({180, 240}));
+        keyClick(Qt::Key_Escape);
+        QCOMPARE(editor->image(), threePoints);
     }
 
     void roundedClientCorners() {
@@ -1947,11 +2022,11 @@ class ShellTest : public QObject {
     void ribbonShapeKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         QVERIFY(tabTo("ribbonShape0"));
-        for (int i = 0; i < 18; ++i)
+        for (int i = 0; i < 19; ++i)
             keyClick(Qt::Key_Right);
-        QCOMPARE(window->activeFocusItem()->objectName(), QString("ribbonShape18"));
+        QCOMPARE(window->activeFocusItem()->objectName(), QString("ribbonShape19"));
         keyClick(Qt::Key_Space);
-        QCOMPARE(editor->shapeKind, 18);
+        QCOMPARE(editor->shapeKind, 19);
         QCOMPARE(editor->tool(), Editor::Tool::Shape);
         const auto* item = window->activeFocusItem();
         const auto bounds = item->mapRectToScene(item->boundingRect());

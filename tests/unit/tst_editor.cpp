@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "app/Editor.h"
+#include "tools/Shape.h"
 #include <QColorSpace>
 #include <QTemporaryDir>
 #include <QtTest>
@@ -206,6 +207,73 @@ class EditorTest : public QObject {
         editor.redo();
         QCOMPARE(editor.image(), resized);
     }
+    void splineEditingAndPersistence() {
+        Editor editor;
+        const auto original = editor.image();
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = openpaint::SplineShape;
+        editor.brushSize = 3;
+        editor.begin({20, 80}, false);
+        editor.extend({70, 30});
+        editor.endGesture();
+        editor.begin({120, 100}, false);
+        editor.endGesture();
+        const auto threePoints = editor.image();
+        for (const auto point : {QPoint(20, 80), QPoint(70, 30), QPoint(120, 100)})
+            QVERIFY(threePoints.pixelColor(point) != original.pixelColor(point));
+        QVERIFY(editor.previewActive());
+        editor.begin({170, 40}, false);
+        editor.endGesture();
+        QVERIFY(editor.image() != threePoints);
+        editor.removeShapePoint();
+        QCOMPARE(editor.image(), threePoints);
+        editor.cancel();
+        QCOMPARE(editor.image(), original);
+        QVERIFY(!editor.canUndo());
+        editor.begin({20, 80}, false);
+        editor.endGesture();
+        editor.begin({70, 30}, false);
+        editor.endGesture();
+        editor.begin({120, 100}, false);
+        editor.endGesture();
+        editor.finish();
+        QCOMPARE(editor.image(), threePoints);
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+        editor.redo();
+        QCOMPARE(editor.image(), threePoints);
+        QTemporaryDir dir;
+        const auto url = QUrl::fromLocalFile(dir.filePath("spline.png"));
+        editor.saveFile(url);
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(!editor.dirty());
+        Editor reopened;
+        reopened.openFile(url);
+        QTRY_VERIFY(!reopened.busy());
+        QCOMPARE(reopened.image(), threePoints);
+    }
+    void splineSelectionClipping() {
+        Editor editor;
+        editor.setTool(Editor::Tool::Shape);
+        editor.shapeKind = openpaint::SplineShape;
+        editor.brushSize = 5;
+        const auto original = editor.image();
+        editor.selectRect(10, 10, 30, 30);
+        editor.begin({0, 0}, false);
+        editor.extend({25, 25});
+        editor.endGesture();
+        editor.begin({60, 15}, false);
+        editor.endGesture();
+        editor.finish();
+        QVERIFY(editor.image().pixelColor(25, 25) != original.pixelColor(25, 25));
+        for (int y = 0; y < 80; ++y)
+            for (int x = 0; x < 80; ++x)
+                if (!QRect(10, 10, 30, 30).contains(x, y))
+                    QCOMPARE(editor.image().pixelColor(x, y), original.pixelColor(x, y));
+        editor.undo();
+        QCOMPARE(editor.image(), original);
+    }
+
     void polygonAndConstraints() {
         Editor editor;
         const auto original = editor.image();

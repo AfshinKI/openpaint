@@ -33,5 +33,5 @@ Synthetic dropdown/cursor captures in build/evidence-eraser were visually review
 
 Two original SVG icon concepts, each with light/dark variants, were prepared and
 visually reviewed in build/icon-concepts. They are proposals, not installed assets.
-Next: propose two application-icon concepts with dark/light variants; do not install
-or publish an icon until a design is selected. PR/release remain deferred.
+The maintainer selected Open palette; implementation and eraser state glyphs are
+recorded in [0052](0052-icon-and-spline.md). PR/release remain deferred.
