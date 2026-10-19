@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Shapes
 import OpenPaint
 
 Rectangle {
@@ -84,15 +85,63 @@ Rectangle {
             }
             width: 1
             height: Math.max(1, input.font.pixelSize)
-            color: Theme.accent
+            color: "black"
             visible: input.activeFocus && input.selectionStart === input.selectionEnd && blinkOn
         }
     }
-    Rectangle {
+    Shape {
+        id: outline
+        objectName: "textOutline"
         anchors.fill: parent
-        color: "transparent"
-        border.width: 1
-        border.color: Theme.accent
+        // Screen-space geometry keeps the marquee one pixel wide at every zoom.
+        ShapePath {
+            strokeColor: "white"
+            strokeWidth: 1
+            fillColor: "transparent"
+            startX: 0.5
+            startY: 0.5
+            PathLine {
+                x: outline.width - 0.5
+                y: 0.5
+            }
+            PathLine {
+                x: outline.width - 0.5
+                y: outline.height - 0.5
+            }
+            PathLine {
+                x: 0.5
+                y: outline.height - 0.5
+            }
+            PathLine {
+                x: 0.5
+                y: 0.5
+            }
+        }
+        ShapePath {
+            strokeColor: "black"
+            strokeWidth: 1
+            strokeStyle: ShapePath.DashLine
+            dashPattern: [4, 4]
+            fillColor: "transparent"
+            startX: 0.5
+            startY: 0.5
+            PathLine {
+                x: outline.width - 0.5
+                y: 0.5
+            }
+            PathLine {
+                x: outline.width - 0.5
+                y: outline.height - 0.5
+            }
+            PathLine {
+                x: 0.5
+                y: outline.height - 0.5
+            }
+            PathLine {
+                x: 0.5
+                y: 0.5
+            }
+        }
     }
     Connections {
         target: box.editor

@@ -727,6 +727,9 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!visualItems(input, "textCaret").isEmpty());
         auto* caret = visualItems(input, "textCaret").first();
         QVERIFY(caret->height() > 0);
+        QCOMPARE(caret->property("color").value<QColor>(), QColor(Qt::black));
+        auto* outline = window->findChild<QQuickItem*>("textOutline");
+        QVERIFY(outline && outline->isVisible());
         const bool firstBlink = caret->property("blinkOn").toBool();
         QTRY_VERIFY(caret->property("blinkOn").toBool() != firstBlink);
         QVERIFY(editor->textRect().width() >= 319);

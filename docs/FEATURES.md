@@ -126,3 +126,5 @@ The Updates dialog uses explicit theme text colors and brighter dark-mode button
 Development default: glass starts at 40% opacity; saved user choices are retained.
 Development font picker replaces the native dialog with searchable family previews;
 see [plan 0043](plans/0043-font-picker.md).
+Development text editing uses a dashed black/white box outline and a blinking
+black caret at the scaled text height; neither overlay is saved in the artwork.

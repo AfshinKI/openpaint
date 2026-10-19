@@ -4,6 +4,7 @@
 
 - Default glass opacity to 40%, preserving saved preferences.
 - Use a consistent searchable font picker with family previews.
+- Use a dashed text-box outline and blinking black caret.
 
 ## 1.2.0 — 2026-10-18
 
