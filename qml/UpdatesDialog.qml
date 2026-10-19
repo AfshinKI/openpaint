@@ -23,6 +23,13 @@ PaintDialog {
             color: Theme.text
         }
         Label {
+            objectName: "designerCredit"
+            text: qsTr("Designer: Afshin Kashani, PhD, P.Eng")
+            color: Theme.secondaryText
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+        }
+        Label {
             objectName: "updateIdentity"
             text: qsTr("%1 · %2").arg(AppInfo.channel).arg(AppInfo.installation)
             color: Theme.text

@@ -277,6 +277,10 @@ class ShellTest : public QObject {
         auto* action = window->findChild<QObject*>(QStringLiteral("updatesMenuItem"));
         auto* dialog = window->findChild<QObject*>(QStringLiteral("updatesDialog"));
         QVERIFY(editor && action && dialog);
+        auto* credit = window->findChild<QObject*>("designerCredit");
+        QVERIFY(credit);
+        QCOMPARE(credit->property("text").toString(),
+                 QString("Designer: Afshin Kashani, PhD, P.Eng"));
         auto* service = window->findChild<QObject*>("updateService");
         QVERIFY(service);
         QVERIFY(!service->property("automatic").toBool());
