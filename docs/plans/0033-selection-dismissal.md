@@ -1,6 +1,6 @@
 # Feature: consume outside-click selection dismissal
 
-Status: implemented; PR review pending
+Status: merged in PR #41; shipped in v1.1.0
 Feature IDs: F06, F08
 Milestone: post-v1 fixes
 
@@ -26,7 +26,13 @@ No data leaves the device. Selection bounds alone do not dirty pixels.
 Build, format-check, qml-lint and repository checks passed. CTest canvas, editor,
 clipboard, text, transform, shell and shell-more passed (offscreen/software).
 Existing tests were updated for the deliberate dismissal/Select All behavior.
-Real desktop input validation remains unverified. Next: protected PR review.
-Independent follow-ups requested:
+Real desktop input validation remains unverified. Protected PR review completed.
+Independent follow-ups delivered in PRs #42–#45:
 glass settings, fill antialias fringe handling, canvas edge handles/border, and
 GitHub release notifications; each is a separate outcome and PR.
+
+## Release closure
+
+Merged in [PR #41](https://github.com/AfshinKI/openpaint/pull/41) and included
+in [v1.1.0](0038-release-1.1.0.md). The validation limits above remain explicit;
+publication does not certify additional desktop environments.

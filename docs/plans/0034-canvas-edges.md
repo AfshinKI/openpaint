@@ -1,6 +1,6 @@
 # Feature: canvas edge resizing and border removal
 
-Status: implemented; PR review pending
+Status: merged in PR #42; shipped in v1.1.0
 Feature IDs: F09, F01
 Milestone: post-v1 fixes
 
@@ -24,5 +24,11 @@ No data leaves the device. QML delegates resize through existing C++ commands.
 
 Dev build, repository checks, formatting, QML lint, canvas/transform/shell tests
 passed. Inspected generated canvas-edge-handles.png (offscreen/software, 1280×800).
-Real desktop validation remains outstanding. Next: protected PR review. No dependency on selection dismissal,
+Real desktop validation remains outstanding. Protected PR review completed. No dependency on selection dismissal,
 glass, fill, or update-notification changes.
+
+## Release closure
+
+Merged in [PR #42](https://github.com/AfshinKI/openpaint/pull/42) and included
+in [v1.1.0](0038-release-1.1.0.md). The validation limits above remain explicit;
+publication does not certify additional desktop environments.

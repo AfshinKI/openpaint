@@ -1,6 +1,6 @@
 # Feature: GitHub stable-release notifications
 
-Status: implemented; PR review pending
+Status: merged in PR #45; shipped in v1.1.0
 Feature IDs: F25
 Milestone: post-v1 notifications (not automatic installation)
 
@@ -53,10 +53,16 @@ The network-restricted sandbox correctly produced an error; the approved externa
 request succeeded. No token or artwork was used.
 
 Packaged TLS/CA validation and real-desktop checks remain outstanding; packaging
-CI must pass before merge. Next: protected PR review. Independent of glass/editing PRs.
+CI passed before publication (see release closure below). Protected PR review completed. Independent of glass/editing PRs.
 
 A temporary integration tree combining PRs #41–#45 passed all 14 CTest suites.
 Mechanical merge resolutions retained both new canvas tests, both QML service/dialog
 declarations and both CMake source lists; appended documentation was combined.
 Final release-check review added fail-closed malformed consent and preserved rate
 backoff on oversized responses, covered by focused tests.
+
+## Release closure
+
+Merged in [PR #45](https://github.com/AfshinKI/openpaint/pull/45) and included
+in [v1.1.0](0038-release-1.1.0.md). The validation limits above remain explicit;
+publication does not certify additional desktop environments.

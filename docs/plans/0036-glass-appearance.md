@@ -1,6 +1,6 @@
 # Feature: adjustable glass appearance
 
-Status: implemented; PR review pending
+Status: merged in PR #44; shipped in v1.1.0
 Feature IDs: F01
 Milestone: post-v1 appearance
 
@@ -36,5 +36,14 @@ Existing native window decorations and light/dark selection remain.
 Dev build, repository checks, format-check and qml-lint passed. App-info, shell
 and shell-more passed offscreen/software; final glassAppearanceSettings capture
 run passed. Inspected light/dark 1024px settings and 1280px editor screenshots.
-Real-desktop/fractional-scaling certification remains outstanding. Next: protected
-PR review. Independent of editing fixes.
+Real-desktop/fractional-scaling certification remains outstanding. Protected PR review completed. Independent of editing fixes.
+
+## Release closure
+
+Merged in [PR #44](https://github.com/AfshinKI/openpaint/pull/44) and included
+in [v1.1.0](0038-release-1.1.0.md). The validation limits above remain explicit;
+publication does not certify additional desktop environments.
+
+The behavior above records the original v1.1.0 implementation.
+[Plan 0039](0039-window-transparency.md) supersedes its appearance/fill controls
+for v1.2.0; smooth fill is now automatic and window surfaces support transparency.

@@ -1,6 +1,6 @@
 # Feature: fill same-color antialias fringes
 
-Status: implemented; PR review pending
+Status: merged in PR #43; shipped in v1.1.0
 Feature IDs: F04
 Milestone: post-v1 fixes
 
@@ -30,8 +30,18 @@ remains accessible at 1024px. No data leaves the device.
 Dev build, repository checks, formatting and QML lint passed. Document/editor
 tests and shell-more passed; fillOptionsLayout was rerun after moving the controls.
 Inspected light/dark 1024px captures; palette and fill options fit. Offscreen/software
-evidence only; real-desktop validation remains outstanding. Next: protected PR review.
+evidence only; real-desktop validation remains outstanding. Protected PR review completed.
 
 Integration CI exposed the expanded shell-more group reaching its 30-second budget
 under ASan after its assertions had passed. The control tests now run as a separate
 shell-controls suite, preserving every case and the same 30-second per-suite limit.
+
+## Release closure
+
+Merged in [PR #43](https://github.com/AfshinKI/openpaint/pull/43) and included
+in [v1.1.0](0038-release-1.1.0.md). The validation limits above remain explicit;
+publication does not certify additional desktop environments.
+
+The behavior above records the original v1.1.0 implementation.
+[Plan 0039](0039-window-transparency.md) supersedes its appearance/fill controls
+for v1.2.0; smooth fill is now automatic and window surfaces support transparency.
