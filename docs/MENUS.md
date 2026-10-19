@@ -370,3 +370,4 @@ Development windows use 12px rounded client corners and matching input masks;
 maximized/fullscreen edges are square. Native decorations remain desktop-owned.
 Development glass selection uses stronger neutral frost and light outlines instead
 of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
+Updates identifies the designer as Afshin Kashani, PhD, P.Eng beneath the version.

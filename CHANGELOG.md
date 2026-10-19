@@ -9,6 +9,7 @@
   Flatpak retains browser-only checking.
 - Round the application client corners, retaining square maximized edges.
 - Show selected tools with neutral frosted surfaces and light outlines in glass mode.
+- Credit designer Afshin Kashani, PhD, P.Eng in Updates.
 
 ## 1.2.0 — 2026-10-18
 

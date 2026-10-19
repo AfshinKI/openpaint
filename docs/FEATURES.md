@@ -133,3 +133,4 @@ Development windows use 12px rounded client corners and matching input masks;
 maximized/fullscreen edges are square. Native decorations remain desktop-owned.
 Development glass selection uses stronger neutral frost and light outlines instead
 of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
+Development Updates attribution is recorded in [plan 0048](plans/0048-designer-credit.md).
