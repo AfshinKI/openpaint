@@ -34,7 +34,7 @@ narrow layouts, FAQ keyboard behavior, and relative asset paths before merging.
 Follow the [release checklist](../docs/RELEASES.md#website-and-readme-release-checklist).
 `release.json` records the application version, source commit and screenshot set.
 The build rejects a version mismatch with CMake; repository CI runs that check.
-Capture filenames identify the verified installed release version. Record the
+Capture filenames identify the verified source release version. Clearly distinguish isolated release-build harness captures from installed-executable captures. Record the
 exact rendering conditions in the asset provenance notes; use glass enabled at
 40% surface opacity and a staged original backdrop in light and dark mode.
 Crop away the surrounding desktop and use transparent rounded outer corners.

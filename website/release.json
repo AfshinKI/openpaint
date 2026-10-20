@@ -1,18 +1,17 @@
 {
-  "version": "1.2.0",
-  "application_source": "4fb7f036987dd80a9e485ae9aee2ed8536a6f510",
-  "capture_method": "Installed OpenPaint DEB 1.2.0-1 on GNOME/X11; staged original illustrated backdrop; glass enabled; surface opacity 40%",
+  "version": "1.3.0",
+  "application_source": "158fc1bf08e9a7dd5b9c1382d3f174a23785ef0f",
+  "capture_method": "Qt 6.12.0 Release build; websiteReleasePreview isolated QML harness on X11/OpenGL; original staged gradient; glass enabled at 40% surface opacity",
   "screenshots": [
-    "openpaint-1.2.0-light.png",
-    "openpaint-1.2.0-dark.png",
-    "openpaint-1.2.0-colors-dark.png",
-    "openpaint-1.2.0-resize-light.png"
+    "openpaint-1.3.0-light.png",
+    "openpaint-1.3.0-dark.png",
+    "openpaint-1.3.0-colors-dark.png",
+    "openpaint-1.3.0-resize-light.png"
   ],
   "surface_opacity_percent": 40,
-  "installed_package": "1.2.0-1",
   "capture_size": [
     1449,
-    1045
+    1008
   ],
-  "presentation": "Cropped to app window; 22px antialiased transparent outer corners; original composed app pixels preserved"
+  "presentation": "Actual app client-window captures; 22px antialiased transparent outer corners; original UI pixels preserved"
 }

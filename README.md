@@ -9,29 +9,29 @@ Free and open source. Editing works offline—no account or telemetry.
 [Installation guide](docs/INSTALL.md) ·
 [Report an issue](https://github.com/AfshinKI/openpaint/issues)
 
-## OpenPaint 1.2.0
+## OpenPaint 1.3.0
 
 Screenshots are cropped to the app window with rounded outer corners.
 
 ### Light mode
 
-![OpenPaint 1.2.0 in light mode](docs/assets/openpaint-1.2.0-light.png)
+![OpenPaint 1.3.0 in light mode](docs/assets/openpaint-1.3.0-light.png)
 
 ### Dark mode
 
-![OpenPaint 1.2.0 in dark mode](docs/assets/openpaint-1.2.0-dark.png)
+![OpenPaint 1.3.0 in dark mode](docs/assets/openpaint-1.3.0-dark.png)
 
-*Captured from installed OpenPaint v1.2.0 with glass enabled at 40% surface
-opacity, generated demo artwork and an original illustrated backdrop. See [capture provenance](docs/assets/README.md).
-Glass appearance is optional; desktop blur requires compositor support.*
+*Captured from the OpenPaint v1.3.0 release UI with glass enabled at 40% surface
+opacity, generated demo artwork and a staged original gradient backdrop. See [capture provenance](docs/assets/README.md).
+The isolated capture harness uses generated artwork and a staged backdrop; it does not demonstrate desktop compositor blur. Unsupported glass configurations use opaque surfaces.*
 
 ## Make it yours
 
-- Draw with brushes, pencil, fill, shapes and text.
-- Select, copy, move, crop, resize and rotate.
+- Draw with brushes, pencil, fill, shapes, splines and mixed-font text.
+- Select by rectangle, free-form outline or matching color; copy, move, crop, resize and rotate.
 - Open and export PNG, JPEG, BMP and WebP. Save drawings as PNG.
 - Undo and redo, zoom and pan, and switch between light and dark themes.
-- Adjust glass appearance and optionally check for new stable releases.
+- Adjust supported glass appearance; native packages check for stable releases automatically.
 
 ## Install
 
