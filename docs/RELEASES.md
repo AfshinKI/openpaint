@@ -233,3 +233,14 @@ Before publication of every version:
    Pages workflow and public page show the intended version and working downloads.
    Record deployment evidence in the release plan; a commit alone is not proof
    of publication. Refresh or clearly label any older screenshot retained in docs.
+
+### Runtime dependency review (2026-10-20)
+
+The upstream continuous runtime asset was replaced, and the checksum gate rejected
+it in PR #52. The binary and matching source pins now use type2-runtime commit
+`fedfad51acc2860b2916a1eef32ba4a500ff31ef`. Its only change from the previous pin
+is build-path normalization for libfuse/squashfuse debug information. Extraction
+permissions remain 0700 and dependency versions are unchanged. The downloaded
+binary digest was checked against GitHub's published asset digest; the source
+archive was downloaded and hashed independently. Continuous URLs can move again;
+checksum mismatches must continue to stop packaging, never trigger automatic trust.
