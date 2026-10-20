@@ -114,7 +114,8 @@ if(BUILD_TESTING)
         interruptedAndSecondaryStroke
         welcomeWorkflow
         glassSetupWorkflow
-        updatesWorkflow
+        updatesWorkflow)
+    add_test(NAME shell-editing COMMAND openpaint_shell_tests
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory
@@ -122,7 +123,8 @@ if(BUILD_TESTING)
         freeFormSelectionWorkflow
         colorSelectionWorkflow
         clipboardMoveWorkflow
-        rectangularSelectionWorkflow
+        rectangularSelectionWorkflow)
+    add_test(NAME shell-text COMMAND openpaint_shell_tests
         fontPickerWorkflow
         inlineTextWorkflow
         textRangeFormattingWorkflow
@@ -150,14 +152,16 @@ if(BUILD_TESTING)
         ribbonShapeKeyboard
         shapeStyleMenus
         shapeOptionsKeyboard
-        brushMenuKeyboardAndLayout
+        brushMenuKeyboardAndLayout)
+    add_test(NAME shell-colors COMMAND openpaint_shell_tests
         fillOptionsLayout
         keyboardControlsAndAccessibility
         customColorEditor
         toolbarSlotAndRoleWorkflow
         renderTiming
         quitClosesWindow)
-    set_tests_properties(shell shell-more shell-controls PROPERTIES TIMEOUT 30)
+    set_tests_properties(shell shell-editing shell-text shell-more shell-controls shell-colors
+        PROPERTIES TIMEOUT 30)
     add_test(NAME cli-version COMMAND openpaint --version)
     set_tests_properties(cli-version PROPERTIES
         PASS_REGULAR_EXPRESSION "OpenPaint ${OPENPAINT_VERSION}" TIMEOUT 10)
