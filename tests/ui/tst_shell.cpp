@@ -2567,12 +2567,12 @@ class ShellTest : public QObject {
         auto* accept = window->findChild<QQuickItem*>(QStringLiteral("acceptColor"));
         QVERIFY(hex && accept);
         hex->forceActiveFocus();
-        QTest::keyClick(window, Qt::Key_A, Qt::ControlModifier);
+        keyClick(Qt::Key_A, Qt::ControlModifier);
         for (const char key : std::string("12"))
-            QTest::keyClick(window, key);
+            keyClick(key);
         QVERIFY(!accept->isEnabled());
         for (const char key : std::string("AB34"))
-            QTest::keyClick(window, key);
+            keyClick(key);
         QVERIFY(accept->isEnabled());
         QCOMPARE(selection->color(), QColor("#12AB34"));
         selection->setHsv(210, 80, 90);
@@ -2593,11 +2593,11 @@ class ShellTest : public QObject {
         auto* brightness = window->findChild<QQuickItem*>(QStringLiteral("brightnessSlider"));
         QVERIFY(brightness);
         brightness->forceActiveFocus();
-        QTest::keyClick(window, Qt::Key_End);
+        keyClick(Qt::Key_End);
         QCOMPARE(selection->value(), 100.0);
-        QTest::keyClick(window, Qt::Key_Home);
+        keyClick(Qt::Key_Home);
         QCOMPARE(selection->color(), QColor(Qt::black));
-        QTest::keyClick(window, Qt::Key_End);
+        keyClick(Qt::Key_End);
         const auto beforeMode = selection->color();
         auto* mode = window->findChild<QQuickItem*>(QStringLiteral("colorMode"));
         QVERIFY(mode);
@@ -2606,8 +2606,8 @@ class ShellTest : public QObject {
         QVERIFY(modePopup);
         QTRY_VERIFY(modePopup->property("visible").toBool());
         QVERIFY(capture(QStringLiteral("color-model-menu-dark.png")));
-        QTest::keyClick(window, Qt::Key_Down);
-        QTest::keyClick(window, Qt::Key_Return);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Return);
         QTRY_VERIFY(!modePopup->property("visible").toBool());
         QCOMPARE(mode->property("currentIndex").toInt(), 1);
         QCOMPARE(selection->color(), beforeMode);
@@ -2616,10 +2616,10 @@ class ShellTest : public QObject {
         auto* numericText = qvariant_cast<QQuickItem*>(channels.first()->property("contentItem"));
         QVERIFY(numericText);
         numericText->forceActiveFocus();
-        QTest::keyClick(window, Qt::Key_A, Qt::ControlModifier);
+        keyClick(Qt::Key_A, Qt::ControlModifier);
         for (const char key : std::string("120"))
-            QTest::keyClick(window, key);
-        QTest::keyClick(window, Qt::Key_Return);
+            keyClick(key);
+        keyClick(Qt::Key_Return);
         QCOMPARE(selection->hue(), 120.0);
         const auto basic = visualItems(window->contentItem(), QStringLiteral("basicDialogSwatch"));
         QCOMPARE(basic.size(), 48);
@@ -2627,7 +2627,7 @@ class ShellTest : public QObject {
         QCOMPARE(selection->color(), QColor(Qt::white));
         click(dialogSlots.last());
         QCOMPARE(palette->colors(), QStringList{"#ffffff"});
-        QTest::keyClick(window, Qt::Key_Escape);
+        keyClick(Qt::Key_Escape);
         QTRY_VERIFY(!dialog->property("visible").toBool());
         QCOMPARE(editor->primary, original);
         click(secondary);
@@ -2667,7 +2667,7 @@ class ShellTest : public QObject {
         for (auto* slot : dialogSlots)
             QVERIFY(!slot->property("empty").toBool());
         QVERIFY(!add->isEnabled());
-        QTest::keyClick(window, Qt::Key_Escape);
+        keyClick(Qt::Key_Escape);
         QVERIFY(palette->clear());
     }
 
