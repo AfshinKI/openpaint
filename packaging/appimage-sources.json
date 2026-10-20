@@ -31,8 +31,8 @@
   },
   {
     "name": "type2-runtime-source.tar.gz",
-    "url": "https://api.github.com/repos/AppImage/type2-runtime/tarball/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa",
-    "sha256": "14a69c8d4cf29c63d12e4d2bb44cdd6d7b916d1b8fc38a1f1525077e8505e377"
+    "url": "https://api.github.com/repos/AppImage/type2-runtime/tarball/fedfad51acc2860b2916a1eef32ba4a500ff31ef",
+    "sha256": "a1601c596b81768626afca9abecf0137092d2d7b281bb6c4b9067d2c79e44a21"
   },
   {
     "name": "fuse-3.15.0.tar.xz",
