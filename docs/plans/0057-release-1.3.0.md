@@ -1,6 +1,6 @@
 # Feature: stable v1.3.0 release
 
-Status: preparation; protected release PR and publication pending.
+Status: published and publicly verified on 2026-10-20 UTC.
 Feature IDs: F25
 
 ## Outcome
@@ -14,9 +14,9 @@ welcome/setup/update flows. No additional editing behavior is introduced here.
 - [x] Version, AppStream metadata and release notes identify 1.3.0.
 - [x] New light/dark and changed-control images show the release UI at 40% opacity.
 - [x] Website build, desktop/mobile visual review and local release checks pass.
-- [ ] Protected release-preparation PR passes all checks before merge.
-- [ ] Explicit main dispatch passes every gate and publishes the five assets.
-- [ ] Public asset hashes, release identity and deployed website are verified.
+- [x] Protected release-preparation PR passes all checks before merge.
+- [x] Explicit main dispatch passes every gate and publishes the five assets.
+- [x] Public asset hashes, release identity and deployed website are verified.
 
 ## Evidence and limitations
 
@@ -55,7 +55,41 @@ Broader KDE/Wayland, IME-engine, stylus and accessibility certification remains 
 
 ## Next step
 
-Validate and merge this preparation, dispatch 1.3.0 on main, then verify the
-published downloads and GitHub Pages deployment. Do not overwrite a published tag.
+Release work is complete. Broader desktop/input/accessibility certification remains
+follow-up work; do not overwrite the published tag or assets.
 
 Release preparation validation: clean Qt 6.12 Release build and all 19 CTest suites passed (77.75s); all 27 tooling tests, formatting, zero-warning QML lint, repository and whitespace checks passed. Website desktop and 390px-wide mobile layout were reviewed; no horizontal overflow or broken loaded images. All four PNGs have the expected dimensions, transparent corners and DPI-only metadata.
+
+## Protected preparation and deployment
+
+Release PR #54 passed all nine jobs in run 39366258536 and merged as
+`a20a261b47ce4dca82c5acd849ffe8804ca7231d`. Stable publication was explicitly
+dispatched with version 1.3.0 on that exact main commit in run 39367261582.
+The main-branch validation run precedes it under the workflow concurrency policy.
+
+GitHub Pages run 39367229165 succeeded on the same commit. The public
+[website](https://afshinki.github.io/openpaint/) shows v1.3.0; all four served PNG
+SHA-256 hashes match the reviewed repository files. The live page and its release
+download link were inspected.
+
+## Public release verification
+
+[Stable publishing run 39367261582](https://github.com/AfshinKI/openpaint/actions/runs/39367261582)
+passed all ten jobs, including the nine validation gates and publication.
+[v1.3.0](https://github.com/AfshinKI/openpaint/releases/tag/v1.3.0) was published
+at 2026-10-20T04:20:03Z and is the latest stable release, targeting the exact
+approved commit above. The public release page confirms the tag and commit.
+
+All five public assets were downloaded. Their sizes and SHA-256 hashes match
+GitHub's published asset digests; all four payloads also match `SHA256SUMS`.
+The downloaded DEB reports version `1.3.0-1`; the extracted portable launcher
+runs and reports `OpenPaint 1.3.0` with the offscreen platform. No system package
+was installed and no user artwork or preferences were changed for this check.
+
+| Asset | SHA-256 |
+| --- | --- |
+| Portable tar.gz | `82af14a35edf3a8685e748ec3457d1fb6f4bd53c36e67f469bc4ef7eeb4a54ad` |
+| Ubuntu DEB | `34607521472190808c2c2f3709f143cb61f6d61402d05f84e1c9c478e72e8de2` |
+| Flatpak | `8a2567adb51c1e3df703ced93847909c01b78160453112051a59c924c2594c27` |
+| Sources and notices | `d709314a4b4c7d73b1c443f34d3d9b4d961ee25c18bd9a9cf6e6c615b2e2a082` |
+| SHA256SUMS | `c172c6d09b0a1f1f04e7d087bd8c3a161321937de4053282a7bc69e0eabdda23` |

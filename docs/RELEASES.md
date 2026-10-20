@@ -1,6 +1,6 @@
 # Releases and in-app updates
 
-Status: stable v1.3.0 preparation is tracked in
+Status: stable v1.3.0 is published; validation evidence is recorded in
 [plan 0057](plans/0057-release-1.3.0.md). Ordinary CI runs validate development
 packages; explicit main-branch release runs publish only after every check passes.
 No signing keys, OpenPaint update feed or automatic in-app installer exists.
@@ -257,4 +257,4 @@ binary digest was checked against GitHub's published asset digest; the source
 archive was downloaded and hashed independently. Continuous URLs can move again;
 checksum mismatches must continue to stop packaging, never trigger automatic trust.
 
-Current release preparation and evidence: [v1.3.0](plans/0057-release-1.3.0.md).
+Current release evidence: [v1.3.0](plans/0057-release-1.3.0.md).
