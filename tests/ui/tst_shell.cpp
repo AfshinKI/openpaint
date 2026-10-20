@@ -14,6 +14,8 @@
 #include <QDir>
 #include <QElapsedTimer>
 #include <QGuiApplication>
+#include <QInputMethodEvent>
+#include <QMimeData>
 #include <QPainter>
 #include <QPainterPath>
 #include <QQmlApplicationEngine>
@@ -22,6 +24,7 @@
 #include <QQmlExpression>
 #include <QQmlProperty>
 #include <QQuickStyle>
+#include <QQuickTextDocument>
 #include <QQuickWindow>
 #include <QSGRendererInterface>
 #include <QScopeGuard>
@@ -31,6 +34,7 @@
 #include <QStyleHints>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QTextCursor>
 #include <QTimer>
 #include <QtConcurrentRun>
 #include <algorithm>
@@ -605,6 +609,7 @@ class ShellTest : public QObject {
         QTRY_VERIFY(updates->property("visible").toBool());
         auto* help = window->findChild<QObject*>("backgroundBlurHelp");
         QCOMPARE(help->property("text").toString(), QString("Enable Glass"));
+        QVERIFY(help->property("visible").toBool());
         QVERIFY(QMetaObject::invokeMethod(help, "clicked"));
         QTRY_VERIFY(setup->property("visible").toBool());
         QTRY_VERIFY(!blur->busy());
@@ -625,7 +630,8 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(useGlass, "clicked"));
         QTRY_VERIFY(!setup->property("visible").toBool());
         QVERIFY(appearance->effectiveGlassEnabled());
-        QTRY_VERIFY(help->property("activeFocus").toBool());
+        QVERIFY(!help->property("visible").toBool());
+        QTRY_VERIFY(window->findChild<QObject*>("updatesDone")->property("activeFocus").toBool());
         QCOMPARE(editor->image(), artwork);
         keyClick(Qt::Key_Escape);
     }
@@ -891,6 +897,48 @@ class ShellTest : public QObject {
         QCOMPARE(editor->image(), original);
     }
 
+    void colorSelectionWorkflow() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = canvas->editor();
+        editor->primary = Qt::red;
+        editor->brushSize = 4;
+        editor->begin({100, 100}, false);
+        editor->extend({150, 100});
+        editor->finish();
+        editor->begin({300, 250}, false);
+        editor->extend({350, 250});
+        editor->finish();
+        const auto source = editor->image();
+        QVERIFY(tabTo("selectionMenuButton"));
+        keyClick(Qt::Key_Space);
+        auto* menu = window->findChild<QObject*>("selectionMenu");
+        QTRY_VERIFY(menu->property("visible").toBool());
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Down);
+        keyClick(Qt::Key_Return);
+        QTRY_VERIFY(editor->colorSelection);
+        auto* button = window->findChild<QObject*>("selectionButton");
+        QCOMPARE(button->property("symbol").toString(), QString("wand"));
+        QCOMPARE(button->property("text").toString(), QString("Select by color"));
+        auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
+        QTest::mouseClick(window, Qt::LeftButton, {}, at({120, 100}));
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(editor->selection().contains(QPoint(120, 100)));
+        QVERIFY(editor->selection().contains(QPoint(320, 250)));
+        QVERIFY(!editor->selection().contains(QPoint(220, 180)));
+        QTest::mouseClick(window, Qt::LeftButton, {}, at({220, 180}));
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(editor->selection().contains(QPoint(220, 180)));
+        QVERIFY(!editor->selection().contains(QPoint(120, 100)));
+        QCOMPARE(editor->image(), source);
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("visible").toBool());
+        window->resize(1024, 640);
+        QVERIFY(capture("color-selection-menu.png"));
+        keyClick(Qt::Key_Escape);
+    }
+
     void freeFormSelectionWorkflow() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();
@@ -1081,6 +1129,156 @@ class ShellTest : public QObject {
         QTRY_VERIFY(!picker->property("visible").toBool());
         QCOMPARE(editor->textFamily, family);
         QTRY_VERIFY(input->hasActiveFocus());
+    }
+
+    void textRangeFormattingWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* input = window->findChild<QQuickItem*>("inlineTextInput");
+        auto* picker = window->findChild<QObject*>("fontPicker");
+        const auto original = editor->image();
+        editor->setTool(Editor::Tool::Text);
+        editor->begin({80, 80}, false);
+        editor->extend({600, 260});
+        editor->endGesture();
+        QTRY_VERIFY(input->hasActiveFocus());
+        for (char c : std::string("Alpha Beta"))
+            keyClick(c);
+        auto* wrapper = input->property("textDocument").value<QQuickTextDocument*>();
+        QVERIFY(wrapper);
+        auto* document = wrapper->textDocument();
+        auto fontAt = [&](int position) {
+            QTextCursor cursor(document);
+            cursor.setPosition(position);
+            cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+            return cursor.charFormat().font().resolve(document->defaultFont());
+        };
+        const auto originalFont = fontAt(6);
+        QVERIFY(QMetaObject::invokeMethod(input, "select", Q_ARG(int, 0), Q_ARG(int, 5)));
+        QVERIFY(QMetaObject::invokeMethod(picker, "open"));
+        QTRY_VERIFY(picker->property("visible").toBool());
+        picker->setProperty("draftFamily", "Monospace");
+        QVERIFY(QMetaObject::invokeMethod(picker, "accept"));
+        QTRY_VERIFY(input->hasActiveFocus());
+        QCOMPARE(fontAt(0).family(), QString("Monospace"));
+        QCOMPARE(fontAt(6).family(), originalFont.family());
+        QCOMPARE(input->property("selectionStart").toInt(), 0);
+        QCOMPARE(input->property("selectionEnd").toInt(), 5);
+        editor->setProperty("textBold", true);
+        editor->setProperty("textSize", 32);
+        editor->setProperty("textFamily", "Serif");
+        QCOMPARE(fontAt(0).family(), QString("Serif"));
+        QCOMPARE(fontAt(0).pixelSize(), 32);
+        QVERIFY(fontAt(0).bold());
+        QCOMPARE(fontAt(6), originalFont);
+        // Family changes must preserve different sizes and styles within a range.
+        QVERIFY(QMetaObject::invokeMethod(input, "select", Q_ARG(int, 0), Q_ARG(int, 10)));
+        editor->setProperty("textFamily", "Monospace");
+        QCOMPARE(fontAt(0).pixelSize(), 32);
+        QVERIFY(fontAt(0).bold());
+        QCOMPARE(fontAt(6).pixelSize(), originalFont.pixelSize());
+        QCOMPARE(fontAt(6).bold(), originalFont.bold());
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QCOMPARE(fontAt(0).family(), QString("Serif"));
+        QCOMPARE(fontAt(6).family(), originalFont.family());
+        const auto beforeCancel = editor->image();
+        QVERIFY(QMetaObject::invokeMethod(picker, "open"));
+        picker->setProperty("draftFamily", "Monospace");
+        QVERIFY(QMetaObject::invokeMethod(picker, "reject"));
+        QTRY_VERIFY(input->hasActiveFocus());
+        QCOMPARE(editor->image(), beforeCancel);
+        QVERIFY(QMetaObject::invokeMethod(input, "deselect"));
+        input->setProperty("cursorPosition", 10);
+        const auto beforeTyping = editor->image();
+        editor->setProperty("textFamily", "Monospace");
+        QCOMPARE(editor->image(), beforeTyping);
+        keyClick('X');
+        QCOMPARE(editor->textDraft(), QString("Alpha BetaX"));
+        QCOMPARE(fontAt(10).family(), QString("Monospace"));
+        QCOMPARE(fontAt(9).family(), originalFont.family());
+        keyClick(Qt::Key_Z, Qt::ControlModifier);
+        QCOMPARE(editor->textDraft(), QString("Alpha Beta"));
+        keyClick(Qt::Key_Y, Qt::ControlModifier);
+        QCOMPARE(editor->textDraft(), QString("Alpha BetaX"));
+        QCOMPARE(fontAt(10).family(), QString("Monospace"));
+        const auto beforePaste = editor->image();
+        QGuiApplication::clipboard()->setText(QString(10001, 'x'));
+        keyClick(Qt::Key_V, Qt::ControlModifier);
+        QCOMPARE(editor->textDraft(), QString("Alpha BetaX"));
+        QCOMPARE(editor->image(), beforePaste);
+        QCOMPARE(fontAt(0).family(), QString("Serif"));
+        auto* error = window->findChild<QObject*>("errorDialog");
+        QTRY_VERIFY(error->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(error, "accept"));
+        QTRY_VERIFY(!error->property("visible").toBool());
+        const auto rendered = editor->image();
+        canvas->zoomAt(1.5, QPointF(200, 200));
+        QCoreApplication::processEvents();
+        QCOMPARE(editor->image(), rendered);
+        QVERIFY(capture("mixed-font-text.png"));
+        QTemporaryDir directory;
+        const auto path = directory.filePath("mixed-font.png");
+        editor->saveFile(QUrl::fromLocalFile(path));
+        QTRY_VERIFY(!editor->busy());
+        QVERIFY(!editor->textActive());
+        QCOMPARE(openpaint::loadPng(path).image, rendered);
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image(), rendered);
+    }
+
+    void textInsertionFormatsWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* input = window->findChild<QQuickItem*>("inlineTextInput");
+        editor->setTool(Editor::Tool::Text);
+        editor->begin({80, 80}, false);
+        editor->extend({600, 280});
+        editor->endGesture();
+        QTRY_VERIFY(input->hasActiveFocus());
+        for (char c : std::string("before after"))
+            keyClick(c);
+        auto* document =
+            input->property("textDocument").value<QQuickTextDocument*>()->textDocument();
+        auto fontAt = [&](int position) {
+            QTextCursor cursor(document);
+            cursor.setPosition(position);
+            cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+            return cursor.charFormat().font().resolve(document->defaultFont());
+        };
+        const auto originalFont = fontAt(0);
+        input->setProperty("cursorPosition", 3); // Inside an existing word.
+        const auto original = editor->image();
+        editor->setProperty("textFamily", "Monospace");
+        editor->setProperty("textSize", 28);
+        editor->setProperty("textItalic", true);
+        QCOMPARE(editor->image(), original);
+        keyClick('1');
+        keyClick('2');
+        QInputMethodEvent commit;
+        commit.setCommitString(QString::fromUtf8("Ω"));
+        QCoreApplication::sendEvent(input, &commit);
+        QCOMPARE(editor->textDraft(), QString::fromUtf8("bef12Ωore after"));
+        for (int i = 3; i < 6; ++i) {
+            QCOMPARE(fontAt(i).family(), QString("Monospace"));
+            QCOMPARE(fontAt(i).pixelSize(), 28);
+            QVERIFY(fontAt(i).italic());
+        }
+        QCOMPARE(fontAt(2), originalFont);
+        QCOMPARE(fontAt(6), originalFont);
+        auto* mime = new QMimeData;
+        mime->setHtml("<b>rich</b>");
+        mime->setText("<b>plain</b>");
+        QGuiApplication::clipboard()->setMimeData(mime);
+        keyClick(Qt::Key_V, Qt::ControlModifier);
+        QVERIFY(editor->textDraft().contains("<b>plain</b>"));
+        QCOMPARE(fontAt(6).family(), QString("Monospace"));
+        QVERIFY(!fontAt(6).bold());
+        input->setProperty("cursorPosition", 0);
+        keyClick('Z');
+        QCOMPARE(fontAt(0), originalFont); // Moving the caret uses its local font.
+        editor->cancel();
+        QVERIFY(!editor->textActive());
     }
 
     void inlineTextWorkflow() {

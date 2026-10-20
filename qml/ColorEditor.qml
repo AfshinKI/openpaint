@@ -351,10 +351,7 @@ PaintDialog {
     footer: DialogButtonBox {
         padding: 12
         spacing: 8
-        background: Rectangle {
-            color: Theme.window
-            radius: Theme.dialogRadius
-        }
+        background: Item {}
         PaintButton {
             id: acceptButton
             objectName: "acceptColor"

@@ -42,7 +42,7 @@ endif()
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Concurrent Network)
 qt_standard_project_setup(REQUIRES 6.8)
 include(CTest)
-add_library(openpaint_document STATIC src/document/Document.cpp src/tools/Fill.cpp src/tools/Brush.cpp src/tools/Shape.cpp src/tools/Text.cpp src/tools/Transform.cpp)
+add_library(openpaint_document STATIC src/document/Document.cpp src/tools/Fill.cpp src/tools/ColorSelect.cpp src/tools/Brush.cpp src/tools/Shape.cpp src/tools/Text.cpp src/tools/Transform.cpp)
 target_include_directories(openpaint_document PUBLIC src)
 target_link_libraries(openpaint_document PUBLIC Qt6::Gui)
 target_compile_options(openpaint_document PRIVATE -Wall -Wextra -Wpedantic)
@@ -120,10 +120,13 @@ if(BUILD_TESTING)
         ribbonActionMemory
         imageTransformWorkflow
         freeFormSelectionWorkflow
+        colorSelectionWorkflow
         clipboardMoveWorkflow
         rectangularSelectionWorkflow
         fontPickerWorkflow
         inlineTextWorkflow
+        textRangeFormattingWorkflow
+        textInsertionFormatsWorkflow
         transparentBackgroundChoice
         canvasCornerResize
         cornerResizeHandles)

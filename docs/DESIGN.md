@@ -312,7 +312,7 @@ See [icon and spline acceptance](plans/0052-icon-and-spline.md).
 real app corner previews, optional local setup guidance,
 clipboard copying and a Check again action. A separate Welcome to OpenPaint
 appears once, includes a side picture and invites contributions. Updates places text on the left,
-a real app picture on the right, and Enable Glass in its footer. The original [interactive design](designs/blur-onboarding.html)
+a real app picture on the right, and Enable Glass in its footer only while glass is unavailable. The original [interactive design](designs/blur-onboarding.html)
 remains a design artifact rather than executable application behavior.
 
 Current capability evidence is limited to Ubuntu 24.04 / GNOME 46 / X11. Without
@@ -329,3 +329,5 @@ with QPainter so software rendering needs no optional effects. Setup uses short
 copy and a selectable 11px monospace command below a Terminal label.
 
 Updates uses a compact status/action column and a softly elevated, perspective-angled actual-app corner preview. It checks on startup and opening without a check button or checkbox; failures never imply the installed version is current.
+
+The Select menu includes By color with an original magic-wand icon. Each click selects all exact-color pixels across the image; selection feedback and subsequent editing reuse the existing mask workflow. See [plan 0055](plans/0055-color-selection.md).

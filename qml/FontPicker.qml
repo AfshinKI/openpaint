@@ -140,7 +140,7 @@ PaintDialog {
         }
         Label {
             Layout.fillWidth: true
-            text: qsTr("Fonts installed on this computer. Apply changes the font family; size and style stay unchanged.")
+            text: qsTr("Applies to selected text or what you type next. Size and style stay unchanged.")
             wrapMode: Text.WordWrap
             color: Theme.secondaryText
         }

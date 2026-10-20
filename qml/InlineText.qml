@@ -20,7 +20,10 @@ Rectangle {
     TextEdit {
         id: input
         objectName: "inlineTextInput"
-        anchors.fill: parent
+        width: box.editor.textRect.width
+        height: box.editor.textRect.height
+        scale: box.canvas.zoom
+        transformOrigin: Item.TopLeft
         clip: true
         enabled: box.editor.textReady
         text: box.editor.textDraft
@@ -40,25 +43,34 @@ Rectangle {
         color: box.editor.hasSelection ? "transparent" : box.editor.textColor
         selectionColor: Theme.accent
         selectedTextColor: Theme.accentText
-        font.family: box.editor.textFamily
-        font.pixelSize: box.editor.textSize * box.canvas.zoom
-        font.bold: box.editor.textBold
-        font.italic: box.editor.textItalic
-        font.underline: box.editor.textUnderline
-        font.strikeout: box.editor.textStrikeout
+        font.pixelSize: 20
+        Component.onCompleted: box.editor.attachTextDocument(textDocument)
+        onCursorPositionChanged: {
+            box.editor.syncTextCursor(cursorPosition, selectionStart, selectionEnd);
+            box.editor.syncTextFont(cursorSelection.font);
+        }
+        onSelectionStartChanged: box.editor.syncTextCursor(cursorPosition, selectionStart, selectionEnd)
+        onSelectionEndChanged: box.editor.syncTextCursor(cursorPosition, selectionStart, selectionEnd)
         horizontalAlignment: box.editor.textAlignment === 1 ? TextEdit.AlignHCenter : box.editor.textAlignment === 2 ? TextEdit.AlignRight : TextEdit.AlignLeft
         renderType: Text.NativeRendering
         onTextChanged: {
-            if (box.editor.textReady && text !== box.editor.textDraft && !box.editor.setTextDraft(text))
-                text = box.editor.textDraft;
+            if (box.editor.textReady && text !== box.editor.textDraft && !box.editor.setTextDraft(text)) {
+                box.editor.clearInsertionFont();
+                undo();
+            }
         }
         Keys.onEscapePressed: event => {
             box.editor.cancel();
             event.accepted = true;
         }
         Keys.onPressed: event => {
-            if (event.key === Qt.Key_Y && (event.modifiers & Qt.ControlModifier)) {
-                input.redo();
+            if (event.key === Qt.Key_Z && (event.modifiers & Qt.ControlModifier)) {
+                box.editor.clearInsertionFont();
+                input.cursorPosition = box.editor.undoText(Boolean(event.modifiers & Qt.ShiftModifier));
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Y && (event.modifiers & Qt.ControlModifier)) {
+                box.editor.clearInsertionFont();
+                input.cursorPosition = box.editor.undoText(true);
                 event.accepted = true;
             } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && (event.modifiers & Qt.ControlModifier)) {
                 box.editor.commitPreview();
@@ -86,8 +98,8 @@ Rectangle {
             }
             x: Math.max(1, input.cursorRectangle.x)
             y: input.cursorRectangle.y
-            width: 2
-            height: Math.max(1, input.font.pixelSize)
+            width: 2 / box.canvas.zoom
+            height: Math.max(1, input.cursorRectangle.height)
             color: "black"
             visible: input.activeFocus && input.selectionStart === input.selectionEnd && blinkOn
         }
@@ -148,9 +160,32 @@ Rectangle {
     }
     Connections {
         target: box.editor
+        function onTextDraftChanged() {
+            if (input.text !== box.editor.textDraft)
+                input.text = box.editor.textDraft;
+        }
         function onTextEditingReady() {
+            box.editor.clearInsertionFont();
+            const defaults = Qt.font({
+                family: box.editor.textFamily,
+                pixelSize: box.editor.textSize,
+                bold: box.editor.textBold,
+                italic: box.editor.textItalic,
+                underline: box.editor.textUnderline,
+                strikeout: box.editor.textStrikeout
+            });
             input.text = box.editor.textDraft;
+            input.font = defaults;
+            input.cursorSelection.font = defaults;
             input.forceActiveFocus();
+        }
+        function onTextFontRequested(font) {
+            if (!box.editor.textReady)
+                return;
+            if (input.selectionStart !== input.selectionEnd)
+                box.editor.formatTextRange(font, input.selectionStart, input.selectionEnd);
+            else
+                box.editor.setInsertionFont(font, input.cursorSelection.font, input.cursorPosition);
         }
     }
 }

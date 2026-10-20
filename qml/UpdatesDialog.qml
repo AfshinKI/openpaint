@@ -11,7 +11,7 @@ PaintDialog {
     property string browserError: ""
     signal blurHelpRequested
     function focusBlurHelp() {
-        blurHelp.forceActiveFocus();
+        (blurHelp.visible ? blurHelp : doneButton).forceActiveFocus();
     }
     title: qsTr("Updates")
     modal: true
@@ -29,6 +29,7 @@ PaintDialog {
         PaintButton {
             id: blurHelp
             objectName: "backgroundBlurHelp"
+            visible: !BlurSupport.ready
             text: qsTr("Enable Glass")
             Layout.leftMargin: 20
             Layout.bottomMargin: 12
@@ -38,6 +39,8 @@ PaintDialog {
             Layout.fillWidth: true
         }
         PaintButton {
+            id: doneButton
+            objectName: "updatesDone"
             text: qsTr("Done")
             Layout.rightMargin: 12
             Layout.bottomMargin: 12

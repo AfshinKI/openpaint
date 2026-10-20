@@ -21,6 +21,32 @@ QImage colorKeyImage(QImage image, QRgb key) {
     return image;
 }
 } // namespace
+void Editor::startColorSelection(QPoint seed) {
+    if (busy_)
+        return;
+    finish();
+    colorSelectionRevision_ = document.revision();
+    const auto snapshot = image();
+    cancellation_ = std::make_shared<std::atomic_bool>(false);
+    busy_ = loading_ = true;
+    emit changed();
+    colorSelectionWatcher_.setFuture(QtConcurrent::run([snapshot, seed, token = cancellation_] {
+        return openpaint::selectColor(snapshot, seed, token);
+    }));
+}
+void Editor::finishColorSelection() {
+    const auto result = colorSelectionWatcher_.result();
+    busy_ = loading_ = false;
+    if (!cancellation_->load() && document.revision() == colorSelectionRevision_) {
+        if (result.failed)
+            fail(tr("This color selection is too complex. Try a smaller image."));
+        else if (!result.region.isEmpty()) {
+            document.setSelection(result.region);
+            emit pixelsChanged({});
+        }
+    }
+    emit changed();
+}
 void Editor::finishSelection() {
     if (!selecting_)
         return;

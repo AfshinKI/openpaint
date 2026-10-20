@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Select all exact matching pixels with the new By color magic wand.
+- Apply font family, size and styles to selected text or subsequent typing within a box.
+- Add a once-only welcome and a separate desktop glass setup panel, with opaque fallback.
+- Simplify Updates, check automatically at startup, and hide Enable Glass when ready.
+- Blend the color editor button footer into its dialog surface.
+
 - Swap color picker and eraser positions, keeping the eraser dropdown attached.
 - Strengthen light floating-menu tint for readability over strong background colors.
 
@@ -15,7 +21,7 @@
 - Default glass opacity to 40%, preserving saved preferences.
 - Use a consistent searchable font picker with family previews.
 - Use a dashed text-box outline and immediately blinking black caret in empty boxes.
-- Default release checks on at startup and daily, preserving saved opt-outs and backoff.
+- Default release checks on at startup and daily, retaining bounded cooldown and backoff.
   Flatpak retains browser-only checking.
 - Round only Linux bottom client corners, retaining square maximized edges.
 - Show selected tools with neutral frosted surfaces and light outlines in glass mode.

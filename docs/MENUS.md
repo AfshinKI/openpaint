@@ -92,7 +92,7 @@ Do not infer auto-hide timing or thumbnail behavior until tested and specified.
 ## Selection and image groups
 
 Selection uses a prominent dashed-rectangle icon with a dropdown below it. The
-menu order is Rectangle, Free-form, separator, Select all (Ctrl+A), Invert
+menu order is Rectangle, Free-form, By color (magic wand), separator, Select all (Ctrl+A), Invert
 selection, Transparent selection, then Delete (Delete). Rectangle has a rounded
 selected row. Invert/Delete may be disabled when no suitable selection exists.
 Transparent selection must expose its on/off state when implemented; its pixel
@@ -253,7 +253,7 @@ The text Apply/Options footer buttons are removed; other tools retain theirs.
 
 Image, Tools, Brushes and Shapes controls have transparent, borderless idle
 surfaces. Hover, pressed, selected and keyboard-focus states remain visible.
-Selection uses the rectangle or lasso icon matching its current mode. Rotate
+Selection uses the rectangle, lasso or magic-wand icon matching its current mode. Rotate
 and Flip retain the last operation for the current session: their main buttons
 repeat it, with matching direction/angle icons, tooltips and accessible names.
 Their dropdowns continue to expose all operations. Defaults are right 90° and
@@ -425,5 +425,26 @@ package warning. No setup panel opens automatically.
 
 Updates places a concise status, release action and attribution on the left and an angled real
 app image on the right. The content scrolls within small windows; narrow layouts
-stack the columns. Enable Glass stays in its footer and does not start a release
+stack the columns. Enable Glass appears in its footer only while glass is unavailable and does not start a release
 check. See [plan 0054](plans/0054-blur-onboarding-design.md).
+
+## Select by color
+
+Select → By color uses a magic-wand icon and the accessible label “Select by color”
+on the main button. Each left click replaces the mask with every pixel of the
+sampled exact color across the image, including disconnected areas and alpha.
+It ignores the previous selection as a sampling constraint. Dragging is inert;
+right clicks and clicks outside the canvas preserve the mask. This mode supersedes
+the usual outside-selection dismissal gesture. Rectangle/free-form keep that
+gesture. Arrow keys move selected pixels; copy, delete, invert and resize use the
+existing mask workflow. Escape cancels a pending scan or clears a finished mask.
+Selection alone never changes saved pixels. No tolerance/additive mode is offered.
+
+Font family, size, bold, italic, underline and strikeout apply to highlighted text.
+Without a highlight they affect newly typed characters at the current caret, not
+existing text. The font picker retains the highlight and returns focus; Cancel
+leaves formatting unchanged. Changing one property preserves other mixed styles.
+Alignment, text color and opaque background remain box-wide. Local text undo/redo
+includes formatting; committing rasterizes all runs into one document edit.
+
+The color editor OK/Cancel footer shares the dialog glass surface without a separate opaque panel.

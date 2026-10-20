@@ -731,8 +731,8 @@ ApplicationWindow {
                         icon.height: 26
                         padding: 4
                         objectName: "selectionButton"
-                        symbol: editor.freeFormSelection ? "lasso" : "selection"
-                        text: editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
+                        symbol: editor.colorSelection ? "wand" : editor.freeFormSelection ? "lasso" : "selection"
+                        text: editor.colorSelection ? qsTr("Select by color") : editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
                         Accessible.name: text
                         background: GlassSurface {
                             backdropLayers: [window.background, canvas]
@@ -771,9 +771,10 @@ ApplicationWindow {
                                 symbol: "selection"
                                 text: qsTr("Rectangle")
                                 checkable: true
-                                checked: editor.tool === Editor.Select && !editor.freeFormSelection
+                                checked: editor.tool === Editor.Select && !editor.colorSelection && !editor.freeFormSelection
                                 enabled: editor.canSelect
                                 onTriggered: {
+                                    editor.colorSelection = false;
                                     editor.freeFormSelection = false;
                                     editor.tool = Editor.Select;
                                 }
@@ -783,10 +784,24 @@ ApplicationWindow {
                                 symbol: "lasso"
                                 text: qsTr("Free-form")
                                 checkable: true
-                                checked: editor.tool === Editor.Select && editor.freeFormSelection
+                                checked: editor.tool === Editor.Select && !editor.colorSelection && editor.freeFormSelection
                                 enabled: editor.canSelect
                                 onTriggered: {
+                                    editor.colorSelection = false;
                                     editor.freeFormSelection = true;
+                                    editor.tool = Editor.Select;
+                                }
+                            }
+                            PaintMenuItem {
+                                objectName: "colorSelectionItem"
+                                symbol: "wand"
+                                text: qsTr("By color")
+                                checkable: true
+                                checked: editor.tool === Editor.Select && editor.colorSelection
+                                enabled: editor.canSelect
+                                onTriggered: {
+                                    editor.freeFormSelection = false;
+                                    editor.colorSelection = true;
                                     editor.tool = Editor.Select;
                                 }
                             }
