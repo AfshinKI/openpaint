@@ -1305,9 +1305,11 @@ class ShellTest : public QObject {
         QVERIFY(editor->textDraft().isEmpty());
         const auto caretPixel = [&] {
             const auto frame = window->grabWindow();
-            const auto point = caret->mapToScene({1, caret->height() / 2});
-            return frame.pixelColor(qRound(point.x() * frame.devicePixelRatio()),
-                                    qRound(point.y() * frame.devicePixelRatio()));
+            const auto point = caret->mapToScene({caret->width() / 2, caret->height() / 2});
+            // Software grabs can round DPR metadata at fractional display scales.
+            const qreal scaleX = qreal(frame.width()) / window->width();
+            const qreal scaleY = qreal(frame.height()) / window->height();
+            return frame.pixelColor(qRound(point.x() * scaleX), qRound(point.y() * scaleY));
         };
         QTRY_VERIFY(caretPixel().lightness() < 30);
         QVERIFY(capture("empty-text-caret.png"));
