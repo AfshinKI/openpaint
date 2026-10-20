@@ -2049,8 +2049,48 @@ class ShellTest : public QObject {
         const auto prefix = QStringLiteral("openpaint-") + AppInfo::version();
         window->resize(1449, 1008);
         auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
-        appearance->setGlassEnabled(false);
-        appearance->setSurfaceOpacity(54);
+        const bool stagedGlass = qEnvironmentVariableIsSet("OPENPAINT_RELEASE_GLASS");
+        appearance->setGlassEnabled(stagedGlass);
+        appearance->setSurfaceOpacity(40);
+        // Optional documentation capture: original backdrop inside the test window.
+        // This demonstrates real app surfaces, not desktop-compositor certification.
+        QQmlComponent backdrop(engine.get());
+        backdrop.setData(R"QML(import QtQuick
+            Rectangle {
+                width: 1449; height: 1008; z: -100
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0; color: "#234A70" }
+                    GradientStop { position: 0.35; color: "#B17D98" }
+                    GradientStop { position: 0.65; color: "#DDB777" }
+                    GradientStop { position: 1; color: "#398B89" }
+                }
+            })QML",
+                         QUrl());
+        QScopedPointer<QObject> backing(stagedGlass ? backdrop.create() : nullptr);
+        if (stagedGlass) {
+            QVERIFY(backing);
+            qobject_cast<QQuickItem*>(backing.data())->setParentItem(window->contentItem());
+        }
+        const auto releaseCapture = [&](const QString& name) {
+            QGuiApplication::sync();
+            auto frame = window->grabWindow().convertToFormat(QImage::Format_ARGB32);
+            if (frame.isNull())
+                return false;
+            QImage mask(frame.size() * 4, QImage::Format_ARGB32);
+            mask.fill(Qt::transparent);
+            QPainter paint(&mask);
+            paint.setRenderHint(QPainter::Antialiasing);
+            paint.setPen(Qt::NoPen);
+            paint.setBrush(Qt::white);
+            paint.drawRoundedRect(QRectF(mask.rect()), 22 * 4, 22 * 4);
+            paint.end();
+            frame.setAlphaChannel(
+                mask.scaled(frame.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+            const auto directory = qEnvironmentVariable("OPENPAINT_CAPTURE_DIR");
+            return directory.isEmpty() ||
+                   (QDir().mkpath(directory) && frame.save(QDir(directory).filePath(name)));
+        };
         QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("lightThemeAction"),
                                           "trigger", Q_ARG(QObject*, nullptr)));
         QImage art(1152, 648, QImage::Format_RGB32);
@@ -2103,7 +2143,7 @@ class ShellTest : public QObject {
             auto* action = window->findChild<QObject*>(theme + "ThemeAction");
             QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
             QTest::qWait(250);
-            QVERIFY(capture(prefix + "-" + theme + ".png"));
+            QVERIFY(releaseCapture(prefix + "-" + theme + ".png"));
         }
         auto* colorDialog = window->findChild<QObject*>("colorEditor");
         QVERIFY(colorDialog);
@@ -2111,7 +2151,7 @@ class ShellTest : public QObject {
             QMetaObject::invokeMethod(window->findChild<QObject*>("editColorsButton"), "clicked"));
         QTRY_VERIFY(colorDialog->property("visible").toBool());
         QTest::qWait(250);
-        QVERIFY(capture(prefix + "-colors-dark.png"));
+        QVERIFY(releaseCapture(prefix + "-colors-dark.png"));
         QVERIFY(QMetaObject::invokeMethod(colorDialog, "close"));
         QTRY_VERIFY(!colorDialog->property("visible").toBool());
         QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("lightThemeAction"),
@@ -2121,7 +2161,7 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(resizeDialog, "open"));
         QTRY_VERIFY(resizeDialog->property("visible").toBool());
         QTest::qWait(250);
-        QVERIFY(capture(prefix + "-resize-light.png"));
+        QVERIFY(releaseCapture(prefix + "-resize-light.png"));
     }
     void fileMenuBackdropBlur_data() {
         QTest::addColumn<bool>("dark");

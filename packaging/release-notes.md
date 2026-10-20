@@ -1,16 +1,20 @@
 ## New in {VERSION}
 
-- Translucent windows and layered frosted menus and floating controls, with lighter
-  light-mode tint and clearer dark-mode text and buttons. The paper stays opaque.
-- Theme choice, glass enablement and opacity are saved between launches.
-- A blinking text cursor follows the displayed font height.
-- Fill always uses smooth edges and exact color matching, with no floating options panel.
-- A 1449 × 1008 default window size and a refreshed Brush-menu appearance preview.
+- Select every exact matching pixel with **Select → By color**, the magic wand.
+- Change the font, size or style of selected text, or just what you type next.
+- Draw multi-point splines with preview, apply/cancel and undo/redo.
+- Clearer eraser modes, tool icons, searchable fonts and selected-tool feedback.
+- A one-time welcome and separate **Enable Glass** setup with actual app pictures.
+- Opaque fallback when desktop glass is unavailable; setup is hidden when ready.
+- Simpler Updates with automatic startup checks and an angled app preview.
+- A unified color-dialog surface, including its OK/Cancel footer.
 
-Desktop blur requires compositor support. On GNOME, an extension such as Blur My
-Shell is needed; OpenPaint does not install or configure it. Without compositor
-blur, the desktop remains sharp behind translucent areas. Disable glass or set
-opacity to 100% for an opaque window. Software rendering uses solid menus/dialogs.
+Glass defaults to 40% surface opacity and preserves your saved preferences.
+The validated desktop-blur setup is Ubuntu 24.04 / GNOME 46 / X11 with Blur My Shell.
+Other or unverified setups use opaque surfaces. OpenPaint never installs or
+configures extensions; setup commands run only if you copy and execute them.
+Native packages check GitHub Releases at startup and periodically, with cooldown
+and backoff. Flatpak remains browser-only. Updates are always installed manually.
 
 OpenPaint is an offline, single-layer Linux paint editor with brushes, fill, shapes,
 text, selections, image transformations and undo/redo. Open/export PNG, JPEG, BMP

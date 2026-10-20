@@ -51,7 +51,7 @@ small bounded shadow. This works with Qt's software renderer without shader or
 compositor dependencies. Artwork pixels are never changed by these views.
 
 Updates preserves version, attribution and a concise privacy disclosure. It checks
-at startup and on opening, respecting cooldown/backoff, without a check button or checkbox. Enable Glass stays in its footer. Local capability checks on opening
+at startup and on opening, respecting cooldown/backoff, without a check button or checkbox. Enable Glass appears in its footer only while glass is unavailable. Local capability checks on opening
 Updates are independent of release networking.
 
 Image [provenance](../assets/README.md) and [embedded preview notes](../../qml/previews/README.md)
@@ -127,3 +127,5 @@ passed; formatting, QML lint, repository and whitespace checks passed. The UI te
 used the software renderer; the corrected running window still needs visual
 confirmation on the desktop. Launch the rebuilt development executable to use the
 fix; already installed binaries are unchanged.
+
+Release follow-up: real read-only desktop probing returned ready on Ubuntu 24.04 / GNOME 46 / X11. Qt 6.12 native glass workflow and color-dialog checks passed. Enable Glass hides on readiness and focus returns to Done. Fresh extension installation on a clean desktop remains untested; package lifecycle and release evidence are tracked in [v1.3.0](0057-release-1.3.0.md).

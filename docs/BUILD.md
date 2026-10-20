@@ -1,8 +1,8 @@
 # Build OpenPaint
 
 The current development app supports pencil/eraser, colors and size, undo/redo,
-zoom/pan, PNG open/save, guarded close and System/Light/Dark themes. There are no packaged
-downloads. This guide builds from source and does not install the app system-wide.
+zoom/pan, PNG open/save, guarded close and System/Light/Dark themes. Packaged downloads are described in [INSTALL.md](INSTALL.md). This guide builds
+from source and does not install the app system-wide.
 
 ## Tested baseline
 
@@ -57,7 +57,7 @@ cmake --build --preset dev --parallel 4
 ./build/dev/openpaint
 ```
 
-Use View → Theme to select System, Light, or Dark. The choice is session-only.
+Use View → Theme to select System, Light, or Dark. The choice is saved between launches.
 F1 opens About; Escape closes it. File → Quit closes the window. Window decorations
 belong to the desktop. `openpaint --help` and `openpaint --version` are available.
 
