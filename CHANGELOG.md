@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.0 — 2026-10-20
 
 - Select all exact matching pixels with the new By color magic wand.
 - Apply font family, size and styles to selected text or subsequent typing within a box.
