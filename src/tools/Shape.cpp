@@ -111,6 +111,26 @@ ShapePatch renderShape(const QImage& base, QPointF start, QPointF end, int kind,
         closed = false;
         break;
     }
+    case SplineShape: {
+        QList<QPointF> points;
+        for (const auto point : vertices)
+            if (points.isEmpty() || point != points.last())
+                points.append(point);
+        if (points.size() < 2)
+            return {};
+        // Uniform Catmull–Rom interpolation expressed as cubic Bezier segments.
+        // Repeated endpoints provide a natural end tangent; the path stays open.
+        path.moveTo(points.first());
+        for (qsizetype i = 0; i + 1 < points.size(); ++i) {
+            const auto p0 = points[qMax(qsizetype(0), i - 1)];
+            const auto p1 = points[i];
+            const auto p2 = points[i + 1];
+            const auto p3 = points[qMin(points.size() - 1, i + 2)];
+            path.cubicTo(p1 + (p2 - p0) / 6, p2 - (p3 - p1) / 6, p2);
+        }
+        closed = false;
+        break;
+    }
     case PolygonShape:
         if (vertices.size() < 2)
             return {};

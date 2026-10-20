@@ -10,8 +10,8 @@ Rectangle {
     implicitWidth: 172
     implicitHeight: 76
     radius: Theme.controlRadius
-    color: Appearance.glassEnabled ? "transparent" : Theme.panel
-    border.color: Appearance.glassEnabled ? Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.12) : Theme.divider
+    color: Appearance.effectiveGlassEnabled ? "transparent" : Theme.panel
+    border.color: Appearance.effectiveGlassEnabled ? Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.12) : Theme.divider
     Flickable {
         id: scroll
         anchors.fill: parent
@@ -28,7 +28,7 @@ Rectangle {
             columns: 7
             Repeater {
                 id: choices
-                model: [qsTr("Line"), qsTr("Rectangle"), qsTr("Ellipse"), qsTr("Rounded rectangle"), qsTr("Triangle"), qsTr("Diamond"), qsTr("Pentagon"), qsTr("Hexagon"), qsTr("Right arrow"), qsTr("Left arrow"), qsTr("Up arrow"), qsTr("Down arrow"), qsTr("Five-point star"), qsTr("Speech bubble"), qsTr("Curve"), qsTr("Polygon"), qsTr("Four-point star"), qsTr("Six-point star"), qsTr("Oval speech bubble")]
+                model: [qsTr("Line"), qsTr("Rectangle"), qsTr("Ellipse"), qsTr("Rounded rectangle"), qsTr("Triangle"), qsTr("Diamond"), qsTr("Pentagon"), qsTr("Hexagon"), qsTr("Right arrow"), qsTr("Left arrow"), qsTr("Up arrow"), qsTr("Down arrow"), qsTr("Five-point star"), qsTr("Speech bubble"), qsTr("Curve"), qsTr("Polygon"), qsTr("Four-point star"), qsTr("Six-point star"), qsTr("Oval speech bubble"), qsTr("Spline")]
                 delegate: PaintButton {
                     id: choice
                     flat: true
@@ -64,10 +64,10 @@ Rectangle {
                     ToolTip.visible: hovered
                     ToolTip.delay: 400
                     ToolTip.text: text
-                    KeyNavigation.right: choices.itemAt((index + 1) % 19)
-                    KeyNavigation.left: choices.itemAt((index + 18) % 19)
-                    KeyNavigation.down: choices.itemAt((index + 7) % 19)
-                    KeyNavigation.up: choices.itemAt((index + 12) % 19)
+                    KeyNavigation.right: choices.itemAt((index + 1) % 20)
+                    KeyNavigation.left: choices.itemAt((index + 19) % 20)
+                    KeyNavigation.down: choices.itemAt((index + 7) % 20)
+                    KeyNavigation.up: choices.itemAt((index + 13) % 20)
                 }
             }
         }

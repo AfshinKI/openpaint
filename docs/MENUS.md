@@ -92,7 +92,7 @@ Do not infer auto-hide timing or thumbnail behavior until tested and specified.
 ## Selection and image groups
 
 Selection uses a prominent dashed-rectangle icon with a dropdown below it. The
-menu order is Rectangle, Free-form, separator, Select all (Ctrl+A), Invert
+menu order is Rectangle, Free-form, By color (magic wand), separator, Select all (Ctrl+A), Invert
 selection, Transparent selection, then Delete (Delete). Rectangle has a rounded
 selected row. Invert/Delete may be disabled when no suitable selection exists.
 Transparent selection must expose its on/off state when implemented; its pixel
@@ -253,7 +253,7 @@ The text Apply/Options footer buttons are removed; other tools retain theirs.
 
 Image, Tools, Brushes and Shapes controls have transparent, borderless idle
 surfaces. Hover, pressed, selected and keyboard-focus states remain visible.
-Selection uses the rectangle or lasso icon matching its current mode. Rotate
+Selection uses the rectangle, lasso or magic-wand icon matching its current mode. Rotate
 and Flip retain the last operation for the current session: their main buttons
 repeat it, with matching direction/angle icons, tooltips and accessible names.
 Their dropdowns continue to expose all operations. Defaults are right 90° and
@@ -290,7 +290,7 @@ icons sit between the three palette rows; the transparency icon is 22px, with se
 Brushes has a centered 28px icon: main activation selects the retained brush;
 the separate lower arrow opens brush styles. Pencil remains independent. Brush
 shows opacity below size in the left rail. The ribbon shape gallery is seven
-columns by three rows, exposing all 19 shapes without scrolling.
+columns by three rows, exposing all 20 shapes without scrolling.
 
 The menu row ends with Check for updates and Settings icon buttons. Settings
 exposes System/Light/Dark appearance. The update shortcut opens the existing
@@ -319,9 +319,9 @@ The dialogs preserve the exact filename authorized by the desktop portal. They d
 not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
 
-Updates provides Check now, Cancel check, an off-by-default daily-check option and View releases. A newer stable release produces a dismissible in-app notice; it never interrupts or restarts editing. Flatpak retains manual browser links.
+Updates checks automatically on startup and opening, respecting cooldowns, with a compact status and View releases/Get update action. There is no check button or checkbox. A newer stable release produces a dismissible in-app notice; it never interrupts or restarts editing. Flatpak retains manual browser links.
 
-Settings includes Glass appearance with a persistent toggle, 40–100% surface opacity slider, Restore defaults and Close. Defaults are enabled/85%; disabling restores opaque surfaces. No artwork edit or history entry occurs.
+Settings includes Glass appearance with a persistent toggle, 40–100% surface opacity slider, Restore defaults and Close. Defaults are enabled/40%; disabling restores opaque surfaces. No artwork edit or history entry occurs.
 
 Fill always cleans a one-pixel same-color antialias fringe without expanding flood connectivity. Color tolerance is fixed at zero.
 
@@ -346,7 +346,8 @@ Popup backdrops are flattened to prevent sharp content leaking through the blur.
 Software rendering uses solid popups. The paper/checkerboard, text, and icons keep
 their own opacity; appearance changes do not affect artwork or undo history.
 
-Light menus use very little white tint. The shape gallery and footer buttons
+Floating menus retain at least 72% neutral tint for readable labels over strong
+background colors, while the interface opacity setting remains 40% by default. The shape gallery and footer buttons
 have transparent idle backgrounds when glass is enabled, with hover and focus
 feedback preserved. Disabling glass or choosing 100% restores opaque surfaces.
 The startup client size is 1449 × 1008; the minimum remains 1024 × 640.
@@ -360,3 +361,90 @@ and [rendering decision](decisions/0005-local-panel-blur.md).
 Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
 across restarts. Inline text displays a blinking caret at the scaled font height.
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
+
+Development font picker: a shared searchable dialog previews installed families.
+Arrow keys browse, Space selects, Enter applies, and Escape cancels. Applying a
+family preserves size/style and returns to the active text preview.
+Development text editing uses a dashed black/white box outline and a blinking
+black caret immediately in an empty box at the scaled text height; neither overlay is saved in the artwork.
+Development Linux windows use 12px rounded bottom client corners and matching input masks;
+top corners stay square, and other platforms receive no custom corner mask.
+maximized/fullscreen edges are square. Native decorations remain desktop-owned.
+Development glass selection uses stronger neutral frost and light outlines instead
+of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
+Updates identifies the designer as Afshin Kashani, PhD, P.Eng beneath the version.
+
+
+Development refinements retain the 40–100% glass range with a 40% default and no
+separate tint control. Flat toolbar buttons stay clear when idle; selected controls
+use stronger frost and light outlines. Checkmarks use neutral frosted colors, and
+selected color swatches use a bright outer ring without recoloring the swatch.
+The font picker retains its searchable per-family previews.
+
+Pencil, brush, eraser and eyedropper cursors identify the active tool over the canvas,
+with white contrast edges and tip-aligned hotspots. Space/middle-button panning
+uses a hand and restores the tool cursor afterward. Shape controls show a solid
+filled drop when solid fill is active, and a small × on the outline icon when
+outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).
+
+Eraser modes are Paper white (opaque white, independent of the background/fill
+swatch) and Transparent. A small dropdown beside the eraser replaces the separate
+ribbon options group. The eraser cursor's + marks the actual erase point. Both
+mouse buttons honor the chosen mode; strokes retain undo/redo and cancellation.
+See [eraser acceptance](plans/0051-eraser-target.md).
+
+The eraser button/cursor shows a small filled patch in Paper white mode; Transparent
+uses the hollow eraser. Both menu choices carry the corresponding eraser icon.
+
+The selected original Open palette application icon has light and dark variants.
+The running window and Updates dialog follow Light/Dark/System immediately. The
+installed launcher icon is the light variant; shell-controlled launcher/dock icons
+may not follow an application's theme preference.
+
+Spline is a separate open multi-point shape, alongside the two-bend Curve. Click or
+drag the first segment, then click to add points. Backspace removes the last point;
+Enter applies and Escape cancels. It interpolates the clicked points smoothly,
+uses outline color/width, and ignores fill. Endpoints and overall bounds remain
+editable; undo/redo and PNG saving use the existing document pipeline.
+See [icon and spline acceptance](plans/0052-icon-and-spline.md).
+
+## Development welcome, glass setup and Updates
+
+Welcome to OpenPaint appears once regardless of blur capability, with Start
+creating, Get involved and a real app picture. Escape/Start creating persist its
+dismissal. Startup waits for an idle editor with no drawing transaction or popup.
+Get involved opens the contribution guide only after a click.
+
+Enable Glass is a separate on-demand panel opened from Appearance or Updates.
+While requirements are unmet, the glass checkbox is unchecked and disabled, with
+an Enable Glass button beneath it. Saved glass intent is retained. Setup compares
+rounded real app corners, shows a small selectable command with a copy icon when
+applicable, and provides Check again and Close. Use Glass appears when ready.
+Unverified systems keep the opaque appearance without a guessed command or
+package warning. No setup panel opens automatically.
+
+Updates places a concise status, release action and attribution on the left and an angled real
+app image on the right. The content scrolls within small windows; narrow layouts
+stack the columns. Enable Glass appears in its footer only while glass is unavailable and does not start a release
+check. See [plan 0054](plans/0054-blur-onboarding-design.md).
+
+## Select by color
+
+Select → By color uses a magic-wand icon and the accessible label “Select by color”
+on the main button. Each left click replaces the mask with every pixel of the
+sampled exact color across the image, including disconnected areas and alpha.
+It ignores the previous selection as a sampling constraint. Dragging is inert;
+right clicks and clicks outside the canvas preserve the mask. This mode supersedes
+the usual outside-selection dismissal gesture. Rectangle/free-form keep that
+gesture. Arrow keys move selected pixels; copy, delete, invert and resize use the
+existing mask workflow. Escape cancels a pending scan or clears a finished mask.
+Selection alone never changes saved pixels. No tolerance/additive mode is offered.
+
+Font family, size, bold, italic, underline and strikeout apply to highlighted text.
+Without a highlight they affect newly typed characters at the current caret, not
+existing text. The font picker retains the highlight and returns focus; Cancel
+leaves formatting unchanged. Changing one property preserves other mixed styles.
+Alignment, text color and opaque background remain box-wide. Local text undo/redo
+includes formatting; committing rasterizes all runs into one document edit.
+
+The color editor OK/Cancel footer shares the dialog glass surface without a separate opaque panel.

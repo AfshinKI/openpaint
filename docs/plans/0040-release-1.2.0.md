@@ -1,6 +1,6 @@
 # Feature: stable v1.2.0 release
 
-Status: release preparation; publication pending
+Status: complete — stable release published; public downloads and checksums verified
 Feature IDs: F25
 
 ## Outcome and scope
@@ -11,10 +11,10 @@ updates version metadata and release notes; it adds no editor behavior.
 
 ## Acceptance cases
 
-- [ ] Source, AppStream metadata, release notes, tag and packages identify 1.2.0.
-- [ ] Release preparation passes all protected PR checks before merging.
-- [ ] Explicit main-branch dispatch passes every gate before publication.
-- [ ] Public assets and checksums match the tested source and release identity.
+- [x] Source, AppStream metadata, release notes, tag and packages identify 1.2.0.
+- [x] Release preparation passes all protected PR checks before merging.
+- [x] Explicit main-branch dispatch passes every gate before publication.
+- [x] Public assets and checksums match the tested source and release identity.
 
 ## Validation and limitations
 
@@ -34,8 +34,36 @@ Desktop blur is compositor-provided; local visual acceptance used GNOME 46/X11
 with Blur My Shell. OpenPaint does not configure desktop extensions. Downloads
 remain unsigned; checksums detect corruption and installation remains manual.
 
-## Next step
+## Publication and public-download closure
 
-Merge after all required checks, dispatch stable 1.2.0 on main, verify the public
-release and asset digests, and record the run and exact source identity. Never
-replace previously published assets or bypass branch/release protections.
+[PR #48](https://github.com/AfshinKI/openpaint/pull/48) merged as
+`4fb7f036987dd80a9e485ae9aee2ed8536a6f510` after all nine validation jobs passed in
+[PR run 39157273448](https://github.com/AfshinKI/openpaint/actions/runs/39157273448).
+The publishing job was correctly skipped on the PR.
+
+[Release run 39157968275](https://github.com/AfshinKI/openpaint/actions/runs/39157968275)
+was explicitly dispatched on main at that same commit. All ten jobs passed,
+including release identity, native builds/sanitizers, X11 scaling, packaging,
+Flatpak sandbox, Ubuntu package lifecycle and publication.
+[Stable v1.2.0](https://github.com/AfshinKI/openpaint/releases/tag/v1.2.0)
+was published at `2026-10-18T19:30:28Z`; the tag resolves to the source commit above.
+
+Closure verification downloaded every public asset, streamed SHA-256 over each
+package/source archive, and matched both the published `SHA256SUMS` entries and
+GitHub asset digests. The checksum file itself also matched its API digest.
+These are integrity checks, not signatures or a new installed-desktop certification.
+
+| Public asset | Verified SHA-256 |
+| --- | --- |
+| `OpenPaint-1.2.0-linux-x86_64.tar.gz` | `8f671c8018e6f083f5825f821a25a3c8dd61199243e4b0a3f53322a8407dd706` |
+| `OpenPaint-1.2.0-sources-and-notices.tar` | `dbbb0714fec3b465928886eb324e525ee491efd096243df69891e195b69f3c5b` |
+| `OpenPaint-1.2.0-ubuntu24.04-amd64.deb` | `27943950e80ebd422fdaa60fb5dad3a24410084b786abb5cb8cb8a54ab0f1021` |
+| `OpenPaint-1.2.0-x86_64.flatpak` | `81851eadf45fe13c42cd6b8501046b25b60e2b8da4e8d0065c4cacaa31ffa0cf` |
+| `SHA256SUMS` | `0bd8d95ff17d0d113c9cd258726d7e5622013ab2a5cb514c10916aa03360323a` |
+
+## Handoff
+
+Release preparation, publication and public-download verification are complete.
+Do not redispatch or replace this published version. Remaining platform/input/
+accessibility limits above are carried forward, not silently closed. The next
+feature planning step is recorded in [the roadmap](../ROADMAP.md#current-handoff-toward-v2).

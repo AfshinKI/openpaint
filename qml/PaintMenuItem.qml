@@ -23,7 +23,9 @@ MenuItem {
         y: (control.height - height) / 2
         width: 24
         text: control.checked ? "✓" : ""
-        color: Theme.text
+        color: Theme.dark ? "#F4FAFF" : "#536879"
+        style: Text.Raised
+        styleColor: Theme.dark ? "#687887" : "#FFFFFF"
         horizontalAlignment: Text.AlignHCenter
     }
     rightPadding: subMenu ? 24 : 6
@@ -48,7 +50,10 @@ MenuItem {
             font: control.font
         }
     }
-    background: Rectangle {
+    background: GlassSurface {
+        backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
+        visible: control.highlighted || control.visualFocus || control.checked
+        selectedSurface: control.highlighted || control.checked
         radius: Theme.controlRadius
         color: control.highlighted ? Theme.hover : "transparent"
         border.width: control.visualFocus ? 2 : 0

@@ -60,3 +60,8 @@ QString AppInfo::shortcutText(const QVariant& shortcut) const {
     return QKeySequence(static_cast<QKeySequence::StandardKey>(key))
         .toString(QKeySequence::NativeText);
 }
+
+bool AppInfo::openContributing() const {
+    return QDesktopServices::openUrl(
+        QUrl("https://github.com/AfshinKI/openpaint/blob/main/CONTRIBUTING.md"));
+}

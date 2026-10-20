@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "CanvasItem.h"
 #include <QCursor>
+#include <QImageReader>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
+#include <QQuickWindow>
 #include <QWheelEvent>
 #include <algorithm>
 #include <cmath>
@@ -15,6 +17,7 @@ CanvasItem::CanvasItem(QQuickItem* parent) : QQuickPaintedItem(parent) {
     setFlag(ItemIsFocusScope);
     setClip(true);
     setCursor(Qt::CrossCursor);
+    connect(this, &QQuickItem::windowChanged, this, [this] { updateToolCursor(); });
 }
 void CanvasItem::setEditor(Editor* editor) {
     if (editor_ == editor)
@@ -37,11 +40,86 @@ void CanvasItem::setEditor(Editor* editor) {
         connect(editor_, &Editor::documentReplaced, this, &CanvasItem::fit);
         connect(editor_, &Editor::settingsChanged, this, [this] {
             finishGesture();
+            updateToolCursor();
             update();
         });
     }
+    updateToolCursor();
     emit editorChanged();
     fit();
+}
+void CanvasItem::updateToolCursor() {
+    if (space_ || panning_) {
+        setCursor(panning_ ? Qt::ClosedHandCursor : Qt::OpenHandCursor);
+        return;
+    }
+    QString symbol;
+    QPoint hotSpot(6, 22);
+    if (editor_) {
+        switch (editor_->tool()) {
+        case Editor::Tool::Pencil:
+            symbol = "pencil";
+            break;
+        case Editor::Tool::Eraser:
+            symbol = editor_->transparentEraser ? "eraser" : "eraser-paper";
+            hotSpot = {5, 22};
+            break;
+        case Editor::Tool::ColorPicker:
+            symbol = "eyedropper";
+            break;
+        case Editor::Tool::Brush:
+            symbol = "brush";
+            break;
+        default:
+            break;
+        }
+    }
+    if (symbol.isEmpty()) {
+        setCursor(Qt::CrossCursor);
+        return;
+    }
+    const qreal scale = window() ? window()->devicePixelRatio() : 1;
+    const QString key = symbol + QString::number(scale);
+    // Native cursors are created and cached only on the GUI thread.
+    static QHash<QString, QCursor> cursors;
+    if (!cursors.contains(key)) {
+        QImageReader reader(":/qt/qml/OpenPaint/icons/" + symbol + ".svg");
+        reader.setScaledSize(QSize(qRound(24 * scale), qRound(24 * scale)));
+        QImage image = reader.read();
+        if (image.isNull()) {
+            setCursor(Qt::CrossCursor);
+            return;
+        }
+        image.setDevicePixelRatio(scale);
+        QPixmap glyph = QPixmap::fromImage(image);
+        QPixmap halo = glyph;
+        {
+            QPainter painter(&halo);
+            painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+            painter.fillRect(halo.rect(), Qt::white);
+        }
+        QPixmap bitmap(qRound(28 * scale), qRound(28 * scale));
+        bitmap.setDevicePixelRatio(scale);
+        bitmap.fill(Qt::transparent);
+        {
+            QPainter painter(&bitmap);
+            for (int x = 1; x <= 3; ++x)
+                for (int y = 1; y <= 3; ++y)
+                    painter.drawPixmap(x, y, halo);
+            painter.drawPixmap(2, 2, glyph);
+            if (symbol.startsWith("eraser")) {
+                // The cross marks the actual stroke center, separate from the glyph.
+                painter.setPen(QPen(Qt::white, 3));
+                painter.drawLine(hotSpot + QPoint(-3, 0), hotSpot + QPoint(3, 0));
+                painter.drawLine(hotSpot + QPoint(0, -3), hotSpot + QPoint(0, 3));
+                painter.setPen(QPen(Qt::black, 1));
+                painter.drawLine(hotSpot + QPoint(-3, 0), hotSpot + QPoint(3, 0));
+                painter.drawLine(hotSpot + QPoint(0, -3), hotSpot + QPoint(0, 3));
+            }
+        }
+        cursors.insert(key, QCursor(bitmap, hotSpot.x(), hotSpot.y()));
+    }
+    setCursor(cursors.value(key));
 }
 void CanvasItem::fit() {
     if (!editor_ || width() <= 48 || height() <= 48)
@@ -166,6 +244,7 @@ void CanvasItem::mousePressEvent(QMouseEvent* event) {
     gestureButton_ = event->button();
     last_ = event->position();
     panning_ = space_ || gestureButton_ == Qt::MiddleButton;
+    updateToolCursor();
     drawing_ = !panning_ && !picking && editor_;
     if (drawing_)
         editor_->begin(toDocument(last_), gestureButton_ == Qt::RightButton);
@@ -208,11 +287,13 @@ void CanvasItem::finishGesture() {
         editor_->endGesture();
     drawing_ = panning_ = false;
     gestureButton_ = Qt::NoButton;
+    updateToolCursor();
 }
 void CanvasItem::mouseUngrabEvent() {
     finishGesture();
 }
 void CanvasItem::hoverMoveEvent(QHoverEvent* event) {
+    updateToolCursor();
     hovering_ = true;
     hoverPoint_ = event->position();
     cursor_ = toDocument(event->position());
@@ -242,7 +323,7 @@ void CanvasItem::wheelEvent(QWheelEvent* event) {
 void CanvasItem::keyPressEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Space) {
         space_ = true;
-        setCursor(Qt::OpenHandCursor);
+        updateToolCursor();
         event->accept();
     } else if (editor_ && editor_->hasSelection() &&
                (!editor_->previewActive() || editor_->floatingActive()) &&
@@ -278,7 +359,7 @@ void CanvasItem::keyPressEvent(QKeyEvent* event) {
 void CanvasItem::keyReleaseEvent(QKeyEvent* event) {
     if (event->key() == Qt::Key_Space && !event->isAutoRepeat()) {
         space_ = false;
-        setCursor(Qt::CrossCursor);
+        updateToolCursor();
     } else {
         QQuickPaintedItem::keyReleaseEvent(event);
     }
@@ -286,6 +367,6 @@ void CanvasItem::keyReleaseEvent(QKeyEvent* event) {
 void CanvasItem::focusOutEvent(QFocusEvent* event) {
     finishGesture();
     space_ = false;
-    setCursor(Qt::CrossCursor);
+    updateToolCursor();
     QQuickPaintedItem::focusOutEvent(event);
 }

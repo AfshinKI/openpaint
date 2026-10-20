@@ -25,7 +25,9 @@ PaintMenu {
                 y: (item.height - height) / 2
                 width: 16
                 text: item.checked ? "✓" : ""
-                color: Theme.text
+                color: Theme.dark ? "#F4FAFF" : "#536879"
+                style: Text.Raised
+                styleColor: Theme.dark ? "#687887" : "#FFFFFF"
             }
             checked: brushMenuRoot.editor.tool === Editor.Brush && brushMenuRoot.editor.brushStyle === index
             onTriggered: {

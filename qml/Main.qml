@@ -24,12 +24,21 @@ ApplicationWindow {
     visible: false
     Component.onCompleted: Qt.callLater(function () {
         window.show();
+        BlurSupport.refresh();
     })
     title: (editor.dirty ? "* " : "") + editor.fileName + qsTr(" — OpenPaint")
-    readonly property real backgroundAlpha: Appearance.glassEnabled ? Appearance.surfaceOpacity / 100 : 1
-    color: backgroundAlpha < 1 ? "transparent" : Theme.workspace
+    readonly property real backgroundAlpha: Appearance.effectiveGlassEnabled ? Appearance.surfaceOpacity / 100 : 1
+    readonly property real clientRadius: Qt.platform.os !== "linux" || visibility === Window.Maximized || visibility === Window.FullScreen ? 0 : 12
+    color: "transparent"
+    Overlay.modal: Rectangle {
+        color: "#66000000"
+        bottomLeftRadius: window.clientRadius
+        bottomRightRadius: window.clientRadius
+    }
     background: Rectangle {
         objectName: "workspaceSurface"
+        bottomLeftRadius: window.clientRadius
+        bottomRightRadius: window.clientRadius
         color: Qt.rgba(Theme.workspace.r, Theme.workspace.g, Theme.workspace.b, window.backgroundAlpha)
     }
     palette.window: Theme.window
@@ -93,6 +102,39 @@ ApplicationWindow {
             requestChange("close");
         }
     }
+    Binding {
+        target: Appearance
+        property: "desktopBlurAvailable"
+        value: BlurSupport.ready
+    }
+    Timer {
+        interval: 800
+        repeat: true
+        running: Appearance.welcomePending && !welcomeDialog.visible
+        onTriggered: {
+            if (!window.Overlay.overlay.visible && !editor.busy && !editor.interactionActive)
+                welcomeDialog.open();
+        }
+    }
+    WelcomeDialog {
+        id: welcomeDialog
+        objectName: "welcomeDialog"
+        parent: Overlay.overlay
+        onClosed: canvas.forceActiveFocus()
+    }
+    GlassSetupDialog {
+        id: glassSetup
+        objectName: "glassSetupDialog"
+        parent: Overlay.overlay
+        onClosed: {
+            if (appearanceDialog.visible)
+                appearanceDialog.focusGlassSetup();
+            else if (updatesDialog.visible)
+                updatesDialog.focusBlurHelp();
+            else
+                canvas.forceActiveFocus();
+        }
+    }
     UpdateService {
         id: updateService
         objectName: "updateService"
@@ -100,12 +142,14 @@ ApplicationWindow {
     }
     AppearanceDialog {
         id: appearanceDialog
+        onGlassSetupRequested: glassSetup.open()
         objectName: "appearanceDialog"
         parent: Overlay.overlay
     }
     UpdatesDialog {
         id: updatesDialog
         service: updateService
+        onBlurHelpRequested: glassSetup.open()
         objectName: "updatesDialog"
         parent: Overlay.overlay
     }
@@ -466,14 +510,16 @@ ApplicationWindow {
     }
 
     menuBar: ToolBar {
-        leftPadding: 4
-        rightPadding: 4
+        leftPadding: 12
+        rightPadding: 12
         topPadding: 2
         bottomPadding: 2
         background: GlassSurface {
             backdropSource: null
             raisedSurface: false
             radius: 0
+            topLeftRadius: 0
+            topRightRadius: 0
             border.width: 0
         }
         contentItem: RowLayout {
@@ -483,8 +529,11 @@ ApplicationWindow {
                 background: Item {}
                 delegate: MenuBarItem {
                     id: menuEntry
-                    background: Rectangle {
+                    background: GlassSurface {
+                        backdropLayers: [window.background, canvas]
                         radius: Theme.controlRadius
+                        selectedSurface: menuEntry.highlighted
+                        visible: selectedSurface || menuEntry.visualFocus
                         color: menuEntry.highlighted ? Theme.hover : "transparent"
                     }
                 }
@@ -667,17 +716,29 @@ ApplicationWindow {
                     Layout.preferredWidth: 40
                     Layout.preferredHeight: 56
                     Layout.alignment: Qt.AlignHCenter
+                    GlassSurface {
+                        objectName: "selectSelectedSurface"
+                        anchors.fill: parent
+                        selectedSurface: true
+                        radius: Theme.controlRadius
+                        visible: Appearance.effectiveGlassEnabled && editor.tool === Editor.Select
+                        backdropLayers: [window.background, canvas]
+                        border.width: 0
+                    }
                     IconButton {
                         id: selectionMain
                         icon.width: 26
                         icon.height: 26
                         padding: 4
                         objectName: "selectionButton"
-                        symbol: editor.freeFormSelection ? "lasso" : "selection"
-                        text: editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
+                        symbol: editor.colorSelection ? "wand" : editor.freeFormSelection ? "lasso" : "selection"
+                        text: editor.colorSelection ? qsTr("Select by color") : editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
                         Accessible.name: text
-                        background: Rectangle {
+                        background: GlassSurface {
+                            backdropLayers: [window.background, canvas]
                             radius: Theme.controlRadius
+                            selectedSurface: editor.tool === Editor.Select || selectionMain.down || selectionMain.hovered
+                            visible: selectedSurface || selectionMain.visualFocus
                             color: selectionMain.down ? Theme.pressed : selectionMain.hovered ? Theme.hover : "transparent"
                         }
                         enabled: editor.canSelect
@@ -693,8 +754,11 @@ ApplicationWindow {
                         y: 36
                         width: parent.width
                         height: 20
-                        background: Rectangle {
+                        background: GlassSurface {
+                            backdropLayers: [window.background, canvas]
                             radius: Theme.controlRadius
+                            selectedSurface: editor.tool === Editor.Select || selectionDropdown.down || selectionDropdown.hovered
+                            visible: selectedSurface || selectionDropdown.visualFocus
                             color: selectionDropdown.down ? Theme.pressed : selectionDropdown.hovered ? Theme.hover : "transparent"
                         }
                         enabled: editor.canSelect || editor.floatingActive
@@ -707,9 +771,10 @@ ApplicationWindow {
                                 symbol: "selection"
                                 text: qsTr("Rectangle")
                                 checkable: true
-                                checked: editor.tool === Editor.Select && !editor.freeFormSelection
+                                checked: editor.tool === Editor.Select && !editor.colorSelection && !editor.freeFormSelection
                                 enabled: editor.canSelect
                                 onTriggered: {
+                                    editor.colorSelection = false;
                                     editor.freeFormSelection = false;
                                     editor.tool = Editor.Select;
                                 }
@@ -719,10 +784,24 @@ ApplicationWindow {
                                 symbol: "lasso"
                                 text: qsTr("Free-form")
                                 checkable: true
-                                checked: editor.tool === Editor.Select && editor.freeFormSelection
+                                checked: editor.tool === Editor.Select && !editor.colorSelection && editor.freeFormSelection
                                 enabled: editor.canSelect
                                 onTriggered: {
+                                    editor.colorSelection = false;
                                     editor.freeFormSelection = true;
+                                    editor.tool = Editor.Select;
+                                }
+                            }
+                            PaintMenuItem {
+                                objectName: "colorSelectionItem"
+                                symbol: "wand"
+                                text: qsTr("By color")
+                                checkable: true
+                                checked: editor.tool === Editor.Select && editor.colorSelection
+                                enabled: editor.canSelect
+                                onTriggered: {
+                                    editor.freeFormSelection = false;
+                                    editor.colorSelection = true;
                                     editor.tool = Editor.Select;
                                 }
                             }
@@ -761,7 +840,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         radius: Theme.controlRadius
                         color: "transparent"
-                        border.color: Theme.accent
+                        border.color: Appearance.effectiveGlassEnabled ? Theme.selectionOutline : Theme.accent
                         border.width: selectionMain.visualFocus || selectionDropdown.visualFocus ? 2 : editor.tool === Editor.Select ? 1 : 0
                     }
                 }
@@ -909,18 +988,6 @@ ApplicationWindow {
                     }
                     IconButton {
                         flat: true
-                        symbol: "eraser"
-                        objectName: "eraserButton"
-                        text: qsTr("Eraser")
-                        enabled: !editor.textActive
-                        checkable: true
-                        autoExclusive: true
-                        checked: editor.tool === Editor.Eraser
-                        onClicked: editor.tool = Editor.Eraser
-                        Accessible.name: text
-                    }
-                    IconButton {
-                        flat: true
                         symbol: "eyedropper"
                         objectName: "pickerButton"
                         text: qsTr("Color picker")
@@ -930,6 +997,56 @@ ApplicationWindow {
                         checked: editor.tool === Editor.ColorPicker
                         onClicked: editor.tool = Editor.ColorPicker
                         Accessible.name: text
+                    }
+                    Row {
+                        spacing: 0
+                        IconButton {
+                            flat: true
+                            symbol: editor.transparentEraser ? "eraser" : "eraser-paper"
+                            objectName: "eraserButton"
+                            text: qsTr("Eraser")
+                            enabled: !editor.textActive && !editor.busy
+                            checkable: true
+                            autoExclusive: true
+                            checked: editor.tool === Editor.Eraser
+                            onClicked: editor.tool = Editor.Eraser
+                            Accessible.name: text
+                        }
+                        PaintButton {
+                            objectName: "eraserMenuButton"
+                            text: "⌄"
+                            flat: true
+                            width: 16
+                            implicitWidth: 16
+                            height: 32
+                            padding: 0
+                            enabled: !editor.textActive && !editor.busy
+                            Accessible.name: editor.transparentEraser ? qsTr("Eraser mode: transparent") : qsTr("Eraser mode: paper white")
+                            ToolTip.visible: hovered
+                            ToolTip.text: Accessible.name
+                            onClicked: eraserMenu.open()
+                            PaintMenu {
+                                id: eraserMenu
+                                objectName: "eraserMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    objectName: "erasePaperItem"
+                                    symbol: "eraser-paper"
+                                    text: qsTr("Paper white")
+                                    checkable: true
+                                    checked: !editor.transparentEraser
+                                    onTriggered: editor.transparentEraser = false
+                                }
+                                PaintMenuItem {
+                                    objectName: "eraseTransparentItem"
+                                    symbol: "eraser"
+                                    text: qsTr("Transparent")
+                                    checkable: true
+                                    checked: editor.transparentEraser
+                                    onTriggered: editor.transparentEraser = true
+                                }
+                            }
+                        }
                     }
                 }
                 Label {
@@ -948,6 +1065,15 @@ ApplicationWindow {
                     Layout.preferredWidth: 40
                     Layout.preferredHeight: 56
                     Layout.alignment: Qt.AlignHCenter
+                    GlassSurface {
+                        objectName: "brushSelectedSurface"
+                        anchors.fill: parent
+                        selectedSurface: true
+                        radius: Theme.controlRadius
+                        visible: Appearance.effectiveGlassEnabled && editor.tool === Editor.Brush
+                        backdropLayers: [window.background, canvas]
+                        border.width: 0
+                    }
                     IconButton {
                         id: brushesButton
                         flat: true
@@ -960,8 +1086,11 @@ ApplicationWindow {
                         height: 36
                         padding: 4
                         text: qsTr("Brush")
-                        background: Rectangle {
+                        background: GlassSurface {
+                            backdropLayers: [window.background, canvas]
                             radius: Theme.controlRadius
+                            selectedSurface: editor.tool === Editor.Brush || brushesButton.down || brushesButton.hovered
+                            visible: selectedSurface || brushesButton.visualFocus
                             color: brushesButton.down ? Theme.pressed : brushesButton.hovered ? Theme.hover : "transparent"
                         }
                         onClicked: editor.tool = Editor.Brush
@@ -975,8 +1104,11 @@ ApplicationWindow {
                         width: 40
                         height: 20
                         y: 36
-                        background: Rectangle {
+                        background: GlassSurface {
+                            backdropLayers: [window.background, canvas]
                             radius: Theme.controlRadius
+                            selectedSurface: editor.tool === Editor.Brush || brushDropdown.down || brushDropdown.hovered
+                            visible: selectedSurface || brushDropdown.visualFocus
                             color: brushDropdown.down ? Theme.pressed : brushDropdown.hovered ? Theme.hover : "transparent"
                         }
                         enabled: !editor.textActive && !editor.busy
@@ -993,7 +1125,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         radius: Theme.controlRadius
                         color: "transparent"
-                        border.color: Theme.accent
+                        border.color: Appearance.effectiveGlassEnabled ? Theme.selectionOutline : Theme.accent
                         border.width: brushesButton.visualFocus || brushDropdown.visualFocus ? 2 : editor.tool === Editor.Brush ? 1 : 0
                     }
                 }
@@ -1020,13 +1152,13 @@ ApplicationWindow {
                         IconButton {
                             objectName: "shapeOutlineButton"
                             flat: true
-                            symbol: "shape-outline"
+                            symbol: editor.shapeOutline ? "shape-outline" : "shape-outline-off"
                             text: "⌄"
                             display: AbstractButton.TextBesideIcon
                             implicitWidth: 48
                             implicitHeight: 32
                             enabled: !editor.textActive && !editor.busy
-                            Accessible.name: qsTr("Shape outline")
+                            Accessible.name: editor.shapeOutline ? qsTr("Shape outline: solid") : qsTr("Shape outline: off")
                             ToolTip.text: Accessible.name
                             onClicked: outlineMenu.open()
                             PaintMenu {
@@ -1056,13 +1188,13 @@ ApplicationWindow {
                         IconButton {
                             objectName: "shapeFillButton"
                             flat: true
-                            symbol: "fill"
+                            symbol: editor.shapeFill ? "fill-solid" : "fill"
                             text: "⌄"
                             display: AbstractButton.TextBesideIcon
                             implicitWidth: 48
                             implicitHeight: 32
                             enabled: !editor.textActive && !editor.busy
-                            Accessible.name: qsTr("Shape fill")
+                            Accessible.name: editor.shapeFill ? qsTr("Shape fill: solid") : qsTr("Shape fill: none")
                             ToolTip.text: Accessible.name
                             onClicked: fillMenu.open()
                             PaintMenu {
@@ -1081,7 +1213,7 @@ ApplicationWindow {
                                 PaintMenuItem {
                                     objectName: "solidFillItem"
                                     autoExclusive: true
-                                    symbol: "fill"
+                                    symbol: "fill-solid"
                                     text: qsTr("Solid fill")
                                     checkable: true
                                     checked: editor.shapeFill
@@ -1098,24 +1230,6 @@ ApplicationWindow {
                 }
             }
             ToolSeparator {
-                Layout.fillHeight: true
-            }
-            ColumnLayout {
-                visible: editor.tool === Editor.Eraser
-                PaintCheckBox {
-                    text: qsTr("Transparent")
-                    visible: editor.tool === Editor.Eraser
-                    checked: editor.transparentEraser
-                    onToggled: editor.transparentEraser = checked
-                }
-                Label {
-                    text: qsTr("Eraser")
-                    color: Theme.secondaryText
-                    Layout.alignment: Qt.AlignHCenter
-                }
-            }
-            ToolSeparator {
-                visible: editor.tool === Editor.Eraser
                 Layout.fillHeight: true
             }
             ColumnLayout {
@@ -1222,8 +1336,11 @@ ApplicationWindow {
                 IconButton {
                     id: editColorsOption
                     objectName: "editColorsButton"
-                    background: Rectangle {
+                    background: GlassSurface {
+                        backdropLayers: [window.background, canvas]
                         radius: width / 2
+                        selectedSurface: editColorsOption.down || editColorsOption.hovered
+                        visible: selectedSurface || editColorsOption.visualFocus
                         color: editColorsOption.down ? Theme.pressed : editColorsOption.hovered ? Theme.hover : "transparent"
                         border.width: editColorsOption.visualFocus ? 2 : 0
                         border.color: Theme.accent
@@ -1244,11 +1361,14 @@ ApplicationWindow {
                 IconButton {
                     id: transparencyOption
                     objectName: "transparentBackgroundButton"
-                    background: Rectangle {
+                    background: GlassSurface {
+                        backdropLayers: [window.background, canvas]
                         anchors.centerIn: parent
                         width: 28
                         height: 28
                         radius: 14
+                        selectedSurface: transparencyOption.highlighted || transparencyOption.down || transparencyOption.hovered
+                        visible: selectedSurface || transparencyOption.visualFocus
                         color: transparencyOption.down ? Theme.pressed : transparencyOption.hovered ? Theme.hover : "transparent"
                         border.width: transparencyOption.visualFocus ? 2 : transparencyOption.highlighted || transparencyOption.hovered ? 1 : 0
                         border.color: Theme.accent
@@ -1386,6 +1506,8 @@ ApplicationWindow {
             raisedSurface: false
             baseTintPower: 3
             radius: 0
+            bottomLeftRadius: window.clientRadius
+            bottomRightRadius: window.clientRadius
             border.width: 0
         }
         RowLayout {
@@ -1403,19 +1525,19 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? (editor.shapeKind === 15 ? qsTr("Add points · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? ((editor.shapeKind === 15 || editor.shapeKind === 19) ? qsTr("Add points · Backspace removes · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
             }
             PaintButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 objectName: "shapeOptionsButton"
                 text: qsTr("Options")
                 visible: editor.previewActive && !editor.textActive
                 onClicked: editor.floatingActive ? selectionOptions.open() : shapeOptions.open()
             }
             PaintButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 objectName: "applyPreviewButton"
                 text: qsTr("Apply")
                 visible: editor.previewActive && !editor.textActive
@@ -1424,7 +1546,7 @@ ApplicationWindow {
                 }
             }
             PaintButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 text: qsTr("Cancel")
                 visible: editor.previewActive
                 onClicked: editor.cancel()
@@ -1435,19 +1557,19 @@ ApplicationWindow {
                 implicitWidth: 24
                 implicitHeight: 24
             }
-            ToolButton {
+            PaintButton {
                 text: qsTr("Cancel")
                 visible: editor.busy
                 onClicked: editor.cancelIo()
             }
             IconButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 symbol: "fit"
                 shortcutLabel: "Ctrl+0"
                 action: fitAction
             }
             IconButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 symbol: "zoom-out"
                 shortcutLabel: "Ctrl+-"
                 action: zoomOutAction
@@ -1459,7 +1581,7 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
             }
             IconButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 symbol: "zoom-in"
                 shortcutLabel: "Ctrl++"
                 action: zoomInAction

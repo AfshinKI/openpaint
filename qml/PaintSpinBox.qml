@@ -7,13 +7,16 @@ SpinBox {
     id: control
     implicitHeight: 36
     implicitWidth: 104
-    background: Rectangle {
+    background: GlassSurface {
+        backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
         radius: Theme.controlRadius
         color: Theme.panel
         border.width: control.visualFocus ? 2 : 1
         border.color: control.visualFocus ? Theme.accent : Theme.divider
     }
-    up.indicator: Rectangle {
+    up.indicator: GlassSurface {
+        selectedSurface: control.up.pressed || control.up.hovered
+        backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
         x: control.width - width - 2
         y: 2
         width: 28
@@ -27,7 +30,9 @@ SpinBox {
             font.pixelSize: 20
         }
     }
-    down.indicator: Rectangle {
+    down.indicator: GlassSurface {
+        selectedSurface: control.down.pressed || control.down.hovered
+        backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
         x: 2
         y: 2
         width: 28

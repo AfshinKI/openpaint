@@ -16,9 +16,7 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setApplicationName(QStringLiteral("OpenPaint"));
     QCoreApplication::setApplicationVersion(AppInfo::version());
     QGuiApplication::setDesktopFileName(QStringLiteral("io.github.AfshinKI.OpenPaint"));
-    QGuiApplication::setWindowIcon(
-        QIcon::fromTheme(QStringLiteral("io.github.AfshinKI.OpenPaint"),
-                         QIcon(QStringLiteral(":/qt/qml/OpenPaint/icons/app.svg"))));
+    QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/qt/qml/OpenPaint/icons/app.svg")));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
     QCommandLineParser parser;

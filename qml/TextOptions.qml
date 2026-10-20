@@ -2,7 +2,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
-import QtQuick.Dialogs
+import QtQuick.Controls
 import OpenPaint
 
 GlassSurface {
@@ -27,15 +27,7 @@ GlassSurface {
             text: dialog.editor.textFamily
             Layout.fillWidth: true
             Layout.minimumWidth: 120
-            onClicked: {
-                fontDialog.selectedFont = Qt.font({
-                    family: dialog.editor.textFamily,
-                    pixelSize: dialog.editor.textSize,
-                    bold: dialog.editor.textBold,
-                    italic: dialog.editor.textItalic
-                });
-                fontDialog.open();
-            }
+            onClicked: fontDialog.open()
             Accessible.name: qsTr("Choose text font")
         }
         PaintSpinBox {
@@ -120,18 +112,11 @@ GlassSurface {
             }
         }
     }
-    FontDialog {
+    FontPicker {
         id: fontDialog
-        title: qsTr("Choose text font")
-        onRejected: dialog.returnToText()
-        onAccepted: {
-            dialog.editor.textFamily = selectedFont.family;
-            dialog.editor.textSize = Math.max(1, Math.min(512, selectedFont.pixelSize > 0 ? selectedFont.pixelSize : Math.round(selectedFont.pointSize * 96 / 72)));
-            dialog.editor.textBold = selectedFont.bold;
-            dialog.editor.textItalic = selectedFont.italic;
-            dialog.editor.textUnderline = selectedFont.underline;
-            dialog.editor.textStrikeout = selectedFont.strikeout;
-            dialog.returnToText();
-        }
+        objectName: "fontPicker"
+        editor: dialog.editor
+        parent: Overlay.overlay
+        onClosed: dialog.returnToText()
     }
 }

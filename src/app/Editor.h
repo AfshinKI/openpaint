@@ -2,11 +2,14 @@
 #pragma once
 #include "document/Document.h"
 #include "io/PngIo.h"
+#include "tools/ColorSelect.h"
 #include "tools/Fill.h"
 #include "tools/Transform.h"
 #include <QFutureWatcher>
 #include <QObject>
+#include <QPointer>
 #include <QPolygon>
+#include <QQuickTextDocument>
 #include <QUrl>
 #include <QtQml/qqmlregistration.h>
 
@@ -15,6 +18,7 @@ class Editor : public QObject {
     QML_ELEMENT
     Q_PROPERTY(bool exporting READ exporting NOTIFY changed)
     Q_PROPERTY(bool transforming READ transforming NOTIFY changed)
+    Q_PROPERTY(bool colorSelection MEMBER colorSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool freeFormSelection MEMBER freeFormSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentSelection MEMBER transparentSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool clipboardBusy READ clipboardBusy NOTIFY changed)
@@ -29,15 +33,18 @@ class Editor : public QObject {
     Q_PROPERTY(QString textDraft READ textDraft NOTIFY textDraftChanged)
     Q_PROPERTY(QColor textColor READ textColor NOTIFY changed)
     Q_PROPERTY(QColor textBackgroundColor READ textBackgroundColor NOTIFY changed)
-    Q_PROPERTY(QString textFamily MEMBER textFamily NOTIFY settingsChanged)
-    Q_PROPERTY(int textSize MEMBER textSize NOTIFY settingsChanged)
+    Q_PROPERTY(QString textFamily MEMBER textFamily WRITE setTextFamily NOTIFY settingsChanged)
+    Q_PROPERTY(int textSize MEMBER textSize WRITE setTextSize NOTIFY settingsChanged)
     Q_PROPERTY(int textAlignment MEMBER textAlignment NOTIFY settingsChanged)
-    Q_PROPERTY(bool textBold MEMBER textBold NOTIFY settingsChanged)
-    Q_PROPERTY(bool textItalic MEMBER textItalic NOTIFY settingsChanged)
-    Q_PROPERTY(bool textUnderline MEMBER textUnderline NOTIFY settingsChanged)
-    Q_PROPERTY(bool textStrikeout MEMBER textStrikeout NOTIFY settingsChanged)
+    Q_PROPERTY(bool textBold MEMBER textBold WRITE setTextBold NOTIFY settingsChanged)
+    Q_PROPERTY(bool textItalic MEMBER textItalic WRITE setTextItalic NOTIFY settingsChanged)
+    Q_PROPERTY(
+        bool textUnderline MEMBER textUnderline WRITE setTextUnderline NOTIFY settingsChanged)
+    Q_PROPERTY(
+        bool textStrikeout MEMBER textStrikeout WRITE setTextStrikeout NOTIFY settingsChanged)
     Q_PROPERTY(bool textBackground MEMBER textBackground NOTIFY settingsChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
+    Q_PROPERTY(bool interactionActive READ interactionActive NOTIFY changed)
     Q_PROPERTY(bool filling READ filling NOTIFY changed)
     Q_PROPERTY(bool previewActive READ previewActive NOTIFY changed)
     Q_PROPERTY(QPointF shapeStart READ shapeStart NOTIFY changed)
@@ -99,6 +106,9 @@ class Editor : public QObject {
     Q_INVOKABLE void resizeImage(int width, int height, qreal skewX, qreal skewY, bool smooth);
     bool clipboardBusy() const {
         return clipboardBusy_;
+    }
+    bool interactionActive() const {
+        return document.active() || previewActive();
     }
     bool busy() const {
         return busy_;
@@ -193,6 +203,19 @@ class Editor : public QObject {
     QColor textBackgroundColor() const {
         return textSecondary_ ? primary : secondary;
     }
+    Q_INVOKABLE void attachTextDocument(QQuickTextDocument* document);
+    Q_INVOKABLE void formatTextRange(const QFont& font, int start, int end);
+    Q_INVOKABLE void setInsertionFont(const QFont& change, const QFont& current, int position);
+    Q_INVOKABLE void clearInsertionFont();
+    Q_INVOKABLE int undoText(bool redo);
+    Q_INVOKABLE void syncTextCursor(int position, int start, int end);
+    Q_INVOKABLE void syncTextFont(const QFont& font);
+    void setTextFamily(const QString& family);
+    void setTextSize(int size);
+    void setTextBold(bool enabled);
+    void setTextItalic(bool enabled);
+    void setTextUnderline(bool enabled);
+    void setTextStrikeout(bool enabled);
     Q_INVOKABLE bool setTextDraft(const QString& text);
     Q_INVOKABLE void setTextBounds(int x, int y, int width, int height);
     void begin(QPointF point, bool secondaryButton);
@@ -216,6 +239,7 @@ class Editor : public QObject {
     Q_INVOKABLE void redo();
     QColor primary = Qt::black, secondary = Qt::white;
     int brushSize = 3, brushStyle = 0, opacity = 100;
+    bool colorSelection = false;
     bool freeFormSelection = false, transparentSelection = false;
     bool transparentEraser = false, shapeOutline = true, shapeFill = false;
     int shapeKind = 0, curveBend1 = 30, curveBend2 = -30;
@@ -226,6 +250,7 @@ class Editor : public QObject {
   signals:
     void changed();
     void textDraftChanged();
+    void textFontRequested(const QFont& font);
     void textEditingReady();
     void errorChanged();
     void noticeChanged();
@@ -251,6 +276,10 @@ class Editor : public QObject {
     void finishCopy();
     QFutureWatcher<QByteArray> copyWatcher_;
     bool cutAfterCopy_ = false, clipboardBusy_ = false;
+    void startColorSelection(QPoint seed);
+    void finishColorSelection();
+    QFutureWatcher<openpaint::ColorSelectionResult> colorSelectionWatcher_;
+    quint64 colorSelectionRevision_ = 0;
     void finishSelection();
     QPolygon selectionPoints_;
     void beginMove(QPoint point);
@@ -268,6 +297,12 @@ class Editor : public QObject {
     QRect textRect_;
     QPointF textAnchor_;
     QString textDraft_;
+    QPointer<QTextDocument> inlineDocument_;
+    QMetaObject::Connection inlineDocumentConnection_;
+    QPointer<QObject> inlineInput_;
+    QFont pendingTextFont_;
+    bool pendingTextFormat_ = false, applyingTextFormat_ = false;
+    int pendingTextPosition_ = 0;
     QPointF shapeStart_, shapeEnd_;
     QList<QPointF> shapePoints_;
     bool shapeActive_ = false, shapeSecondary_ = false, shapeInputBlocked_ = false;
@@ -284,5 +319,6 @@ class Editor : public QObject {
     quint64 savingRevision_ = 0;
 
   protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
     openpaint::Document document;
 };

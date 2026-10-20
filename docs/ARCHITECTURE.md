@@ -213,3 +213,17 @@ local, with user-only permissions and a visible Clear Recovery Data control.
 - No public binary plugin ABI in 1.0. Keep internal interfaces simple and testable.
 
 Release notifications use a GUI-thread Qt Network service with bounded asynchronous requests, immutable parsed version strings and local schedule preferences. See [ADR 0004](decisions/0004-release-checks.md); document mutations and installation remain outside this service.
+
+Desktop blur evidence is a bounded worker-side local probe, separate from saved
+appearance intent and document state. See [ADR 0006](decisions/0006-desktop-blur-guidance.md).
+
+Color selection scans immutable document snapshots on a cancellable worker. It
+returns a QRegion built from sorted horizontal runs, coalescing repeated rows and
+bounding output to 16,384 rectangles. The GUI controller checks cancellation and
+the captured document revision before replacing the mask. Selecting does not mutate
+pixels or content history; existing document commands handle subsequent edits.
+
+Inline text retains font runs in the transient Qt Quick text document. C++ merges
+requested character properties and clones the bounded plain-input document for
+raster preview/commit; saved pixels still belong to Document. Logical-pixel layout
+and view scaling keep zoom out of text formatting. See [ADR 0007](decisions/0007-inline-text-formats.md).

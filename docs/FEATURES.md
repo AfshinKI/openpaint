@@ -1,8 +1,9 @@
 # Feature checklist and reference audit
 
-Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
-It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
-current shipped behavior remains unchanged until implementation is verified.
+Alpha corrections shipped through PR #34; the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md)
+records implementation evidence and remaining desktop-validation limits. It
+supersedes the earlier shared custom-palette, Swap-button and left-rail targets.
+The current release is [v1.2.0](plans/0040-release-1.2.0.md).
 
 Audit date: 2026-10-12. **The single-layer editor is implemented.**
 The maintainer selected this feature scope for [v1.0.0](plans/0031-stable-release.md);
@@ -29,9 +30,9 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F03 | Additional brush styles, stroke opacity | R1, R2; nine-style inventory in the menu/control specification | M2 | Implemented: nine original deterministic raster styles, generated previews and per-stroke opacity; [plan 0012](plans/0012-brush-styles.md). Proprietary simulation parity and pressure remain unverified. |
 | F04 | Fill with smooth edges | R1 | M2 | Implemented: cancellable four-connected fill, exact color matching, automatic smooth edges and alpha replacement; [plan 0011](plans/0011-fill-tolerance.md). Selection clipping is implemented in [plan 0016](plans/0016-rectangular-selection.md). |
 | F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | Implemented: primary/secondary rectangular spectrum, brightness, HEX/RGB/HSV, 24 session custom colors and right-button secondary drawing. Alpha polish adds a fixed foreground/background pair with selectable editing target, automatic 10/24 session palette insertion, transparent-background choice with checkerboard swatches, and removes Swap; see [plan 0028](plans/0028-alpha-ui-polish.md). Behavioral and visual evidence in the [reference layout plan](plans/0005-reference-color-layout.md); pointer-attached hover swatch and canvas eyedropper implemented with alpha-preserving primary/secondary sampling; see [plan 0010](plans/0010-canvas-eyedropper.md). |
-| F06 | Lines, rectangles, ellipses, shape palette | R1; partial visible shape inventory specified, full palette still unverified | M2 | Implemented: 19-shape 7×3 ribbon gallery with separate Outline and Fill menus, retained previews, outline/fill, numeric geometry, curve bends, polygon entry and Shift constraints; [basic previews](plans/0013-basic-shapes.md) and [palette](plans/0014-shape-palette.md). Exact full-reference inventory remains unverified. |
+| F06 | Lines, rectangles, ellipses, shape palette | R1; partial visible shape inventory specified, full palette still unverified | M2 | Implemented: 20-shape 7×3 ribbon gallery with separate Outline and Fill menus, retained previews, outline/fill, numeric geometry, curve bends, polygon and spline entry and Shift constraints; [basic previews](plans/0013-basic-shapes.md) and [palette](plans/0014-shape-palette.md). Exact full-reference inventory remains unverified. |
 | F07 | Text, font/style/size/alignment and background | R1; detailed control behavior needs observation | M2 | Implemented: inline plain text, system font/style/alignment, optional background, floating formatting toolbar and outside-click/Ctrl+Enter raster commit; [plan 0015](plans/0015-inline-text.md). |
-| F08 | Rectangle/free-form selection; copy/cut/paste | R1 | M2 | Implemented: rectangle/free-form selection, inversion, color-key transparency, numeric bounds, selection clearing on tool changes and undoable background-color deletion; [plan 0016](plans/0016-rectangular-selection.md). Move and PNG clipboard: [plan 0017](plans/0017-selection-clipboard.md); free-form and transparent selection: [plan 0018](plans/0018-freeform-selection.md). |
+| F08 | Rectangle/free-form/color selection; copy/cut/paste | R1 | M2 | Implemented: rectangle/free-form selection, inversion, color-key transparency, numeric bounds, selection clearing on tool changes and undoable background-color deletion; [plan 0016](plans/0016-rectangular-selection.md). Move and PNG clipboard: [plan 0017](plans/0017-selection-clipboard.md); free-form and transparent selection: [plan 0018](plans/0018-freeform-selection.md). |
 | F09 | Crop, resize/skew, flip, right-angle rotate | R1 supports crop/resize/flip/rotate; skew needs observation | M2 | Implemented: crop, flips and right-angle rotations for image/selection, with dimension-aware undo; [plan 0019](plans/0019-crop-rotate-flip.md). Canvas crop/expand and active selection, shape and text corner handles: [alpha polish](plans/0028-alpha-ui-polish.md). Pixel/percent resize, resampling and bounded skew: [plan 0020](plans/0020-resize-skew.md). |
 | F10 | Freeform rotation of active content | R4: Paint 11.2601.391.0 preview | M4 | Planned |
 | F11 | Zoom, pan, status, rulers, grid | R1; exact bounds and ruler behavior need observation | M1–M4 | In progress: zoom/pan and basic status implemented; rulers, grid, thumbnail and expanded zoom controls planned. |
@@ -48,7 +49,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F22 | Sticker generation | R5 | M6 | Planned |
 | F23 | Coloring-page generation | R3 preview, hardware/account restrictions in reference | M6 | Planned |
 | F24 | Collapsible command toolbar | Persistent/auto-hide modes specified visually; timing and focus behavior need validation | M4 | Planned |
-| F25 | Linux installers, portable downloads and Updates screen | Linux-specific product choice | M2–M5 | Updates screen, bounded manual/opt-in daily release checks ([plan 0037](plans/0037-release-notifications.md)) and install metadata implemented in [plan 0024](plans/0024-install-updates.md); AppImage recipe in [plan 0025](plans/0025-appimage-package.md); Flatpak recipe in [plan 0026](plans/0026-flatpak-package.md); alpha downloads and validation in [plan 0027](plans/0027-alpha-release.md); Ubuntu DEB installer in [plan 0030](plans/0030-debian-installer.md); v1.0.0 publication and Ubuntu 24.04 GNOME/X11 evidence in [plan 0031](plans/0031-stable-release.md); verified automatic updates remain M5. |
+| F25 | Linux installers, portable downloads and Updates screen | Linux-specific product choice | M2–M5 | Updates screen, bounded manual and default-on startup/daily release checks ([plan 0037](plans/0037-release-notifications.md)) and install metadata implemented in [plan 0024](plans/0024-install-updates.md); AppImage recipe in [plan 0025](plans/0025-appimage-package.md); Flatpak recipe in [plan 0026](plans/0026-flatpak-package.md); alpha downloads and validation in [plan 0027](plans/0027-alpha-release.md); Ubuntu DEB installer in [plan 0030](plans/0030-debian-installer.md); v1.0.0 publication and Ubuntu 24.04 GNOME/X11 evidence in [plan 0031](plans/0031-stable-release.md); verified automatic updates remain M5. |
 | F26 | Privacy controls, metadata removal, accessible keyboard UI | Product choice | M1–M5 | In progress: offline PNG metadata removal, keyboard lifecycle, accessible names/roles and GNOME portal workflow tested; see [desktop workflow](plans/0008-keyboard-desktop-workflow.md); Orca usability certification remains M4. |
 | F27 | Printing through the Linux print dialog | Product choice; reference details need observation | M4 | Planned |
 
@@ -107,7 +108,8 @@ Popup backdrops are flattened to prevent sharp content leaking through the blur.
 Software rendering uses solid popups. The paper/checkerboard, text, and icons keep
 their own opacity; appearance changes do not affect artwork or undo history.
 
-Light menus use very little white tint. The shape gallery and footer buttons
+Floating menus retain at least 72% neutral tint for readable labels over strong
+background colors, while the interface opacity setting remains 40% by default. The shape gallery and footer buttons
 have transparent idle backgrounds when glass is enabled, with hover and focus
 feedback preserved. Disabling glass or choosing 100% restores opaque surfaces.
 The startup client size is 1449 × 1008; the minimum remains 1024 × 640.
@@ -121,3 +123,62 @@ and [rendering decision](decisions/0005-local-panel-blur.md).
 Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
 across restarts. Inline text displays a blinking caret at the scaled font height.
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
+
+Development default: glass starts at 40% opacity; saved user choices are retained.
+Development font picker replaces the native dialog with searchable family previews;
+see [plan 0043](plans/0043-font-picker.md).
+Development text editing uses a dashed black/white box outline and a blinking
+black caret immediately in an empty box at the scaled text height; neither overlay is saved in the artwork.
+Development startup release-check policy is recorded in [plan 0045](plans/0045-startup-updates.md).
+Development Linux windows use 12px rounded bottom client corners and matching input masks;
+top corners stay square, and other platforms receive no custom corner mask.
+maximized/fullscreen edges are square. Native decorations remain desktop-owned.
+Development glass selection uses stronger neutral frost and light outlines instead
+of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
+Development Updates attribution is recorded in [plan 0048](plans/0048-designer-credit.md).
+
+
+Development refinements retain the 40–100% glass range with a 40% default and no
+separate tint control. Flat toolbar buttons stay clear when idle; selected controls
+use stronger frost and light outlines. Checkmarks use neutral frosted colors, and
+selected color swatches use a bright outer ring without recoloring the swatch.
+The font picker retains its searchable per-family previews.
+
+Pencil, brush, eraser and eyedropper cursors identify the active tool over the canvas,
+with white contrast edges and tip-aligned hotspots. Space/middle-button panning
+uses a hand and restores the tool cursor afterward. Shape controls show a solid
+filled drop when solid fill is active, and a small × on the outline icon when
+outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).
+
+Eraser modes are Paper white (opaque white, independent of the background/fill
+swatch) and Transparent. A small dropdown beside the eraser replaces the separate
+ribbon options group. The eraser cursor's + marks the actual erase point. Both
+mouse buttons honor the chosen mode; strokes retain undo/redo and cancellation.
+See [eraser acceptance](plans/0051-eraser-target.md).
+
+The eraser button/cursor shows a small filled patch in Paper white mode; Transparent
+uses the hollow eraser. Both menu choices carry the corresponding eraser icon.
+
+The selected original Open palette application icon has light and dark variants.
+The running window and Updates dialog follow Light/Dark/System immediately. The
+installed launcher icon is the light variant; shell-controlled launcher/dock icons
+may not follow an application's theme preference.
+
+Spline is a separate open multi-point shape, alongside the two-bend Curve. Click or
+drag the first segment, then click to add points. Backspace removes the last point;
+Enter applies and Escape cancels. It interpolates the clicked points smoothly,
+uses outline color/width, and ignores fill. Endpoints and overall bounds remain
+editable; undo/redo and PNG saving use the existing document pipeline.
+See [icon and spline acceptance](plans/0052-icon-and-spline.md).
+
+Development [blur welcome and Updates](plans/0054-blur-onboarding-design.md):
+real app previews, local capability checks, optional setup command copying,
+a separate one-time welcome with a contribution link, and silent opaque fallback.
+Disabled glass controls link to the on-demand Enable Glass panel. Initial setup scope is Ubuntu
+24.04 / GNOME 46 / X11; broader desktop support is not claimed.
+
+Updates refinement: automatic startup/open checks with cooldown/backoff, concise status, and an angled app-corner card. Legacy automatic-check preference is superseded; installation remains manual. Validation is recorded in plan 0054.
+
+Select by color adds an exact RGBA, image-wide selection mode with a magic-wand icon. Implementation and validation are tracked in [plan 0055](plans/0055-color-selection.md).
+
+Text font controls support selected ranges and insertion formatting in the same box; mixed font runs survive raster commit and saving. Evidence: [plan 0056](plans/0056-text-range-formatting.md).

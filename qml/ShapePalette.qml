@@ -13,7 +13,7 @@ Popup {
     focus: true
     popupType: Popup.Item
     onOpened: {
-        const button = buttons.itemAt(Math.max(0, Math.min(editor.shapeKind, 18)));
+        const button = buttons.itemAt(Math.max(0, Math.min(editor.shapeKind, 19)));
         if (button)
             button.forceActiveFocus();
     }
@@ -28,7 +28,7 @@ Popup {
         columnSpacing: 4
         Repeater {
             id: buttons
-            model: [qsTr("Line"), qsTr("Rectangle"), qsTr("Ellipse"), qsTr("Rounded rectangle"), qsTr("Triangle"), qsTr("Diamond"), qsTr("Pentagon"), qsTr("Hexagon"), qsTr("Right arrow"), qsTr("Left arrow"), qsTr("Up arrow"), qsTr("Down arrow"), qsTr("Five-point star"), qsTr("Speech bubble"), qsTr("Curve"), qsTr("Polygon"), qsTr("Four-point star"), qsTr("Six-point star"), qsTr("Oval speech bubble")]
+            model: [qsTr("Line"), qsTr("Rectangle"), qsTr("Ellipse"), qsTr("Rounded rectangle"), qsTr("Triangle"), qsTr("Diamond"), qsTr("Pentagon"), qsTr("Hexagon"), qsTr("Right arrow"), qsTr("Left arrow"), qsTr("Up arrow"), qsTr("Down arrow"), qsTr("Five-point star"), qsTr("Speech bubble"), qsTr("Curve"), qsTr("Polygon"), qsTr("Four-point star"), qsTr("Six-point star"), qsTr("Oval speech bubble"), qsTr("Spline")]
             delegate: PaintButton {
                 id: choice
                 required property int index
@@ -54,10 +54,10 @@ Popup {
                 ToolTip.visible: hovered
                 ToolTip.delay: 400
                 ToolTip.text: text
-                KeyNavigation.right: buttons.itemAt((index + 1) % 19)
-                KeyNavigation.left: buttons.itemAt((index + 18) % 19)
-                KeyNavigation.down: buttons.itemAt((index + 5) % 19)
-                KeyNavigation.up: buttons.itemAt((index + 14) % 19)
+                KeyNavigation.right: buttons.itemAt((index + 1) % 20)
+                KeyNavigation.left: buttons.itemAt((index + 19) % 20)
+                KeyNavigation.down: buttons.itemAt((index + 5) % 20)
+                KeyNavigation.up: buttons.itemAt((index + 15) % 20)
             }
         }
     }

@@ -5,7 +5,10 @@
 #include <QPointF>
 #include <QRect>
 namespace openpaint {
-inline constexpr int ShapeCount = 19, CurveShape = 14, PolygonShape = 15;
+inline constexpr int ShapeCount = 20, CurveShape = 14, PolygonShape = 15, SplineShape = 19;
+inline bool isPointShape(int kind) {
+    return kind == PolygonShape || kind == SplineShape;
+}
 struct ShapePatch {
     QImage image;
     QRect rect;

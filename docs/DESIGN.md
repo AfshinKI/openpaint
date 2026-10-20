@@ -93,7 +93,7 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Resize/skew supports selected content or the whole image. |
 | Transform | Shift constrains proportions or rotation increments; numeric inputs provide keyboard precision |
 | Text | Inline editor and floating formatting toolbar below ribbon; outside-box canvas click or Ctrl+Enter commits, Escape cancels; top color is foreground and bottom is background |
-| Shape | 19-item icon palette; Shift constrains geometry, polygon clicks add vertices and Backspace removes the last; drag/release retains preview; numeric start/end and outline/fill options; Enter/Apply commits and Escape/Cancel restores original; new drawing/tool switch commits current preview; Undo cancels the preview |
+| Shape | 20-item icon palette; Shift constrains geometry, polygon clicks add vertices and Backspace removes the last; drag/release retains preview; numeric start/end and outline/fill options; Enter/Apply commits and Escape/Cancel restores original; new drawing/tool switch commits current preview; Undo cancels the preview |
 | Resize image | Pixel/percent inputs, aspect lock, interpolation; one undoable operation |
 | Resize canvas | Anchor and dimensions; warn when reducing clips content; undo restores it |
 | Save / close | Dirty window offers Save, Discard, Cancel; a failed save leaves the window open |
@@ -141,21 +141,21 @@ tool-letter shortcuts later after checking typing and desktop conflicts.
 Settings sections: Appearance, Canvas, Files & Recovery, Updates, Privacy, About.
 Keep advanced technical information in an expandable diagnostic view.
 
-Updates shows installed version, installation source, channel, last-check time,
-and one primary action. Manual checks are always available; automatic checks are
-off initially. Offer an opt-in check at most daily, with no background daemon.
+Updates shows the installed version, concise status, one release action and
+attribution beside an angled actual-app corner card. Network-capable builds check
+at startup, on opening the panel, and daily while running. Persisted cooldown and
+server backoff apply; no check checkbox/button or background daemon exists.
 
 | State | User-facing behavior |
 | --- | --- |
-| Not checked | “Check for updates” |
-| Checking | Progress indicator; Cancel |
-| Current | “You're up to date” and last successful check |
-| Available | Version, release notes, download size, action appropriate to installation |
-| Downloading | Bytes/progress, Cancel; editor remains usable |
-| Ready (AppImage) | “Restart to update”; resolve all unsaved windows first |
-| Managed installation | “Open software manager” or copyable package-manager instructions |
-| Offline/error | Plain explanation, Retry; retain installed app and saved artwork |
-| Verification failed | Do not install; show failure and link to official releases |
+| Not checked | “Waiting to check” |
+| Checking | “Checking for updates…” |
+| Current | “You’re up to date” only after a validated response |
+| Available | “An update is ready”, version and Get update browser action |
+| Offline/error | “Couldn’t check for updates”; View releases remains available |
+| Flatpak | “Latest releases” with a manual browser action |
+
+Installation is manual. Automatic downloading and restart-to-update remain planned.
 
 No forced restarts, silent channel switches, fabricated progress, or update success
 messages before verification. Detailed rules are in [RELEASES.md](RELEASES.md).
@@ -237,7 +237,7 @@ preview until committed; cancellation restores the original artwork. See the
 [control specification](MENUS.md#workspace-and-status-bar). Canvas corners separately crop or extend the image without resampling,
 using an undoable worker transform.
 
-Glass appearance adds translucent gradients and fine highlights to shared UI surfaces. Settings → Glass appearance can disable it or set 40–100% surface opacity (default 85%). It affects backgrounds only; artwork, text and controls retain their own opacity. This supersedes the flat-surface target; the frosted behavior is described below.
+Glass appearance adds translucent gradients and fine highlights to shared UI surfaces. Settings → Glass appearance can disable it or set 40–100% surface opacity (default 40%). It affects backgrounds only; artwork, text and controls retain their own opacity. This supersedes the flat-surface target; the frosted behavior is described below.
 
 ## Frosted appearance
 
@@ -248,7 +248,8 @@ Popup backdrops are flattened to prevent sharp content leaking through the blur.
 Software rendering uses solid popups. The paper/checkerboard, text, and icons keep
 their own opacity; appearance changes do not affect artwork or undo history.
 
-Light menus use very little white tint. The shape gallery and footer buttons
+Floating menus retain at least 72% neutral tint for readable labels over strong
+background colors, while the interface opacity setting remains 40% by default. The shape gallery and footer buttons
 have transparent idle backgrounds when glass is enabled, with hover and focus
 feedback preserved. Disabling glass or choosing 100% restores opaque surfaces.
 The startup client size is 1449 × 1008; the minimum remains 1024 × 640.
@@ -262,3 +263,71 @@ and [rendering decision](decisions/0005-local-panel-blur.md).
 Theme selection (System/Light/Dark), glass enabled state and surface opacity persist
 across restarts. Inline text displays a blinking caret at the scaled font height.
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
+
+Development text editing uses a dashed black/white box outline and a blinking
+black caret immediately in an empty box at the scaled text height; neither overlay is saved in the artwork.
+Development Linux windows use 12px rounded bottom client corners and matching input masks;
+top corners stay square, and other platforms receive no custom corner mask.
+maximized/fullscreen edges are square. Native decorations remain desktop-owned.
+Development glass selection uses stronger neutral frost and light outlines instead
+of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
+
+
+Development refinements retain the 40–100% glass range with a 40% default and no
+separate tint control. Flat toolbar buttons stay clear when idle; selected controls
+use stronger frost and light outlines. Checkmarks use neutral frosted colors, and
+selected color swatches use a bright outer ring without recoloring the swatch.
+The font picker retains its searchable per-family previews.
+
+Pencil, brush, eraser and eyedropper cursors identify the active tool over the canvas,
+with white contrast edges and tip-aligned hotspots. Space/middle-button panning
+uses a hand and restores the tool cursor afterward. Shape controls show a solid
+filled drop when solid fill is active, and a small × on the outline icon when
+outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).
+
+Eraser modes are Paper white (opaque white, independent of the background/fill
+swatch) and Transparent. A small dropdown beside the eraser replaces the separate
+ribbon options group. The eraser cursor's + marks the actual erase point. Both
+mouse buttons honor the chosen mode; strokes retain undo/redo and cancellation.
+See [eraser acceptance](plans/0051-eraser-target.md).
+
+The eraser button/cursor shows a small filled patch in Paper white mode; Transparent
+uses the hollow eraser. Both menu choices carry the corresponding eraser icon.
+
+The selected original Open palette application icon has light and dark variants.
+The running window and Updates dialog follow Light/Dark/System immediately. The
+installed launcher icon is the light variant; shell-controlled launcher/dock icons
+may not follow an application's theme preference.
+
+Spline is a separate open multi-point shape, alongside the two-bend Curve. Click or
+drag the first segment, then click to add points. Backspace removes the last point;
+Enter applies and Escape cancels. It interpolates the clicked points smoothly,
+uses outline color/width, and ignores fill. Endpoints and overall bounds remain
+editable; undo/redo and PNG saving use the existing document pipeline.
+See [icon and spline acceptance](plans/0052-icon-and-spline.md).
+
+## Development blur welcome panel
+
+[Blur onboarding and Updates](plans/0054-blur-onboarding-design.md) implements
+real app corner previews, optional local setup guidance,
+clipboard copying and a Check again action. A separate Welcome to OpenPaint
+appears once, includes a side picture and invites contributions. Updates places text on the left,
+a real app picture on the right, and Enable Glass in its footer only while glass is unavailable. The original [interactive design](designs/blur-onboarding.html)
+remains a design artifact rather than executable application behavior.
+
+Current capability evidence is limited to Ubuntu 24.04 / GNOME 46 / X11. Without
+verified configuration, the effective appearance is opaque while saved glass
+preferences are retained. The glass checkbox is unchecked and disabled until requirements are met.
+Enable Glass opens setup on demand, even on an unverified desktop; commands are
+shown only for a verified recipe. Unavailable setup stays opaque without a package
+warning. This supersedes
+the earlier transparency-only fallback described above. No setup command runs
+inside OpenPaint, and the welcome panel waits until drawing and other popups finish.
+
+App preview images have 18px rounded corners and a restrained shadow, rendered
+with QPainter so software rendering needs no optional effects. Setup uses short
+copy and a selectable 11px monospace command below a Terminal label.
+
+Updates uses a compact status/action column and a softly elevated, perspective-angled actual-app corner preview. It checks on startup and opening without a check button or checkbox; failures never imply the installed version is current.
+
+The Select menu includes By color with an original magic-wand icon. Each click selects all exact-color pixels across the image; selection feedback and subsequent editing reuse the existing mask workflow. See [plan 0055](plans/0055-color-selection.md).

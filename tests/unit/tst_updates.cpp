@@ -93,7 +93,7 @@ class UpdatesTest : public QObject {
             QVERIFY(!valid);
         }
     }
-    void invalidConsentStaysOffline() {
+    void legacyPreferenceDoesNotDisableStartup() {
         QTemporaryDir directory;
         const auto file = directory.filePath("settings.ini");
         QSettings settings(file, QSettings::IniFormat);
@@ -101,25 +101,64 @@ class UpdatesTest : public QObject {
         settings.sync();
         FakeNetwork network;
         UpdateService service(&network, file, [] { return 1700000000; });
-        QVERIFY(!service.automatic());
-        service.checkAutomatic();
-        QVERIFY(network.requests.isEmpty());
+        QVERIFY(service.automatic());
+        service.refresh();
+        QCOMPARE(network.requests.size(), 1);
+        service.refresh();
+        QCOMPARE(network.requests.size(), 1);
+        QTRY_VERIFY(!service.busy());
+        const auto result = service.message();
+        service.refresh();
+        QCOMPARE(network.requests.size(), 1);
+        QCOMPARE(service.message(), result);
+    }
+    void defaultStartupAndPersistentCooldown() {
+        QTemporaryDir directory;
+        FakeNetwork network;
+        qint64 now = 1700000000;
+        const auto file = directory.filePath("settings.ini");
+        {
+            UpdateService first(&network, file, [&] { return now; });
+            QVERIFY(first.automatic());
+            QVERIFY(network.requests.isEmpty()); // Constructor does not block startup.
+            QTRY_COMPARE_WITH_TIMEOUT(network.requests.size(), 1, 2500);
+            QTRY_VERIFY(!first.busy());
+        }
+        {
+            UpdateService rapidRestart(&network, file, [&] { return now; });
+            QTest::qWait(1700);
+            QCOMPARE(network.requests.size(), 1); // Persisted cooldown.
+        }
+        now += 61;
+        {
+            UpdateService restarted(&network, file, [&] { return now; });
+            QTRY_COMPARE_WITH_TIMEOUT(network.requests.size(), 2, 2500);
+            QTRY_VERIFY(!restarted.busy()); // Startup need not wait a full day.
+            restarted.setAutomatic(false);
+        }
+        now += 86400;
+        UpdateService optedOut(&network, file, [&] { return now; });
+        QVERIFY(optedOut.automatic());
+        QTRY_COMPARE_WITH_TIMEOUT(network.requests.size(), 3, 2500);
     }
     void explicitCheckAndRequestPolicy() {
         QTemporaryDir directory;
         FakeNetwork network;
         qint64 now = 1700000000;
         UpdateService service(&network, directory.filePath("settings.ini"), [&] { return now; });
-        QVERIFY(!service.automatic());
+        QVERIFY(service.automatic());
+        service.setAutomatic(false);
         service.checkAutomatic();
         QVERIFY(network.requests.isEmpty());
         QSignalSpy found(&service, &UpdateService::updateFound);
         service.check();
         QVERIFY(service.busy());
+        QCOMPARE(service.summary(), QString("Checking for updates…"));
         service.check(); // Never queue a second request.
         QTRY_VERIFY(!service.busy());
         QCOMPARE(network.requests.size(), 1);
         QVERIFY(service.available());
+        QCOMPARE(service.summary(), QString("An update is ready"));
         QCOMPARE(service.latestVersion(), "999.0.0");
         QCOMPARE(found.size(), 1);
         const auto request = network.requests.first();
@@ -137,6 +176,25 @@ class UpdatesTest : public QObject {
         QTRY_VERIFY(!service.busy());
         QCOMPARE(network.requests.size(), 2);
         QCOMPARE(found.size(), 1); // Same release does not repeatedly interrupt.
+    }
+    void verifiedCurrentThenOffline() {
+        QTemporaryDir directory;
+        FakeNetwork network;
+        network.next.body = R"({"tag_name":"v0.0.0","draft":false,"prerelease":false})";
+        qint64 now = 1700000000;
+        UpdateService service(&network, directory.filePath("settings.ini"), [&] { return now; });
+        QCOMPARE(service.summary(), QString("Waiting to check"));
+        service.refresh();
+        QTRY_VERIFY(!service.busy());
+        QCOMPARE(service.summary(), QString("You’re up to date"));
+        service.refresh();
+        QCOMPARE(network.requests.size(), 1);
+        now += 61;
+        network.next.error = QNetworkReply::HostNotFoundError;
+        service.refresh();
+        QTRY_VERIFY(!service.busy());
+        QCOMPARE(network.requests.size(), 2);
+        QCOMPARE(service.summary(), QString("Couldn’t check for updates"));
     }
     void rejectedResponses_data() {
         QTest::addColumn<QByteArray>("body");
@@ -172,6 +230,7 @@ class UpdatesTest : public QObject {
         QVERIFY(!service.available());
         QVERIFY(service.latestVersion().isEmpty());
         QVERIFY(!service.message().contains("No newer stable"));
+        QCOMPARE(service.summary(), QString("Couldn’t check for updates"));
         QCOMPARE(network.requests.size(), 1);
     }
     void rateLimitAndPersistentDailySchedule() {
@@ -191,6 +250,8 @@ class UpdatesTest : public QObject {
         }
         UpdateService restarted(&network, file, [&] { return now; });
         QVERIFY(restarted.automatic());
+        QTest::qWait(1700); // Startup must respect the persisted server backoff.
+        QCOMPARE(network.requests.size(), 1);
         now += 3600;
         restarted.check();
         restarted.checkAutomatic();

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -8,97 +9,130 @@ PaintDialog {
     id: dialog
     required property UpdateService service
     property string browserError: ""
+    signal blurHelpRequested
+    function focusBlurHelp() {
+        (blurHelp.visible ? blurHelp : doneButton).forceActiveFocus();
+    }
     title: qsTr("Updates")
     modal: true
     anchors.centerIn: parent
-    width: Math.min(parent.width - 48, 520)
-    standardButtons: Dialog.Close
-    onOpened: browserError = ""
-    contentItem: ColumnLayout {
+    width: Math.min(parent.width - 48, 800)
+    height: Math.min(parent.height - 48, 440)
+    standardButtons: Dialog.NoButton
+    onOpened: {
+        browserError = "";
+        BlurSupport.refresh();
+        service.refresh();
+    }
+    footer: RowLayout {
         spacing: 12
-        Label {
-            text: qsTr("OpenPaint %1").arg(AppInfo.version)
-            font.pixelSize: 20
-            font.bold: true
-            color: Theme.text
+        PaintButton {
+            id: blurHelp
+            objectName: "backgroundBlurHelp"
+            visible: !BlurSupport.ready
+            text: qsTr("Enable Glass")
+            Layout.leftMargin: 20
+            Layout.bottomMargin: 12
+            onClicked: dialog.blurHelpRequested()
         }
-        Label {
-            objectName: "updateIdentity"
-            text: qsTr("%1 · %2").arg(AppInfo.channel).arg(AppInfo.installation)
-            color: Theme.text
-        }
-        Label {
-            text: AppInfo.instructions
+        Item {
             Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            color: Theme.text
-        }
-        Label {
-            objectName: "releaseCheckStatus"
-            text: dialog.service.message
-            textFormat: Text.PlainText
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            color: Theme.text
-        }
-        RowLayout {
-            PaintButton {
-                objectName: "checkReleaseButton"
-                text: qsTr("Check now")
-                enabled: dialog.service.supported && !dialog.service.busy
-                onClicked: dialog.service.check()
-            }
-            PaintButton {
-                text: qsTr("Cancel check")
-                visible: dialog.service.busy
-                onClicked: dialog.service.cancel()
-            }
-        }
-        Label {
-            text: qsTr("Checks api.github.com for stable releases. GitHub receives your IP address and ordinary request metadata; no artwork or document information is sent.")
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            color: Theme.text
-        }
-        PaintCheckBox {
-            objectName: "automaticReleaseChecks"
-            text: qsTr("Check daily while OpenPaint is running")
-            enabled: dialog.service.supported
-            checked: dialog.service.automatic
-            onToggled: dialog.service.automatic = checked
-        }
-        Label {
-            text: qsTr("Updates are downloaded and installed manually. A GitHub release may not yet be available in your package manager.")
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            color: Theme.text
         }
         PaintButton {
-            objectName: "viewReleasesButton"
-            text: qsTr("View releases")
-            onClicked: {
-                if (!(dialog.service.available ? dialog.service.openRelease() : AppInfo.openReleases()))
-                    dialog.browserError = qsTr("The browser could not be opened. Open the address below manually.");
+            id: doneButton
+            objectName: "updatesDone"
+            text: qsTr("Done")
+            Layout.rightMargin: 12
+            Layout.bottomMargin: 12
+            onClicked: dialog.close()
+        }
+    }
+    contentItem: ScrollView {
+        id: scroll
+        clip: true
+        contentWidth: availableWidth
+        GridLayout {
+            width: scroll.availableWidth
+            columns: dialog.width < 680 ? 1 : 2
+            columnSpacing: 20
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.preferredWidth: 350
+                spacing: 14
+                RowLayout {
+                    spacing: 10
+                    Image {
+                        objectName: "applicationIcon"
+                        source: Appearance.applicationIcon
+                        sourceSize: Qt.size(36, 36)
+                        Layout.preferredWidth: 36
+                        Layout.preferredHeight: 36
+                        Accessible.name: qsTr("OpenPaint icon")
+                    }
+                    Label {
+                        text: qsTr("OpenPaint %1").arg(AppInfo.version)
+                        font.pixelSize: 16
+                        font.bold: true
+                        color: Theme.text
+                    }
+                }
+                Label {
+                    objectName: "releaseCheckStatus"
+                    text: dialog.service.summary
+                    font.pixelSize: 26
+                    font.bold: true
+                    color: Theme.text
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                }
+                Label {
+                    text: dialog.service.available ? qsTr("Version %1 is ready. Get it on GitHub.").arg(dialog.service.latestVersion) : (dialog.service.supported ? qsTr("Updates are checked automatically.") : qsTr("Find the latest release on GitHub."))
+                    color: Theme.secondaryText
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                }
+                PaintButton {
+                    objectName: "viewReleasesButton"
+                    text: dialog.service.available ? qsTr("Get update ↗") : qsTr("View releases ↗")
+                    onClicked: {
+                        if (!(dialog.service.available ? dialog.service.openRelease() : AppInfo.openReleases()))
+                            dialog.browserError = qsTr("Open this address in your browser: %1").arg(AppInfo.releaseUrl.toString());
+                    }
+                }
+                Label {
+                    text: qsTr("Checks api.github.com. No artwork is sent.")
+                    visible: dialog.service.supported
+                    color: Theme.secondaryText
+                    font.pixelSize: 11
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                }
+                Label {
+                    objectName: "designerCredit"
+                    text: qsTr("Designer: Afshin Kashani, PhD, P.Eng")
+                    color: Theme.secondaryText
+                    font.pixelSize: 11
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                }
+                Label {
+                    text: dialog.browserError
+                    visible: text.length > 0
+                    color: Theme.text
+                    Layout.fillWidth: true
+                    wrapMode: Text.WrapAnywhere
+                }
             }
-        }
-        Label {
-            text: qsTr("Opens GitHub in your browser. GitHub receives ordinary browser request information.")
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            color: Theme.text
-        }
-        Label {
-            text: AppInfo.releaseUrl.toString()
-            Layout.fillWidth: true
-            wrapMode: Text.WrapAnywhere
-            color: Theme.text
-        }
-        Label {
-            text: dialog.browserError
-            visible: text.length > 0
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            color: Theme.text
+            AppPreview {
+                objectName: "updatesAppPreview"
+                corner: true
+                angled: true
+                glass: Appearance.effectiveGlassEnabled
+                Layout.fillWidth: true
+                Layout.preferredWidth: 340
+                Layout.preferredHeight: 270
+                Layout.alignment: Qt.AlignVCenter
+            }
         }
     }
 }

@@ -24,6 +24,28 @@ M1; M3 and release packaging improvements can progress independently once their
 interfaces stabilize. M4 depends on editing and document contracts from M2/M3.
 These future gates are not prerequisites for the scoped single-layer v1. M6 may be researched earlier, but must not delay core reliability.
 
+## Current handoff toward v2
+
+Stable [v1.1.0](plans/0038-release-1.1.0.md) and
+[v1.2.0](plans/0040-release-1.2.0.md) are published. Their closure records separate
+release evidence from remaining platform certification. Alpha UI polish and
+post-v1 fixes are merged; historical progress notes are not an active feature queue.
+
+M3 remains the next editing milestone. The current v2 preparation first delivers
+the [seven requested editor refinements](plans/0049-editor-refinements.md), one
+locally validated feature at a time. Define a bounded M3 feature plan and acceptance
+cases first, including the carried renderer/memory performance concern before
+large multilayer documents. The v2 feature scope and detailed sequence are not
+yet approved. For this development cycle, validate feature work locally before
+proceeding to PR checks and eventual v2 release runs. Release dispatch and
+publication remain separate from local acceptance; protected checks still apply.
+
+The selected theme-aware Open palette icon and added spline are implemented with
+local evidence in [plan 0052](plans/0052-icon-and-spline.md). Next: maintainer local
+review and scoped PR/CI preparation. The tool-position and floating-menu tint
+follow-up is recorded in [plan 0053](plans/0053-menu-readability.md).
+PR checks and v2 publication remain deferred; M3 scope still needs its own plan.
+
 ## Release progression
 
 M1/M2 produced the first alpha. Version 1.0.0 keeps the implemented single-layer

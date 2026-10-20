@@ -20,6 +20,112 @@ class ClipboardEditor : public Editor {
 class ClipboardTest : public QObject {
     Q_OBJECT
   private slots:
+    void colorSelectionExactAndReplace() {
+        ClipboardEditor editor;
+        QImage source(12, 8, QImage::Format_ARGB32_Premultiplied);
+        source.fill(Qt::white);
+        source.setColorSpace(QColorSpace::SRgb);
+        source.setPixelColor(1, 1, Qt::red);
+        source.setPixelColor(10, 6, Qt::red);
+        source.setPixelColor(2, 1, QColor(254, 0, 0));
+        source.setPixelColor(3, 1, QColor(255, 0, 0, 128));
+        source.setPixelColor(4, 1, Qt::transparent);
+        editor.reset(source);
+        editor.setTool(Editor::Tool::Select);
+        editor.colorSelection = true;
+        editor.begin({1, 1}, false);
+        editor.extend({8, 7});
+        editor.endGesture();
+        QTRY_VERIFY(!editor.busy());
+        const QRegion red = QRegion(QRect(1, 1, 1, 1)).united(QRect(10, 6, 1, 1));
+        QCOMPARE(editor.selection(), red);
+        QVERIFY(!editor.dirty());
+        QCOMPARE(editor.image(), source);
+        // Click inside the prior selection must sample again, not start a move.
+        editor.begin({10, 6}, false);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.selection(), red);
+        QVERIFY(!editor.floatingActive());
+        editor.begin({2, 1}, false);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.selection(), QRegion(QRect(2, 1, 1, 1)));
+        editor.begin({-1, 1}, false);
+        editor.begin({1, 1}, true);
+        QCOMPARE(editor.selection(), QRegion(QRect(2, 1, 1, 1)));
+        editor.begin({1, 1}, false);
+        QTRY_VERIFY(!editor.busy());
+        editor.deleteSelection();
+        QCOMPARE(editor.image().pixelColor(1, 1), editor.secondary);
+        QCOMPARE(editor.image().pixelColor(10, 6), editor.secondary);
+        QCOMPARE(editor.image().pixelColor(2, 1), source.pixelColor(2, 1));
+        editor.undo();
+        QCOMPARE(editor.image(), source);
+        QVERIFY(!editor.dirty());
+        editor.begin({4, 1}, false);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.selection(), QRegion(QRect(4, 1, 1, 1)));
+    }
+    void colorSelectionCancelStaleAndComplexity() {
+        ClipboardEditor editor;
+        QImage source(300, 300, QImage::Format_ARGB32_Premultiplied);
+        source.fill(Qt::white);
+        source.setColorSpace(QColorSpace::SRgb);
+        editor.reset(source);
+        editor.setTool(Editor::Tool::Select);
+        editor.colorSelection = true;
+        editor.selectRect(3, 3, 4, 4);
+        const auto prior = editor.selection();
+        editor.begin({1, 1}, false);
+        editor.cancel(); // GUI cancellation precedes delivery even if worker finished.
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.selection(), prior);
+        QCOMPARE(editor.image(), source);
+        editor.begin({1, 1}, false);
+        source.fill(Qt::blue);
+        editor.reset(source); // Simulate a replaced document before result delivery.
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(!editor.hasSelection());
+        QCOMPARE(editor.image(), source);
+        for (int y = 0; y < source.height(); ++y)
+            for (int x = 0; x < source.width(); ++x)
+                source.setPixelColor(x, y, (x + y) % 2 ? Qt::black : Qt::white);
+        editor.reset(source);
+        editor.selectRect(3, 3, 4, 4);
+        editor.begin({0, 0}, false);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.selection(), prior);
+        QVERIFY(!editor.error().isEmpty());
+        QCOMPARE(editor.image(), source);
+        auto token = std::make_shared<std::atomic_bool>(false);
+        QVERIFY(openpaint::selectColor(source, {-1, 0}, token).failed);
+        token->store(true);
+        QVERIFY(openpaint::selectColor(source, {0, 0}, token).region.isEmpty());
+    }
+    void colorSelectionBandsAndMove() {
+        ClipboardEditor editor;
+        QImage source(10, 1000, QImage::Format_ARGB32_Premultiplied);
+        source.fill(Qt::white);
+        source.setColorSpace(QColorSpace::SRgb);
+        for (int y = 0; y < source.height(); ++y)
+            source.setPixelColor(2, y, Qt::red);
+        auto token = std::make_shared<std::atomic_bool>(false);
+        const auto result = openpaint::selectColor(source, {2, 0}, token);
+        QVERIFY(!result.failed);
+        QCOMPARE(result.region, QRegion(QRect(2, 0, 1, 1000)));
+        editor.reset(source);
+        editor.setTool(Editor::Tool::Select);
+        editor.colorSelection = true;
+        editor.begin({2, 0}, false);
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(editor.copySelection());
+        QTRY_VERIFY(!editor.busy());
+        editor.nudgeSelection(1, 0);
+        editor.finish();
+        QCOMPARE(editor.image().pixelColor(3, 500), QColor(Qt::red));
+        QCOMPARE(editor.image().pixelColor(2, 500), editor.secondary);
+        editor.undo();
+        QCOMPARE(editor.image(), source);
+    }
     void cutUsesBackground() {
         for (const auto color :
              {QColor(Qt::yellow), QColor(Qt::transparent), QColor(30, 90, 150, 120)}) {

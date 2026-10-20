@@ -1,6 +1,6 @@
 # Privacy and public-repository hygiene
 
-These are product requirements. The editor keeps core editing offline. Explicit or opt-in release checks contact
+These are product requirements. The editor keeps core editing offline. Manual and default-on startup/daily release checks contact
 api.github.com; see the release-check disclosure below. It opens local PNG/JPEG/BMP/WebP images and saves PNG
 files or exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strips source metadata. File → Updates opens the public GitHub Releases page only after the explicit View releases action. The browser makes an ordinary request to GitHub; no artwork or document information is included. Recovery remains planned; bounded release notifications are implemented.
 
@@ -18,9 +18,9 @@ or telemetry. No automatic crash uploads. No unique installation identifier.
 Recent files, settings, and recovery artwork remain in local XDG storage, with
 visible controls to clear them. Do not include document paths or contents in logs.
 
-Manual update checks contact the configured release host. Optional daily checks
-are disabled by default; enabling them discloses the destination and ordinary
-network metadata involved. A web host can see an IP address even when the app sends
+Manual and automatic update checks contact api.github.com. Automatic checks are
+enabled by default on network-capable builds, at startup and daily while running;
+Opening Updates also checks, subject to cooldown/backoff. Updates discloses the destination. The former checkbox and saved opt-out are no longer used. A web host can see an IP address even when the app sends
 no personal fields. Diagnostics are opt-in exports that users can preview and edit.
 
 Export strips author/device/GPS/text metadata by default. Color-profile conversion
@@ -75,11 +75,13 @@ forks, caches, or previously downloaded copies.
 
 ## Release-check disclosure
 
-Check now sends a bounded HTTPS request to api.github.com. GitHub receives the IP
+Startup and opening Updates send a bounded HTTPS request to api.github.com. GitHub receives the IP
 address and ordinary connection metadata with a fixed application User-Agent; no
 artwork, paths, credentials or installation identifier is sent. Automatic checks
-are off by default, at most daily while the app runs, and can be disabled in Updates.
-Local XDG settings retain consent and request/backoff timestamps. Browser navigation
+default on for network-capable builds: once per startup after a short delay, then
+at most daily while running. Persisted cooldown/server backoff still applies.
+There is no check button or checkbox. Local XDG settings retain
+request/backoff timestamps. Browser navigation
 requires an explicit action. Flatpak retains no network permission and manual links.
 
 Theme choice, glass enablement and opacity persist locally in XDG configuration. These preferences contain no artwork or identifiers and cause no network requests.
@@ -93,3 +95,13 @@ app instance with isolated settings for release marketing captures. Crop to the
 app and deliberately staged original backdrop; never include private desktop
 content or interrupt a user's unsaved document. A source harness is allowed for
 clearly labeled test evidence, but must not be presented as an installed capture.
+
+Development blur onboarding reads local desktop/version, extension settings and
+cached package availability without networking. The setup command is copied only
+on request; OpenPaint never runs it or changes desktop settings. A local welcome
+revision records dismissal. No capability results or command output are logged.
+
+The separate Welcome to OpenPaint stores only its local dismissal revision. Get
+involved opens the public contribution guide on GitHub only after a click; the
+browser sends ordinary connection metadata. Glass setup is now on demand and
+stores no separate dismissal state.

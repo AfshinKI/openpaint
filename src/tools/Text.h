@@ -2,6 +2,7 @@
 #pragma once
 #include "Shape.h"
 #include <QFont>
+#include <QTextDocument>
 namespace openpaint {
 struct TextStyle {
     QFont font;
@@ -9,5 +10,6 @@ struct TextStyle {
     bool opaque = false;
     int alignment = 0;
 };
-ShapePatch renderText(const QImage& base, QRect rect, const QString& text, const TextStyle& style);
+ShapePatch renderText(const QImage& base, QRect rect, const QString& text, const TextStyle& style,
+                      const QTextDocument* formatted = nullptr);
 } // namespace openpaint

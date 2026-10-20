@@ -12,18 +12,19 @@ Rectangle {
     property bool opaqueBackdrop: false
     property bool menuSurface: false
     property bool raisedSurface: true
+    property bool selectedSurface: false
     property real baseTintPower: 2
     property list<Item> backdropLayers: !backdropSource ? [] : hostWindow && backdropSource === hostWindow.canvasController ? hostWindow.glassBackdropLayers : [backdropSource]
-    readonly property bool backdropBlurEnabled: Appearance.glassEnabled && surfaceAlpha < 1 && hostWindow !== null && backdropSource !== null && GraphicsInfo.api !== GraphicsInfo.Software
-    readonly property real surfaceAlpha: Appearance.glassEnabled && !(opaqueBackdrop && GraphicsInfo.api === GraphicsInfo.Software) ? Appearance.surfaceOpacity / 100 : 1
+    readonly property bool backdropBlurEnabled: Appearance.effectiveGlassEnabled && surfaceAlpha < 1 && hostWindow !== null && backdropSource !== null && GraphicsInfo.api !== GraphicsInfo.Software
+    readonly property real surfaceAlpha: Appearance.effectiveGlassEnabled && !(opaqueBackdrop && GraphicsInfo.api === GraphicsInfo.Software) ? Appearance.surfaceOpacity / 100 : 1
     // Fixed bars already sit on a tint. Over artwork, retain enough light material
     // to keep dark labels readable even when the blurred source is black.
-    readonly property real lightPopupTint: menuSurface ? Math.pow(surfaceAlpha, 5) : 0.18 + 0.82 * surfaceAlpha * surfaceAlpha * surfaceAlpha
-    readonly property real tintAlpha: Theme.dark ? (opaqueBackdrop ? Math.max(0.72, surfaceAlpha) : surfaceAlpha) : opaqueBackdrop ? lightPopupTint : raisedSurface ? 0.45 + 0.55 * surfaceAlpha * surfaceAlpha : Math.pow(surfaceAlpha, baseTintPower)
+    readonly property real lightPopupTint: menuSurface ? 0.72 + 0.28 * surfaceAlpha * surfaceAlpha * surfaceAlpha : 0.18 + 0.82 * surfaceAlpha * surfaceAlpha * surfaceAlpha
+    readonly property real tintAlpha: selectedSurface ? (surfaceAlpha >= 1 ? 1 : Theme.dark ? 0.68 : 0.72) : Theme.dark ? (opaqueBackdrop ? Math.max(0.72, surfaceAlpha) : surfaceAlpha) : opaqueBackdrop ? lightPopupTint : raisedSurface ? 0.45 + 0.55 * surfaceAlpha * surfaceAlpha : Math.pow(surfaceAlpha, baseTintPower)
     radius: Theme.surfaceRadius
     color: Theme.panel
-    border.color: Appearance.glassEnabled ? (Theme.dark ? "#687887" : "#383D454D") : Theme.divider
-    gradient: Appearance.glassEnabled ? sheen : null
+    border.color: selectedSurface ? Theme.selectionOutline : Appearance.effectiveGlassEnabled ? (Theme.dark ? "#687887" : "#383D454D") : Theme.divider
+    gradient: Appearance.effectiveGlassEnabled ? sheen : null
     Loader {
         anchors.fill: parent
         z: -1
@@ -72,7 +73,7 @@ Rectangle {
                 blurEnabled: true
                 blurMax: 64
                 blur: 1
-                blurMultiplier: !Theme.dark && surface.opaqueBackdrop ? 0.75 : 0
+                blurMultiplier: surface.selectedSurface ? 1 : !Theme.dark && surface.opaqueBackdrop ? 0.75 : 0
                 autoPaddingEnabled: false
                 maskEnabled: surface.radius > 0
                 maskSource: roundedMask
@@ -85,7 +86,7 @@ Rectangle {
         radius: Math.max(0, surface.radius - 1)
         color: "transparent"
         border.color: Qt.rgba(1, 1, 1, 0.65 * (1 - surface.surfaceAlpha))
-        visible: Appearance.glassEnabled && !Theme.dark && surface.surfaceAlpha < 1 && surface.border.width > 0
+        visible: Appearance.effectiveGlassEnabled && !Theme.dark && surface.surfaceAlpha < 1 && surface.border.width > 0
     }
     Gradient {
         id: sheen

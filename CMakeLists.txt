@@ -42,7 +42,7 @@ endif()
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Concurrent Network)
 qt_standard_project_setup(REQUIRES 6.8)
 include(CTest)
-add_library(openpaint_document STATIC src/document/Document.cpp src/tools/Fill.cpp src/tools/Brush.cpp src/tools/Shape.cpp src/tools/Text.cpp src/tools/Transform.cpp)
+add_library(openpaint_document STATIC src/document/Document.cpp src/tools/Fill.cpp src/tools/ColorSelect.cpp src/tools/Brush.cpp src/tools/Shape.cpp src/tools/Text.cpp src/tools/Transform.cpp)
 target_include_directories(openpaint_document PUBLIC src)
 target_link_libraries(openpaint_document PUBLIC Qt6::Gui)
 target_compile_options(openpaint_document PRIVATE -Wall -Wextra -Wpedantic)
@@ -58,6 +58,9 @@ target_compile_options(openpaint PRIVATE -Wall -Wextra -Wpedantic)
 
 if(BUILD_TESTING)
     find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+    qt_add_executable(openpaint_blur_tests tests/unit/tst_blur.cpp)
+    target_link_libraries(openpaint_blur_tests PRIVATE openpaint_ui Qt6::Test)
+    add_test(NAME blur-support COMMAND openpaint_blur_tests)
     qt_add_executable(openpaint_update_tests tests/unit/tst_updates.cpp)
     target_link_libraries(openpaint_update_tests PRIVATE openpaint_ui Qt6::Test)
     add_test(NAME updates COMMAND openpaint_update_tests)
@@ -98,6 +101,10 @@ if(BUILD_TESTING)
     # Keep each bounded shell shard below 30 seconds as coverage grows.
     add_test(NAME shell COMMAND openpaint_shell_tests
         launchAndResize
+        toolCursorsAndIndicators
+        eraserModeMenu
+        themedApplicationIcon
+        splineKeyboardWorkflow
         selectAllKeyboard
         floatingToolControls
         quickActionPlacement
@@ -105,15 +112,23 @@ if(BUILD_TESTING)
         keyboardAboutAndEscape
         drawingAndTransforms
         interruptedAndSecondaryStroke
-        updatesWorkflow
+        welcomeWorkflow
+        glassSetupWorkflow
+        updatesWorkflow)
+    add_test(NAME shell-editing COMMAND openpaint_shell_tests
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory
         imageTransformWorkflow
         freeFormSelectionWorkflow
+        colorSelectionWorkflow
         clipboardMoveWorkflow
-        rectangularSelectionWorkflow
+        rectangularSelectionWorkflow)
+    add_test(NAME shell-text COMMAND openpaint_shell_tests
+        fontPickerWorkflow
         inlineTextWorkflow
+        textRangeFormattingWorkflow
+        textInsertionFormatsWorkflow
         transparentBackgroundChoice
         canvasCornerResize
         cornerResizeHandles)
@@ -126,6 +141,8 @@ if(BUILD_TESTING)
         nativePortalWorkflow
         keyboardFileWorkflow
         topRightControls
+        roundedClientCorners
+        frostedToolSelection
         glassAppearanceSettings
         glassBackdropRendering
         actualFloatingPanelBlur
@@ -135,14 +152,16 @@ if(BUILD_TESTING)
         ribbonShapeKeyboard
         shapeStyleMenus
         shapeOptionsKeyboard
-        brushMenuKeyboardAndLayout
+        brushMenuKeyboardAndLayout)
+    add_test(NAME shell-colors COMMAND openpaint_shell_tests
         fillOptionsLayout
         keyboardControlsAndAccessibility
         customColorEditor
         toolbarSlotAndRoleWorkflow
         renderTiming
         quitClosesWindow)
-    set_tests_properties(shell shell-more shell-controls PROPERTIES TIMEOUT 30)
+    set_tests_properties(shell shell-editing shell-text shell-more shell-controls shell-colors
+        PROPERTIES TIMEOUT 30)
     add_test(NAME cli-version COMMAND openpaint --version)
     set_tests_properties(cli-version PROPERTIES
         PASS_REGULAR_EXPRESSION "OpenPaint ${OPENPAINT_VERSION}" TIMEOUT 10)

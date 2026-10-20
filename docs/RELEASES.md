@@ -61,14 +61,15 @@ Do not infer write authority merely because a file is writable. An unrecognized
 installation gets a release-page link and manual instructions.
 
 All builds provide an Updates screen and an explicit “View releases” action.
-Network-capable builds add Check now and optional daily stable-release notifications;
+Network-capable builds check on startup, when Updates opens, and daily while running;
 Flatpak retains browser-only checking because it has no network permission.
 Automatic installation is not implemented. Do not show simulated
 network results or claim “up to date” without a successful authoritative check.
 
-Automatic checks are off by default. An opt-in permits at most a daily check while
-the app is running. No background service. Describe the host contacted, the IP/
-ordinary request metadata it will receive, and how to turn checks off. The editor
+Automatic checks default on, with one deferred startup attempt and at most daily
+checks while running. Cooldowns and server backoff survive restart. The old automatic-check preference is ignored.
+No background service. Describe the host contacted, the IP/
+ordinary request metadata it will receive, in the privacy documentation. The editor
 remains usable offline. Use backoff/timeouts and distinguish offline, rate limit,
 invalid metadata, and no update. Do not render active HTML from release notes.
 
@@ -233,6 +234,17 @@ Before publication of every version:
    Pages workflow and public page show the intended version and working downloads.
    Record deployment evidence in the release plan; a commit alone is not proof
    of publication. Refresh or clearly label any older screenshot retained in docs.
+
+Development icon update: the original Open palette light SVG is the installed
+launcher fallback. The running application selects light/dark artwork from its
+Light/Dark/System preference. Launcher/dock adoption of window icons depends on
+the desktop and must be checked during package QA.
+
+Development Enable Glass provides optional setup instructions on the validated
+Ubuntu 24.04 / GNOME 46 / X11 path, gated by local package/extension evidence.
+Other setups use opaque surfaces silently. No installer or extension is bundled
+or executed by OpenPaint; commands require explicit user copying and execution.
+See [implementation and remaining package validation](plans/0054-blur-onboarding-design.md).
 
 ### Runtime dependency review (2026-10-20)
 

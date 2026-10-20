@@ -27,7 +27,7 @@ UpdateService::UpdateService(QNetworkAccessManager* network, const QString& file
                     ? std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
                                                   "OpenPaint", "OpenPaint")
                     : std::make_unique<QSettings>(file, QSettings::IniFormat);
-    automatic_ = supported() && settings_->value("updates/automatic", false).toString() == "true";
+    automatic_ = supported();
     lastAttempt_ = settings_->value("updates/lastAttempt", 0).toLongLong();
     retryAt_ = settings_->value("updates/retryAt", 0).toLongLong();
     if (lastAttempt_ < 0 || lastAttempt_ > clock_() + 365 * Day)
@@ -50,10 +50,25 @@ UpdateService::UpdateService(QNetworkAccessManager* network, const QString& file
     });
     if (automatic_)
         timer_.start();
-    QTimer::singleShot(1500, this, &UpdateService::checkAutomatic);
+    QTimer::singleShot(1500, this, [this] {
+        // Check once per launch, retaining persisted cooldown and server backoff.
+        if (automatic_ && !busy() && clock_() >= retryAt_)
+            request();
+    });
 }
 bool UpdateService::supported() const {
     return QStringLiteral(OPENPAINT_INSTALL_KIND) != "flatpak";
+}
+QString UpdateService::summary() const {
+    if (!supported())
+        return tr("Latest releases");
+    if (busy())
+        return tr("Checking for updates…");
+    if (available_)
+        return tr("An update is ready");
+    if (verified_)
+        return tr("You’re up to date");
+    return attempted_ ? tr("Couldn’t check for updates") : tr("Waiting to check");
 }
 void UpdateService::setMessage(const QString& message) {
     message_ = message;
@@ -64,8 +79,6 @@ void UpdateService::setAutomatic(bool enabled) {
     if (enabled == automatic_)
         return;
     automatic_ = enabled;
-    settings_->setValue("updates/automatic", enabled);
-    settings_->sync();
     if (enabled) {
         timer_.start();
         QTimer::singleShot(0, this, &UpdateService::checkAutomatic);
@@ -81,6 +94,11 @@ void UpdateService::checkAutomatic() {
         (!lastAttempt_ || (now >= lastAttempt_ && now - lastAttempt_ >= Day)))
         request();
 }
+void UpdateService::refresh() {
+    // Opening the panel preserves recent results and respects server backoff.
+    if (automatic_ && !busy() && clock_() >= retryAt_)
+        request();
+}
 void UpdateService::check() {
     if (!supported() || busy())
         return;
@@ -91,6 +109,8 @@ void UpdateService::check() {
     request();
 }
 void UpdateService::request() {
+    attempted_ = true;
+    verified_ = false;
     lastAttempt_ = clock_();
     retryAt_ = lastAttempt_ + 60;
     settings_->setValue("updates/lastAttempt", lastAttempt_);
@@ -208,6 +228,7 @@ void UpdateService::finish() {
         return;
     }
     const bool notify = newer && (!available_ || latestVersion_ != tag.mid(1));
+    verified_ = true;
     latestVersion_ = tag.mid(1);
     available_ = newer;
     setMessage(newer ? tr("OpenPaint %1 is available.").arg(latestVersion_)

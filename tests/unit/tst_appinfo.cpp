@@ -18,7 +18,7 @@ class AppInfoTest : public QObject {
         const auto file = dir.filePath("appearance.ini");
         Appearance first(file);
         QVERIFY(first.glassEnabled());
-        QCOMPARE(first.surfaceOpacity(), 85);
+        QCOMPARE(first.surfaceOpacity(), 40);
         first.setGlassEnabled(false);
         first.setSurfaceOpacity(62);
         first.setThemeMode(2);
@@ -33,7 +33,7 @@ class AppInfoTest : public QObject {
         restored.restoreDefaults();
         Appearance defaults(file);
         QVERIFY(defaults.glassEnabled());
-        QCOMPARE(defaults.surfaceOpacity(), 85);
+        QCOMPARE(defaults.surfaceOpacity(), 40);
     }
     void explicitBrowserRequest() {
         QDesktopServices::setUrlHandler("https", this, "capture");
@@ -47,6 +47,8 @@ class AppInfoTest : public QObject {
         QVERIFY(received.isEmpty());
         QVERIFY(info.openReleases());
         QCOMPARE(received, info.releaseUrl());
+        QVERIFY(info.openContributing());
+        QCOMPARE(received, QUrl("https://github.com/AfshinKI/openpaint/blob/main/CONTRIBUTING.md"));
         QDesktopServices::unsetUrlHandler("https");
     }
 };

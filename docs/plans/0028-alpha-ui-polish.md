@@ -1,14 +1,14 @@
 # Feature: alpha ribbon and color workflow polish
 
-Status: in progress — steps 1–8 implemented; final batch review pending; focused validation recorded below
+Status: merged in PR #34; implemented with desktop-validation limits recorded below
 Feature IDs: F01, F02, F03, F05, F06, F08, F09, F26
 Milestone: post-M2 alpha polish, before M3
 
 ## Outcome and scope
 
 Make existing editing tools easier to discover in a compact, rounded ribbon.
-M2 and 0.1.0-alpha.1 remain completed release checkpoints; this is required work
-before leaving the alpha phase. Follow [design](../DESIGN.md) and
+M2 and 0.1.0-alpha.1 remain completed release checkpoints; this work shipped
+in PR #34 before the stable v1 release. Follow [design](../DESIGN.md) and
 [menus](../MENUS.md), with the deliberate changes below taking precedence.
 
 Use one bounded branch, `fix/alpha-ui-polish`, with eight separately reviewable
@@ -16,6 +16,17 @@ steps and one final PR/merge after all acceptance cases and CI pass. This groupi
 is explicitly requested for this cohesive UI correction. Do not add new editing
 features, layers, AI, publishing automation or updater work to this branch.
 Do not redistribute external reference images or record their locations.
+
+## Closure and reading this record
+
+[PR #34](https://github.com/AfshinKI/openpaint/pull/34) merged as
+`d623d87`. The implementation and focused test evidence below are historical
+progress notes, not a queue of unfinished features. Unchecked original acceptance
+items remain unverified as a complete checklist; do not infer full desktop or
+fractional-scale certification from merge status. Later plans supersede the
+original startup, fill and appearance behavior, particularly
+[plan 0039](0039-window-transparency.md). Remaining work is the broader platform,
+input and accessibility matrix in M4.
 
 ## Ordered implementation and acceptance checklist
 
@@ -106,7 +117,7 @@ regressions; all protected CI jobs must pass before the single final merge.
 Do not claim full accessibility or pixel parity based on screenshots alone.
 A later alpha release needs fresh artifact validation; do not replace alpha.1.
 
-## Progress and next action
+## Historical implementation progress
 
 Step 1 replaces the generic Image menu with separate Rotate and Flip dropdowns,
 retains direct Crop/Resize, and gives Selection a smaller chevron below its icon
@@ -114,8 +125,9 @@ and a group caption. Existing selection bounds/deselect entries remain available
 Two original vector glyphs identify Rotate and Flip. Existing command guards,
 preview handling and keyboard shortcuts are retained.
 
-Next: final batch review, including scale/theme, sanitizer and protected CI checks. Broader theme/scale and full regression
-checks are deferred until all eight steps are implemented, as requested.
+At this checkpoint, final batch review was deferred until all eight steps were
+implemented. Protected review later completed in PR #34; broader desktop
+certification remains outside this historical focused evidence.
 
 ### Step 1 focused evidence
 
@@ -124,7 +136,7 @@ executable is `build/dev/openpaint`; desktop `--version` succeeds. Focused shell
 cases `launchAndResize`, `imageTransformWorkflow` and `freeFormSelectionWorkflow`
 passed (5 including setup/cleanup), with offscreen software rendering and no QML
 warnings. Repository and diff whitespace checks passed. This is not a full visual
-or accessibility certification; the batch review remains pending.
+or accessibility certification; batch review was still pending at this checkpoint.
 
 ### Steps 2 and 3
 
@@ -205,7 +217,7 @@ verifies numeric changes, hidden irrelevant controls, retained settings, unchang
 canvas geometry and no painting through panel margins. Runtime shortcut-hint
 colors have a dark-theme regression assertion. Light/dark generated menu captures
 and minimum-size floating controls were visually inspected. Strict QML lint,
-repository and diff checks passed. Broader batch review remains pending.
+repository and diff checks passed. Broader batch review was pending at this checkpoint.
 
 ### Follow-up: narrow left rail and contextual text toolbar
 
@@ -220,7 +232,7 @@ A left click on canvas/workspace outside a ready text box commits through the
 existing C++ command, consumes the click and does not start a second box. Panning
 and inside-box clicks do not commit. Escape and Ctrl+Enter retain their existing
 semantics. Text has no Apply/Options footer buttons; guarded New/Open/Close flows
-still protect an active draft. Full batch review is still pending.
+still protect an active draft. Full batch review was pending at this checkpoint.
 
 Follow-up validation: dev build and strict QML lint passed. Focused launch/layout,
 floating controls, existing text workflow, outside-click commit/undo and File →
@@ -231,8 +243,8 @@ Repository and whitespace checks passed. Changes remain on the same polish branc
 
 ## Follow-up requests
 
-Items 1–11 are implemented below; final review remains pending before the final polish
-review. Earlier implementation evidence does not verify these requests.
+Items 1–11 were implemented below and merged in PR #34. The following sections
+record their own evidence; earlier implementation evidence alone did not verify them.
 
 1. Add small square corner resize handles to active shapes, text boxes and
    selections. Committed raster marks require selecting their pixels before
@@ -297,7 +309,7 @@ transform cases, the polygon geometry case and four focused shell cases passed
 (including corner drag/Escape, constant-size zoom targets, text editing and image
 transforms). Formatting, strict QML lint and repository checks passed. Inspected
 the generated text-handle capture. UI checks used offscreen software rendering;
-full desktop/platform and batch regression checks remain pending. At that checkpoint the next request was item 2. Canvas resize remains item 8.
+full desktop/platform checks remain unverified; batch regression was pending at that checkpoint. At that checkpoint the next request was item 2. Canvas resize remains item 8.
 
 ### Items 2–5 acceptance — ribbon action clarity
 
@@ -322,7 +334,7 @@ formatting, strict QML lint and repository checks passed. The action-memory case
 exercises all five operations, Undo and main-button repetition, plus both selection
 icons. Inspected the generated ribbon capture. Tests used offscreen software
 rendering; the final desktop/platform regression review remains pending. Launch
-with `./build/dev/openpaint`. Next unfinished request: item 6, eyedropper preview.
+with `./build/dev/openpaint`. At this checkpoint item 6 was next; its implementation is recorded below.
 
 ### Selection split-control appearance follow-up
 
@@ -355,8 +367,8 @@ Dev build passed. Editor suite (12 cases), canvas suite (24 cases/data rows), an
 both selection shell workflows passed with offscreen Qt. Coverage includes hover
 without document/color/history mutation, preview hiding, selection clearing,
 paste commit and Undo. Formatting, strict QML lint and repository checks passed.
-Full desktop/platform review remains pending. Next unfinished request: item 8,
-canvas corner resizing. Binary: `./build/dev/openpaint`.
+Full desktop/platform review remains pending. At this checkpoint item 8 was next;
+canvas corner resizing is recorded below. Binary: `./build/dev/openpaint`.
 
 ### Item 8 acceptance — canvas corner resizing
 
@@ -379,8 +391,7 @@ Dev build, all ten transform cases, canvas/content handle shell workflows,
 formatting, strict QML lint and repository checks passed. Tests cover alpha,
 background fill, crop offsets, undo/redo, invalid/oversized dimensions, drag
 cancellation and content-handle compatibility. UI tests used offscreen rendering;
-full desktop review remains pending. Launch `./build/dev/openpaint`. Next request:
-item 9, the larger circular Edit colors icon.
+full desktop review remains pending. Launch `./build/dev/openpaint`. Item 9, the larger circular Edit colors icon, was subsequently implemented below.
 
 ### Item 9 acceptance and implementation
 
@@ -394,7 +405,7 @@ Validation: dev build, transparent-background shell case, formatting, strict QML
 lint and repository checks passed. The shell case verifies fixed color roles,
 no immediate artwork/history mutation, transparent canvas expansion and Undo.
 Inspected the generated toolbar capture. Full desktop review remains pending.
-Next unfinished request is item 10 (Brushes split control).
+Item 10 (Brushes split control) was subsequently implemented below.
 
 ### Background color and alignment follow-up
 
@@ -440,7 +451,7 @@ The aggregate shell CTest hit its existing 30-second timeout; limits were not
 changed. Full shell validation is run directly and recorded below. Two historical
 fixtures were updated to the new tool-switch and background-clear contracts.
 Automatic update checking remains planned; the top-right button opens existing
-release guidance. Final desktop/platform review and protected merge remain pending.
+release guidance. Protected merge completed in PR #34; full desktop/platform review remains pending.
 
 Full direct shell run: 40 passed, zero failures (offscreen software rendering).
 
