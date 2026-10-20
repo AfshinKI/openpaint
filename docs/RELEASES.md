@@ -245,3 +245,14 @@ Ubuntu 24.04 / GNOME 46 / X11 path, gated by local package/extension evidence.
 Other setups use opaque surfaces silently. No installer or extension is bundled
 or executed by OpenPaint; commands require explicit user copying and execution.
 See [implementation and remaining package validation](plans/0054-blur-onboarding-design.md).
+
+### Runtime dependency review (2026-10-20)
+
+The upstream continuous runtime asset was replaced, and the checksum gate rejected
+it in PR #52. The binary and matching source pins now use type2-runtime commit
+`fedfad51acc2860b2916a1eef32ba4a500ff31ef`. Its only change from the previous pin
+is build-path normalization for libfuse/squashfuse debug information. Extraction
+permissions remain 0700 and dependency versions are unchanged. The downloaded
+binary digest was checked against GitHub's published asset digest; the source
+archive was downloaded and hashed independently. Continuous URLs can move again;
+checksum mismatches must continue to stop packaging, never trigger automatic trust.
