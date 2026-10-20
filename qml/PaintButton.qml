@@ -16,7 +16,7 @@ Button {
         opacity: control.enabled ? 1 : 0.5
         Rectangle {
             anchors.fill: parent
-            visible: !Appearance.glassEnabled
+            visible: !Appearance.effectiveGlassEnabled
             radius: Theme.controlRadius
             color: control.down ? Theme.pressed : control.checked || control.highlighted ? Theme.selected : control.hovered ? Theme.hover : control.flat ? "transparent" : Theme.panel
             border.width: control.visualFocus ? 2 : control.flat && !control.checked && !control.highlighted ? 0 : 1
@@ -27,7 +27,7 @@ Button {
             anchors.fill: parent
             radius: Theme.controlRadius
             selectedSurface: control.checked || control.highlighted
-            visible: Appearance.glassEnabled && (!control.flat || control.checked || control.highlighted || control.hovered || control.down || control.visualFocus)
+            visible: Appearance.effectiveGlassEnabled && (!control.flat || control.checked || control.highlighted || control.hovered || control.down || control.visualFocus)
             // Never sample the toolbar or popup containing this control.
             backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
             border.width: control.visualFocus ? 2 : 1

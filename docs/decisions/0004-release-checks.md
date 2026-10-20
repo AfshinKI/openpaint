@@ -28,3 +28,5 @@ cannot authorize installation. Offline editing and package ownership are unchang
 [Plan 0045](../plans/0045-startup-updates.md) changes the default to enabled and
 adds a deferred startup attempt, preserving saved opt-outs and request backoff.
 The endpoint, bounded transport and Flatpak permission boundary are unchanged.
+
+The Updates simplification in plan 0054 supersedes the saved opt-out: network-capable builds check on startup and opening the panel, retaining cooldown and server backoff. The UI has no manual check button or checkbox. Installation remains manual.

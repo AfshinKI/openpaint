@@ -24,9 +24,10 @@ ApplicationWindow {
     visible: false
     Component.onCompleted: Qt.callLater(function () {
         window.show();
+        BlurSupport.refresh();
     })
     title: (editor.dirty ? "* " : "") + editor.fileName + qsTr(" — OpenPaint")
-    readonly property real backgroundAlpha: Appearance.glassEnabled ? Appearance.surfaceOpacity / 100 : 1
+    readonly property real backgroundAlpha: Appearance.effectiveGlassEnabled ? Appearance.surfaceOpacity / 100 : 1
     readonly property real clientRadius: Qt.platform.os !== "linux" || visibility === Window.Maximized || visibility === Window.FullScreen ? 0 : 12
     color: "transparent"
     Overlay.modal: Rectangle {
@@ -101,6 +102,39 @@ ApplicationWindow {
             requestChange("close");
         }
     }
+    Binding {
+        target: Appearance
+        property: "desktopBlurAvailable"
+        value: BlurSupport.ready
+    }
+    Timer {
+        interval: 800
+        repeat: true
+        running: Appearance.welcomePending && !welcomeDialog.visible
+        onTriggered: {
+            if (!window.Overlay.overlay.visible && !editor.busy && !editor.interactionActive)
+                welcomeDialog.open();
+        }
+    }
+    WelcomeDialog {
+        id: welcomeDialog
+        objectName: "welcomeDialog"
+        parent: Overlay.overlay
+        onClosed: canvas.forceActiveFocus()
+    }
+    GlassSetupDialog {
+        id: glassSetup
+        objectName: "glassSetupDialog"
+        parent: Overlay.overlay
+        onClosed: {
+            if (appearanceDialog.visible)
+                appearanceDialog.focusGlassSetup();
+            else if (updatesDialog.visible)
+                updatesDialog.focusBlurHelp();
+            else
+                canvas.forceActiveFocus();
+        }
+    }
     UpdateService {
         id: updateService
         objectName: "updateService"
@@ -108,12 +142,14 @@ ApplicationWindow {
     }
     AppearanceDialog {
         id: appearanceDialog
+        onGlassSetupRequested: glassSetup.open()
         objectName: "appearanceDialog"
         parent: Overlay.overlay
     }
     UpdatesDialog {
         id: updatesDialog
         service: updateService
+        onBlurHelpRequested: glassSetup.open()
         objectName: "updatesDialog"
         parent: Overlay.overlay
     }
@@ -685,7 +721,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         selectedSurface: true
                         radius: Theme.controlRadius
-                        visible: Appearance.glassEnabled && editor.tool === Editor.Select
+                        visible: Appearance.effectiveGlassEnabled && editor.tool === Editor.Select
                         backdropLayers: [window.background, canvas]
                         border.width: 0
                     }
@@ -789,7 +825,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         radius: Theme.controlRadius
                         color: "transparent"
-                        border.color: Appearance.glassEnabled ? Theme.selectionOutline : Theme.accent
+                        border.color: Appearance.effectiveGlassEnabled ? Theme.selectionOutline : Theme.accent
                         border.width: selectionMain.visualFocus || selectionDropdown.visualFocus ? 2 : editor.tool === Editor.Select ? 1 : 0
                     }
                 }
@@ -1019,7 +1055,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         selectedSurface: true
                         radius: Theme.controlRadius
-                        visible: Appearance.glassEnabled && editor.tool === Editor.Brush
+                        visible: Appearance.effectiveGlassEnabled && editor.tool === Editor.Brush
                         backdropLayers: [window.background, canvas]
                         border.width: 0
                     }
@@ -1074,7 +1110,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         radius: Theme.controlRadius
                         color: "transparent"
-                        border.color: Appearance.glassEnabled ? Theme.selectionOutline : Theme.accent
+                        border.color: Appearance.effectiveGlassEnabled ? Theme.selectionOutline : Theme.accent
                         border.width: brushesButton.visualFocus || brushDropdown.visualFocus ? 2 : editor.tool === Editor.Brush ? 1 : 0
                     }
                 }
@@ -1479,14 +1515,14 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
             PaintButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 objectName: "shapeOptionsButton"
                 text: qsTr("Options")
                 visible: editor.previewActive && !editor.textActive
                 onClicked: editor.floatingActive ? selectionOptions.open() : shapeOptions.open()
             }
             PaintButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 objectName: "applyPreviewButton"
                 text: qsTr("Apply")
                 visible: editor.previewActive && !editor.textActive
@@ -1495,7 +1531,7 @@ ApplicationWindow {
                 }
             }
             PaintButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 text: qsTr("Cancel")
                 visible: editor.previewActive
                 onClicked: editor.cancel()
@@ -1512,13 +1548,13 @@ ApplicationWindow {
                 onClicked: editor.cancelIo()
             }
             IconButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 symbol: "fit"
                 shortcutLabel: "Ctrl+0"
                 action: fitAction
             }
             IconButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 symbol: "zoom-out"
                 shortcutLabel: "Ctrl+-"
                 action: zoomOutAction
@@ -1530,7 +1566,7 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
             }
             IconButton {
-                flat: Appearance.glassEnabled
+                flat: Appearance.effectiveGlassEnabled
                 symbol: "zoom-in"
                 shortcutLabel: "Ctrl++"
                 action: zoomInAction

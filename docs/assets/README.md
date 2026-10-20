@@ -56,3 +56,22 @@ image and update `website/release.json`, HTML references and README together.
 The optional `websiteReleasePreview` source-harness slot is separate test tooling;
 its opaque software-rendered output must not replace these installed glass images
 without clearly changing the provenance and captions.
+
+## Blur onboarding design preview
+
+`onboarding-opaque-design.png` was captured on 2026-10-19 with the existing
+`build/dev/openpaint_shell_tests` binary using its `websiteReleasePreview` slot,
+`QT_QPA_PLATFORM=offscreen`, and `QT_QUICK_BACKEND=software`. The checkout was
+`88f0b38`; the existing binary was not rebuilt or asserted to match that commit.
+Glass is explicitly disabled by the harness. Temporary generated mountain artwork
+and isolated preferences preserve user documents and settings. The capture slot
+passed, and the image was visually inspected. This is design evidence, not a new
+release screenshot. The generated artwork and capture are GPL-3.0-or-later.
+
+The onboarding mockup pairs this opaque capture with the existing, unmodified
+`openpaint-1.2.0-light.png` release capture documented above. CSS clips the upper
+left corners and scales them for presentation; screenshot pixels are not repainted.
+These captures have different source versions and sample artwork. The glass image
+is labeled "Glass appearance": its provenance does not establish native desktop
+blur. Updates reuses the same real release image. A matched pair from the final
+release build remains required before shipping the onboarding assets.

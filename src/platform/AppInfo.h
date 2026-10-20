@@ -23,4 +23,5 @@ class AppInfo : public QObject {
     QUrl releaseUrl() const;
     Q_INVOKABLE QString shortcutText(const QVariant& shortcut) const;
     Q_INVOKABLE bool openReleases() const;
+    Q_INVOKABLE bool openContributing() const;
 };

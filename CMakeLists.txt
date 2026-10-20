@@ -58,6 +58,9 @@ target_compile_options(openpaint PRIVATE -Wall -Wextra -Wpedantic)
 
 if(BUILD_TESTING)
     find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+    qt_add_executable(openpaint_blur_tests tests/unit/tst_blur.cpp)
+    target_link_libraries(openpaint_blur_tests PRIVATE openpaint_ui Qt6::Test)
+    add_test(NAME blur-support COMMAND openpaint_blur_tests)
     qt_add_executable(openpaint_update_tests tests/unit/tst_updates.cpp)
     target_link_libraries(openpaint_update_tests PRIVATE openpaint_ui Qt6::Test)
     add_test(NAME updates COMMAND openpaint_update_tests)
@@ -109,6 +112,8 @@ if(BUILD_TESTING)
         keyboardAboutAndEscape
         drawingAndTransforms
         interruptedAndSecondaryStroke
+        welcomeWorkflow
+        glassSetupWorkflow
         updatesWorkflow
         exportDialogWorkflow
         resizeDialogWorkflow

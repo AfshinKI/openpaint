@@ -38,6 +38,7 @@ class Editor : public QObject {
     Q_PROPERTY(bool textStrikeout MEMBER textStrikeout NOTIFY settingsChanged)
     Q_PROPERTY(bool textBackground MEMBER textBackground NOTIFY settingsChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
+    Q_PROPERTY(bool interactionActive READ interactionActive NOTIFY changed)
     Q_PROPERTY(bool filling READ filling NOTIFY changed)
     Q_PROPERTY(bool previewActive READ previewActive NOTIFY changed)
     Q_PROPERTY(QPointF shapeStart READ shapeStart NOTIFY changed)
@@ -99,6 +100,9 @@ class Editor : public QObject {
     Q_INVOKABLE void resizeImage(int width, int height, qreal skewX, qreal skewY, bool smooth);
     bool clipboardBusy() const {
         return clipboardBusy_;
+    }
+    bool interactionActive() const {
+        return document.active() || previewActive();
     }
     bool busy() const {
         return busy_;

@@ -20,7 +20,7 @@ visible controls to clear them. Do not include document paths or contents in log
 
 Manual and automatic update checks contact api.github.com. Automatic checks are
 enabled by default on network-capable builds, at startup and daily while running;
-Updates discloses the destination and provides an opt-out. Saved opt-outs persist. A web host can see an IP address even when the app sends
+Opening Updates also checks, subject to cooldown/backoff. Updates discloses the destination. The former checkbox and saved opt-out are no longer used. A web host can see an IP address even when the app sends
 no personal fields. Diagnostics are opt-in exports that users can preview and edit.
 
 Export strips author/device/GPS/text metadata by default. Color-profile conversion
@@ -75,12 +75,12 @@ forks, caches, or previously downloaded copies.
 
 ## Release-check disclosure
 
-Check now sends a bounded HTTPS request to api.github.com. GitHub receives the IP
+Startup and opening Updates send a bounded HTTPS request to api.github.com. GitHub receives the IP
 address and ordinary connection metadata with a fixed application User-Agent; no
 artwork, paths, credentials or installation identifier is sent. Automatic checks
 default on for network-capable builds: once per startup after a short delay, then
 at most daily while running. Persisted cooldown/server backoff still applies.
-They can be disabled in Updates. Local XDG settings retain the choice and
+There is no check button or checkbox. Local XDG settings retain
 request/backoff timestamps. Browser navigation
 requires an explicit action. Flatpak retains no network permission and manual links.
 
@@ -95,3 +95,13 @@ app instance with isolated settings for release marketing captures. Crop to the
 app and deliberately staged original backdrop; never include private desktop
 content or interrupt a user's unsaved document. A source harness is allowed for
 clearly labeled test evidence, but must not be presented as an installed capture.
+
+Development blur onboarding reads local desktop/version, extension settings and
+cached package availability without networking. The setup command is copied only
+on request; OpenPaint never runs it or changes desktop settings. A local welcome
+revision records dismissal. No capability results or command output are logged.
+
+The separate Welcome to OpenPaint stores only its local dismissal revision. Get
+involved opens the public contribution guide on GitHub only after a click; the
+browser sends ordinary connection metadata. Glass setup is now on demand and
+stores no separate dismissal state.

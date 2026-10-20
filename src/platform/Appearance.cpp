@@ -74,3 +74,19 @@ void Appearance::setThemeMode(int mode) {
     themeMode_ = mode;
     save();
 }
+
+void Appearance::setDesktopBlurAvailable(bool available) {
+    if (desktopBlurAvailable_ == available)
+        return;
+    desktopBlurAvailable_ = available;
+    emit changed();
+}
+
+bool Appearance::welcomePending() const {
+    return settings_->value("onboarding/welcomeRevision", 0).toInt() < 1;
+}
+void Appearance::dismissWelcome() {
+    settings_->setValue("onboarding/welcomeRevision", 1);
+    settings_->sync();
+    emit changed();
+}

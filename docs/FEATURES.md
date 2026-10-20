@@ -170,3 +170,11 @@ Enter applies and Escape cancels. It interpolates the clicked points smoothly,
 uses outline color/width, and ignores fill. Endpoints and overall bounds remain
 editable; undo/redo and PNG saving use the existing document pipeline.
 See [icon and spline acceptance](plans/0052-icon-and-spline.md).
+
+Development [blur welcome and Updates](plans/0054-blur-onboarding-design.md):
+real app previews, local capability checks, optional setup command copying,
+a separate one-time welcome with a contribution link, and silent opaque fallback.
+Disabled glass controls link to the on-demand Enable Glass panel. Initial setup scope is Ubuntu
+24.04 / GNOME 46 / X11; broader desktop support is not claimed.
+
+Updates refinement: automatic startup/open checks with cooldown/backoff, concise status, and an angled app-corner card. Legacy automatic-check preference is superseded; installation remains manual. Validation is recorded in plan 0054.

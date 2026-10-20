@@ -4,9 +4,11 @@
 #include "io/ImageIo.h"
 #include "platform/AppInfo.h"
 #include "platform/Appearance.h"
+#include "platform/BlurSupport.h"
 #include "platform/WindowStartup.h"
 #include "render/CanvasItem.h"
 #include <QAccessible>
+#include <QClipboard>
 #include <QColorSpace>
 #include <QDesktopServices>
 #include <QDir>
@@ -58,6 +60,7 @@ class ShellTest : public QObject {
         // Shell tests never contact the network; updater policy has fake-transport tests.
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, "OpenPaint", "OpenPaint");
         settings.setValue("updates/automatic", false);
+        settings.setValue("onboarding/welcomeRevision", 1);
         settings.sync();
         engine = std::make_unique<QQmlApplicationEngine>();
         connect(engine.get(), &QQmlApplicationEngine::warnings, this,
@@ -65,10 +68,17 @@ class ShellTest : public QObject {
                     for (const auto& error : errors)
                         warnings.append(error.toString());
                 });
+        // Rendering tests use deterministic capability evidence, never host tools.
+        auto* blur = engine->singletonInstance<BlurSupport*>("OpenPaint", "BlurSupport");
+        QTRY_VERIFY(!blur->busy());
+        blur->setProbe([] { return BlurSupport::Result{true, {}, {}}; });
         engine->loadFromModule("OpenPaint", "Main");
         QCOMPARE(engine->rootObjects().size(), 1);
         window = qobject_cast<QQuickWindow*>(engine->rootObjects().first());
         QVERIFY(window);
+        auto* updates = window->findChild<QObject*>("updateService");
+        QVERIFY(updates);
+        updates->setProperty("automatic", false);
         revealAfterFirstFrame(window);
         QCOMPARE(window->opacity(), 0.0);
         QVERIFY(QTest::qWaitForWindowExposed(window));
@@ -77,6 +87,7 @@ class ShellTest : public QObject {
         QVERIFY(QTest::qWaitForWindowActive(window));
         QGuiApplication::sync();
         QVERIFY(!window->grabWindow().isNull());
+        QTRY_VERIFY(blur->ready());
         if (qEnvironmentVariableIsSet("OPENPAINT_BENCHMARK_STARTUP"))
             qInfo("M1 startup_ms %.3f", startupTimer.nsecsElapsed() / 1000000.0);
     }
@@ -499,6 +510,126 @@ class ShellTest : public QObject {
         QCOMPARE(url, QUrl("https://github.com/AfshinKI/openpaint/releases"));
     }
 
+    void captureContributingUrl(const QUrl& url) {
+        QCOMPARE(url, QUrl("https://github.com/AfshinKI/openpaint/blob/main/CONTRIBUTING.md"));
+    }
+
+    void welcomeWorkflow() {
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        auto* blur = engine->singletonInstance<BlurSupport*>("OpenPaint", "BlurSupport");
+        auto* welcome = window->findChild<QObject*>("welcomeDialog");
+        auto* setup = window->findChild<QObject*>("glassSetupDialog");
+        auto* editor = window->findChild<Editor*>("editor");
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, "OpenPaint", "OpenPaint");
+        settings.remove("onboarding/welcomeRevision");
+        settings.sync();
+        appearance->restoreDefaults();
+        QTRY_VERIFY(!blur->busy());
+        blur->setProbe([] { return BlurSupport::Result{}; });
+        blur->refresh();
+        editor->begin({20, 20}, false);
+        editor->extend({70, 40});
+        QTest::qWait(900);
+        QVERIFY(!welcome->property("visible").toBool());
+        editor->finish();
+        const auto artwork = editor->image();
+        QTRY_VERIFY(welcome->property("visible").toBool());
+        QVERIFY(!setup->property("visible").toBool());
+        QDesktopServices::setUrlHandler("https", this, "captureContributingUrl");
+        const auto resetHandler = qScopeGuard([] { QDesktopServices::unsetUrlHandler("https"); });
+        QVERIFY(
+            QMetaObject::invokeMethod(window->findChild<QObject*>("welcomeContribute"), "clicked"));
+        window->resize(1024, 640);
+        for (const auto& theme : {QString("light"), QString("dark")}) {
+            QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>(theme + "ThemeAction"),
+                                              "trigger", Q_ARG(QObject*, nullptr)));
+            QVERIFY(capture("welcome-" + theme + "-1024.png"));
+        }
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("welcomeStart"), "clicked"));
+        QTRY_VERIFY(!welcome->property("visible").toBool());
+        QVERIFY(!appearance->welcomePending());
+        appearance->restoreDefaults();
+        QVERIFY(!appearance->welcomePending());
+        QCOMPARE(editor->image(), artwork);
+        QVERIFY(editor->dirty());
+    }
+
+    void glassSetupWorkflow() {
+        auto* blur = engine->singletonInstance<BlurSupport*>("OpenPaint", "BlurSupport");
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        auto* setup = window->findChild<QObject*>("glassSetupDialog");
+        auto* updates = window->findChild<QObject*>("updatesDialog");
+        auto* settings = window->findChild<QObject*>("appearanceDialog");
+        auto* toggle = window->findChild<QObject*>("glassEnabled");
+        auto* enable = window->findChild<QObject*>("enableGlassSetup");
+        auto* editor = window->findChild<Editor*>("editor");
+        const auto artwork = editor->image();
+        appearance->restoreDefaults();
+        blur->setProbe([] {
+            return BlurSupport::evaluate("ubuntu:GNOME", "x11", "xcb", "ubuntu", "24.04", false, {},
+                                         [](const QString& program, const QStringList&) {
+                                             if (program == "gnome-shell")
+                                                 return QString("GNOME Shell 46.0");
+                                             if (program == "apt-cache")
+                                                 return QString("Candidate: 0.5.0-1build1");
+                                             return QString{};
+                                         });
+        });
+        blur->refresh();
+        QTRY_VERIFY(blur->setupAvailable());
+        QVERIFY(!setup->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(settings, "open"));
+        QTRY_VERIFY(settings->property("visible").toBool());
+        QVERIFY(!toggle->property("checked").toBool());
+        QVERIFY(!toggle->property("enabled").toBool());
+        QVERIFY(appearance->glassEnabled()); // Saved preference is preserved.
+        window->resize(1024, 640);
+        QVERIFY(capture("glass-settings-disabled-1024.png"));
+        QVERIFY(enable->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(enable, "clicked"));
+        QTRY_VERIFY(setup->property("visible").toBool());
+        auto* copy = window->findChild<QObject*>("copyBlurCommand");
+        QVERIFY(QMetaObject::invokeMethod(copy, "clicked"));
+        QCOMPARE(QGuiApplication::clipboard()->text(), blur->command());
+        for (const auto& theme : {QString("light"), QString("dark")}) {
+            QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>(theme + "ThemeAction"),
+                                              "trigger", Q_ARG(QObject*, nullptr)));
+            QVERIFY(capture("enable-glass-" + theme + "-1024.png"));
+        }
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!setup->property("visible").toBool());
+        QTRY_VERIFY(enable->property("activeFocus").toBool());
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!settings->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(updates, "open"));
+        QTRY_VERIFY(updates->property("visible").toBool());
+        auto* help = window->findChild<QObject*>("backgroundBlurHelp");
+        QCOMPARE(help->property("text").toString(), QString("Enable Glass"));
+        QVERIFY(QMetaObject::invokeMethod(help, "clicked"));
+        QTRY_VERIFY(setup->property("visible").toBool());
+        QTRY_VERIFY(!blur->busy());
+        blur->setProbe([] { return BlurSupport::Result{}; });
+        blur->refresh();
+        QTRY_VERIFY(!blur->setupAvailable());
+        QVERIFY(!window->findChild<QObject*>("glassCommandWell")->property("visible").toBool());
+        QVERIFY(setup->property("visible").toBool());
+        QVERIFY(!appearance->effectiveGlassEnabled());
+        QCOMPARE(window->property("backgroundAlpha").toDouble(), 1.0);
+        QVERIFY(capture("enable-glass-fallback-1024.png"));
+        QTRY_VERIFY(!blur->busy());
+        blur->setProbe([] { return BlurSupport::Result{true, {}, {}}; });
+        blur->refresh();
+        QTRY_VERIFY(blur->ready());
+        auto* useGlass = window->findChild<QObject*>("useGlass");
+        QVERIFY(useGlass->property("visible").toBool());
+        QVERIFY(QMetaObject::invokeMethod(useGlass, "clicked"));
+        QTRY_VERIFY(!setup->property("visible").toBool());
+        QVERIFY(appearance->effectiveGlassEnabled());
+        QTRY_VERIFY(help->property("activeFocus").toBool());
+        QCOMPARE(editor->image(), artwork);
+        keyClick(Qt::Key_Escape);
+    }
+
     void updatesWorkflow() {
         QDesktopServices::setUrlHandler("https", this, "captureReleaseUrl");
         const auto resetHandler = qScopeGuard([] { QDesktopServices::unsetUrlHandler("https"); });
@@ -523,6 +654,8 @@ class ShellTest : public QObject {
             keyClick(Qt::Key_Down); // New/Open/Save/Save As/Export/Updates.
         keyClick(Qt::Key_Return);
         QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(!window->findChild<QObject*>("checkReleaseButton"));
+        QVERIFY(!window->findChild<QObject*>("automaticReleaseChecks"));
         QVERIFY(tabTo("viewReleasesButton"));
         keyClick(Qt::Key_Space);
         window->resize(1024, 640);

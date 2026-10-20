@@ -141,22 +141,21 @@ tool-letter shortcuts later after checking typing and desktop conflicts.
 Settings sections: Appearance, Canvas, Files & Recovery, Updates, Privacy, About.
 Keep advanced technical information in an expandable diagnostic view.
 
-Updates shows installed version, installation source, channel, last-check time,
-and one primary action. Manual checks are always available; automatic checks default on
-for network-capable builds, at startup and daily while running. Preserve saved
-opt-outs and persisted cooldown/backoff; no background daemon.
+Updates shows the installed version, concise status, one release action and
+attribution beside an angled actual-app corner card. Network-capable builds check
+at startup, on opening the panel, and daily while running. Persisted cooldown and
+server backoff apply; no check checkbox/button or background daemon exists.
 
 | State | User-facing behavior |
 | --- | --- |
-| Not checked | “Check for updates” |
-| Checking | Progress indicator; Cancel |
-| Current | “You're up to date” and last successful check |
-| Available | Version, release notes, download size, action appropriate to installation |
-| Downloading | Bytes/progress, Cancel; editor remains usable |
-| Ready (AppImage) | “Restart to update”; resolve all unsaved windows first |
-| Managed installation | “Open software manager” or copyable package-manager instructions |
-| Offline/error | Plain explanation, Retry; retain installed app and saved artwork |
-| Verification failed | Do not install; show failure and link to official releases |
+| Not checked | “Waiting to check” |
+| Checking | “Checking for updates…” |
+| Current | “You’re up to date” only after a validated response |
+| Available | “An update is ready”, version and Get update browser action |
+| Offline/error | “Couldn’t check for updates”; View releases remains available |
+| Flatpak | “Latest releases” with a manual browser action |
+
+Installation is manual. Automatic downloading and restart-to-update remain planned.
 
 No forced restarts, silent channel switches, fabricated progress, or update success
 messages before verification. Detailed rules are in [RELEASES.md](RELEASES.md).
@@ -306,3 +305,27 @@ Enter applies and Escape cancels. It interpolates the clicked points smoothly,
 uses outline color/width, and ignores fill. Endpoints and overall bounds remain
 editable; undo/redo and PNG saving use the existing document pipeline.
 See [icon and spline acceptance](plans/0052-icon-and-spline.md).
+
+## Development blur welcome panel
+
+[Blur onboarding and Updates](plans/0054-blur-onboarding-design.md) implements
+real app corner previews, optional local setup guidance,
+clipboard copying and a Check again action. A separate Welcome to OpenPaint
+appears once, includes a side picture and invites contributions. Updates places text on the left,
+a real app picture on the right, and Enable Glass in its footer. The original [interactive design](designs/blur-onboarding.html)
+remains a design artifact rather than executable application behavior.
+
+Current capability evidence is limited to Ubuntu 24.04 / GNOME 46 / X11. Without
+verified configuration, the effective appearance is opaque while saved glass
+preferences are retained. The glass checkbox is unchecked and disabled until requirements are met.
+Enable Glass opens setup on demand, even on an unverified desktop; commands are
+shown only for a verified recipe. Unavailable setup stays opaque without a package
+warning. This supersedes
+the earlier transparency-only fallback described above. No setup command runs
+inside OpenPaint, and the welcome panel waits until drawing and other popups finish.
+
+App preview images have 18px rounded corners and a restrained shadow, rendered
+with QPainter so software rendering needs no optional effects. Setup uses short
+copy and a selectable 11px monospace command below a Terminal label.
+
+Updates uses a compact status/action column and a softly elevated, perspective-angled actual-app corner preview. It checks on startup and opening without a check button or checkbox; failures never imply the installed version is current.

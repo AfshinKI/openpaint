@@ -11,7 +11,7 @@ QtObject {
     readonly property int dialogRadius: 12
     readonly property color hover: dark ? "#343B45" : "#E9EDF2"
     readonly property color pressed: dark ? "#46515E" : "#D9E0E8"
-    readonly property color selected: Appearance.glassEnabled ? (dark ? "#53606C" : "#E3E8EE") : (dark ? "#294C45" : "#D9EEE8")
+    readonly property color selected: Appearance.effectiveGlassEnabled ? (dark ? "#53606C" : "#E3E8EE") : (dark ? "#294C45" : "#D9EEE8")
     readonly property color selectionOutline: dark ? "#D8E2EA" : "#FFFFFF"
     readonly property int mode: Appearance.themeMode
     readonly property bool dark: mode === 2 || (mode === 0 && Application.styleHints.colorScheme === Qt.ColorScheme.Dark)

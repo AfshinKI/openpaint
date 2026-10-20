@@ -319,7 +319,7 @@ The dialogs preserve the exact filename authorized by the desktop portal. They d
 not append extensions after selection. A missing/wrong extension shows an error
 and preserves the current drawing and saved state; choose again with the extension.
 
-Updates provides Check now, Cancel check, a default-on startup/daily-check option and View releases. A newer stable release produces a dismissible in-app notice; it never interrupts or restarts editing. Flatpak retains manual browser links.
+Updates checks automatically on startup and opening, respecting cooldowns, with a compact status and View releases/Get update action. There is no check button or checkbox. A newer stable release produces a dismissible in-app notice; it never interrupts or restarts editing. Flatpak retains manual browser links.
 
 Settings includes Glass appearance with a persistent toggle, 40–100% surface opacity slider, Restore defaults and Close. Defaults are enabled/40%; disabling restores opaque surfaces. No artwork edit or history entry occurs.
 
@@ -407,3 +407,23 @@ Enter applies and Escape cancels. It interpolates the clicked points smoothly,
 uses outline color/width, and ignores fill. Endpoints and overall bounds remain
 editable; undo/redo and PNG saving use the existing document pipeline.
 See [icon and spline acceptance](plans/0052-icon-and-spline.md).
+
+## Development welcome, glass setup and Updates
+
+Welcome to OpenPaint appears once regardless of blur capability, with Start
+creating, Get involved and a real app picture. Escape/Start creating persist its
+dismissal. Startup waits for an idle editor with no drawing transaction or popup.
+Get involved opens the contribution guide only after a click.
+
+Enable Glass is a separate on-demand panel opened from Appearance or Updates.
+While requirements are unmet, the glass checkbox is unchecked and disabled, with
+an Enable Glass button beneath it. Saved glass intent is retained. Setup compares
+rounded real app corners, shows a small selectable command with a copy icon when
+applicable, and provides Check again and Close. Use Glass appears when ready.
+Unverified systems keep the opaque appearance without a guessed command or
+package warning. No setup panel opens automatically.
+
+Updates places a concise status, release action and attribution on the left and an angled real
+app image on the right. The content scrolls within small windows; narrow layouts
+stack the columns. Enable Glass stays in its footer and does not start a release
+check. See [plan 0054](plans/0054-blur-onboarding-design.md).

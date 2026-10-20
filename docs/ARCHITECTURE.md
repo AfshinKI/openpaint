@@ -213,3 +213,6 @@ local, with user-only permissions and a visible Clear Recovery Data control.
 - No public binary plugin ABI in 1.0. Keep internal interfaces simple and testable.
 
 Release notifications use a GUI-thread Qt Network service with bounded asynchronous requests, immutable parsed version strings and local schedule preferences. See [ADR 0004](decisions/0004-release-checks.md); document mutations and installation remain outside this service.
+
+Desktop blur evidence is a bounded worker-side local probe, separate from saved
+appearance intent and document state. See [ADR 0006](decisions/0006-desktop-blur-guidance.md).

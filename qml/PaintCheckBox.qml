@@ -19,7 +19,7 @@ CheckBox {
         radius: 4
         color: control.checked ? Theme.accent : Theme.panel
         border.width: control.visualFocus ? 2 : 1
-        border.color: Appearance.glassEnabled && control.checked ? Theme.selectionOutline : control.visualFocus || control.checked ? Theme.accent : Theme.divider
+        border.color: Appearance.effectiveGlassEnabled && control.checked ? Theme.selectionOutline : control.visualFocus || control.checked ? Theme.accent : Theme.divider
         Text {
             anchors.centerIn: parent
             text: "✓"
