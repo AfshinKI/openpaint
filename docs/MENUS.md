@@ -448,3 +448,18 @@ Alignment, text color and opaque background remain box-wide. Local text undo/red
 includes formatting; committing rasterizes all runs into one document edit.
 
 The color editor OK/Cancel footer shares the dialog glass surface without a separate opaque panel.
+
+## Development layered documents
+
+Layers is available at the end of the ribbon and in View. Its panel exposes Add,
+Duplicate, layer selection/name, Visible, Opacity, Up/Down, Delete and Merge down.
+Changes are disabled during active edits and workers. Copy visible layers uses
+Ctrl+Shift+C and copies the selection from the visible composite; ordinary Copy
+and Cut use the active layer. The current selection mask and color-key option
+apply to both copy paths.
+
+Ctrl+S saves losslessly: layer structure or non-default properties require .ora;
+Save As (Ctrl+Shift+S) offers OpenRaster alongside PNG for a flat image. Existing
+.ora projects keep their format. Export copy flattens visible layers and never
+marks the project saved. The Open dialog includes .ora. Filename extensions are
+validated without changing a portal-granted destination.

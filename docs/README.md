@@ -20,6 +20,7 @@ These documents are implementation contracts. Plans describe intended behavior;
 | Download formats and Updates screen | [Releases](RELEASES.md) |
 | Personal data, network access, fixture rules | [Privacy](PRIVACY.md) |
 | Why this stack | [Decision 0001](decisions/0001-native-stack.md) |
+| Raster layers and OpenRaster | [Layer feature plan](plans/0058-layers.md), [bounded model decision](decisions/0008-bounded-layer-projects.md) |
 | New plans and decisions | [Feature template](templates/FEATURE.md), [decision template](templates/DECISION.md) |
 | External source material | [References](REFERENCES.md) |
 

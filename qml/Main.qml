@@ -49,6 +49,7 @@ ApplicationWindow {
     palette.buttonText: Theme.text
     palette.highlight: Theme.accent
     palette.highlightedText: Theme.accentText
+    property bool layersVisible: false
     property bool discardClose: false
     property string pendingAction: ""
     function performPending() {
@@ -79,7 +80,7 @@ ApplicationWindow {
     }
     function saveDrawing() {
         editor.commitPreview();
-        if (editor.fileUrl.toString() === "")
+        if (editor.fileUrl.toString() === "" || (editor.needsProject && !editor.fileUrl.toString().toLowerCase().endsWith(".ora")))
             saveDialog.open();
         else
             editor.saveFile(editor.fileUrl);
@@ -431,6 +432,14 @@ ApplicationWindow {
         onTriggered: editor.copySelection()
     }
     Action {
+        id: copyVisibleAction
+        icon.source: "icons/copy.svg"
+        text: qsTr("Copy visible layers")
+        shortcut: "Ctrl+Shift+C"
+        enabled: copyAction.enabled
+        onTriggered: editor.copyVisibleLayers()
+    }
+    Action {
         id: cutAction
         icon.source: "icons/cut.svg"
         text: qsTr("Cut")
@@ -590,6 +599,10 @@ ApplicationWindow {
                     }
                     MenuSeparator {}
                     PaintMenuItem {
+                        action: copyVisibleAction
+                    }
+                    MenuSeparator {}
+                    PaintMenuItem {
                         action: selectAllAction
                     }
                     PaintMenuItem {
@@ -601,6 +614,12 @@ ApplicationWindow {
                 }
                 PaintMenu {
                     title: qsTr("&View")
+                    PaintMenuItem {
+                        text: qsTr("Layers")
+                        checkable: true
+                        checked: window.layersVisible
+                        onTriggered: window.layersVisible = !window.layersVisible
+                    }
                     PaintMenuItem {
                         action: fitAction
                     }
@@ -1392,15 +1411,37 @@ ApplicationWindow {
                     }
                 }
             }
+            IconButton {
+                objectName: "layersButton"
+                symbol: "layers"
+                text: qsTr("Layers")
+                checkable: true
+                checked: window.layersVisible
+                onClicked: window.layersVisible = !window.layersVisible
+            }
             Item {
                 Layout.fillWidth: true
             }
         }
     }
+    LayersPanel {
+        id: layersPanel
+        objectName: "layersPanel"
+        editor: window.editorController
+        visible: window.layersVisible
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.margins: 8
+        width: 260
+        z: 5
+        onCloseRequested: window.layersVisible = false
+    }
     CanvasItem {
         id: canvas
         objectName: "canvas"
         anchors.fill: parent
+        anchors.rightMargin: window.layersVisible && window.width >= 1280 ? 276 : 0
         editor: window.editorController
         enabled: !window.editorController.loading || window.editorController.filling
         focus: true
@@ -1594,7 +1635,7 @@ ApplicationWindow {
         objectName: "openDialog"
         title: qsTr("Open image")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("Images (*.png *.jpg *.jpeg *.bmp *.webp)"), qsTr("PNG images (*.png)"), qsTr("JPEG images (*.jpg *.jpeg)"), qsTr("BMP images (*.bmp)"), qsTr("WebP images (*.webp)")]
+        nameFilters: [qsTr("Images and projects (*.ora *.png *.jpg *.jpeg *.bmp *.webp)"), qsTr("OpenRaster projects (*.ora)"), qsTr("PNG images (*.png)"), qsTr("JPEG images (*.jpg *.jpeg)"), qsTr("BMP images (*.bmp)"), qsTr("WebP images (*.webp)")]
         onAccepted: editor.openFile(selectedFile)
     }
     FileDialog {
@@ -1610,11 +1651,11 @@ ApplicationWindow {
     FileDialog {
         id: saveDialog
         objectName: "saveDialog"
-        title: qsTr("Save PNG (.png)")
+        title: editor.needsProject ? qsTr("Save project (.ora)") : qsTr("Save drawing")
         fileMode: FileDialog.SaveFile
         // Appending a suffix after portal selection writes outside its file grant.
         defaultSuffix: ""
-        nameFilters: [qsTr("PNG images (*.png)")]
+        nameFilters: editor.needsProject ? [qsTr("OpenRaster projects (*.ora)")] : [qsTr("PNG images (*.png)"), qsTr("OpenRaster projects (*.ora)")]
         onAccepted: editor.saveFile(selectedFile)
         onRejected: window.pendingAction = ""
     }

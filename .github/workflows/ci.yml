@@ -79,7 +79,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y g++-13 clang-18 ninja-build python3-venv \
-            zlib1g-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0 xvfb xauth
+            libarchive-dev zlib1g-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0 xvfb xauth
       - name: Install pinned development tools and Qt
         run: |
           python3 -m venv build/tooling
@@ -132,7 +132,7 @@ jobs:
         run: |
           sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y g++-13 cmake ninja-build python3-venv zlib1g-dev \
+          DEBIAN_FRONTEND=noninteractive apt-get install -y g++-13 cmake ninja-build python3-venv libarchive-dev zlib1g-dev \
             ca-certificates file git dpkg-dev binutils \
             libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 \
             libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0 desktop-file-utils appstream \

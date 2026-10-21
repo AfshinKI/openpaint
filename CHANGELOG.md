@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Add undoable raster layers with thumbnails, names, reordering, duplication,
+  merge down, visibility and opacity controls.
+- Save/reopen bounded OpenRaster projects; PNG and other exports flatten visible
+  layers without changing the project's saved state.
+- Keep tools and selected-content edits on the active layer; transform the whole
+  stack together and optionally sample or copy visible layers.
+
 ## 1.3.0 — 2026-10-20
 
 - Select all exact matching pixels with the new By color magic wand.

@@ -100,3 +100,13 @@ QT_QPA_PLATFORM=xcb QT_QUICK_BACKEND=rhi QSG_RHI_BACKEND=opengl \
 OPENPAINT_RELEASE_GLASS=1 OPENPAINT_CAPTURE_DIR="$PWD/docs/assets" \
 build/release/openpaint_shell_tests websiteReleasePreview
 ```
+
+## Layer feature development evidence
+
+`layers-light-1280.png` and `layers-dark-1024.png` were captured on 2026-10-21
+from the plan 0058 source build using `openpaint_shell_tests layersWorkflow`,
+Qt 6.12.0 offscreen/software, at 1280×800 and 1024×640. They show a generated
+orange stroke over a white layer with 65% layer opacity. These are development
+UI harness captures, not release-build or native desktop-blur evidence. Artwork
+and icons are project-authored (GPL-3.0-or-later). Settings are isolated by the
+existing shell harness; no user artwork or desktop backdrop was captured.

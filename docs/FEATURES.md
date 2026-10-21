@@ -5,7 +5,8 @@ records implementation evidence and remaining desktop-validation limits. It
 supersedes the earlier shared custom-palette, Swap-button and left-rail targets.
 The current release is [v1.2.0](plans/0040-release-1.2.0.md).
 
-Audit date: 2026-10-12. **The single-layer editor is implemented.**
+Audit date: 2026-10-12. **The released single-layer editor is implemented.**
+Development layer support is tracked separately in [plan 0058](plans/0058-layers.md).
 The maintainer selected this feature scope for [v1.0.0](plans/0031-stable-release.md);
 future feature rows below remain planned.
 The M1 source-editor checkpoint is complete; see [validation and limits](plans/0009-m1-closure.md).
@@ -36,9 +37,9 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F09 | Crop, resize/skew, flip, right-angle rotate | R1 supports crop/resize/flip/rotate; skew needs observation | M2 | Implemented: crop, flips and right-angle rotations for image/selection, with dimension-aware undo; [plan 0019](plans/0019-crop-rotate-flip.md). Canvas crop/expand and active selection, shape and text corner handles: [alpha polish](plans/0028-alpha-ui-polish.md). Pixel/percent resize, resampling and bounded skew: [plan 0020](plans/0020-resize-skew.md). |
 | F10 | Freeform rotation of active content | R4: Paint 11.2601.391.0 preview | M4 | Planned |
 | F11 | Zoom, pan, status, rulers, grid | R1; exact bounds and ruler behavior need observation | M1–M4 | In progress: zoom/pan and basic status implemented; rulers, grid, thumbnail and expanded zoom controls planned. |
-| F12 | Add/delete/rename/reorder/duplicate/merge layers | R1 covers layers/reorder/merge; other operations are product choices pending audit | M3 | Planned |
-| F13 | Transparent canvas, layer visibility/opacity | R1 plus OpenPaint contract; detailed parity needs observation | M3 | Planned |
-| F14 | Editable layered project save/reopen | R2; OpenPaint uses .ora initially | M3 | Planned |
+| F12 | Add/delete/rename/reorder/duplicate/merge layers | R1 covers layers/reorder/merge; other operations are product choices pending audit | M3 | Implemented in development: bounded raster layers, undoable stack operations and project persistence; [plan 0058](plans/0058-layers.md). Release/platform verification remains pending. |
+| F13 | Transparent canvas, layer visibility/opacity | R1 plus OpenPaint contract; detailed parity needs observation | M3 | Implemented in development: bounded raster layers, undoable stack operations and project persistence; [plan 0058](plans/0058-layers.md). Release/platform verification remains pending. |
+| F14 | Editable layered project save/reopen | R2; OpenPaint uses .ora initially | M3 | Implemented in development: bounded raster layers, undoable stack operations and project persistence; [plan 0058](plans/0058-layers.md). Release/platform verification remains pending. |
 | F15 | PNG, JPEG, BMP, WebP interchange; static GIF import | R1 documents some formats; exact supported subset is our choice | M1–M4 | In progress: static PNG open/save, EXIF orientation normalization and failure checks implemented; see [PNG validation](plans/0007-png-validation.md); JPEG/BMP/WebP import: [plan 0021](plans/0021-image-import.md). Explicit export copies: [plan 0022](plans/0022-image-export.md). Static GIF import remains M4. |
 | F16 | Undo/redo, crash recovery, atomic saves | Product choice; reference workflow requires hands-on audit | M1–M3 | In progress: stroke history and atomic PNG saves tested; crash recovery pending. |
 | F17 | Stylus pressure, touch and fractional scaling | R1 confirms stylus; precise pressure behavior needs observation | M4 | Planned |

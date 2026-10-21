@@ -102,6 +102,59 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void layersWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* panel = window->findChild<QQuickItem*>("layersPanel");
+        QVERIFY(panel);
+        QVERIFY(!panel->isVisible());
+        QVERIFY(tabTo("layersButton"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(panel->isVisible());
+        QVERIFY(tabTo("addLayerButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->layers().size(), 2);
+        QCOMPARE(editor->activeLayer(), 1);
+        editor->renameLayer("Foreground");
+        editor->primary = QColor("#e87945");
+        editor->brushSize = 100;
+        editor->begin({200, 200}, false);
+        editor->extend({650, 350});
+        editor->finish();
+        editor->setLayerOpacity(65);
+        const auto composite = editor->displayImage();
+        editor->setLayerVisible(false);
+        QVERIFY(editor->displayImage() != composite);
+        editor->undo();
+        QCOMPARE(editor->displayImage(), composite);
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        appearance->setThemeMode(1);
+        window->resize(1280, 800);
+        QVERIFY(capture("layers-light-1280.png"));
+        appearance->setThemeMode(2);
+        window->resize(1024, 640);
+        QVERIFY(capture("layers-dark-1024.png"));
+        QVERIFY(panel->height() > 0);
+        const auto shielded = editor->image();
+        QTest::mouseClick(window, Qt::LeftButton, {}, panel->mapToScene({2, 200}).toPoint());
+        QCOMPARE(editor->image(), shielded);
+        QVERIFY(tabTo("layerNameField"));
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        keyClick(Qt::Key_R);
+        keyClick(Qt::Key_E);
+        keyClick(Qt::Key_N);
+        keyClick(Qt::Key_Return);
+        QCOMPARE(editor->layers()[0].toMap()["name"].toString(), QString("ren"));
+        editor->selectLayer(0);
+        QCOMPARE(editor->activeLayer(), 0);
+        const auto directory = qEnvironmentVariable("OPENPAINT_CAPTURE_DIR");
+        if (!directory.isEmpty()) {
+            editor->saveFile(QUrl::fromLocalFile(QDir(directory).filePath("layers-synthetic.ora")));
+            QTRY_VERIFY(!editor->busy());
+            QVERIFY(!editor->dirty());
+        }
+        editor->undo();
+        QCOMPARE(editor->layers()[0].toMap()["name"].toString(), QString("Foreground"));
+    }
     void selectAllKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));

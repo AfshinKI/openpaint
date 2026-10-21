@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
+#include "document/Document.h"
 #include <QImage>
 #include <QRegion>
 #include <QString>
@@ -28,6 +29,7 @@ struct TransformResult {
     QRegion mask;
     QString error;
     bool cancelled = false;
+    Layers layers = {};
 };
 TransformResult transformImage(const QImage& source, const QRegion& mask, TransformKind kind,
                                const std::shared_ptr<std::atomic_bool>& token,

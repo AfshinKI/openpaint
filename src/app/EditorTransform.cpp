@@ -85,9 +85,35 @@ void Editor::startTransform(openpaint::TransformKind operation,
     cancellation_ = std::make_shared<std::atomic_bool>(false);
     busy_ = loading_ = transforming_ = true;
     emit changed();
-    transformWatcher_.setFuture(
-        QtConcurrent::run([source, mask, operation, options, token = cancellation_] {
-            return openpaint::transformImage(source, mask, operation, token, options);
+    const auto layers = document.layers();
+    const auto cropBounds = selectionRect();
+    const bool wholeStack = !transformSelection_ && layers.size() > 1;
+    transformWatcher_.setFuture(QtConcurrent::run(
+        [source, mask, operation, options, layers, wholeStack, cropBounds, token = cancellation_] {
+            if (!wholeStack)
+                return openpaint::transformImage(source, mask, operation, token, options);
+            openpaint::TransformResult result;
+            auto settings = options;
+            if (operation == openpaint::TransformKind::CanvasResize)
+                settings.background = Qt::transparent;
+            // Crop uses the same selection bounds on every layer, preserving the stack.
+            for (auto layer : layers) {
+                auto input = layer.pixels;
+                if (operation == openpaint::TransformKind::Crop)
+                    input = input.copy(cropBounds);
+                auto transformed = openpaint::transformImage(input, {}, operation, token, settings);
+                if (transformed.cancelled || !transformed.error.isEmpty())
+                    return transformed;
+                layer.pixels = transformed.image;
+                result.layers.push_back(std::move(layer));
+                if (qint64(transformed.image.sizeInBytes()) * qint64(layers.size()) >
+                    128 * 1024 * 1024) {
+                    result.error = tr("This transform exceeds the layer undo budget.");
+                    return result;
+                }
+            }
+            result.image = result.layers.front().pixels;
+            return result;
         }));
 }
 void Editor::finishTransform() {
@@ -125,7 +151,17 @@ void Editor::finishTransform() {
         }
     } else {
         const auto size = imageSize();
-        if (result.image != image() && !document.replaceImage(result.image, transformRevision_))
+        const bool stackChanged =
+            !result.layers.empty() &&
+            !std::equal(result.layers.begin(), result.layers.end(), document.layers().begin(),
+                        document.layers().end(),
+                        [](const openpaint::Layer& a, const openpaint::Layer& b) {
+                            return a.pixels == b.pixels;
+                        });
+        if (!result.layers.empty()
+                ? (stackChanged && !document.replaceLayers(result.layers, transformRevision_))
+                : (result.image != image() &&
+                   !document.replaceImage(result.image, transformRevision_)))
             fail(tr("This transform exceeds the undo budget. The drawing is unchanged."));
         else
             document.setSelection({});

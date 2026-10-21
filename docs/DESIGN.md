@@ -73,7 +73,7 @@ than treating token selection as accessibility proof. Focus rings must be distin
 from selection. Color selection uses both a visible outline and an accessible name.
 Checkerboard contrast changes with theme but exported colors never do.
 
-At 1280×800, show the full toolbar and an optional 240-unit Layers panel. Support
+At 1280×800, show the full toolbar and an optional 260-unit Layers panel. Support
 1024×640 logical units without inaccessible actions. Use labeled overflow menus
 for toolbar groups and an overlay drawer for layers at smaller widths. Preserve
 the canvas, focus, and selection when panels collapse. Never shrink text to fit.
@@ -331,3 +331,16 @@ copy and a selectable 11px monospace command below a Terminal label.
 Updates uses a compact status/action column and a softly elevated, perspective-angled actual-app corner preview. It checks on startup and opening without a check button or checkbox; failures never imply the installed version is current.
 
 The Select menu includes By color with an original magic-wand icon. Each click selects all exact-color pixels across the image; selection feedback and subsequent editing reuse the existing mask workflow. See [plan 0055](plans/0055-color-selection.md).
+
+## Development layer panel
+
+The Layers ribbon button and View → Layers toggle the panel. It starts hidden,
+shows the topmost layer first with a thumbnail, name, visibility and opacity, and
+highlights the active layer. Add creates transparent pixels above the active layer.
+Duplicate, Delete, Up, Down, Rename and Merge down are undoable; the last layer
+cannot be deleted. Merge down is enabled only for two visible adjacent layers.
+An opacity percent control changes the layer property, independent of brush opacity.
+Hidden layers remain selectable but drawing into them is blocked. The picker
+samples the active layer unless “Picker: sample visible layers” is enabled.
+At 1280px and above the panel reserves canvas space; below that it overlays the
+workspace. Closing it preserves the document and active layer.

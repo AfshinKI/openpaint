@@ -26,7 +26,7 @@ From the repository root, install system prerequisites:
 ```sh
 sudo apt-get update
 sudo apt-get install -y g++-13 cmake ninja-build python3-venv \
-  zlib1g-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
+  libarchive-dev zlib1g-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
 ```
 
 Install development tools and Qt in the ignored build directory:
@@ -173,8 +173,8 @@ removed, colors normalize to sRGB and JPEG/PNG/WebP EXIF orientation is applied.
 Animated PNG/WebP and BMP V4/V5 color headers are rejected. Save writes PNG;
 non-PNG imports ask for a PNG destination. File → Export copy writes PNG/JPEG/BMP/WebP
 with explicit quality/background options and leaves the drawing’s saved state intact. Recovery after a
-crash, layers, shapes, text, selection, packaged downloads and updates are not yet
-available. The developer build is useful for basic drawings, not a stable release.
+crash remains planned. Current implemented tools and development layer support
+are tracked in [the feature checklist](FEATURES.md).
 
 Controller/codec tests verify snapshot saves, errors and lossless reopen. After a
 Release build, measure startup, strokes, viewport updates, worker-save responsiveness
@@ -201,3 +201,8 @@ is shown by `--version` and Help → Updates.
 
 `openpaint [image]` opens one local image in a new window/process. More than one
 argument is rejected. Save and export retain the same safety rules as File → Open.
+
+Development layer support: use the Layers ribbon button or View → Layers. Tools
+edit the selected layer. Save layered drawings as `.ora`; use Export copy for
+flattened images. The build now also requires `libarchive-dev`. See
+[layer scope and current validation](plans/0058-layers.md).

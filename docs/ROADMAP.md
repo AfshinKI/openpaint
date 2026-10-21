@@ -2,8 +2,8 @@
 
 A usable basic source editor supports drawing, history and safe PNG files.
 M1 and M2 are complete for their validated gates. The first useful alpha is
-[published and verified](plans/0027-alpha-release.md); layered projects and recovery
-remain future work after the current editor. The maintainer selected this
+[published and verified](plans/0027-alpha-release.md); bounded layer editing and OpenRaster projects are implemented in development
+in [plan 0058](plans/0058-layers.md); recovery remains future work. The maintainer selected this
 single-layer feature set for v1.0.0; see [the stable release plan](plans/0031-stable-release.md).
 See [M1 closure evidence and limits](plans/0009-m1-closure.md). See [the build guide](BUILD.md) to run the preview.
 Milestones are exit gates, not promised dates. Complete thin, usable slices before
@@ -26,25 +26,16 @@ These future gates are not prerequisites for the scoped single-layer v1. M6 may 
 
 ## Current handoff toward v2
 
-Stable [v1.1.0](plans/0038-release-1.1.0.md) and
-[v1.2.0](plans/0040-release-1.2.0.md) are published. Their closure records separate
-release evidence from remaining platform certification. Alpha UI polish and
-post-v1 fixes are merged; historical progress notes are not an active feature queue.
+Stable [v1.3.0](plans/0057-release-1.3.0.md) is published. The maintainer requested
+layer editing on one feature branch, with release preparation afterward.
+[Plan 0058](plans/0058-layers.md) defines this bounded M3 outcome: raster layer
+commands, tool integration, the Layers panel and safe OpenRaster projects.
+Recovery, large-document tiling and full M3 platform/interoperability gates remain
+separate. This feature does not change the released version or publish installers.
 
-M3 remains the next editing milestone. The current v2 preparation first delivers
-the [seven requested editor refinements](plans/0049-editor-refinements.md), one
-locally validated feature at a time. Define a bounded M3 feature plan and acceptance
-cases first, including the carried renderer/memory performance concern before
-large multilayer documents. The v2 feature scope and detailed sequence are not
-yet approved. For this development cycle, validate feature work locally before
-proceeding to PR checks and eventual v2 release runs. Release dispatch and
-publication remain separate from local acceptance; protected checks still apply.
-
-The selected theme-aware Open palette icon and added spline are implemented with
-local evidence in [plan 0052](plans/0052-icon-and-spline.md). Next: maintainer local
-review and scoped PR/CI preparation. The tool-position and floating-menu tint
-follow-up is recorded in [plan 0053](plans/0053-menu-readability.md).
-PR checks and v2 publication remain deferred; M3 scope still needs its own plan.
+The next step after local feature acceptance is protected PR review/CI, followed by
+maintainer-directed release validation. Release screenshots, website claims,
+package smoke tests and publication belong to that subsequent release task.
 
 ## Release progression
 

@@ -47,8 +47,9 @@ target_include_directories(openpaint_document PUBLIC src)
 target_link_libraries(openpaint_document PUBLIC Qt6::Gui)
 target_compile_options(openpaint_document PRIVATE -Wall -Wextra -Wpedantic)
 find_package(ZLIB REQUIRED)
-add_library(openpaint_io STATIC src/io/PngIo.cpp src/io/ImageIo.cpp)
-target_link_libraries(openpaint_io PUBLIC openpaint_document PRIVATE ZLIB::ZLIB)
+find_package(LibArchive REQUIRED)
+add_library(openpaint_io STATIC src/io/PngIo.cpp src/io/ImageIo.cpp src/io/OraIo.cpp)
+target_link_libraries(openpaint_io PUBLIC openpaint_document PRIVATE ZLIB::ZLIB LibArchive::LibArchive)
 target_compile_options(openpaint_io PRIVATE -Wall -Wextra -Wpedantic)
 add_subdirectory(qml)
 
@@ -58,6 +59,9 @@ target_compile_options(openpaint PRIVATE -Wall -Wextra -Wpedantic)
 
 if(BUILD_TESTING)
     find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+    qt_add_executable(openpaint_layers_tests tests/unit/tst_layers.cpp)
+    target_link_libraries(openpaint_layers_tests PRIVATE openpaint_ui Qt6::Test LibArchive::LibArchive)
+    add_test(NAME layers COMMAND openpaint_layers_tests)
     qt_add_executable(openpaint_blur_tests tests/unit/tst_blur.cpp)
     target_link_libraries(openpaint_blur_tests PRIVATE openpaint_ui Qt6::Test)
     add_test(NAME blur-support COMMAND openpaint_blur_tests)
@@ -116,6 +120,7 @@ if(BUILD_TESTING)
         glassSetupWorkflow
         updatesWorkflow)
     add_test(NAME shell-editing COMMAND openpaint_shell_tests
+        layersWorkflow
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory
