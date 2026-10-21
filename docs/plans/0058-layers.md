@@ -1,6 +1,6 @@
 # Feature: editable raster layers
 
-Status: implemented; local validation complete; PR/CI pending
+Status: implemented; local validation complete; PR #56 open, CI/review pending
 Feature IDs: F12, F13, F14
 Milestone: M3 bounded layered editing
 
@@ -57,6 +57,8 @@ Local source validation on Ubuntu 24.04, GCC 13, Qt 6.12.0:
   active-layer fill/selection/picker, whole-stack transforms and round-trip lifecycle.
 - Final `openpaint_shell_tests layersWorkflow`: passed, including keyboard add/name
   editing, overlay pointer shielding, both themes and minimum-size layout.
+  The same workflow passed isolated X11/software checks at 100%, 125%, 150% and
+  200% scale. This does not replace physical-device or compositor certification.
 - `cmake --build --preset dev --target format-check qml-lint`: pass, zero QML warnings.
 - `python3 tools/check_repo.py`: pass. `python3 -m unittest discover -s tools/tests -v`:
   27 tests passed. `git diff --check`: pass.
@@ -85,5 +87,6 @@ unverified here. Recovery and large-document tiling are outside this change.
 - [x] Implement model and tests.
 - [x] Integrate tools, panel and project persistence.
 - [x] Run local required checks and inspect the diff.
-- [ ] Publish a focused PR and complete protected CI/review.
+- [x] Publish [PR #56](https://github.com/AfshinKI/openpaint/pull/56) from feat/layers.
+- [ ] Complete protected CI/review; no merge or release was performed.
 - [ ] Release only in subsequent maintainer-directed work.
