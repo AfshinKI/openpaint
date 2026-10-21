@@ -454,11 +454,12 @@ The color editor OK/Cancel footer shares the dialog glass surface without a sepa
 Layers is available at the end of the ribbon and in View. Opening it for the first
 time on a flat document adds a transparent layer, undoably. A narrow thumbnail rail
 shows ordinary layers above a divider and a fixed Background tile. Hover/focus
-reveals each tile's eye; a cross indicates hidden content. Drag ordinary tiles to
+reveals each tile's top-right eye; a cross indicates hidden content. Drag ordinary tiles to
 reorder without moving the background. There are no persistent text action buttons
-or property fields in the rail.
+or property fields in the rail. A circular + button in the header adds a layer.
+The larger ribbon button has its own separator; the rail follows glass settings.
 
-Right-click a tile or blank rail for New layer, Show/Hide, Duplicate, Merge down,
+Right-click a tile or blank rail for icon-labelled New layer, Show/Hide, Duplicate, Merge down,
 Delete, Move up/down, Properties and Picker: sample visible layers. Ctrl+Shift+N
 adds a layer; Shift+F10 opens tile options; F2 opens name/opacity properties;
 Alt+Up/Down provides keyboard reordering. Background cannot move or be deleted.

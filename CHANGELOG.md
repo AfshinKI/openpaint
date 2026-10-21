@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Refine layer controls with a larger separated ribbon button, circular add
+  button, right-side eyes, context-menu icons and glass appearance.
 - Add a thumbnail layer rail with hover visibility icons, drag reordering and a
   fixed background; first opening adds a transparent drawing layer.
 - Add undoable raster layers with thumbnails, names, reordering, duplication,

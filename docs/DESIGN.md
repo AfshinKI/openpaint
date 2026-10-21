@@ -334,7 +334,8 @@ The Select menu includes By color with an original magic-wand icon. Each click s
 
 ## Development layer panel
 
-The Layers ribbon button and View → Layers toggle a 200-unit vertical thumbnail
+The Layers ribbon control has a separate divider and a 48×56 target with a 30-unit
+icon. It and View → Layers toggle a 200-unit vertical thumbnail
 rail that reserves space on the right of the canvas at every supported width.
 It starts hidden. First opening on a flat document creates one undoable transparent
 layer above the existing raster; subsequent toggles do not create more layers.
@@ -345,13 +346,18 @@ in the scrollable region above it. Drag a thumbnail to reorder; a drag ghost and
 insertion line preview the destination. Drop commits once, Escape cancels, and
 auto-scroll reaches offscreen layers. The background is never a drop target.
 
-A top-left eye appears on hover or keyboard focus. Clicking it toggles that layer
+A top-right eye appears on hover or keyboard focus. Clicking it toggles that layer
 without selecting it; hidden layers retain a crossed-eye indication. Names and
 opacity appear in tooltips rather than permanent form controls. Right-click a
-thumbnail or empty rail for layer operations. Ctrl+Shift+N creates a layer;
+thumbnail or empty rail for icon-labelled layer operations. A circular + control
+at the top-right of the rail or Ctrl+Shift+N creates a layer;
 Shift+F10 opens the context menu, F2 opens Properties, and Alt+Up/Down reorders.
 Properties contains the existing name and opacity fields. Merge down remains
 available for adjacent visible layers, including merging into the fixed background.
+
+The rail, tiles and circular add control follow the existing glass/blur appearance
+and surface opacity, with opaque styling when glass is disabled. Backdrop sources
+exclude the rail itself to prevent rendering feedback.
 
 The side-panel and background references are Microsoft's original
 [layer announcement](https://blogs.windows.com/windows-insider/2023/09/18/paint-app-update-adding-support-for-layers-and-transparency-begins-rolling-out-to-windows-insiders/)

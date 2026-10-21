@@ -99,7 +99,7 @@ adds one undoable transparent layer above the original raster. Toggling the rail
 again must not add layers. Keep the original/bottom raster in a separate fixed
 background tile below a divider; it cannot be dragged or deleted. Other layers
 reorder by dragging, with keyboard/context-menu alternatives. Visibility uses an
-original eye icon at the top-left on hover/focus; a small cross marks hidden layers.
+original eye icon at the top-right on hover/focus; a small cross marks hidden layers.
 Additional layer commands belong to context menus, not persistent text buttons.
 Keep safe save/reopen, hidden data, undo/redo, busy guards and existing artwork.
 
@@ -128,3 +128,19 @@ and [background tile update](https://blogs.windows.com/windows-insider/2024/03/1
 The fixed original raster and automatic initial transparent layer follow the
 maintainer's requested behavior; no exact version-wide Paint parity is claimed.
 All icons are original project vectors.
+
+## Panel polish: ribbon, add control and glass
+
+Acceptance: separate and enlarge the ribbon control; move visibility to the
+top-right; add a circular + in the rail header; give every layer context action
+an icon; inherit the app's blur/glass preference and surface opacity. Preserve
+reorder, pinned background, selection, keyboard access and canvas input shielding.
+Implemented on the same branch. Build, format-check, zero-warning QML lint and
+repository checks pass. All six shell regression suites passed (53.83 seconds).
+The final focused workflow passes add-button creation/undo, minimum-width ribbon
+bounds, right-side eye placement, glass on/off opacity changes, plus existing
+drag/visibility/keyboard checks. Light/dark rail and icon-labelled context menu
+captures were visually inspected and refreshed. The final workflow also passed X11 with Mesa software OpenGL at 100%, 125%,
+150% and 200%, exercising the glass shader path; physical compositor validation
+remains outside this development evidence.
+Protected CI/review remains the next unfinished step; no release or merge.

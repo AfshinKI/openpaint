@@ -25,8 +25,10 @@ FocusScope {
     HoverHandler {
         id: hover
     }
-    Rectangle {
+    GlassSurface {
         anchors.fill: parent
+        backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
+        selectedSurface: tile.selected
         radius: 6
         color: tile.selected ? Theme.selected : hover.hovered ? Theme.hover : Theme.panel
         border.width: tile.selected || tile.activeFocus ? 2 : 1
@@ -87,7 +89,7 @@ FocusScope {
     IconButton {
         id: eye
         objectName: "layerEye" + tile.layerIndex
-        anchors.left: parent.left
+        anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 4
         symbol: tile.layerData && tile.layerData.visible ? "layer-eye" : "layer-eye-hidden"

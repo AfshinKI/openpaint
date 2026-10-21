@@ -4,7 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Rectangle {
+GlassSurface {
     id: panel
     required property Editor editor
     readonly property bool propertiesOpen: properties.visible
@@ -14,6 +14,9 @@ Rectangle {
     property int dropIndex: -1
     property point dragPoint
     color: Theme.panel
+    radius: 0
+    raisedSurface: false
+    backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
     function cancelDrag() {
         draggedId = "";
         dropIndex = -1;
@@ -83,6 +86,27 @@ Rectangle {
         text: qsTr("Layers")
         font.bold: true
         color: Theme.text
+    }
+    IconButton {
+        id: addLayer
+        objectName: "addLayerButton"
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 12
+        width: 32
+        height: 32
+        symbol: "layer-add"
+        text: qsTr("New layer")
+        shortcutLabel: "Ctrl+Shift+N"
+        enabled: panel.editor.canEditLayers && panel.editor.layers.length < 32
+        onClicked: panel.editor.addLayer()
+        background: GlassSurface {
+            radius: width / 2
+            backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
+            selectedSurface: addLayer.down || addLayer.hovered
+            border.width: addLayer.visualFocus ? 2 : 1
+            border.color: addLayer.visualFocus ? Theme.accent : Theme.divider
+        }
     }
     ListView {
         id: list
@@ -185,6 +209,7 @@ Rectangle {
     PaintMenu {
         id: layerMenu
         objectName: "layerContextMenu"
+        implicitWidth: 300
         PaintMenuItem {
             objectName: "newLayerMenuItem"
             text: qsTr("New layer")
@@ -200,38 +225,45 @@ Rectangle {
         }
         PaintMenuItem {
             text: qsTr("Duplicate layer")
+            symbol: "copy"
             enabled: panel.editor.layers.length < 32
             onTriggered: panel.editor.addLayer(true)
         }
         PaintMenuItem {
             text: qsTr("Merge down")
+            symbol: "layer-merge"
             enabled: panel.editor.activeLayer > 0 && panel.currentLayer && panel.currentLayer.visible && panel.editor.layers[panel.editor.layers.length - panel.editor.activeLayer].visible
             onTriggered: panel.editor.mergeLayerDown()
         }
         PaintMenuItem {
             text: qsTr("Delete layer")
+            symbol: "delete"
             enabled: panel.editor.activeLayer > 0
             onTriggered: panel.editor.deleteLayer()
         }
         MenuSeparator {}
         PaintMenuItem {
             text: qsTr("Move up")
+            symbol: "layer-up"
             enabled: panel.editor.activeLayer > 0 && panel.editor.activeLayer < panel.editor.layers.length - 1
             onTriggered: panel.editor.moveLayer(panel.editor.activeLayer + 1)
         }
         PaintMenuItem {
             text: qsTr("Move down")
+            symbol: "layer-down"
             enabled: panel.editor.activeLayer > 1
             onTriggered: panel.editor.moveLayer(panel.editor.activeLayer - 1)
         }
         PaintMenuItem {
             objectName: "layerPropertiesMenuItem"
             text: qsTr("Properties…")
+            symbol: "settings"
             onTriggered: panel.openProperties(panel.editor.activeLayer)
         }
         MenuSeparator {}
         PaintMenuItem {
             text: qsTr("Picker: sample visible layers")
+            symbol: "eyedropper"
             checkable: true
             checked: panel.editor.sampleMerged
             onTriggered: panel.editor.sampleMerged = checked

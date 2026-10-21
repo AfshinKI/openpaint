@@ -752,7 +752,7 @@ ApplicationWindow {
         RowLayout {
             anchors.fill: parent
             anchors.margins: 8
-            spacing: 4
+            spacing: window.width < 1100 ? 2 : 4
             ColumnLayout {
                 Layout.alignment: Qt.AlignBottom
                 spacing: 0
@@ -1436,7 +1436,19 @@ ApplicationWindow {
                     }
                 }
             }
+            Rectangle {
+                objectName: "layersRibbonDivider"
+                Layout.preferredWidth: 1
+                Layout.preferredHeight: 80
+                Layout.leftMargin: 4
+                Layout.rightMargin: 4
+                color: Theme.divider
+            }
             IconButton {
+                Layout.preferredWidth: 48
+                Layout.preferredHeight: 56
+                icon.width: 30
+                icon.height: 30
                 objectName: "layersButton"
                 symbol: "layers"
                 text: qsTr("Layers")
