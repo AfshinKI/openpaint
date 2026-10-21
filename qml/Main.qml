@@ -10,7 +10,7 @@ ApplicationWindow {
     id: window
     property Action lastRotation: rotateRightAction
     property Action lastFlip: flipHorizontalAction
-    readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible
+    readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible || layersPanel.propertiesOpen
     readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
     readonly property CanvasItem canvasController: canvas
@@ -50,6 +50,30 @@ ApplicationWindow {
     palette.highlight: Theme.accent
     palette.highlightedText: Theme.accentText
     property bool layersVisible: false
+    function toggleLayers() {
+        if (layersVisible) {
+            layersVisible = false;
+            canvas.forceActiveFocus();
+        } else if (editor.enableLayers()) {
+            layersVisible = true;
+        }
+    }
+    Action {
+        id: newLayerAction
+        text: qsTr("New layer")
+        shortcut: "Ctrl+Shift+N"
+        enabled: editor.canEditLayers && editor.layers.length < 32 && !window.documentOptionsOpen && !window.textInputFocused
+        onTriggered: {
+            editor.addLayer();
+            window.layersVisible = true;
+        }
+    }
+    Connections {
+        target: editor
+        function onDocumentSessionChanged() {
+            window.layersVisible = editor.needsProject;
+        }
+    }
     property bool discardClose: false
     property string pendingAction: ""
     function performPending() {
@@ -618,7 +642,8 @@ ApplicationWindow {
                         text: qsTr("Layers")
                         checkable: true
                         checked: window.layersVisible
-                        onTriggered: window.layersVisible = !window.layersVisible
+                        enabled: window.layersVisible || editor.canEditLayers
+                        onTriggered: window.toggleLayers()
                     }
                     PaintMenuItem {
                         action: fitAction
@@ -1417,7 +1442,8 @@ ApplicationWindow {
                 text: qsTr("Layers")
                 checkable: true
                 checked: window.layersVisible
-                onClicked: window.layersVisible = !window.layersVisible
+                enabled: window.layersVisible || editor.canEditLayers
+                onClicked: window.toggleLayers()
             }
             Item {
                 Layout.fillWidth: true
@@ -1432,16 +1458,14 @@ ApplicationWindow {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.margins: 8
-        width: 260
+        width: 200
         z: 5
-        onCloseRequested: window.layersVisible = false
     }
     CanvasItem {
         id: canvas
         objectName: "canvas"
         anchors.fill: parent
-        anchors.rightMargin: window.layersVisible && window.width >= 1280 ? 276 : 0
+        anchors.rightMargin: window.layersVisible ? layersPanel.width : 0
         editor: window.editorController
         enabled: !window.editorController.loading || window.editorController.filling
         focus: true

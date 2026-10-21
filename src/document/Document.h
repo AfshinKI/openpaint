@@ -38,6 +38,7 @@ class Document {
     bool moveLayer(int index);
     bool renameLayer(const QString& name);
     bool setLayerVisible(bool visible);
+    bool setLayerVisibility(int index, bool visible);
     bool setLayerOpacity(qreal opacity);
     bool mergeDown();
     bool replaceLayers(Layers layers, quint64 sourceRevision);

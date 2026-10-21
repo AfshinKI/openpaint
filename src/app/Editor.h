@@ -99,6 +99,9 @@ class Editor : public QObject {
                fileUrl_.toLocalFile().endsWith(".ora", Qt::CaseInsensitive);
     }
     bool sampleMerged = false;
+    Q_INVOKABLE bool enableLayers();
+    Q_INVOKABLE void reorderLayer(const QString& id, int target);
+    Q_INVOKABLE void toggleLayerVisibility(int index);
     Q_INVOKABLE void selectLayer(int index);
     Q_INVOKABLE void addLayer(bool duplicate = false);
     Q_INVOKABLE void deleteLayer();
@@ -287,6 +290,7 @@ class Editor : public QObject {
     void errorChanged();
     void noticeChanged();
     void documentReplaced();
+    void documentSessionChanged();
     void saved(bool success);
     void exported(bool success);
     void settingsChanged();
@@ -294,6 +298,7 @@ class Editor : public QObject {
 
   private:
     void layerChanged(bool success);
+    bool layersInitialized_ = false;
     bool editingSecondary_ = false;
     void fail(const QString& message);
     void finishTransform();

@@ -320,14 +320,14 @@ bool Document::addLayer(bool duplicate) {
     return changeLayers(std::move(result), activeLayer_ + 1);
 }
 bool Document::deleteLayer() {
-    if (layers_.size() <= 1)
+    if (layers_.size() <= 1 || activeLayer_ == 0)
         return false;
     auto result = layers_;
     result.erase(result.begin() + activeLayer_);
     return changeLayers(std::move(result), std::min(activeLayer_, int(layers_.size()) - 2));
 }
 bool Document::moveLayer(int index) {
-    if (index < 0 || index >= int(layers_.size()) || index == activeLayer_)
+    if (activeLayer_ == 0 || index < 1 || index >= int(layers_.size()) || index == activeLayer_)
         return false;
     auto result = layers_;
     auto layer = result[activeLayer_];
@@ -344,10 +344,13 @@ bool Document::renameLayer(const QString& name) {
     return changeLayers(std::move(result), activeLayer_);
 }
 bool Document::setLayerVisible(bool visible) {
-    if (layers_[activeLayer_].visible == visible)
+    return setLayerVisibility(activeLayer_, visible);
+}
+bool Document::setLayerVisibility(int index, bool visible) {
+    if (index < 0 || index >= int(layers_.size()) || layers_[index].visible == visible)
         return false;
     auto result = layers_;
-    result[activeLayer_].visible = visible;
+    result[index].visible = visible;
     return changeLayers(std::move(result), activeLayer_);
 }
 bool Document::setLayerOpacity(qreal opacity) {

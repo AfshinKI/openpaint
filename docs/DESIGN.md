@@ -73,9 +73,9 @@ than treating token selection as accessibility proof. Focus rings must be distin
 from selection. Color selection uses both a visible outline and an accessible name.
 Checkerboard contrast changes with theme but exported colors never do.
 
-At 1280×800, show the full toolbar and an optional 260-unit Layers panel. Support
+At 1280×800, show the full toolbar and an optional 200-unit Layers rail. Support
 1024×640 logical units without inaccessible actions. Use labeled overflow menus
-for toolbar groups and an overlay drawer for layers at smaller widths. Preserve
+for toolbar groups while keeping the narrow layer rail beside the canvas at smaller widths. Preserve
 the canvas, focus, and selection when panels collapse. Never shrink text to fit.
 Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200%.
 
@@ -334,13 +334,28 @@ The Select menu includes By color with an original magic-wand icon. Each click s
 
 ## Development layer panel
 
-The Layers ribbon button and View → Layers toggle the panel. It starts hidden,
-shows the topmost layer first with a thumbnail, name, visibility and opacity, and
-highlights the active layer. Add creates transparent pixels above the active layer.
-Duplicate, Delete, Up, Down, Rename and Merge down are undoable; the last layer
-cannot be deleted. Merge down is enabled only for two visible adjacent layers.
-An opacity percent control changes the layer property, independent of brush opacity.
-Hidden layers remain selectable but drawing into them is blocked. The picker
-samples the active layer unless “Picker: sample visible layers” is enabled.
-At 1280px and above the panel reserves canvas space; below that it overlays the
-workspace. Closing it preserves the document and active layer.
+The Layers ribbon button and View → Layers toggle a 200-unit vertical thumbnail
+rail that reserves space on the right of the canvas at every supported width.
+It starts hidden. First opening on a flat document creates one undoable transparent
+layer above the existing raster; subsequent toggles do not create more layers.
+
+The original bottom raster stays in a pinned Background tile beneath a divider.
+It cannot be dragged or deleted. Ordinary layer thumbnails appear topmost first
+in the scrollable region above it. Drag a thumbnail to reorder; a drag ghost and
+insertion line preview the destination. Drop commits once, Escape cancels, and
+auto-scroll reaches offscreen layers. The background is never a drop target.
+
+A top-left eye appears on hover or keyboard focus. Clicking it toggles that layer
+without selecting it; hidden layers retain a crossed-eye indication. Names and
+opacity appear in tooltips rather than permanent form controls. Right-click a
+thumbnail or empty rail for layer operations. Ctrl+Shift+N creates a layer;
+Shift+F10 opens the context menu, F2 opens Properties, and Alt+Up/Down reorders.
+Properties contains the existing name and opacity fields. Merge down remains
+available for adjacent visible layers, including merging into the fixed background.
+
+The side-panel and background references are Microsoft's original
+[layer announcement](https://blogs.windows.com/windows-insider/2023/09/18/paint-app-update-adding-support-for-layers-and-transparency-begins-rolling-out-to-windows-insiders/)
+and [background update](https://blogs.windows.com/windows-insider/2024/03/13/paint-update-begins-rolling-out-to-windows-insiders/).
+The automatic first transparent layer and pinned original raster follow the
+maintainer's requested OpenPaint behavior; exact Microsoft build parity is not claimed.
+All icons and captured artwork remain original OpenPaint assets.

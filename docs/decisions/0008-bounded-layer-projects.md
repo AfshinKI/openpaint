@@ -35,6 +35,13 @@ Save retains PNG for an ordinary single Background layer; stack/properties requi
 always writes a flattened copy without marking the project clean. Ctrl+Shift+S
 remains Save As, with project format available there.
 
+The bottom raster has the pinned background role: it cannot be deleted or
+reordered, but remains editable and can be hidden. This role follows stack position
+on import, so no private OpenRaster extension is needed. First opening the layer
+rail on a flat document adds an undoable transparent layer once per document
+session. Visibility targets a layer without changing selection; drag/drop resolves
+a stable layer ID and commits a single undoable reorder.
+
 ## Alternatives
 
 A bespoke ZIP parser would duplicate complex security-sensitive archive logic.

@@ -451,12 +451,20 @@ The color editor OK/Cancel footer shares the dialog glass surface without a sepa
 
 ## Development layered documents
 
-Layers is available at the end of the ribbon and in View. Its panel exposes Add,
-Duplicate, layer selection/name, Visible, Opacity, Up/Down, Delete and Merge down.
-Changes are disabled during active edits and workers. Copy visible layers uses
+Layers is available at the end of the ribbon and in View. Opening it for the first
+time on a flat document adds a transparent layer, undoably. A narrow thumbnail rail
+shows ordinary layers above a divider and a fixed Background tile. Hover/focus
+reveals each tile's eye; a cross indicates hidden content. Drag ordinary tiles to
+reorder without moving the background. There are no persistent text action buttons
+or property fields in the rail.
+
+Right-click a tile or blank rail for New layer, Show/Hide, Duplicate, Merge down,
+Delete, Move up/down, Properties and Picker: sample visible layers. Ctrl+Shift+N
+adds a layer; Shift+F10 opens tile options; F2 opens name/opacity properties;
+Alt+Up/Down provides keyboard reordering. Background cannot move or be deleted.
+Layer commands are guarded during active edits/workers. Copy visible layers uses
 Ctrl+Shift+C and copies the selection from the visible composite; ordinary Copy
-and Cut use the active layer. The current selection mask and color-key option
-apply to both copy paths.
+and Cut use the active layer. The selection mask and color-key option apply to both.
 
 Ctrl+S saves losslessly: layer structure or non-default properties require .ora;
 Save As (Ctrl+Shift+S) offers OpenRaster alongside PNG for a flat image. Existing

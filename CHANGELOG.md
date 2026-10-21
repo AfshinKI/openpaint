@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a thumbnail layer rail with hover visibility icons, drag reordering and a
+  fixed background; first opening adds a transparent drawing layer.
 - Add undoable raster layers with thumbnails, names, reordering, duplication,
   merge down, visibility and opacity controls.
 - Save/reopen bounded OpenRaster projects; PNG and other exports flatten visible

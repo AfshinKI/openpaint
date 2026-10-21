@@ -244,3 +244,11 @@ The initial OpenRaster subset accepts a flat source-over stack of PNG layers,
 including contained offsets. Unsupported groups, blend modes and off-canvas pixels
 are rejected. Limits and the dependency choice are in ADR 0008. Recovery remains
 planned. No full OpenRaster baseline or cross-application certification is claimed.
+
+The bottom raster is the fixed Background in the thumbnail rail: the engine rejects
+moving/deleting it or moving another layer below it. No codec extension is needed;
+the lowest stored raster retains this role on reopen. Merge down may update its
+pixels while preserving its identity. Dragging resolves the captured stable layer
+ID on drop and commits one reorder command. Per-tile visibility changes retain the
+active layer. The controller initializes a flat document's layers once per document
+session; panel toggles after undo do not recreate a removed layer.

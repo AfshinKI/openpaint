@@ -684,6 +684,8 @@ Editor::Editor(QObject* parent) : QObject(parent) {
                                                                   ".png", Qt::CaseInsensitive))
                                ? operationUrl_
                                : QUrl();
+                layersInitialized_ = result.format == "ora";
+                emit documentSessionChanged();
                 sourceName_ = QFileInfo(operationUrl_.toLocalFile()).fileName();
                 notice_ = result.notice;
                 if (!notice_.isEmpty())
@@ -721,6 +723,8 @@ void Editor::newDocument() {
     document.reset(image);
     fileUrl_ = QUrl();
     sourceName_.clear();
+    layersInitialized_ = false;
+    emit documentSessionChanged();
     emit documentReplaced();
     emit pixelsChanged(QRect());
     emit changed();
@@ -799,6 +803,7 @@ QVariantList Editor::layers() const {
     for (int i = int(document.layers().size()) - 1; i >= 0; --i) {
         const auto& l = document.layers()[size_t(i)];
         result.append(QVariantMap{{"index", i},
+                                  {"id", QString::number(l.id)},
                                   {"name", l.name},
                                   {"visible", l.visible},
                                   {"opacity", qRound(l.opacity * 100)}});
@@ -821,8 +826,12 @@ void Editor::selectLayer(int index) {
     }
 }
 void Editor::addLayer(bool duplicate) {
-    if (canEditLayers())
-        layerChanged(document.addLayer(duplicate));
+    if (canEditLayers()) {
+        const bool added = document.addLayer(duplicate);
+        if (added)
+            layersInitialized_ = true;
+        layerChanged(added);
+    }
 }
 void Editor::deleteLayer() {
     if (canEditLayers())
@@ -848,4 +857,34 @@ void Editor::setLayerOpacity(int opacity) {
 void Editor::mergeLayerDown() {
     if (canEditLayers())
         layerChanged(document.mergeDown());
+}
+
+bool Editor::enableLayers() {
+    if (!canEditLayers())
+        return false;
+    if (!layersInitialized_ && document.layers().size() == 1) {
+        const bool added = document.addLayer();
+        layerChanged(added);
+        if (!added)
+            return false;
+    }
+    layersInitialized_ = true;
+    return true;
+}
+void Editor::toggleLayerVisibility(int index) {
+    if (canEditLayers() && index >= 0 && index < int(document.layers().size()))
+        layerChanged(document.setLayerVisibility(index, !document.layers()[size_t(index)].visible));
+}
+void Editor::reorderLayer(const QString& id, int target) {
+    if (!canEditLayers() || target < 1 || target >= int(document.layers().size()))
+        return;
+    for (int i = 1; i < int(document.layers().size()); ++i) {
+        if (QString::number(document.layers()[size_t(i)].id) != id)
+            continue;
+        if (i == target)
+            return;
+        document.selectLayer(i);
+        layerChanged(document.moveLayer(target));
+        return;
+    }
 }

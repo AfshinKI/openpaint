@@ -18,8 +18,8 @@ Start with one white Background layer. New layers are transparent. Selection and
 ordinary tools operate on the active layer. Canvas display and export composite
 visible layers bottom-to-top with source-over blending. Layer selection does not
 dirty content; properties and structural changes each undo as one command.
-Layer changes are blocked during active edits/workers. The last layer cannot be
-deleted. Merge down requires two visible layers and bakes their opacity.
+Layer changes are blocked during active edits/workers. The bottom Background
+cannot be deleted or reordered. Merge down requires two visible layers and bakes their opacity.
 Save uses .ora when layer structure/properties require it; PNG export is a copy
 and never marks the layered document saved. Failed open/save retains artwork.
 All editing and project codecs stay offline.
@@ -90,3 +90,41 @@ unverified here. Recovery and large-document tiling are outside this change.
 - [x] Publish [PR #56](https://github.com/AfshinKI/openpaint/pull/56) from feat/layers.
 - [ ] Complete protected CI/review; no merge or release was performed.
 - [ ] Release only in subsequent maintainer-directed work.
+
+## Panel revision: thumbnail rail and fixed background
+
+Requested follow-up on the same branch: replace the form-like layer controls with
+an uncluttered right-side thumbnail rail. The first opening on a flat document
+adds one undoable transparent layer above the original raster. Toggling the rail
+again must not add layers. Keep the original/bottom raster in a separate fixed
+background tile below a divider; it cannot be dragged or deleted. Other layers
+reorder by dragging, with keyboard/context-menu alternatives. Visibility uses an
+original eye icon at the top-left on hover/focus; a small cross marks hidden layers.
+Additional layer commands belong to context menus, not persistent text buttons.
+Keep safe save/reopen, hidden data, undo/redo, busy guards and existing artwork.
+
+Acceptance for this revision:
+
+- [x] First opening adds exactly one transparent layer; reopening adds none.
+- [x] Background stays at the bottom through reorder/delete/undo/save/reopen.
+- [x] Hover/focus eye toggles the intended layer without requiring preselection.
+- [x] Pointer dragging reorders ordinary layers once on drop; cancel changes nothing.
+- [x] Context menus and keyboard retain add/duplicate/delete/rename/opacity/merge.
+- [x] Light/dark, minimum-size and scaled UI checks pass; captures are refreshed.
+
+Revision evidence (2026-10-21): the focused layers suite passed all 12 Qt cases
+(including initialization/cleanup). The revised shell workflow passed actual
+pointer reorder, undo/redo, held-pointer Escape cancellation, background pinning,
+hover visibility without selection changes, context menu opening, F2 properties,
+keyboard layer creation and panel input shielding. It also passed X11/software
+at 100%, 125%, 150% and 200%. Refreshed both synthetic development screenshots
+and visually inspected them. All 20 CTest suites passed (83.39 seconds). Build,
+formatting, zero-warning QML lint, repository checks, 27 tooling tests and
+`git diff --check` passed. No release or merge was performed; protected CI/review
+is the next unfinished step on the same PR.
+
+UI reference: Microsoft's [layer announcement](https://blogs.windows.com/windows-insider/2023/09/18/paint-app-update-adding-support-for-layers-and-transparency-begins-rolling-out-to-windows-insiders/)
+and [background tile update](https://blogs.windows.com/windows-insider/2024/03/13/paint-update-begins-rolling-out-to-windows-insiders/).
+The fixed original raster and automatic initial transparent layer follow the
+maintainer's requested behavior; no exact version-wide Paint parity is claimed.
+All icons are original project vectors.

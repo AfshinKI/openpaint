@@ -41,6 +41,60 @@ class LayersTest : public QObject {
         archive_write_free(a);
     }
   private slots:
+    void panelInitializationAndPinnedBackground() {
+        LayerEditor e;
+        const auto original = e.image();
+        QVERIFY(e.enableLayers());
+        QCOMPARE(e.layers().size(), 2);
+        QCOMPARE(e.activeLayer(), 1);
+        QCOMPARE(e.image().pixelColor(0, 0).alpha(), 0);
+        QCOMPARE(e.document.layers()[0].pixels, original);
+        const auto revision = e.document.revision();
+        QVERIFY(e.enableLayers());
+        QCOMPARE(e.document.revision(), revision);
+        e.undo();
+        QCOMPARE(e.layers().size(), 1);
+        QVERIFY(e.enableLayers());
+        QCOMPARE(e.layers().size(), 1);
+        e.redo();
+        QCOMPARE(e.layers().size(), 2);
+        e.addLayer();
+        const auto bottomId = e.document.layers()[0].id;
+        const auto topId = e.layers()[0].toMap()["id"].toString();
+        e.reorderLayer(topId, 0);
+        QCOMPARE(e.activeLayer(), 2);
+        e.reorderLayer(topId, 1);
+        QCOMPARE(e.activeLayer(), 1);
+        QCOMPARE(e.document.layers()[0].id, bottomId);
+        e.selectLayer(0);
+        QVERIFY(!e.document.moveLayer(2));
+        QVERIFY(!e.document.deleteLayer());
+        e.selectLayer(1);
+        e.toggleLayerVisibility(0);
+        QCOMPARE(e.activeLayer(), 1);
+        QVERIFY(!e.document.layers()[0].visible);
+        e.undo();
+        QVERIFY(e.document.layers()[0].visible);
+        QCOMPARE(e.activeLayer(), 1);
+        e.newDocument();
+        QVERIFY(e.enableLayers());
+        QCOMPARE(e.layers().size(), 2);
+        e.begin({20, 20}, false);
+        QVERIFY(!e.enableLayers());
+        e.cancel();
+        QTemporaryDir dir;
+        const auto path = QUrl::fromLocalFile(dir.filePath("pinned.ora"));
+        e.saveFile(path);
+        QTRY_VERIFY(!e.busy());
+        e.newDocument();
+        e.openFile(path);
+        QTRY_VERIFY(!e.busy());
+        QVERIFY(e.enableLayers());
+        QCOMPARE(e.layers().size(), 2);
+        e.selectLayer(0);
+        QVERIFY(!e.document.moveLayer(1));
+        QVERIFY(!e.document.deleteLayer());
+    }
     void stackCommandsAndHistory() {
         Document d({12, 8});
         QVERIFY(d.addLayer());
@@ -68,8 +122,9 @@ class LayersTest : public QObject {
         QVERIFY(d.addLayer(true));
         QCOMPARE(d.image(), ink);
         QVERIFY(d.layers()[2].id != id);
-        QVERIFY(d.moveLayer(0));
-        QCOMPARE(d.layers()[0].pixels, ink);
+        QVERIFY(!d.moveLayer(0));
+        QVERIFY(d.moveLayer(1));
+        QCOMPARE(d.layers()[1].pixels, ink);
         QVERIFY(d.undo());
         QCOMPARE(d.activeLayer(), 2);
         QVERIFY(d.deleteLayer());
