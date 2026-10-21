@@ -1470,6 +1470,7 @@ ApplicationWindow {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
+        anchors.margins: 4
         width: 200
         z: 5
     }
@@ -1477,7 +1478,7 @@ ApplicationWindow {
         id: canvas
         objectName: "canvas"
         anchors.fill: parent
-        anchors.rightMargin: window.layersVisible ? layersPanel.width : 0
+        anchors.rightMargin: window.layersVisible ? layersPanel.width + 8 : 0
         editor: window.editorController
         enabled: !window.editorController.loading || window.editorController.filling
         focus: true

@@ -14,7 +14,7 @@ GlassSurface {
     property int dropIndex: -1
     property point dragPoint
     color: Theme.panel
-    radius: 0
+    radius: Theme.surfaceRadius
     raisedSurface: false
     backdropLayers: hostWindow ? [hostWindow.background, hostWindow.canvasController] : []
     function cancelDrag() {
@@ -72,11 +72,6 @@ GlassSurface {
             if (mouse.button === Qt.RightButton)
                 panel.openMenu(panel.editor.activeLayer, Qt.point(mouse.x, mouse.y));
         }
-    }
-    Rectangle {
-        width: 1
-        height: parent.height
-        color: Theme.divider
     }
     Label {
         id: heading

@@ -144,3 +144,14 @@ captures were visually inspected and refreshed. The final workflow also passed X
 150% and 200%, exercising the glass shader path; physical compositor validation
 remains outside this development evidence.
 Protected CI/review remains the next unfinished step; no release or merge.
+
+## Rounded floating rail
+
+Acceptance: match the main toolbar's rounded glass surface and outer inset,
+remove the flush square divider, preserve canvas spacing and existing layer
+interactions at minimum window size. Implemented with 8-unit corners, a 4-unit
+outer inset and a separate canvas gap. Build, format-check, zero-warning QML lint,
+repository checks and diff hygiene pass. The existing layers workflow passes
+both offscreen/software and X11/Mesa OpenGL; minimum-size dark capture was
+visually inspected and the light/dark/context screenshots refreshed.
+Next unfinished step remains protected CI/review; no release or merge.

@@ -337,6 +337,8 @@ The Select menu includes By color with an original magic-wand icon. Each click s
 The Layers ribbon control has a separate divider and a 48×56 target with a 30-unit
 icon. It and View → Layers toggle a 200-unit vertical thumbnail
 rail that reserves space on the right of the canvas at every supported width.
+Like the main toolbar, its glass surface has 8-unit rounded corners and a 4-unit
+outer inset. A 4-unit gap separates it from the canvas.
 It starts hidden. First opening on a flat document creates one undoable transparent
 layer above the existing raster; subsequent toggles do not create more layers.
 

@@ -457,7 +457,7 @@ shows ordinary layers above a divider and a fixed Background tile. Hover/focus
 reveals each tile's top-right eye; a cross indicates hidden content. Drag ordinary tiles to
 reorder without moving the background. There are no persistent text action buttons
 or property fields in the rail. A circular + button in the header adds a layer.
-The larger ribbon button has its own separator; the rail follows glass settings.
+The larger ribbon button has its own separator; the rail follows glass settings with rounded corners and an inset matching the toolbar.
 
 Right-click a tile or blank rail for icon-labelled New layer, Show/Hide, Duplicate, Merge down,
 Delete, Move up/down, Properties and Picker: sample visible layers. Ctrl+Shift+N
