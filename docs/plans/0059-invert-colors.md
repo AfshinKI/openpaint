@@ -58,3 +58,13 @@ Text centering and keyboard activation. The workflow passes offscreen/software
 and X11/Mesa OpenGL at 100% and 200%. Light/dark captures were visually inspected
 and refreshed. Build, formatting, zero-warning QML lint and repository/diff checks
 pass. All six shell regression suites passed (55.65 seconds). Protected CI/review remains next; no release.
+
+## Fixed tool artwork refinement
+
+Acceptance: Fill and Brush retain their original fixed artwork colors when the
+foreground/background paint changes or becomes transparent. Remove dynamic tint
+masks and bindings; preserve the remaining colored icons and Text alignment.
+The existing ribbon workflow now checks fixed rendered colors in both themes and
+after foreground/background/transparency changes. Build and the focused offscreen
+ribbon workflow pass (3 cases including initialization/cleanup), as do formatting,
+zero-warning QML lint, repository and diff checks. Next: review on existing PR #56.

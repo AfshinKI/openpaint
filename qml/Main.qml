@@ -1041,7 +1041,6 @@ ApplicationWindow {
                         Layout.column: 1
                         symbol: "fill"
                         objectName: "fillButton"
-                        paintColor: editor.selectedColor
                         text: qsTr("Fill")
                         enabled: !editor.textActive
                         checkable: true
@@ -1163,7 +1162,6 @@ ApplicationWindow {
                         objectName: "brushesButton"
                         enabled: !editor.textActive
                         symbol: "brush"
-                        paintColor: editor.selectedColor
                         icon.width: 28
                         icon.height: 28
                         width: 40

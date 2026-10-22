@@ -5,8 +5,8 @@
 - Restore the prior Image icons, add a footer zoom slider, and simplify blur setup
   to one user-run terminal block with verified extension installation/configuration.
 
-- Center the Text tool and refresh original colored ribbon icons, with live
-  selected-color previews in the fill bucket/drop and brush tip.
+- Center the Text tool and refresh original colored ribbon icons, with fixed
+  fill and brush artwork colors independent of the selected paint color.
 
 - Add an Image-ribbon Invert colors command for the active layer or selection,
   preserving transparency and supporting undo/redo.
