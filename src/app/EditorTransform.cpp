@@ -54,6 +54,11 @@ void Editor::resizeActiveBounds(int x, int y, int width, int height) {
             transformPosition_ = target.topLeft();
     }
 }
+void Editor::invertColors() {
+    if (!canInvertColors())
+        return;
+    startTransform(openpaint::TransformKind::InvertColors);
+}
 void Editor::transformImage(int kind) {
     if (kind < 0 || kind > int(openpaint::TransformKind::Crop))
         return;
@@ -70,24 +75,28 @@ void Editor::startTransform(openpaint::TransformKind operation,
         return;
     if (operation == openpaint::TransformKind::Crop && !hasSelection())
         return;
+    transformColors_ = operation == openpaint::TransformKind::InvertColors;
     transformFromFloating_ = floatingResize;
     transformPosition_ = floatingResize ? floatingPosition_ : selectionRect().topLeft();
     if (!floatingResize)
         finish();
-    const auto source = floatingResize   ? floatingImage_
+    const auto source = transformColors_ ? image()
+                        : floatingResize ? floatingImage_
                         : hasSelection() ? selectedImage()
                                          : image();
-    const auto mask = floatingResize   ? floatingRegion_
+    const auto mask = transformColors_ ? selection()
+                      : floatingResize ? floatingRegion_
                       : hasSelection() ? selection().translated(-selectionRect().topLeft())
                                        : QRegion();
-    transformSelection_ = hasSelection() && operation != openpaint::TransformKind::Crop;
+    transformSelection_ =
+        !transformColors_ && hasSelection() && operation != openpaint::TransformKind::Crop;
     transformRevision_ = document.revision();
     cancellation_ = std::make_shared<std::atomic_bool>(false);
     busy_ = loading_ = transforming_ = true;
     emit changed();
     const auto layers = document.layers();
     const auto cropBounds = selectionRect();
-    const bool wholeStack = !transformSelection_ && layers.size() > 1;
+    const bool wholeStack = !transformColors_ && !transformSelection_ && layers.size() > 1;
     transformWatcher_.setFuture(QtConcurrent::run(
         [source, mask, operation, options, layers, wholeStack, cropBounds, token = cancellation_] {
             if (!wholeStack)
@@ -126,6 +135,11 @@ void Editor::finishTransform() {
     if (!result.error.isEmpty() || document.revision() != transformRevision_) {
         fail(result.error.isEmpty() ? tr("The drawing changed before the transform completed.")
                                     : result.error);
+    } else if (transformColors_) {
+        const auto rect = result.mask.isEmpty() ? result.image.rect() : result.mask.boundingRect();
+        if (result.image != image() && !document.applyPatch(result.image, rect, transformRevision_))
+            fail(tr("This edit exceeds the undo budget. The drawing is unchanged."));
+        emit pixelsChanged(rect);
     } else if (transformFromFloating_) {
         floatingImage_ = result.image;
         floatingRegion_ = result.mask;

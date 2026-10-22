@@ -378,6 +378,14 @@ ApplicationWindow {
         onTriggered: canvas.zoomBy(0.8)
     }
     Action {
+        id: invertColorsAction
+        objectName: "invertColorsAction"
+        icon.source: "icons/invert-colors.svg"
+        text: qsTr("Invert colors")
+        enabled: editor.canInvertColors && !window.documentOptionsOpen
+        onTriggered: editor.invertColors()
+    }
+    Action {
         id: rotateRightAction
         objectName: "rotateRightAction"
         icon.source: "icons/rotate-right.svg"
@@ -752,7 +760,7 @@ ApplicationWindow {
         RowLayout {
             anchors.fill: parent
             anchors.margins: 8
-            spacing: window.width < 1100 ? 2 : 4
+            spacing: window.width < 1100 ? 0 : 4
             ColumnLayout {
                 Layout.alignment: Qt.AlignBottom
                 spacing: 0
@@ -902,16 +910,20 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignBottom
                 spacing: 4
                 GridLayout {
-                    columns: 2
+                    columns: 3
                     rowSpacing: 2
                     columnSpacing: 4
                     IconButton {
+                        Layout.row: 0
+                        Layout.column: 0
                         flat: true
                         symbol: "crop"
                         objectName: "cropButton"
                         action: cropAction
                     }
                     RowLayout {
+                        Layout.row: 0
+                        Layout.column: 1
                         spacing: 0
                         IconButton {
                             flat: true
@@ -945,12 +957,16 @@ ApplicationWindow {
                         }
                     }
                     IconButton {
+                        Layout.row: 1
+                        Layout.column: 0
                         flat: true
                         symbol: "resize"
                         objectName: "resizeButton"
                         action: resizeAction
                     }
                     RowLayout {
+                        Layout.row: 1
+                        Layout.column: 1
                         spacing: 0
                         IconButton {
                             flat: true
@@ -979,6 +995,15 @@ ApplicationWindow {
                                 }
                             }
                         }
+                    }
+                    IconButton {
+                        Layout.row: 0
+                        Layout.column: 2
+                        Layout.rowSpan: 2
+                        flat: true
+                        symbol: "invert-colors"
+                        objectName: "invertColorsButton"
+                        action: invertColorsAction
                     }
                 }
                 Label {

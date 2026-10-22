@@ -15,7 +15,8 @@ enum class TransformKind {
     FlipVertical,
     Crop,
     ResizeSkew,
-    CanvasResize
+    CanvasResize,
+    InvertColors
 };
 struct TransformOptions {
     QSize size;

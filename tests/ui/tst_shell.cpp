@@ -102,6 +102,24 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void invertColorsWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        const auto original = editor->image();
+        QVERIFY(tabTo("invertColorsButton"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->image().pixelColor(0, 0), QColor(Qt::black));
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image().pixelColor(0, 0), QColor(Qt::black));
+        window->resize(1024, 640);
+        QVERIFY(capture("invert-colors-ribbon.png"));
+        auto* button = window->findChild<QQuickItem*>("invertColorsButton");
+        QVERIFY(button->mapToScene({button->width(), 0}).x() < window->width());
+        auto* layers = window->findChild<QQuickItem*>("layersButton");
+        QVERIFY(layers->mapToScene({layers->width(), 0}).x() <= window->width() - 4);
+    }
     void layersWorkflow() {
         auto* editor = window->findChild<Editor*>("editor");
         auto* panel = window->findChild<QQuickItem*>("layersPanel");

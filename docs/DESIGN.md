@@ -367,3 +367,7 @@ and [background update](https://blogs.windows.com/windows-insider/2024/03/13/pai
 The automatic first transparent layer and pinned original raster follow the
 maintainer's requested OpenPaint behavior; exact Microsoft build parity is not claimed.
 All icons and captured artwork remain original OpenPaint assets.
+
+The Image ribbon group includes an Invert colors contrast-circle icon. It inverts
+the active layer's RGB, or selected pixels only, preserving transparency and other
+layers. Selection inversion remains a separate selection-menu command.

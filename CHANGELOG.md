@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add an Image-ribbon Invert colors command for the active layer or selection,
+  preserving transparency and supporting undo/redo.
+
 - Refine layer controls with a larger separated ribbon button, circular add
   button, right-side eyes, context-menu icons and glass appearance.
 - Add a thumbnail layer rail with hover visibility icons, drag reordering and a

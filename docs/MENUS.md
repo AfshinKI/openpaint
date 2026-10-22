@@ -98,7 +98,10 @@ selected row. Invert/Delete may be disabled when no suitable selection exists.
 Transparent selection must expose its on/off state when implemented; its pixel
 and background-color rules need explicit tests.
 
-The Image group uses two rows: Crop and Rotate above Resize/Skew and Flip.
+The Image group uses two rows: Crop and Rotate above Resize/Skew and Flip,
+with an Invert colors contrast icon alongside both rows. Invert colors edits only
+the active visible layer, clipped to the selection when present, preserving alpha.
+It is one undoable command and is disabled during active edits and workers.
 Rotate and Flip each have a direct default action and an adjacent dropdown.
 Rotation offers right 90°, left 90° and 180°; Flip offers horizontal and vertical. Plan Crop, Rotate, Flip, Resize/Skew
 and background removal against their existing feature IDs. Unlabeled glyphs do

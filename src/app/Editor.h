@@ -19,6 +19,7 @@ class Editor : public QObject {
     QML_ELEMENT
     Q_PROPERTY(QVariantList layers READ layers NOTIFY changed)
     Q_PROPERTY(int activeLayer READ activeLayer NOTIFY changed)
+    Q_PROPERTY(bool canInvertColors READ canInvertColors NOTIFY changed)
     Q_PROPERTY(bool canEditLayers READ canEditLayers NOTIFY changed)
     Q_PROPERTY(bool needsProject READ needsProject NOTIFY changed)
     Q_PROPERTY(bool sampleMerged MEMBER sampleMerged NOTIFY settingsChanged)
@@ -215,6 +216,10 @@ class Editor : public QObject {
     Q_INVOKABLE void selectRect(int x, int y, int width, int height);
     Q_INVOKABLE void selectAll();
     Q_INVOKABLE void invertSelection();
+    bool canInvertColors() const {
+        return canEditLayers() && document.layers()[size_t(activeLayer())].visible;
+    }
+    Q_INVOKABLE void invertColors();
     const QPolygon& selectionDraft() const {
         return selectionPoints_;
     }
@@ -306,6 +311,7 @@ class Editor : public QObject {
                         const openpaint::TransformOptions& options = {});
     QFutureWatcher<openpaint::TransformResult> transformWatcher_;
     quint64 transformRevision_ = 0;
+    bool transformColors_ = false;
     bool transforming_ = false, transformSelection_ = false, transformFromFloating_ = false;
     QPoint transformPosition_;
     void refreshShape();

@@ -252,3 +252,8 @@ pixels while preserving its identity. Dragging resolves the captured stable laye
 ID on drop and commits one reorder command. Per-tile visibility changes retain the
 active layer. The controller initializes a flat document's layers once per document
 session; panel toggles after undo do not recreate a removed layer.
+
+Color inversion uses the existing cancellable transform worker but remains an
+active-layer pixel edit. The worker preserves alpha and clips to the selection;
+the GUI thread checks revision/cancellation before committing one bounded patch.
+It does not transform or flatten the stack, and rejects hidden layers or active edits.
