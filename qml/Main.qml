@@ -573,6 +573,7 @@ ApplicationWindow {
                 background: Item {}
                 delegate: MenuBarItem {
                     id: menuEntry
+                    objectName: menu === fileMenu ? "fileMenuButton" : ""
                     background: GlassSurface {
                         backdropLayers: [window.background, canvas]
                         radius: Theme.controlRadius
@@ -582,6 +583,7 @@ ApplicationWindow {
                     }
                 }
                 PaintMenu {
+                    id: fileMenu
                     objectName: "fileMenu"
                     title: qsTr("&File")
                     PaintMenuItem {

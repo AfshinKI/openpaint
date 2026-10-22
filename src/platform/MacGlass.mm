@@ -46,16 +46,24 @@ class MacGlass final : public QObject {
         if (!window_ || !appearance_)
             return;
         NSView* content = (__bridge NSView*)(void*)window_->winId();
-        NSView* parent = content.superview;
-        if (parent && !effect_) {
-            effect_ = [[OpenPaintGlassView alloc] initWithFrame:content.frame];
+        NSWindow* nativeWindow = content.window;
+        if (nativeWindow && !effect_) {
+            // Own a content container instead of modifying AppKit's private frame.
+            NSView* container = [[NSView alloc] initWithFrame:content.frame];
+            NSView* retainedContent = content;
+            [retainedContent removeFromSuperview];
+            nativeWindow.contentView = container;
+            retainedContent.frame = container.bounds;
+            retainedContent.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+            effect_ = [[OpenPaintGlassView alloc] initWithFrame:container.bounds];
             effect_.blendingMode = NSVisualEffectBlendingModeBehindWindow;
             effect_.material = NSVisualEffectMaterialUnderWindowBackground;
             effect_.state = NSVisualEffectStateActive;
             effect_.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-            [parent addSubview:effect_ positioned:NSWindowBelow relativeTo:content];
-            content.window.opaque = NO;
-            content.window.backgroundColor = [NSColor clearColor];
+            [container addSubview:effect_];
+            [container addSubview:retainedContent];
+            nativeWindow.opaque = NO;
+            nativeWindow.backgroundColor = [NSColor clearColor];
         }
         const bool available =
             effect_ && ![NSWorkspace sharedWorkspace].accessibilityDisplayShouldReduceTransparency;
@@ -69,6 +77,7 @@ class MacGlass final : public QObject {
                                      ? [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]
                                      : nil;
         }
+        window_->setProperty("nativeGlassAttached", effect_ != nil);
         window_->setProperty("nativeGlassAvailable", available);
         if (!reported_ || available != available_) {
             reported_ = true;

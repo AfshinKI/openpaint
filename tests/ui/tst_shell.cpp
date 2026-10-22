@@ -937,7 +937,15 @@ class ShellTest : public QObject {
         editor->extend({80, 50});
         editor->finish();
         const auto artwork = editor->image();
+#ifdef Q_OS_MACOS
+        // macOS has no Alt-letter menu mnemonics; exercise its visible menu.
+        auto* fileButton = window->findChild<QQuickItem*>("fileMenuButton");
+        QVERIFY(fileButton);
+        QTest::mouseClick(window, Qt::LeftButton, {},
+                          fileButton->mapToScene(fileButton->boundingRect().center()).toPoint());
+#else
         keyClick(Qt::Key_F, Qt::AltModifier);
+#endif
         for (int i = 0; i < 6; ++i)
             keyClick(Qt::Key_Down); // New/Open/Save/Save As/Export/Updates.
         keyClick(Qt::Key_Return);
@@ -3275,7 +3283,9 @@ int main(int argc, char* argv[]) {
         return 1;
     qputenv("XDG_CONFIG_HOME", settings.path().toUtf8());
     QQuickWindow::setDefaultAlphaBuffer(true);
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
     QGuiApplication app(argc, argv);
+    app.styleHints()->setTabFocusBehavior(Qt::TabFocusAllControls);
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     ShellTest test;
     return QTest::qExec(&test, argc, argv);

@@ -398,3 +398,6 @@ is requested by the block and never forced.
 On macOS, glass uses a native behind-window AppKit effect and respects Reduce
 Transparency. Enable Glass shows native guidance rather than a Linux terminal
 recipe. Shared surface-opacity and light/dark preferences still apply.
+The menu strip stays inside the shared toolbar on macOS; all controls remain
+reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
+opened with the visible menu buttons rather than Linux Alt-letter mnemonics.

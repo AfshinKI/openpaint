@@ -49,3 +49,11 @@ caught an offscreen Quit-key regression; explicit Ctrl+Q restores the tested
 keyboard save/discard/quit workflow. The affected group now passes (17 cases); all 20 local Release groups have passing evidence. Fresh
 1449×1008 light/dark/color/resize captures show the real four-layer artwork at
 40% glass opacity. Desktop and 390px website layouts were inspected in-browser.
+
+First hosted Mac runtime evidence: document, layer/OpenRaster, image I/O, clipboard,
+text, canvas, updater and app-info tests passed. The native glass test revealed an
+AppKit frame-hierarchy warning and a Reduce Transparency assumption; use an owned
+content container and assert availability against the actual accessibility state.
+Several offscreen UI groups timed out. Move Mac UI validation to Cocoa/Metal,
+keep the shared menu strip and make all controls Tab-reachable. Do not waive the
+tests. Rerun the complete lane before package promotion.
