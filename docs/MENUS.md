@@ -476,6 +476,12 @@ Save As (Ctrl+Shift+S) offers OpenRaster alongside PNG for a flat image. Existin
 marks the project saved. The Open dialog includes .ora. Filename extensions are
 validated without changing a portal-granted destination.
 
-The Text tool spans the Tools group's two rows. Colored tool/image icons retain
+The Text tool spans the Tools group's two rows. Colored tool icons retain
 their original palette in menus; Fill and Brush ribbon previews follow the currently
 selected drawing color, including foreground/background switching and transparency.
+
+Footer zoom uses a horizontal slider between minus/plus, with percentage and Fit
+to its left. Range remains 1–3200%, with logarithmic travel, keyboard adjustment
+and synchronization with wheel/shortcuts/Fit. Image-group icons use the prior
+monochrome artwork. Blur setup provides Copy setup and optional Show setup code. Check again verifies
+actual extension configuration; it never treats package installation as readiness.

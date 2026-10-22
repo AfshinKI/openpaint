@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Restore the prior Image icons, add a footer zoom slider, and simplify blur setup
+  to one user-run terminal block with verified extension installation/configuration.
+
 - Center the Text tool and refresh original colored ribbon icons, with live
   selected-color previews in the fill bucket/drop and brush tip.
 

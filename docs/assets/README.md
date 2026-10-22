@@ -130,3 +130,13 @@ generated; red foreground and blue background selections demonstrate the live
 fill/brush paint regions. All vectors are original project artwork. Settings are
 isolated; these are development UI captures, not release/compositor evidence.
 The layer and inversion captures above were refreshed from the same source.
+
+## Zoom and simplified blur setup development evidence
+
+`zoom-slider-1024.png` and `glass-one-block-setup.png` were captured on
+2026-10-21 from plan 0060 using the isolated `zoomSliderWorkflow` and
+`glassSetupWorkflow` harnesses, Qt 6.12.0 offscreen/software at 1024×640.
+They show generated blank artwork and mocked desktop capability results.
+These are development UI evidence, not actual extension-installation or
+compositor certification. No private artwork/settings were used. Existing
+plan 0059 captures above retain their historical revision and icon styling.

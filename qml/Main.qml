@@ -367,6 +367,7 @@ ApplicationWindow {
         id: zoomInAction
         icon.source: "icons/zoom-in.svg"
         text: qsTr("Zoom in")
+        enabled: canvas.zoom < 32
         shortcut: StandardKey.ZoomIn
         onTriggered: canvas.zoomBy(1.25)
     }
@@ -374,6 +375,7 @@ ApplicationWindow {
         id: zoomOutAction
         icon.source: "icons/zoom-out.svg"
         text: qsTr("Zoom out")
+        enabled: canvas.zoom > 0.01
         shortcut: StandardKey.ZoomOut
         onTriggered: canvas.zoomBy(0.8)
     }
@@ -1644,6 +1646,8 @@ ApplicationWindow {
                 text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? ((editor.shapeKind === 15 || editor.shapeKind === 19) ? qsTr("Add points · Backspace removes · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                elide: Text.ElideRight
             }
             PaintButton {
                 flat: Appearance.effectiveGlassEnabled
@@ -1684,6 +1688,13 @@ ApplicationWindow {
                 shortcutLabel: "Ctrl+0"
                 action: fitAction
             }
+            Label {
+                objectName: "zoomPercentage"
+                text: Math.round(canvas.zoom * 100) + "%"
+                Layout.preferredWidth: 44
+                horizontalAlignment: Text.AlignHCenter
+                color: Theme.text
+            }
             IconButton {
                 flat: Appearance.effectiveGlassEnabled
                 symbol: "zoom-out"
@@ -1691,10 +1702,45 @@ ApplicationWindow {
                 action: zoomOutAction
                 Accessible.name: qsTr("Zoom out")
             }
-            Label {
-                text: Math.round(canvas.zoom * 100) + "%"
-                Layout.preferredWidth: 44
-                horizontalAlignment: Text.AlignHCenter
+            Slider {
+                id: zoomSlider
+                objectName: "zoomSlider"
+                Layout.preferredWidth: 120
+                Layout.preferredHeight: 28
+                // Logarithmic travel keeps low zoom levels easy to reach.
+                from: Math.log2(0.01)
+                to: Math.log2(32)
+                stepSize: 0.05
+                value: Math.log2(canvas.zoom)
+                Accessible.name: qsTr("Zoom %1%").arg(Math.round(canvas.zoom * 100))
+                Accessible.description: qsTr("Adjust zoom from 1% to 3200%")
+                onMoved: canvas.zoomBy(Math.pow(2, value) / canvas.zoom)
+                ToolTip.visible: hovered || pressed
+                ToolTip.text: Math.round(canvas.zoom * 100) + "%"
+                background: Rectangle {
+                    x: zoomSlider.leftPadding
+                    y: (zoomSlider.height - height) / 2
+                    width: zoomSlider.availableWidth
+                    height: 4
+                    radius: 2
+                    color: Theme.divider
+                    Rectangle {
+                        width: zoomSlider.position * parent.width
+                        height: parent.height
+                        radius: 2
+                        color: Theme.accent
+                    }
+                }
+                handle: Rectangle {
+                    x: zoomSlider.leftPadding + zoomSlider.visualPosition * (zoomSlider.availableWidth - width)
+                    y: (zoomSlider.height - height) / 2
+                    width: 16
+                    height: 16
+                    radius: 8
+                    color: Theme.accent
+                    border.width: zoomSlider.visualFocus ? 3 : 2
+                    border.color: zoomSlider.visualFocus ? Theme.text : Theme.panel
+                }
             }
             IconButton {
                 flat: Appearance.effectiveGlassEnabled

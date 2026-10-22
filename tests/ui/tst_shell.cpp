@@ -102,6 +102,37 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void zoomSliderWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* slider = window->findChild<QQuickItem*>("zoomSlider");
+        QVERIFY(slider);
+        const auto original = editor->image();
+        const bool dirty = editor->dirty();
+        window->resize(1024, 640);
+        QVERIFY(tabTo("zoomSlider"));
+        const auto before = canvas->zoom();
+        keyClick(Qt::Key_Right);
+        QVERIFY(canvas->zoom() > before);
+        canvas->zoomBy(2 / canvas->zoom());
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - 1) < 0.001);
+        QTest::mouseClick(
+            window, Qt::LeftButton, {},
+            slider->mapToScene({slider->width() * 0.75, slider->height() / 2}).toPoint());
+        QVERIFY(qAbs(canvas->zoom() - 2) > 0.1);
+        canvas->zoomBy(100000);
+        QCOMPARE(canvas->zoom(), 32.0);
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - slider->property("to").toDouble()) <
+                    0.001);
+        canvas->zoomBy(0.0000001);
+        QCOMPARE(canvas->zoom(), 0.01);
+        canvas->fit();
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - std::log2(canvas->zoom())) < 0.001);
+        QVERIFY(capture("zoom-slider-1024.png"));
+        QVERIFY(slider->mapToScene({slider->width(), 0}).x() < window->width() - 30);
+        QCOMPARE(editor->image(), original);
+        QCOMPARE(editor->dirty(), dirty);
+    }
     void coloredRibbonWorkflow() {
         auto* editor = window->findChild<Editor*>("editor");
         auto* fill = window->findChild<QQuickItem*>("fillButton");
@@ -798,7 +829,7 @@ class ShellTest : public QObject {
         QVERIFY(enable->property("visible").toBool());
         QVERIFY(QMetaObject::invokeMethod(enable, "clicked"));
         QTRY_VERIFY(setup->property("visible").toBool());
-        auto* copy = window->findChild<QObject*>("copyBlurCommand");
+        auto* copy = window->findChild<QObject*>("copyGlassSetup");
         QVERIFY(QMetaObject::invokeMethod(copy, "clicked"));
         QCOMPARE(QGuiApplication::clipboard()->text(), blur->command());
         for (const auto& theme : {QString("light"), QString("dark")}) {
@@ -806,6 +837,27 @@ class ShellTest : public QObject {
                                               "trigger", Q_ARG(QObject*, nullptr)));
             QVERIFY(capture("enable-glass-" + theme + "-1024.png"));
         }
+        QTRY_VERIFY(!blur->busy());
+        blur->setProbe([] {
+            return BlurSupport::evaluate("GNOME", "x11", "xcb", "ubuntu", "24.04", false, {},
+                                         [](const QString& program, const QStringList&) {
+                                             if (program == "gnome-shell")
+                                                 return QString("GNOME Shell 46.0");
+                                             if (program == "dpkg-query")
+                                                 return QString("installed");
+                                             return QString{};
+                                         });
+        });
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("refreshBlurSupport"),
+                                          "clicked"));
+        QTRY_VERIFY(!blur->busy());
+        QVERIFY(blur->command().startsWith("/usr/bin/python3"));
+        QVERIFY(!blur->command().contains("sudo apt install"));
+        QVERIFY(window->findChild<QObject*>("blurSetupInstructions")
+                    ->property("text")
+                    .toString()
+                    .contains("No sudo or Extension Manager"));
+        QVERIFY(capture("glass-one-block-setup.png"));
         keyClick(Qt::Key_Escape);
         QTRY_VERIFY(!setup->property("visible").toBool());
         QTRY_VERIFY(enable->property("activeFocus").toBool());

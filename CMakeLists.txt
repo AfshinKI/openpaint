@@ -123,6 +123,7 @@ if(BUILD_TESTING)
         layersWorkflow
         invertColorsWorkflow
         coloredRibbonWorkflow
+        zoomSliderWorkflow
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory

@@ -97,7 +97,7 @@ content or interrupt a user's unsaved document. A source harness is allowed for
 clearly labeled test evidence, but must not be presented as an installed capture.
 
 Development blur onboarding reads local desktop/version, extension settings and
-cached package availability without networking. The setup command is copied only
+extension activation/configuration without networking. The setup command is copied only
 on request; OpenPaint never runs it or changes desktop settings. A local welcome
 revision records dismissal. No capability results or command output are logged.
 
@@ -105,3 +105,10 @@ The separate Welcome to OpenPaint stores only its local dismissal revision. Get
 involved opens the public contribution guide on GitHub only after a click; the
 browser sends ordinary connection metadata. Glass setup is now on demand and
 stores no separate dismissal state.
+
+The optional Copy setup block performs network and desktop changes only when the
+user pastes and runs it in their terminal. It downloads a pinned/checksummed Blur
+My Shell archive from extensions.gnome.org only if missing, enables GNOME user
+extensions and configures application blur. GNOME receives ordinary download
+connection metadata; no artwork or app history is sent. Previous settings are
+backed up locally. OpenPaint itself never executes the block or installs software.

@@ -16,7 +16,6 @@ class BlurTest : public QObject {
     QString all = "false";
     QString whitelist = "['OpenPaint']";
     QString blacklist = "@as []";
-    QString candidate = "Candidate: 0.5.0-1build1";
     QString shell = "GNOME Shell 46.0";
     BlurSupport::Runner runner() {
         return [this](const QString& program, const QStringList& args) -> QString {
@@ -26,8 +25,6 @@ class BlurTest : public QObject {
             if (program == "gnome-extensions")
                 return (args.contains("--active") ? active : installed) ? "blur-my-shell@aunetx"
                                                                         : "";
-            if (program == "apt-cache")
-                return candidate;
             if (program == "gsettings") {
                 const auto key = args.last();
                 if (key == "blur")
@@ -54,7 +51,6 @@ class BlurTest : public QObject {
         all = "false";
         whitelist = "['OpenPaint']";
         blacklist = "@as []";
-        candidate = "Candidate: 0.5.0-1build1";
         shell = "GNOME Shell 46.0";
     }
     void unsupportedIsSilentAndDoesNotProbe() {
@@ -69,22 +65,40 @@ class BlurTest : public QObject {
         QVERIFY(!result.ready && result.command.isEmpty());
         QVERIFY(calls.isEmpty());
     }
-    void recipeRequiresLocalPackageCandidate() {
-        auto result = evaluate();
-        QCOMPARE(result.command, QString("sudo apt install gnome-shell-extension-manager"));
+    void supportedSessionOffersOneSetupBlock() {
+        const auto result = evaluate();
         QVERIFY(!result.ready);
-        candidate = "Candidate: (none)";
-        result = evaluate();
-        QVERIFY(!result.ready && result.command.isEmpty());
-        candidate.clear();
-        QVERIFY(evaluate().command.isEmpty());
+        QVERIFY(result.command.startsWith("/usr/bin/python3 <<'OPENPAINT_GLASS'"));
+        QVERIFY(result.command.contains("extensions.gnome.org/download-extension/"));
+        QVERIFY(result.command.contains("hashlib.sha256"));
+        QVERIFY(!result.command.contains("sudo apt install"));
+        QVERIFY(!calls.contains("apt-cache"));
+        installed = true;
+        QCOMPARE(evaluate().command, result.command);
         shell = "GNOME Shell 47.0";
         QVERIFY(evaluate().command.isEmpty());
+    }
+    void refreshAdvancesSetupToReady() {
+        BlurSupport service([this] { return evaluate(); });
+        QSignalSpy finished(&service, &BlurSupport::probeFinished);
+        service.refresh();
+        QTRY_COMPARE(finished.count(), 1);
+        QVERIFY(service.setupAvailable());
+        const auto setup = service.command();
+        installed = true;
+        service.refresh();
+        QTRY_COMPARE(finished.count(), 2);
+        QCOMPARE(service.command(), setup);
+        installed = active = true;
+        service.refresh();
+        QTRY_COMPARE(finished.count(), 3);
+        QVERIFY(service.ready());
+        QVERIFY(!service.setupAvailable());
     }
     void activeExtensionNeedsApplicationSettings() {
         installed = true;
         QVERIFY(!evaluate().ready);
-        QVERIFY(evaluate().command.startsWith("gnome-extensions enable "));
+        QVERIFY(evaluate().command.startsWith("/usr/bin/python3"));
         active = true;
         QVERIFY(evaluate().ready);
         whitelist = "['OtherApp']";

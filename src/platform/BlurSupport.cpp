@@ -147,19 +147,17 @@ BlurSupport::Result BlurSupport::evaluate(const QString& desktop, const QString&
         result.ready = blur == "true" && ((all == "false" && included.value_or(false)) ||
                                           (all == "true" && excluded.has_value() && !*excluded));
     }
-    if (installed) {
-        result.command = "gnome-extensions enable blur-my-shell@aunetx && "
-                         "gnome-extensions prefs blur-my-shell@aunetx";
-        result.instructions = tr("Open Blur My Shell. Turn on Applications blur, add OpenPaint, "
-                                 "then check again.");
-    } else {
-        const auto candidate = run("apt-cache", {"policy", "gnome-shell-extension-manager"});
-        const QRegularExpression available("(?:^|\\n)\\s*Candidate: ([0-9][^\\s]*)");
-        if (!available.match(candidate).hasMatch())
-            return result;
-        result.command = "sudo apt install gnome-shell-extension-manager";
-        result.instructions = tr("Install Extension Manager, then use it to add Blur My Shell. "
-                                 "Turn on Applications blur and add OpenPaint.");
+    if (!result.ready) {
+        QFile setup(":/qt/qml/OpenPaint/setup/enable-glass.py");
+        if (setup.open(QIODevice::ReadOnly)) {
+            result.command = "/usr/bin/python3 <<'OPENPAINT_GLASS'\n" +
+                             QString::fromUtf8(setup.readAll()) + "OPENPAINT_GLASS";
+            result.instructions =
+                tr("Copy setup and paste it into a terminal. It downloads Blur My Shell "
+                   "from GNOME Extensions only if missing, enables it and configures "
+                   "application blur. No sudo or Extension Manager is needed. "
+                   "Then click Check again; if the terminal asks, sign out and back in first.");
+        }
     }
     return result;
 }

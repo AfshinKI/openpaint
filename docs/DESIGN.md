@@ -319,8 +319,8 @@ Current capability evidence is limited to Ubuntu 24.04 / GNOME 46 / X11. Without
 verified configuration, the effective appearance is opaque while saved glass
 preferences are retained. The glass checkbox is unchecked and disabled until requirements are met.
 Enable Glass opens setup on demand, even on an unverified desktop; commands are
-shown only for a verified recipe. Unavailable setup stays opaque without a package
-warning. This supersedes
+shown only for a verified recipe. Unavailable setup stays opaque, with an explanation of the verified session
+scope in the on-demand setup panel. This supersedes
 the earlier transparency-only fallback described above. No setup command runs
 inside OpenPaint, and the welcome panel waits until drawing and other popups finish.
 
@@ -374,7 +374,19 @@ layers. Selection inversion remains a separate selection-menu command.
 
 The Tools group centers Text across both rows, aligned with Invert colors.
 Original colored ribbon vectors use a warm orange pencil with red end, a blue
-color-picker bulb, a wood-and-metal brush and blue image-transform accents.
-Colored tool/image icons use 24-unit artwork targets (brush 28); fill liquid/drop
+color-picker bulb, and a wood-and-metal brush. Image operations retain their original monochrome
+icons, including distinct 90° and 180° rotation symbols.
+Colored tool icons use 24-unit artwork targets (brush 28); fill liquid/drop
 and brush-tip overlays follow the selected foreground/background color. Fully
 transparent color hides the paint overlay. Other icons retain theme tinting.
+
+The footer presents Fit, current zoom percentage, minus, a horizontal slider and
+plus. Logarithmic travel covers the existing 1–3200% range; slider keyboard/pointer
+changes use the same center-anchored viewport operation as the other zoom controls.
+Viewport changes synchronize the slider and readout without modifying artwork.
+
+Blur setup offers Copy setup, optional Show setup code, and Check again. A single
+user-run terminal block handles missing extension installation and configuration;
+Extension Manager and repeated apt prompts are removed. The app still verifies
+active extension/application settings before enabling Glass. Any needed sign-out
+is requested by the block and never forced.
