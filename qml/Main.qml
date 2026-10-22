@@ -332,7 +332,7 @@ ApplicationWindow {
         icon.source: "icons/exit.svg"
         objectName: "quitAction"
         text: qsTr("&Quit")
-        shortcut: StandardKey.Quit
+        shortcut: "Ctrl+Q"
         enabled: !window.documentOptionsOpen
         onTriggered: window.close()
     }
@@ -348,7 +348,7 @@ ApplicationWindow {
         id: redoAction
         icon.source: "icons/redo.svg"
         text: qsTr("Redo")
-        shortcut: StandardKey.Redo
+        shortcut: "Ctrl+Y"
         enabled: editor.canRedo && !editor.loading && !editor.textActive && !window.documentOptionsOpen
         onTriggered: editor.redo()
     }

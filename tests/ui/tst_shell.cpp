@@ -552,6 +552,15 @@ class ShellTest : public QObject {
         auto* editor = window->findChild<Editor*>("editor");
         const auto image = editor->image();
         window->resize(1024, 640);
+#ifdef Q_OS_MACOS
+        // Cocoa owns the native frame/corners; do not apply the Linux client mask.
+        QCOMPARE(window->property("clientRadius").toDouble(), 0.0);
+        QVERIFY(window->mask().isEmpty());
+        QVERIFY(!window->grabWindow().isNull());
+        QCOMPARE(editor->image(), image);
+        QVERIFY(!editor->dirty());
+        return;
+#endif
         QVERIFY(window->mask().contains({0, 0}));
         QTRY_VERIFY(!window->mask().contains({0, window->height() - 1}));
         QVERIFY(window->mask().contains({100, 100}));
