@@ -115,7 +115,7 @@ if(BUILD_TESTING)
         themeActions
         keyboardAboutAndEscape
         drawingAndTransforms
-        interruptedAndSecondaryStroke
+        interruptedStrokeAndRightPan
         welcomeWorkflow
         glassSetupWorkflow
         updatesWorkflow)

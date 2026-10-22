@@ -248,7 +248,7 @@ Selecting Text shows a non-modal toolbar immediately below the ribbon: font,
 size, bold/italic/underline/strikeout, alignment and opaque background. Formatting
 controls do not commit the active text box. Clicking the canvas/workspace outside
 the box applies it as one undoable raster edit and consumes that click, without
-starting another text box. Clicking inside keeps editing; middle-button/Space pan
+starting another text box. Clicking inside keeps editing; right-button/middle-button/Space pan
 does not commit. Escape cancels and Ctrl+Enter remains a keyboard commit shortcut.
 The text Apply/Options footer buttons are removed; other tools retain theirs.
 
@@ -385,7 +385,7 @@ selected color swatches use a bright outer ring without recoloring the swatch.
 The font picker retains its searchable per-family previews.
 
 Pencil, brush, eraser and eyedropper cursors identify the active tool over the canvas,
-with white contrast edges and tip-aligned hotspots. Space/middle-button panning
+with white contrast edges and tip-aligned hotspots. Right-button/Space/middle-button panning
 uses a hand and restores the tool cursor afterward. Shape controls show a solid
 filled drop when solid fill is active, and a small × on the outline icon when
 outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).
@@ -488,3 +488,8 @@ to its left. Range remains 1–3200%, with logarithmic travel, keyboard adjustme
 and synchronization with wheel/shortcuts/Fit. Image-group icons use the prior
 monochrome artwork. Blur setup provides Copy setup and optional Show setup code. Check again verifies
 actual extension configuration; it never treats package installation as readiness.
+
+Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
+secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
+the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
+Layer and palette context menus retain their right-click actions.

@@ -723,14 +723,14 @@ class ShellTest : public QObject {
         editor->undo();
     }
 
-    void interruptedAndSecondaryStroke() {
+    void interruptedStrokeAndRightPan() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();
-        editor->secondary = Qt::red;
+        editor->primary = Qt::red;
         canvas->zoomAt(1.5, {200, 200});
         auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
-        QTest::mousePress(window, Qt::RightButton, {}, at({100, 100}));
-        QTest::mouseRelease(window, Qt::RightButton, {}, at({200, 100}));
+        QTest::mousePress(window, Qt::LeftButton, {}, at({100, 100}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({200, 100}));
         QCOMPARE(editor->image().pixelColor(150, 100), QColor(Qt::red));
         const auto first = editor->image();
         QTest::mousePress(window, Qt::LeftButton, {}, at({100, 150}));
@@ -743,6 +743,17 @@ class ShellTest : public QObject {
         editor->undo();
         QCOMPARE(editor->image(), first);
         editor->undo();
+        const auto original = editor->image();
+        const auto origin = canvas->fromDocument({0, 0});
+        const QPoint start = canvas->mapToScene({200, 200}).toPoint();
+        QTest::mousePress(window, Qt::RightButton, {}, start);
+        QCOMPARE(canvas->cursor().shape(), Qt::ClosedHandCursor);
+        QTest::mouseMove(window, start + QPoint(40, 20));
+        QTest::mouseRelease(window, Qt::RightButton, {}, start + QPoint(60, 50));
+        QCOMPARE(canvas->fromDocument({0, 0}), origin + QPointF(60, 50));
+        QVERIFY(canvas->cursor().shape() != Qt::ClosedHandCursor);
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->canUndo());
     }
 
     void captureReleaseUrl(const QUrl& url) {

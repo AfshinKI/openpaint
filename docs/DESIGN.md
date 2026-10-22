@@ -85,11 +85,11 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | --- | --- |
 | Draw | Capture pointer, show preview immediately, commit one undo step on release |
 | Brushes | Nine named styles with generated previews; floating size and 0–100% stroke opacity; fixed-distance path sampling, one undo step |
-| Fill | Left/right press fills with primary/secondary; exact color matching with automatic smooth edges; busy indicator and Cancel/Escape leave original pixels intact |
-| Color picker | Select once per press: left sets primary, right sets secondary; exact containing artwork pixel including alpha; stays selected, never paints or changes history |
+| Fill | Left press fills with primary; exact color matching with automatic smooth edges; busy indicator and Cancel/Escape leave original pixels intact |
+| Color picker | Select once per press: left sets primary; right-drag pans; exact containing artwork pixel including alpha; stays selected, never paints or changes history |
 | Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
 | Escape | Cancel active preview/transform; otherwise dismiss the topmost transient UI |
-| Pan / zoom | Space+drag pans outside text entry; Ctrl+wheel zooms around pointer; plain wheel scrolls |
+| Pan / zoom | Right-button drag, middle-button drag and Space+drag pan outside text entry; dragging shows a closed hand; Ctrl+wheel zooms around pointer; plain wheel scrolls |
 | Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Resize/skew supports selected content or the whole image. |
 | Transform | Shift constrains proportions or rotation increments; numeric inputs provide keyboard precision |
 | Text | Inline editor and floating formatting toolbar below ribbon; outside-box canvas click or Ctrl+Enter commits, Escape cancels; top color is foreground and bottom is background |
@@ -190,7 +190,7 @@ Use the app-owned color chooser with a rectangular hue/saturation spectrum,
 vertical brightness slider and color preview, HEX input and switchable RGB/HSV
 fields, basic/custom grids and explicit accept/cancel. Both primary and secondary
 colors are editable. The top circle always controls foreground drawing color;
-the bottom always controls background/fill and right-button drawing. Selecting
+the bottom always controls background/shape-fill color. Selecting
 a circle changes only the color-editing target. Applying a new chooser color
 fills the first empty slot in each custom palette: 10 on the ribbon, 24 in the
 editor. Skip full palettes and existing duplicates. Both palettes are session-only
@@ -283,7 +283,7 @@ selected color swatches use a bright outer ring without recoloring the swatch.
 The font picker retains its searchable per-family previews.
 
 Pencil, brush, eraser and eyedropper cursors identify the active tool over the canvas,
-with white contrast edges and tip-aligned hotspots. Space/middle-button panning
+with white contrast edges and tip-aligned hotspots. Right-button/Space/middle-button panning
 uses a hand and restores the tool cursor afterward. Shape controls show a solid
 filled drop when solid fill is active, and a small × on the outline icon when
 outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).

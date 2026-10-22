@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Pan the canvas with right-button hold-and-drag and a closed-hand cursor,
+  replacing canvas right-button drawing/sampling.
+
 - Use live blur with full desktop redraws in the manual glass setup recipe and keep setup accessible
   for repairing flicker on an already-enabled desktop.
 
