@@ -30,7 +30,7 @@ class MacPackageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             binary = root / "binary"
-            binary.write_bytes(b"Ïúíþ" + b"generated")
+            binary.write_bytes(bytes.fromhex("cffaedfe") + b"generated")
             with patch.object(subprocess, "check_output", return_value="binary:\n\t/opt/unbundled/library.dylib (version 1)\n"):
                 with self.assertRaisesRegex(ValueError, "External runtime"):
                     package.audit_bundle(root)
