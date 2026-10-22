@@ -2,6 +2,7 @@
 #include "color/ColorPalette.h"
 #include "color/ColorSpectrum.h"
 #include "io/ImageIo.h"
+#include "io/OraIo.h"
 #include "platform/AppInfo.h"
 #include "platform/Appearance.h"
 #include "platform/BlurSupport.h"
@@ -2376,6 +2377,12 @@ class ShellTest : public QObject {
         painter.setPen(Qt::NoPen);
         painter.setBrush(QColor("#FFE7AD"));
         painter.drawEllipse(QPointF(785, 208), 82, 82);
+        painter.end();
+        QImage distant(art.size(), QImage::Format_ARGB32_Premultiplied);
+        distant.fill(Qt::transparent);
+        painter.begin(&distant);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(Qt::NoPen);
         painter.setBrush(QColor("#82779D"));
         painter.drawPolygon(QPolygonF{{0, 430},
                                       {165, 245},
@@ -2386,6 +2393,12 @@ class ShellTest : public QObject {
                                       {1152, 422},
                                       {1152, 648},
                                       {0, 648}});
+        painter.end();
+        QImage near(art.size(), QImage::Format_ARGB32_Premultiplied);
+        near.fill(Qt::transparent);
+        painter.begin(&near);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(Qt::NoPen);
         painter.setBrush(QColor("#375F7C"));
         painter.drawPolygon(QPolygonF{{0, 505},
                                       {246, 355},
@@ -2395,6 +2408,11 @@ class ShellTest : public QObject {
                                       {1152, 379},
                                       {1152, 648},
                                       {0, 648}});
+        painter.end();
+        QImage hills(art.size(), QImage::Format_ARGB32_Premultiplied);
+        hills.fill(Qt::transparent);
+        painter.begin(&hills);
+        painter.setRenderHint(QPainter::Antialiasing);
         QPainterPath foreground;
         foreground.moveTo(0, 530);
         foreground.cubicTo(270, 435, 415, 610, 660, 504);
@@ -2405,12 +2423,20 @@ class ShellTest : public QObject {
         painter.fillPath(foreground, QColor("#204E59"));
         painter.end();
         QTemporaryDir dir;
-        const auto path = dir.filePath("Frost study.png");
-        QVERIFY(art.save(path));
+        const auto path = dir.filePath("Frost study.ora");
+        const openpaint::Layers artwork{
+            {1, "Background", art.convertToFormat(QImage::Format_ARGB32_Premultiplied), true, 1.0},
+            {2, "Distant peaks", distant, true, 1.0},
+            {3, "Mountain ridge", near, true, 1.0},
+            {4, "Foreground hills", hills, true, 1.0}};
+        QVERIFY(openpaint::saveOra(path, artwork).error.isEmpty());
         auto* editor = window->findChild<Editor*>("editor");
         editor->openFile(QUrl::fromLocalFile(path));
         QTRY_VERIFY(!editor->loading());
         QCOMPARE(editor->image().size(), art.size());
+        QCOMPARE(editor->layers().size(), 4);
+        QTRY_VERIFY(window->findChild<QQuickItem*>("layersPanel")->isVisible());
+        editor->selectLayer(2);
         for (const auto& theme : {QStringLiteral("light"), QStringLiteral("dark")}) {
             auto* action = window->findChild<QObject*>(theme + "ThemeAction");
             QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));

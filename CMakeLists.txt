@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(OpenPaint VERSION 1.3.0 LANGUAGES CXX)
+project(OpenPaint VERSION 2.0.0 LANGUAGES CXX)
 if(APPLE)
     enable_language(OBJCXX)
     set(CMAKE_OBJCXX_STANDARD 20)
@@ -60,6 +60,8 @@ add_subdirectory(qml)
 
 qt_add_executable(openpaint src/app/main.cpp)
 if(APPLE)
+    qt_add_executable(openpaint_icon_tool tools/macos_icon.cpp)
+    target_link_libraries(openpaint_icon_tool PRIVATE Qt6::Gui)
     set_target_properties(openpaint PROPERTIES
         MACOSX_BUNDLE TRUE OUTPUT_NAME OpenPaint
         MACOSX_BUNDLE_GUI_IDENTIFIER io.github.AfshinKI.OpenPaint

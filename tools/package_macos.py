@@ -62,6 +62,13 @@ def main():
     shutil.copytree(args.build / 'OpenPaint.app', bundle, symlinks=True)
     subprocess.run([str(args.qt / 'bin/macdeployqt'), str(bundle),
                     '-qmldir=' + str(ROOT / 'qml'), '-always-overwrite', '-verbose=1'], check=True)
+    iconset = work / 'OpenPaint.iconset'
+    subprocess.run([str(args.build / 'openpaint_icon_tool'), str(ROOT / 'qml/icons/app.svg'),
+                    str(iconset)], env=dict(os.environ, QT_QPA_PLATFORM='offscreen'), check=True)
+    resources = bundle / 'Contents/Resources'
+    resources.mkdir(exist_ok=True)
+    subprocess.run(['iconutil', '-c', 'icns', str(iconset),
+                    '-o', str(resources / 'OpenPaint.icns')], check=True)
     # Ad-hoc signatures provide bundle integrity on Apple Silicon, not Developer ID trust.
     subprocess.run(['codesign', '--force', '--deep', '--sign', '-', str(bundle)], check=True)
     subprocess.run(['codesign', '--verify', '--deep', '--strict', str(bundle)], check=True)
