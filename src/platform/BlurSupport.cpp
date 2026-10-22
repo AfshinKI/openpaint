@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "BlurSupport.h"
+#include "Appearance.h"
+#include <QPointer>
+#include <QQuickWindow>
+#ifdef Q_OS_MACOS
+#include "MacGlass.h"
+#endif
 #include <QClipboard>
 #include <QDir>
 #include <QElapsedTimer>
@@ -82,10 +88,40 @@ BlurSupport::BlurSupport(Probe probe, QObject* parent) : QObject(parent), probe_
     });
 }
 void BlurSupport::setProbe(Probe probe) {
-    if (!busy())
+    if (!busy()) {
+        probeInjected_ = true;
         probe_ = std::move(probe);
+    }
+}
+void BlurSupport::attachWindow(QQuickWindow* window, Appearance* appearance) {
+#ifdef Q_OS_MACOS
+    if (!window || !appearance || nativeMac_ || probeInjected_ ||
+        QGuiApplication::platformName() != "cocoa")
+        return;
+    nativeMac_ = true;
+    const QPointer<BlurSupport> self(this);
+    installMacGlass(window, appearance, [self](bool available) {
+        if (!self)
+            return;
+        self->result_ = {
+            available,
+            {},
+            available
+                ? tr("macOS provides native glass automatically. No terminal setup is needed.")
+                : tr("Native glass is unavailable. Check macOS Reduce Transparency in "
+                     "Accessibility settings.")};
+        emit self->changed();
+    });
+#else
+    Q_UNUSED(window);
+    Q_UNUSED(appearance);
+#endif
 }
 void BlurSupport::refresh() {
+    if (nativeMac_) {
+        emit probeFinished();
+        return;
+    }
     if (busy())
         return;
     busy_ = true;

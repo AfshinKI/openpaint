@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Select a release identity and stage verified same-run Linux artifacts."""
+"""Select a release identity and stage verified same-run Linux and macOS artifacts."""
 import argparse
 import hashlib
 import json
@@ -53,10 +53,13 @@ def stage(artifacts, destination, version, commit):
     compliance = f'OpenPaint-{version}-sources-and-notices.tar'
     binaries = {'portable': f'OpenPaint-{version}-linux-x86_64.tar.gz',
                 'deb': f'OpenPaint-{version}-ubuntu24.04-amd64.deb',
-                'flatpak': f'OpenPaint-{version}-x86_64.flatpak'}
+                'flatpak': f'OpenPaint-{version}-x86_64.flatpak',
+                'macos': f'OpenPaint-{version}-macos-arm64.dmg'}
+    mac_compliance = f'OpenPaint-{version}-macos-sources-and-notices.tar'
     flat_sources = ['openpaint-source.tar', 'flatpak-inventory.json', 'manifest.json']
     for kind, binary in binaries.items():
-        verify(artifacts / kind, [binary] + (flat_sources if kind == 'flatpak' else [compliance]))
+        verify(artifacts / kind, [binary] + (flat_sources if kind == 'flatpak' else
+               [mac_compliance] if kind == 'macos' else [compliance]))
     for kind in ('portable', 'deb'):
         with tarfile.open(artifacts / kind / compliance) as archive:
             native = json.load(archive.extractfile('dependency-inventory.json'))
@@ -67,6 +70,12 @@ def stage(artifacts, destination, version, commit):
             or inventory['bundle_sha256'] != digest(artifacts / 'flatpak' / binaries['flatpak'])
             or inventory['source_sha256'] != digest(artifacts / 'flatpak/openpaint-source.tar')):
         raise ValueError('Flatpak provenance differs from release')
+    with tarfile.open(artifacts / 'macos' / mac_compliance) as archive:
+        mac = json.load(archive.extractfile('macos-inventory.json'))
+    if (mac['version'] != version or mac['source_commit'] != commit
+            or mac['architecture'] != 'arm64'
+            or mac['bundle_sha256'] != digest(artifacts / 'macos' / binaries['macos'])):
+        raise ValueError('macOS provenance differs from release')
     destination.mkdir(parents=True, exist_ok=False)
     for kind, binary in binaries.items():
         shutil.copyfile(artifacts / kind / binary, destination / binary)
@@ -74,6 +83,7 @@ def stage(artifacts, destination, version, commit):
     with tarfile.open(destination / compliance, 'w') as archive:
         for kind in ('portable', 'deb'):
             archive.add(artifacts / kind / compliance, arcname=f'{kind}/{compliance}')
+        archive.add(artifacts / 'macos' / mac_compliance, arcname=f'macos/{mac_compliance}')
         for name in flat_sources:
             archive.add(artifacts / 'flatpak' / name, arcname=f'flatpak/{name}')
     paths = sorted(destination.iterdir())

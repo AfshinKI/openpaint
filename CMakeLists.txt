@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.28)
 project(OpenPaint VERSION 1.3.0 LANGUAGES CXX)
+if(APPLE)
+    enable_language(OBJCXX)
+    set(CMAKE_OBJCXX_STANDARD 20)
+    set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)
+endif()
 
 set(OPENPAINT_VERSION_SUFFIX "" CACHE STRING "SemVer prerelease suffix; empty for stable")
-set(OPENPAINT_INSTALL_KIND "source" CACHE STRING "source, portable, appimage, flatpak, or system")
-set_property(CACHE OPENPAINT_INSTALL_KIND PROPERTY STRINGS source portable appimage flatpak system)
-if(NOT OPENPAINT_INSTALL_KIND MATCHES "^(source|portable|appimage|flatpak|system)$")
+set(OPENPAINT_INSTALL_KIND "source" CACHE STRING "source, portable, appimage, flatpak, system, or macos")
+set_property(CACHE OPENPAINT_INSTALL_KIND PROPERTY STRINGS source portable appimage flatpak system macos)
+if(NOT OPENPAINT_INSTALL_KIND MATCHES "^(source|portable|appimage|flatpak|system|macos)$")
     message(FATAL_ERROR "Invalid OPENPAINT_INSTALL_KIND")
 endif()
 set(OPENPAINT_VERSION "${PROJECT_VERSION}")
@@ -54,11 +59,26 @@ target_compile_options(openpaint_io PRIVATE -Wall -Wextra -Wpedantic)
 add_subdirectory(qml)
 
 qt_add_executable(openpaint src/app/main.cpp)
+if(APPLE)
+    set_target_properties(openpaint PROPERTIES
+        MACOSX_BUNDLE TRUE OUTPUT_NAME OpenPaint
+        MACOSX_BUNDLE_GUI_IDENTIFIER io.github.AfshinKI.OpenPaint
+        MACOSX_BUNDLE_BUNDLE_NAME OpenPaint
+        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/packaging/macos/Info.plist.in")
+endif()
 target_link_libraries(openpaint PRIVATE openpaint_ui openpaint_uiplugin Qt6::QuickControls2)
 target_compile_options(openpaint PRIVATE -Wall -Wextra -Wpedantic)
 
 if(BUILD_TESTING)
     find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+    if(APPLE)
+        qt_add_executable(openpaint_macglass_tests tests/unit/tst_macglass.cpp)
+        target_link_libraries(openpaint_macglass_tests PRIVATE openpaint_ui Qt6::Test)
+        add_test(NAME macos-native-glass COMMAND openpaint_macglass_tests)
+        set_tests_properties(macos-native-glass PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=cocoa")
+    endif()
     qt_add_executable(openpaint_layers_tests tests/unit/tst_layers.cpp)
     target_link_libraries(openpaint_layers_tests PRIVATE openpaint_ui Qt6::Test LibArchive::LibArchive)
     add_test(NAME layers COMMAND openpaint_layers_tests)
@@ -198,9 +218,12 @@ if(BUILD_TESTING)
 endif()
 
 include(GNUInstallDirs)
-install(TARGETS openpaint RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS openpaint BUNDLE DESTINATION . RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if(NOT APPLE)
 install(FILES packaging/io.github.AfshinKI.OpenPaint.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 install(FILES packaging/io.github.AfshinKI.OpenPaint.metainfo.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
 install(FILES qml/icons/app.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps RENAME io.github.AfshinKI.OpenPaint.svg)
 install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/io.github.AfshinKI.OpenPaint)
 install(FILES README.md CHANGELOG.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
+
+endif()

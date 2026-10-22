@@ -14,3 +14,9 @@ qt_add_qml_module(openpaint_ui STATIC
 )
 target_link_libraries(openpaint_ui PUBLIC openpaint_document openpaint_io Qt6::Network Qt6::Concurrent Qt6::Quick Qt6::QuickControls2)
 target_include_directories(openpaint_ui PRIVATE ../src/updates ../src/platform ../src/app ../src/render ../src/color "${PROJECT_BINARY_DIR}/generated")
+
+if(APPLE)
+    target_sources(openpaint_ui PRIVATE ../src/platform/MacGlass.mm)
+    set_source_files_properties(../src/platform/MacGlass.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+    target_link_libraries(openpaint_ui PRIVATE "-framework AppKit")
+endif()

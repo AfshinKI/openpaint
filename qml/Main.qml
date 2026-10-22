@@ -23,6 +23,7 @@ ApplicationWindow {
     minimumHeight: 640
     visible: false
     Component.onCompleted: Qt.callLater(function () {
+        BlurSupport.attachWindow(window, Appearance);
         window.show();
         BlurSupport.refresh();
     })
@@ -331,7 +332,7 @@ ApplicationWindow {
         icon.source: "icons/exit.svg"
         objectName: "quitAction"
         text: qsTr("&Quit")
-        shortcut: "Ctrl+Q"
+        shortcut: StandardKey.Quit
         enabled: !window.documentOptionsOpen
         onTriggered: window.close()
     }
@@ -347,7 +348,7 @@ ApplicationWindow {
         id: redoAction
         icon.source: "icons/redo.svg"
         text: qsTr("Redo")
-        shortcut: "Ctrl+Y"
+        shortcut: StandardKey.Redo
         enabled: editor.canRedo && !editor.loading && !editor.textActive && !window.documentOptionsOpen
         onTriggered: editor.redo()
     }
@@ -461,7 +462,7 @@ ApplicationWindow {
         id: copyAction
         icon.source: "icons/copy.svg"
         text: qsTr("Copy")
-        shortcut: "Ctrl+C"
+        shortcut: StandardKey.Copy
         enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.copySelection()
     }
@@ -477,7 +478,7 @@ ApplicationWindow {
         id: cutAction
         icon.source: "icons/cut.svg"
         text: qsTr("Cut")
-        shortcut: "Ctrl+X"
+        shortcut: StandardKey.Cut
         enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.cutSelection()
     }
@@ -485,7 +486,7 @@ ApplicationWindow {
         id: pasteAction
         icon.source: "icons/paste.svg"
         text: qsTr("Paste")
-        shortcut: "Ctrl+V"
+        shortcut: StandardKey.Paste
         enabled: editor.canSelect && !editor.busy && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.pasteClipboard()
     }
@@ -494,7 +495,7 @@ ApplicationWindow {
         icon.source: "icons/selection.svg"
         objectName: "selectAllAction"
         text: qsTr("Select all")
-        shortcut: "Ctrl+A"
+        shortcut: StandardKey.SelectAll
         enabled: !editor.busy && !editor.textActive && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.selectAll()
     }

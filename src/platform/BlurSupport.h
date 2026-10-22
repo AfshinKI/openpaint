@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
+#include "Appearance.h"
 #include <QFutureWatcher>
 #include <QObject>
+#include <QQuickWindow>
 #include <QtQml/qqmlregistration.h>
 #include <functional>
 
@@ -46,6 +48,7 @@ class BlurSupport : public QObject {
     static Result evaluate(const QString& desktop, const QString& session, const QString& platform,
                            const QString& osId, const QString& osVersion, bool sandboxed,
                            const QString& schemaDirectory, const Runner& run);
+    Q_INVOKABLE void attachWindow(QQuickWindow* window, Appearance* appearance);
     Q_INVOKABLE void refresh();
     Q_INVOKABLE bool copyCommand();
   signals:
@@ -53,6 +56,8 @@ class BlurSupport : public QObject {
     void probeFinished();
 
   private:
+    bool nativeMac_ = false;
+    bool probeInjected_ = false;
     bool busy_ = false;
     Probe probe_;
     Result result_;
