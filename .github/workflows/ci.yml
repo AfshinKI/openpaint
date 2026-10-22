@@ -263,6 +263,7 @@ jobs:
           echo "$GITHUB_WORKSPACE/build/tooling/bin" >> "$GITHUB_PATH"
           echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/build/qt/6.12.0/macos" >> "$GITHUB_ENV"
       - name: Build macOS application
+        id: mac-build
         run: |
           brew install libarchive
           cmake --preset release -DOPENPAINT_INSTALL_KIND=macos -DOPENPAINT_VERSION_SUFFIX="$VERSION_SUFFIX" -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.4 -DLibArchive_INCLUDE_DIR="$(brew --prefix libarchive)/include" -DLibArchive_LIBRARY="$(xcrun --show-sdk-path)/usr/lib/libarchive.tbd"
@@ -272,6 +273,8 @@ jobs:
         run: |
           ctest --preset release
       - name: Package and audit macOS disk image
+        # Diagnose packaging independently; failed tests still fail the job and block publication.
+        if: ${{ !cancelled() && steps.mac-build.outcome == 'success' }}
         run: python3 tools/package_macos.py --qt "$CMAKE_PREFIX_PATH" --version "${{ needs.identity.outputs.version }}"
       - name: Retain macOS release candidate
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

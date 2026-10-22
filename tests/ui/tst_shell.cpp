@@ -3239,12 +3239,15 @@ class ShellTest : public QObject {
     bool tabUntil(const std::function<bool(QQuickItem*)>& matches) {
         for (int i = 0; i < 100; ++i) {
             auto* target = qobject_cast<QQuickWindow*>(keyWindow());
-            for (auto* item = target ? target->activeFocusItem() : nullptr; item;
-                 item = item->parentItem()) {
+            if (!target)
+                return false;
+            for (auto* item = target->activeFocusItem(); item; item = item->parentItem()) {
                 if (matches(item))
                     return true;
             }
-            keyClick(Qt::Key_Tab);
+            // keyWindow already synchronized and activated this target above.
+            // Do not repeat its native-window wait for the same Tab event.
+            QTest::keyClick(target, Qt::Key_Tab);
         }
         return false;
     }
