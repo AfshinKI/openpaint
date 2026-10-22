@@ -15,6 +15,9 @@
   <url type="homepage">https://github.com/AfshinKI/openpaint</url>
   <url type="bugtracker">https://github.com/AfshinKI/openpaint/issues</url>
   <releases>
+    <release version="2.0.0" date="2026-10-21" type="stable">
+      <description><p>Raster layers and OpenRaster projects, a glass layer panel, invert colors, zoom slider and right-drag canvas navigation.</p></description>
+    </release>
     <release version="1.3.0" date="2026-10-20" type="stable">
       <description><p>Magic-wand color selection, selected-text font formatting, spline drawing, refined eraser and toolbar controls, a separate welcome and glass setup, and simpler automatic update checks. Unavailable glass uses opaque surfaces.</p></description>
     </release>

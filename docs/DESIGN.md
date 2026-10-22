@@ -394,3 +394,7 @@ user-run terminal block handles missing extension installation and configuration
 Extension Manager and repeated apt prompts are removed. The app still verifies
 active extension/application settings before enabling Glass. Any needed sign-out
 is requested by the block and never forced.
+
+On macOS, glass uses a native behind-window AppKit effect and respects Reduce
+Transparency. Enable Glass shows native guidance rather than a Linux terminal
+recipe. Shared surface-opacity and light/dark preferences still apply.

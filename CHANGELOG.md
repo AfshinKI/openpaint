@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 — 2026-10-21
+
+- Add an Apple silicon macOS app bundle, native glass and platform keyboard shortcuts.
+- Build, test and audit the macOS DMG alongside Linux release packages.
+- Refresh website and README images with the layered v2 UI at 40% glass opacity.
 
 - Pan the canvas with right-button hold-and-drag and a closed-hand cursor,
   replacing canvas right-button drawing/sampling.

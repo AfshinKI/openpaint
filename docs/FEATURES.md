@@ -3,9 +3,9 @@
 Alpha corrections shipped through PR #34; the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md)
 records implementation evidence and remaining desktop-validation limits. It
 supersedes the earlier shared custom-palette, Swap-button and left-rail targets.
-The current release is [v1.2.0](plans/0040-release-1.2.0.md).
+The v2 release is tracked in [plan 0062](plans/0062-macos-v2-release.md).
 
-Audit date: 2026-10-12. **The released single-layer editor is implemented.**
+Reference audit date: 2026-10-12. The editor now includes raster layers.
 Development layer support is tracked separately in [plan 0058](plans/0058-layers.md).
 The maintainer selected this feature scope for [v1.0.0](plans/0031-stable-release.md);
 future feature rows below remain planned.
@@ -50,7 +50,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F22 | Sticker generation | R5 | M6 | Planned |
 | F23 | Coloring-page generation | R3 preview, hardware/account restrictions in reference | M6 | Planned |
 | F24 | Collapsible command toolbar | Persistent/auto-hide modes specified visually; timing and focus behavior need validation | M4 | Planned |
-| F25 | Linux installers, portable downloads and Updates screen | Linux-specific product choice | M2–M5 | Updates screen, bounded manual and default-on startup/daily release checks ([plan 0037](plans/0037-release-notifications.md)) and install metadata implemented in [plan 0024](plans/0024-install-updates.md); AppImage recipe in [plan 0025](plans/0025-appimage-package.md); Flatpak recipe in [plan 0026](plans/0026-flatpak-package.md); alpha downloads and validation in [plan 0027](plans/0027-alpha-release.md); Ubuntu DEB installer in [plan 0030](plans/0030-debian-installer.md); v1.0.0 publication and Ubuntu 24.04 GNOME/X11 evidence in [plan 0031](plans/0031-stable-release.md); verified automatic updates remain M5. |
+| F25 | Linux/macOS installers, portable downloads and Updates screen | Platform product choice | M2–M5 | Updates screen, bounded manual and default-on startup/daily release checks ([plan 0037](plans/0037-release-notifications.md)) and install metadata implemented in [plan 0024](plans/0024-install-updates.md); AppImage recipe in [plan 0025](plans/0025-appimage-package.md); Flatpak recipe in [plan 0026](plans/0026-flatpak-package.md); alpha downloads and validation in [plan 0027](plans/0027-alpha-release.md); Ubuntu DEB installer in [plan 0030](plans/0030-debian-installer.md); v1.0.0 publication and Ubuntu 24.04 GNOME/X11 evidence in [plan 0031](plans/0031-stable-release.md); verified automatic updates remain M5. |
 | F26 | Privacy controls, metadata removal, accessible keyboard UI | Product choice | M1–M5 | In progress: offline PNG metadata removal, keyboard lifecycle, accessible names/roles and GNOME portal workflow tested; see [desktop workflow](plans/0008-keyboard-desktop-workflow.md); Orca usability certification remains M4. |
 | F27 | Printing through the Linux print dialog | Product choice; reference details need observation | M4 | Planned |
 
@@ -185,3 +185,10 @@ Updates refinement: automatic startup/open checks with cooldown/backoff, concise
 Select by color adds an exact RGBA, image-wide selection mode with a magic-wand icon. Implementation and validation are tracked in [plan 0055](plans/0055-color-selection.md).
 
 Text font controls support selected ranges and insertion formatting in the same box; mixed font runs survive raster commit and saving. Evidence: [plan 0056](plans/0056-text-range-formatting.md).
+
+## macOS platform
+
+Apple silicon/macOS 14.4+ build and DMG packaging are implemented, with native
+AppKit glass and Command shortcuts. Validation is tracked in [plan 0062](plans/0062-macos-v2-release.md);
+physical Mac visual review remains pending. Intel packages and Apple notarization
+are not part of this release candidate.

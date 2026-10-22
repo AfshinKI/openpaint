@@ -1,8 +1,8 @@
 # Privacy and public-repository hygiene
 
 These are product requirements. The editor keeps core editing offline. Manual and default-on startup/daily release checks contact
-api.github.com; see the release-check disclosure below. It opens local PNG/JPEG/BMP/WebP images and saves PNG
-files or exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strips source metadata. File → Updates opens the public GitHub Releases page only after the explicit View releases action. The browser makes an ordinary request to GitHub; no artwork or document information is included. Recovery remains planned; bounded release notifications are implemented.
+api.github.com; see the release-check disclosure below. It opens local PNG/JPEG/BMP/WebP images and bounded OpenRaster projects, saves PNG
+or OpenRaster files, and exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strips source metadata. File → Updates opens the public GitHub Releases page only after the explicit View releases action. The browser makes an ordinary request to GitHub; no artwork or document information is included. Recovery remains planned; bounded release notifications are implemented.
 
 ## Current local settings
 
@@ -15,7 +15,7 @@ Remove selected and Clear all remain available for the editor's session list.
 
 Core editing works without a network connection, account, analytics, advertising,
 or telemetry. No automatic crash uploads. No unique installation identifier.
-Recent files, settings, and recovery artwork remain in local XDG storage, with
+Recent files, settings, and recovery artwork remain in local platform settings storage, with
 visible controls to clear them. Do not include document paths or contents in logs.
 
 Manual and automatic update checks contact api.github.com. Automatic checks are

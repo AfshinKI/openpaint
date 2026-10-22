@@ -39,4 +39,13 @@ supply automated build/test evidence; physical Mac visual validation is pending.
 Developer ID signing availability is pending maintainer response.
 Linux packaging currently fails on an inherited systemd library/source version
 mismatch. Upgrade the container package set before collecting exact sources;
-do not weaken provenance checks. Next: implement platform bridge and package lane.
+do not weaken provenance checks. The platform bridge and package lane are implemented. Hosted macOS compilation
+now passes after using installed libarchive headers with the Apple system library.
+Next: finish Mac runtime/package validation, protected merge and release promotion.
+
+Local evidence: Release build and formatting/QML lint pass; 39 Python tooling tests
+and repository/website checks pass. Initial full CTest passed 19/20 groups and
+caught an offscreen Quit-key regression; explicit Ctrl+Q restores the tested
+keyboard save/discard/quit workflow. The affected group now passes (17 cases); all 20 local Release groups have passing evidence. Fresh
+1449×1008 light/dark/color/resize captures show the real four-layer artwork at
+40% glass opacity. Desktop and 390px website layouts were inspected in-browser.

@@ -2,7 +2,7 @@
 
 Download assets from [GitHub Releases](https://github.com/AfshinKI/openpaint/releases).
 
-Linux x86_64. Tested release environments and artifact digests are recorded in the
+Linux x86_64 and Apple silicon macOS 14.4+. Tested release environments and artifact digests are recorded in the
 release evidence. Keep copies of important originals; crash recovery is not implemented.
 
 ## Verify downloads
@@ -11,6 +11,23 @@ Download `SHA256SUMS` and the desired assets from the same GitHub release. In th
 directory, run `sha256sum --ignore-missing -c SHA256SUMS`. Every downloaded entry
 must report OK. Checksums detect changed bytes; these artifacts do not have
 an OpenPaint signing signature or an automatic updater.
+
+## macOS (Apple silicon)
+
+Download `OpenPaint-<version>-macos-arm64.dmg`. Intel Macs are not included in
+this release. Compare `shasum -a 256 OpenPaint-<version>-macos-arm64.dmg` with
+its entry in the release's `SHA256SUMS` before opening it.
+
+Open the disk image, drag OpenPaint to Applications, then launch it there.
+This build is ad-hoc signed, **not Developer ID signed or Apple notarized**.
+If macOS blocks first launch, follow Apple's per-app approval instructions in
+[Privacy & Security](https://support.apple.com/en-us/102445), only after checking
+the download source and checksum. Do not disable Gatekeeper globally.
+
+To update, save your work and quit OpenPaint, then replace the app in Applications
+with the newer download. To uninstall, move the application to Trash; artwork is
+untouched. Updates are manual. Native glass needs no extension or terminal code;
+macOS Reduce Transparency turns it off. File/edit shortcuts use Command.
 
 ## Ubuntu 24.04 installer
 

@@ -86,7 +86,7 @@ h3 { font-size: 20px; line-height: 1.3; font-weight: 600; margin: 20px 0 10px; }
 .reverse figure { grid-column: 1; grid-row: 1; }
 .download { background: linear-gradient(135deg, #e7f2edc9, #f2eff9e0); }
 .download > img { margin-bottom: 20px; }
-.download-options { display: grid; grid-template-columns: 1fr 1fr; gap: 55px; max-width: 890px; margin: 35px auto 0; }
+.download-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 1100px; margin: 35px auto 0; }
 .download-options h3 { margin: 0 0 14px; font-size: 23px; }
 .download-options p { font-size: 16px; min-height: 80px; margin-bottom: 22px; }
 .outline { color: var(--blue); background: #ffffffa6; border-color: #bad3cf; }
@@ -118,7 +118,7 @@ footer a { color: #526364; }
   .tool-grid { grid-template-columns: 1fr 1fr; gap: 35px 25px; }
   .theme-pair, .feature-row, .feature-row.reverse { grid-template-columns: 1fr; gap: 30px; }
   .reverse .feature-copy, .reverse figure { grid-column: auto; grid-row: auto; }
-  .download-options { gap: 28px; }
+  .download-options { grid-template-columns: 1fr; gap: 28px; }
   .download-options p { min-height: 106px; }
   footer { flex-direction: column; gap: 14px; }
 }

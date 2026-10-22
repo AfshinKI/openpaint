@@ -258,3 +258,18 @@ archive was downloaded and hashed independently. Continuous URLs can move again;
 checksum mismatches must continue to stop packaging, never trigger automatic trust.
 
 Current release evidence: [v1.3.0](plans/0057-release-1.3.0.md).
+
+## v2 macOS release lane
+
+The `macos-15` Apple silicon runner builds Qt 6.12.0 for macOS 14.4+, runs the
+editor suite and native Cocoa workflows, then audits a self-contained application
+bundle and creates `OpenPaint-<version>-macos-arm64.dmg`. Release promotion now
+requires this job alongside all existing Linux gates. The public release contains
+six assets: DEB, Flatpak, portable Linux archive, macOS DMG, combined
+sources-and-notices archive and SHA256SUMS. The Mac compliance archive is included
+inside the combined archive, with the DMG hash and source revision in its inventory.
+
+The current signing mode is ad-hoc, not Developer ID/notarized. State that on the
+download page and in release notes. Never claim Gatekeeper certification or
+physical Mac visual validation from offscreen/hosted tests. Native macOS glass
+uses AppKit and needs no Linux extension command. Intel Mac packaging is deferred.

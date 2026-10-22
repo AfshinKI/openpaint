@@ -257,3 +257,12 @@ Color inversion uses the existing cancellable transform worker but remains an
 active-layer pixel edit. The worker preserves alpha and clips to the selection;
 the GUI thread checks revision/cancellation before committing one bounded patch.
 It does not transform or flatten the stack, and rejects hidden layers or active edits.
+
+## macOS appearance boundary
+
+`MacGlass.mm` is the AppKit-only adapter. A non-interactive NSVisualEffectView sits
+behind the Qt content view and follows window size, appearance preferences and
+Reduce Transparency. All access stays on the GUI thread. The shared document,
+commands, persistence and canvas remain C++/Qt; no pixels or edits live in the
+adapter. BlurSupport attaches it only on Cocoa and never offers GNOME commands
+there. Tests with injected desktop probes retain their isolated behavior.
