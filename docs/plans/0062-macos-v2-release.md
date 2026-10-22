@@ -57,3 +57,11 @@ content container and assert availability against the actual accessibility state
 Several offscreen UI groups timed out. Move Mac UI validation to Cocoa/Metal,
 keep the shared menu strip and make all controls Tab-reachable. Do not waive the
 tests. Rerun the complete lane before package promotion.
+
+Packaging also launches a fresh copy of the deployed app via Cocoa/Metal and
+rejects early exit or known runtime/import failures. This supplements, rather
+than replaces, the editor save/reopen tests and physical visual-review limit.
+
+After the menu/focus changes, a fresh complete Linux Release run passes all 20
+CTest groups (87.62 seconds). The Mac test now uses an Objective-C pointer
+comparison compatible with ARC; the application bridge itself compiled cleanly.

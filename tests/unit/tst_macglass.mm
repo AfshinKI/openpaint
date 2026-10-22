@@ -29,7 +29,7 @@ class MacGlassTest : public QObject {
             ![NSWorkspace sharedWorkspace].accessibilityDisplayShouldReduceTransparency;
         QTRY_COMPARE(available, expected);
         NSView* content = (__bridge NSView*)(void*)window.winId();
-        QCOMPARE(content.superview, content.window.contentView);
+        QVERIFY(content.superview == content.window.contentView);
         QVERIFY(content.superview.subviews.count >= 2);
         appearance.setGlassEnabled(false);
         window.resize(700, 500);

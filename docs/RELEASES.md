@@ -14,14 +14,15 @@ No signing keys, OpenPaint update feed or automatic in-app installer exists.
 | AppImage | Portable download from GitHub Releases | Manual replacement; historical alpha format |
 | Source | Developers and distribution packagers | User or distribution package manager |
 | DEB | Ubuntu 24.04 amd64 installer; validation in [plan 0030](plans/0030-debian-installer.md) | APT; manual download until an update repository exists |
+| DMG | Apple silicon/macOS 14.4+; v2 validation in [plan 0062](plans/0062-macos-v2-release.md) | Manual app replacement; ad-hoc signed, not notarized |
 | RPM | Deferred; Flatpak available for other distributions | Distribution/package manager |
 
 The native release toolchain is pinned to Qt 6.12.0; [plan 0023](plans/0023-maintained-qt.md)
 records the migration. Flatpak uses its maintained KDE runtime with exact commits
 recorded per artifact.
 
-Start x86_64. Add aarch64 only after native build, install, drawing, save, and update
-tests on that architecture. M2 tests Ubuntu 24.04 and the then-supported stable
+Linux packages target x86_64. macOS targets Apple silicon, with its own native
+build, editor and package checks. Other architectures need equivalent validation. M2 tests Ubuntu 24.04 and the then-supported stable
 Fedora release; record exact versions in each release's matrix. Build AppImages
 against the oldest supported ABI baseline. Release tests cover installed artifacts
 on GNOME/KDE, Wayland/X11; an offscreen test is not proof of desktop integration.

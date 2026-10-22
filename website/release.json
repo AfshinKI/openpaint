@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "application_source": "1b5dfefa03566c90a4498dd861306e2db38c3265",
+  "application_source": "051c642c51a7d6b1494a4b5a19847f15fcbd9f23",
   "capture_method": "Qt 6.12.0 Release build; websiteReleasePreview isolated QML harness on X11/OpenGL; original four-layer landscape and staged gradient; glass enabled at 40% surface opacity",
   "screenshots": [
     "openpaint-2.0.0-light.png",

@@ -144,7 +144,7 @@ plan 0059 captures above retain their historical revision and icon styling.
 ## v2.0.0 website and README captures
 
 The four `openpaint-2.0.0-*.png` images were freshly captured on 2026-10-21
-from application source `1b5dfefa03566c90a4498dd861306e2db38c3265`, Qt 6.12.0,
+from application source `051c642c51a7d6b1494a4b5a19847f15fcbd9f23`, Qt 6.12.0,
 CMake Release configuration, using `websiteReleasePreview` in an isolated
 X11/OpenGL session. Both themes have glass enabled at **40% surface opacity**.
 The project-authored landscape is a real four-layer OpenRaster document; the

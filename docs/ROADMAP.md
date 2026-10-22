@@ -26,16 +26,13 @@ These future gates are not prerequisites for the scoped single-layer v1. M6 may 
 
 ## Current handoff toward v2
 
-Stable [v1.3.0](plans/0057-release-1.3.0.md) is published. The maintainer requested
-layer editing on one feature branch, with release preparation afterward.
-[Plan 0058](plans/0058-layers.md) defines this bounded M3 outcome: raster layer
-commands, tool integration, the Layers panel and safe OpenRaster projects.
-Recovery, large-document tiling and full M3 platform/interoperability gates remain
-separate. This feature does not change the released version or publish installers.
-
-The next step after local feature acceptance is protected PR review/CI, followed by
-maintainer-directed release validation. Release screenshots, website claims,
-package smoke tests and publication belong to that subsequent release task.
+Stable [v1.3.0](plans/0057-release-1.3.0.md) is published. The maintainer has now
+authorized v2 publication, including the bounded layer feature, Apple silicon
+macOS distribution and refreshed glass screenshots. [Plan 0062](plans/0062-macos-v2-release.md)
+tracks platform validation, protected PR review, package promotion and website
+verification. [Plan 0058](plans/0058-layers.md) records the raster layer and
+OpenRaster implementation. Recovery, tiling and full M3 interoperability remain
+separate; the v2 label does not claim those future gates are complete.
 
 ## Release progression
 

@@ -9,6 +9,7 @@ import re
 import shutil
 import subprocess
 import tarfile
+import tempfile
 
 from package_appimage import digest, fetch, license_files, public_tar_info
 
@@ -39,6 +40,38 @@ def audit_bundle(bundle):
     if not (bundle / 'Contents/PlugIns/platforms/libqcocoa.dylib').is_file():
         raise ValueError('Missing Cocoa platform plugin')
     return records
+
+
+def smoke_fresh_copy(bundle):
+    """Launch the deployed app via Cocoa from a fresh path, without editing artwork."""
+    with tempfile.TemporaryDirectory(prefix='openpaint-package-') as temporary:
+        installed = Path(temporary) / 'OpenPaint.app'
+        shutil.copytree(bundle, installed, symlinks=True)
+        with tempfile.TemporaryFile() as output:
+            process = subprocess.Popen([str(installed / 'Contents/MacOS/OpenPaint')],
+                env=dict(os.environ, QT_QPA_PLATFORM='cocoa', QT_QUICK_BACKEND='rhi',
+                         QSG_RHI_BACKEND='metal'), stdout=output, stderr=output)
+            try:
+                try:
+                    process.wait(timeout=8)
+                except subprocess.TimeoutExpired:
+                    pass
+                else:
+                    raise ValueError('Fresh-copy Cocoa application exited during startup')
+            finally:
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+            output.seek(0)
+            log = output.read().decode(errors='replace')
+            if any(message in log for message in ('failed to load component',
+                    'module is not installed', 'Could not load the Qt platform plugin',
+                    'Failed to create', 'Symbol not found')):
+                raise ValueError('Fresh-copy Cocoa startup reported a runtime failure')
+    print('Fresh-copy Cocoa startup smoke passed; visual appearance requires separate review.')
 
 
 def main():
@@ -77,6 +110,7 @@ def main():
     if actual != 'OpenPaint ' + args.version:
         raise ValueError('Bundle version mismatch: ' + actual)
     files = audit_bundle(bundle)
+    smoke_fresh_copy(bundle)
     (stage / 'Applications').symlink_to('/Applications')
     dmg = public / f'OpenPaint-{args.version}-macos-arm64.dmg'
     subprocess.run(['hdiutil', 'create', '-volname', 'OpenPaint', '-srcfolder', str(stage),
