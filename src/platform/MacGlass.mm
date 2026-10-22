@@ -60,22 +60,17 @@ class MacGlass final : public QObject {
         QScopedValueRollback<bool> updating(updating_, true);
         NSView* content = (__bridge NSView*)(void*)window_->winId();
         NSWindow* nativeWindow = content.window;
-        if (nativeWindow && (!effect_ || effect_.window != nativeWindow)) {
+        NSView* parent = content.superview;
+        if (nativeWindow && parent && (!effect_ || effect_.superview != parent)) {
             [effect_ removeFromSuperview];
-            // Own a content container instead of modifying AppKit's private frame.
-            NSView* container = [[NSView alloc] initWithFrame:content.frame];
-            NSView* retainedContent = content;
-            [retainedContent removeFromSuperview];
-            nativeWindow.contentView = container;
-            retainedContent.frame = container.bounds;
-            retainedContent.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-            effect_ = [[OpenPaintGlassView alloc] initWithFrame:container.bounds];
+            // Preserve Qt's native content view: its Cocoa window management
+            // depends on that identity. Use public NSView ordering behind it.
+            effect_ = [[OpenPaintGlassView alloc] initWithFrame:content.frame];
             effect_.blendingMode = NSVisualEffectBlendingModeBehindWindow;
             effect_.material = NSVisualEffectMaterialUnderWindowBackground;
             effect_.state = NSVisualEffectStateActive;
             effect_.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-            [container addSubview:effect_];
-            [container addSubview:retainedContent];
+            [parent addSubview:effect_ positioned:NSWindowBelow relativeTo:content];
             nativeWindow.opaque = NO;
             nativeWindow.backgroundColor = [NSColor clearColor];
         }

@@ -29,7 +29,7 @@ class MacGlassTest : public QObject {
             ![NSWorkspace sharedWorkspace].accessibilityDisplayShouldReduceTransparency;
         QTRY_COMPARE(available, expected);
         NSView* content = (__bridge NSView*)(void*)window.winId();
-        QVERIFY(content.superview == content.window.contentView);
+        QVERIFY(content == content.window.contentView);
         QVERIFY(content.superview.subviews.count >= 2);
         appearance.setGlassEnabled(false);
         window.resize(700, 500);
@@ -37,6 +37,10 @@ class MacGlassTest : public QObject {
         appearance.setThemeMode(2);
         QTest::qWait(100);
         QCOMPARE(window.property("nativeGlassAvailable").toBool(), expected);
+        window.setTitle("Native lifecycle check");
+        QCOMPARE(QString::fromNSString(content.window.title), QString("Native lifecycle check"));
+        QVERIFY(content == content.window.contentView);
+        QCOMPARE(window.size(), QSize(700, 500));
     }
 };
 QTEST_MAIN(MacGlassTest)

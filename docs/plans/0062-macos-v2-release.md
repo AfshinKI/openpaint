@@ -52,8 +52,9 @@ keyboard save/discard/quit workflow. The affected group now passes (17 cases); a
 
 First hosted Mac runtime evidence: document, layer/OpenRaster, image I/O, clipboard,
 text, canvas, updater and app-info tests passed. The native glass test revealed an
-AppKit frame-hierarchy warning and a Reduce Transparency assumption; use an owned
-content container and assert availability against the actual accessibility state.
+Reduce Transparency assumption and attachment during Qt window setup. Preserve
+Qt’s native content view, attach behind it after exposure, and assert availability
+against the actual accessibility state.
 Several offscreen UI groups timed out. Move Mac UI validation to Cocoa/Metal,
 keep the shared menu strip and make all controls Tab-reachable. Do not waive the
 tests. Rerun the complete lane before package promotion.
@@ -70,4 +71,6 @@ Cocoa executes early UI cases successfully but exceeds the old 30-second grouped
 process budget before later cases run. The Mac lane now registers every existing
 UI behavior separately, each retaining a 30-second limit and all assertions.
 Glass attachment is deferred until after Qt exposes its native window to avoid
-re-entering its initial visibility transition and replacing the new container.
+re-entering its initial visibility transition. The view stays a sibling behind
+Qt’s content view; replacing that content view would interfere with Qt window
+management. Lifecycle checks include native title propagation and resize.
