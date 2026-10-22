@@ -271,7 +271,6 @@ jobs:
       - name: Run editor and Cocoa tests
         run: |
           ctest --preset release
-          QT_QPA_PLATFORM=cocoa QSG_RHI_BACKEND=metal build/release/openpaint_shell_tests interruptedStrokeAndRightPan layersWorkflow keyboardFileWorkflow
       - name: Package and audit macOS disk image
         run: python3 tools/package_macos.py --qt "$CMAKE_PREFIX_PATH" --version "${{ needs.identity.outputs.version }}"
       - name: Retain macOS release candidate

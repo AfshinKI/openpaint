@@ -80,7 +80,7 @@ if(BUILD_TESTING)
         target_link_libraries(openpaint_macglass_tests PRIVATE openpaint_ui Qt6::Test "-framework AppKit")
         set_source_files_properties(tests/unit/tst_macglass.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
         add_test(NAME macos-native-glass COMMAND openpaint_macglass_tests)
-        set_tests_properties(macos-native-glass PROPERTIES TIMEOUT 30 ENVIRONMENT "QT_QPA_PLATFORM=cocoa")
+        set_tests_properties(macos-native-glass PROPERTIES TIMEOUT 30 ENVIRONMENT "QT_QPA_PLATFORM=cocoa;QT_QUICK_BACKEND=rhi;QSG_RHI_BACKEND=metal")
     endif()
     qt_add_executable(openpaint_layers_tests tests/unit/tst_layers.cpp)
     target_link_libraries(openpaint_layers_tests PRIVATE openpaint_ui Qt6::Test LibArchive::LibArchive)
@@ -126,7 +126,22 @@ if(BUILD_TESTING)
         openpaint_ui openpaint_uiplugin Qt6::QuickControls2 Qt6::Test)
     target_compile_options(openpaint_shell_tests PRIVATE -Wall -Wextra -Wpedantic)
     # Keep each bounded shell shard below 30 seconds as coverage grows.
-    add_test(NAME shell COMMAND openpaint_shell_tests
+    # Cocoa's window/animation lifecycle is slower than the offscreen backend.
+    # Keep the same 30-second bound for each behavior instead of timing out
+    # an entire multi-behavior group before its later cases can execute.
+    function(add_shell_tests name)
+        if(APPLE)
+            foreach(behavior IN LISTS ARGN)
+                add_test(NAME "${name}-${behavior}" COMMAND openpaint_shell_tests "${behavior}")
+                set_tests_properties("${name}-${behavior}" PROPERTIES TIMEOUT 30
+                    ENVIRONMENT "QT_QPA_PLATFORM=cocoa;QT_QUICK_BACKEND=rhi;QSG_RHI_BACKEND=metal")
+            endforeach()
+        else()
+            add_test(NAME "${name}" COMMAND openpaint_shell_tests ${ARGN})
+            set_tests_properties("${name}" PROPERTIES TIMEOUT 30)
+        endif()
+    endfunction()
+    add_shell_tests(shell
         launchAndResize
         toolCursorsAndIndicators
         eraserModeMenu
@@ -142,7 +157,7 @@ if(BUILD_TESTING)
         welcomeWorkflow
         glassSetupWorkflow
         updatesWorkflow)
-    add_test(NAME shell-editing COMMAND openpaint_shell_tests
+    add_shell_tests(shell-editing
         layersWorkflow
         invertColorsWorkflow
         coloredRibbonWorkflow
@@ -155,7 +170,7 @@ if(BUILD_TESTING)
         colorSelectionWorkflow
         clipboardMoveWorkflow
         rectangularSelectionWorkflow)
-    add_test(NAME shell-text COMMAND openpaint_shell_tests
+    add_shell_tests(shell-text
         fontPickerWorkflow
         inlineTextWorkflow
         textRangeFormattingWorkflow
@@ -163,7 +178,7 @@ if(BUILD_TESTING)
         transparentBackgroundChoice
         canvasCornerResize
         cornerResizeHandles)
-    add_test(NAME shell-more COMMAND openpaint_shell_tests
+    add_shell_tests(shell-more
         textToolbarOutsideClickCommit
         chordAndPanLifecycle
         unsavedCancelAndSaveClose
@@ -178,25 +193,19 @@ if(BUILD_TESTING)
         glassBackdropRendering
         actualFloatingPanelBlur
         fileMenuBackdropBlur)
-    add_test(NAME shell-controls COMMAND openpaint_shell_tests
+    add_shell_tests(shell-controls
         brushMainActivation
         ribbonShapeKeyboard
         shapeStyleMenus
         shapeOptionsKeyboard
         brushMenuKeyboardAndLayout)
-    add_test(NAME shell-colors COMMAND openpaint_shell_tests
+    add_shell_tests(shell-colors
         fillOptionsLayout
         keyboardControlsAndAccessibility
         customColorEditor
         toolbarSlotAndRoleWorkflow
         renderTiming
         quitClosesWindow)
-    set_tests_properties(shell shell-editing shell-text shell-more shell-controls shell-colors
-        PROPERTIES TIMEOUT 30)
-    if(APPLE)
-        set_tests_properties(shell shell-editing shell-text shell-more shell-controls shell-colors
-            PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=cocoa;QT_QUICK_BACKEND=rhi;QSG_RHI_BACKEND=metal")
-    endif()
     add_test(NAME cli-version COMMAND openpaint --version)
     set_tests_properties(cli-version PROPERTIES
         PASS_REGULAR_EXPRESSION "OpenPaint ${OPENPAINT_VERSION}" TIMEOUT 10)

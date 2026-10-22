@@ -65,3 +65,9 @@ than replaces, the editor save/reopen tests and physical visual-review limit.
 After the menu/focus changes, a fresh complete Linux Release run passes all 20
 CTest groups (87.62 seconds). The Mac test now uses an Objective-C pointer
 comparison compatible with ARC; the application bridge itself compiled cleanly.
+
+Cocoa executes early UI cases successfully but exceeds the old 30-second grouped
+process budget before later cases run. The Mac lane now registers every existing
+UI behavior separately, each retaining a 30-second limit and all assertions.
+Glass attachment is deferred until after Qt exposes its native window to avoid
+re-entering its initial visibility transition and replacing the new container.

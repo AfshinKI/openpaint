@@ -2,9 +2,11 @@
 #include "MacGlass.h"
 #include "Appearance.h"
 #import <AppKit/AppKit.h>
+#include <QEvent>
 #include <QGuiApplication>
 #include <QPointer>
 #include <QQuickWindow>
+#include <QScopedValueRollback>
 #include <QTimer>
 
 // This view never intercepts drawing, menu or window-control input.
@@ -25,7 +27,8 @@ class MacGlass final : public QObject {
         connect(appearance, &Appearance::changed, this, [this] { update(); });
         connect(window, &QWindow::widthChanged, this, [this] { update(); });
         connect(window, &QWindow::heightChanged, this, [this] { update(); });
-        connect(window, &QWindow::visibleChanged, this, [this] { update(); });
+        connect(window, &QWindow::visibleChanged, this, [this] { scheduleUpdate(); });
+        window->installEventFilter(this);
         // Observe accessibility changes on the main thread without touching user settings.
         observer_ = [[NSWorkspace sharedWorkspace].notificationCenter
             addObserverForName:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
@@ -34,7 +37,7 @@ class MacGlass final : public QObject {
                     usingBlock:^(NSNotification*) {
                       update();
                     }];
-        QTimer::singleShot(0, this, [this] { update(); });
+        scheduleUpdate();
     }
     ~MacGlass() override {
         [[NSWorkspace sharedWorkspace].notificationCenter removeObserver:observer_];
@@ -42,12 +45,23 @@ class MacGlass final : public QObject {
     }
 
   private:
+    bool eventFilter(QObject* watched, QEvent* event) override {
+        if (watched == window_ && event->type() == QEvent::Expose)
+            scheduleUpdate();
+        return QObject::eventFilter(watched, event);
+    }
+    void scheduleUpdate() {
+        QTimer::singleShot(0, this, [this] { update(); });
+    }
     void update() {
-        if (!window_ || !appearance_)
+        // Wait until Qt finishes installing/showing its native content view.
+        if (updating_ || !window_ || !appearance_ || !window_->isExposed())
             return;
+        QScopedValueRollback<bool> updating(updating_, true);
         NSView* content = (__bridge NSView*)(void*)window_->winId();
         NSWindow* nativeWindow = content.window;
-        if (nativeWindow && !effect_) {
+        if (nativeWindow && (!effect_ || effect_.window != nativeWindow)) {
+            [effect_ removeFromSuperview];
             // Own a content container instead of modifying AppKit's private frame.
             NSView* container = [[NSView alloc] initWithFrame:content.frame];
             NSView* retainedContent = content;
@@ -65,8 +79,10 @@ class MacGlass final : public QObject {
             nativeWindow.opaque = NO;
             nativeWindow.backgroundColor = [NSColor clearColor];
         }
+        const bool attached =
+            effect_ && effect_.window == nativeWindow && effect_.superview == content.superview;
         const bool available =
-            effect_ && ![NSWorkspace sharedWorkspace].accessibilityDisplayShouldReduceTransparency;
+            attached && ![NSWorkspace sharedWorkspace].accessibilityDisplayShouldReduceTransparency;
         if (effect_) {
             effect_.frame = content.frame;
             effect_.hidden =
@@ -77,7 +93,7 @@ class MacGlass final : public QObject {
                                      ? [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua]
                                      : nil;
         }
-        window_->setProperty("nativeGlassAttached", effect_ != nil);
+        window_->setProperty("nativeGlassAttached", attached);
         window_->setProperty("nativeGlassAvailable", available);
         if (!reported_ || available != available_) {
             reported_ = true;
@@ -90,7 +106,7 @@ class MacGlass final : public QObject {
     std::function<void(bool)> changed_;
     OpenPaintGlassView* __strong effect_ = nil;
     id __strong observer_ = nil;
-    bool available_ = false, reported_ = false;
+    bool available_ = false, reported_ = false, updating_ = false;
 };
 } // namespace
 
