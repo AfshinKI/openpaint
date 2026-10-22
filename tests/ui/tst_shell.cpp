@@ -2497,7 +2497,7 @@ class ShellTest : public QObject {
         component.setData(R"(
             import QtQuick
             Item {
-                anchors.fill: parent; z: 100; opacity: 0.6
+                anchors.fill: parent; z: 100
                 Repeater {
                     model: 20
                     Rectangle {
@@ -2546,7 +2546,8 @@ class ShellTest : public QObject {
         QTest::qWait(200);
         const auto plain = window->grabWindow();
         QVERIFY(capture(dark ? "file-menu-dark-plain.png" : "file-menu-light-plain.png"));
-        QVERIFY(contrast(plain) > 50);
+        // Opaque fixture stripes keep the baseline above 50 even after the menu tint.
+        QVERIFY2(contrast(plain) > 50, qPrintable(QString::number(contrast(plain))));
         if (!software)
             QVERIFY2(contrast(blurred) < contrast(plain) / 3,
                      "File menu must blur the toolbar behind it");

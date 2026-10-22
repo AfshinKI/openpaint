@@ -132,7 +132,7 @@ if(BUILD_TESTING)
     function(add_shell_tests name)
         if(APPLE)
             foreach(behavior IN LISTS ARGN)
-                add_test(NAME "${name}-${behavior}" COMMAND openpaint_shell_tests "${behavior}")
+                add_test(NAME "${name}-${behavior}" COMMAND openpaint_shell_tests "${behavior}" -v2)
                 set_tests_properties("${name}-${behavior}" PROPERTIES TIMEOUT 30
                     ENVIRONMENT "QT_QPA_PLATFORM=cocoa;QT_QUICK_BACKEND=rhi;QSG_RHI_BACKEND=metal")
             endforeach()

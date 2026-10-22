@@ -47,8 +47,8 @@ prerelease enrollment is explicit. Downgrades are never automatic.
 A release contains versioned architecture-specific binaries, SHA-256 checksums,
 matching source/build recipes, third-party notices, a software bill of materials,
 release notes, supported systems, installation instructions, and known limitations.
-Current downloads are unsigned; checksums detect corruption but do not authenticate
-a release. Repository signing and signed update metadata remain future M5 work.
+Linux downloads are unsigned and the macOS bundle uses an ad-hoc signature;
+checksums detect corruption but do not authenticate a release. Repository signing and signed update metadata remain future M5 work.
 
 Binary paths/debug metadata must not include a developer's home directory; build in
 controlled paths and use compiler prefix mapping as appropriate. Do not ship local
@@ -184,11 +184,13 @@ CMake version (for example `1.0.0`) in `release_version`. Blank means validation
 only. Tags and release titles are exactly `v<version>`; stable builds have no suffix.
 PR/push builds share a `dev.<run number>` suffix across all formats and never publish.
 
-The release job waits for repository checks, all three native builds, portable,
-DEB, Flatpak and clean Ubuntu install/upgrade/remove tests. It downloads artifacts
+The release job waits for repository checks, all three Linux native builds,
+portable, DEB, Flatpak, macOS bundle/native tests and clean Ubuntu
+install/upgrade/remove tests. It downloads artifacts
 from that same run, verifies their checksums and source identities, then combines
-format-specific sources/notices/inventories into one compliance archive. The five
-public assets are DEB, Flatpak, portable tar.gz, sources-and-notices.tar and SHA256SUMS.
+format-specific sources/notices/inventories into one compliance archive. The six
+public assets are DEB, Flatpak, portable tar.gz, macOS DMG,
+sources-and-notices.tar and SHA256SUMS.
 
 The job uploads to a draft first and then publishes it as stable/latest. A failed
 upload leaves a draft; rerun the same source commit to resume. Existing published

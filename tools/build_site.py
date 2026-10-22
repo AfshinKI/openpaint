@@ -16,7 +16,7 @@ for name in ("index.html", "style.css"):
     shutil.copyfile(ROOT / "website" / name, OUT / name)
 assets = OUT / "assets"
 assets.mkdir(exist_ok=True)
-for name in ("app", "brush", "palette", "crop", "text", "selection", "undo"):
+for name in ("app", "brush", "palette", "crop", "text", "selection", "undo", "layers"):
     shutil.copyfile(ROOT / "qml" / "icons" / f"{name}.svg", assets / f"{name}.svg")
 for name in release["screenshots"]:
     shutil.copyfile(ROOT / "docs" / "assets" / name, assets / name)
