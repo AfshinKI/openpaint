@@ -16,6 +16,27 @@ from package_appimage import digest, fetch, license_files, public_tar_info
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def stage_plugins(qt, bundle):
+    """Select GUI/image/network plugins without unused external database clients."""
+    selected = [qt / 'plugins/platforms/libqcocoa.dylib']
+    for kind in ('imageformats', 'iconengines', 'styles', 'printsupport',
+                 'tls', 'networkinformation', 'platforminputcontexts'):
+        selected.extend(sorted((qt / 'plugins' / kind).glob('*.dylib')))
+    # macdeployqt also copies QtQuick.LocalStorage; retain its self-contained driver.
+    sqlite = qt / 'plugins/sqldrivers/libqsqlite.dylib'
+    if sqlite.is_file():
+        selected.append(sqlite)
+    deployed = []
+    for source in selected:
+        if source.name.endswith('_debug.dylib'):
+            continue
+        target = bundle / 'Contents/PlugIns' / source.relative_to(qt / 'plugins')
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        deployed.append(target)
+    return deployed
+
+
 def audit_bundle(bundle):
     records = []
     for path in sorted(bundle.rglob('*')):
@@ -50,7 +71,9 @@ def smoke_fresh_copy(bundle):
         with tempfile.TemporaryFile() as output:
             process = subprocess.Popen([str(installed / 'Contents/MacOS/OpenPaint')],
                 env=dict(os.environ, QT_QPA_PLATFORM='cocoa', QT_QUICK_BACKEND='rhi',
-                         QSG_RHI_BACKEND='metal'), stdout=output, stderr=output)
+                         QSG_RHI_BACKEND='metal',
+                         XDG_CONFIG_HOME=str(Path(temporary) / 'settings')),
+                stdout=output, stderr=output)
             try:
                 try:
                     process.wait(timeout=8)
@@ -93,8 +116,11 @@ def main():
     stage.mkdir()
     bundle = stage / 'OpenPaint.app'
     shutil.copytree(args.build / 'OpenPaint.app', bundle, symlinks=True)
+    plugins = stage_plugins(args.qt, bundle)
+    print('Deploying GUI, image and network plugins with Qt/QML dependencies.', flush=True)
     subprocess.run([str(args.qt / 'bin/macdeployqt'), str(bundle),
-                    '-qmldir=' + str(ROOT / 'qml'), '-always-overwrite', '-verbose=1'], check=True)
+                    '-qmldir=' + str(ROOT / 'qml'), '-always-overwrite', '-no-plugins',
+                    '-verbose=1', *['-executable=' + str(p) for p in plugins]], check=True)
     iconset = work / 'OpenPaint.iconset'
     subprocess.run([str(args.build / 'openpaint_icon_tool'), str(ROOT / 'qml/icons/app.svg'),
                     str(iconset)], env=dict(os.environ, QT_QPA_PLATFORM='offscreen'), check=True)
@@ -106,7 +132,7 @@ def main():
     subprocess.run(['codesign', '--force', '--deep', '--sign', '-', str(bundle)], check=True)
     subprocess.run(['codesign', '--verify', '--deep', '--strict', str(bundle)], check=True)
     actual = subprocess.check_output([str(bundle / 'Contents/MacOS/OpenPaint'), '--version'],
-                                     env=dict(os.environ, QT_QPA_PLATFORM='offscreen'), text=True).strip()
+                                     env=dict(os.environ, QT_QPA_PLATFORM='cocoa'), text=True).strip()
     if actual != 'OpenPaint ' + args.version:
         raise ValueError('Bundle version mismatch: ' + actual)
     files = audit_bundle(bundle)

@@ -13,6 +13,23 @@ spec.loader.exec_module(package)
 
 
 class MacPackageTests(unittest.TestCase):
+    def test_only_self_contained_plugin_types_are_staged(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            qt, bundle = root / 'qt', root / 'OpenPaint.app'
+            included = ['platforms/libqcocoa.dylib', 'imageformats/libqwebp.dylib',
+                        'tls/libqsecuretransportbackend.dylib', 'sqldrivers/libqsqlite.dylib']
+            excluded = ['platforms/libqoffscreen.dylib', 'imageformats/libqwebp_debug.dylib',
+                        'sqldrivers/libqsqlpsql.dylib', 'sqldrivers/libqsqlmimer.dylib']
+            for name in included + excluded:
+                path = qt / 'plugins' / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b'generated plugin fixture')
+            deployed = package.stage_plugins(qt, bundle)
+            self.assertEqual({str(p.relative_to(bundle / 'Contents/PlugIns')) for p in deployed},
+                             set(included))
+            self.assertTrue(all((qt / 'plugins' / name).is_file() for name in excluded))
+
     def test_required_plugin_and_private_paths(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
