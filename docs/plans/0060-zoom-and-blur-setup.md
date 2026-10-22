@@ -82,3 +82,20 @@ Build, formatting, zero-warning QML lint and repository checks pass. All 35 Pyth
 tooling tests, 8 blur unit cases and 3 focused glass UI cases pass (C++ counts
 include initialization/cleanup). Backup-upgrade tests preserve prior originals
 while recording the newly changed mode. No claim of visual flicker resolution.
+
+## Final live-blur recipe
+
+Supersedes the wallpaper follow-up above. The maintainer reported wallpaper blur
+stopped flicker but obscured windows behind the app, approved a backed-up trial of
+static-blur=false and hacks-level=2, then confirmed it worked and requested this
+configuration in Enable Glass.
+
+Acceptance: the copied block selects live blur and no-artifact redraws, backs up
+both settings (preserving originals across repeated runs and older backups), and
+discloses the possible desktop-wide GPU/performance cost before copying. The app
+still only copies code and probes configuration; it does not run setup.
+Validation: build, formatting, zero-warning QML lint, repository/diff checks,
+36 Python tooling tests, 8 blur unit cases and 3 focused glass UI cases pass.
+Tests cover selecting live/no-artifact settings, preserving original backups on
+repeat runs, and aborting unknown redraw modes before mutations. Local visual
+success is user-reported; other GPUs unverified. Next: review on existing PR #56.

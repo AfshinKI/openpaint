@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Run manually in a terminal. OpenPaint only displays/copies this script.
+# Uses full desktop redraws for live blur; GPU use/performance may be affected.
 import ast
 import fnmatch
 import hashlib
@@ -12,7 +13,8 @@ import tempfile
 import urllib.request
 
 UUID = "blur-my-shell@aunetx"
-SCHEMA = "org.gnome.shell.extensions.blur-my-shell.applications"
+ROOT_SCHEMA = "org.gnome.shell.extensions.blur-my-shell"
+SCHEMA = ROOT_SCHEMA + ".applications"
 URL = "https://extensions.gnome.org/download-extension/blur-my-shell%40aunetx.shell-extension.zip?version_tag=76770"
 SHA256 = "0dfde0d3575b4c7e32647e94010fa37f15ac933f4fe61c46bfe200e772114d85"
 
@@ -65,6 +67,9 @@ def configure(directory):
     prefix = ("gsettings", "--schemadir", str(directory))
     values = {key: run(*prefix, "get", SCHEMA, key)
               for key in ("blur", "enable-all", "whitelist", "blacklist", "opacity", "dynamic-opacity", "static-blur")}
+    redraw = run(*prefix, "get", ROOT_SCHEMA, "hacks-level")
+    if redraw not in ("0", "1", "2"):
+        raise RuntimeError("Unrecognized compositor redraw mode; no settings were changed.")
     enabled = array(run("gsettings", "get", "org.gnome.shell", "enabled-extensions"))
     disabled = array(run("gsettings", "get", "org.gnome.shell", "disabled-extensions"))
     disabled_all = run("gsettings", "get", "org.gnome.shell", "disable-user-extensions")
@@ -77,6 +82,7 @@ def configure(directory):
     original = saved.setdefault("applications", {})
     for key, value in values.items():
         original.setdefault(key, value)
+    saved.setdefault("hacks-level", redraw)
     saved.setdefault("enabled-extensions", enabled)
     saved.setdefault("disabled-extensions", disabled)
     saved.setdefault("disable-user-extensions", disabled_all)
@@ -95,9 +101,11 @@ def configure(directory):
         run(*prefix, "set", SCHEMA, "blacklist", json.dumps(blacklist))
     elif "OpenPaint" not in whitelist:
         run(*prefix, "set", SCHEMA, "whitelist", json.dumps(whitelist + ["OpenPaint"]))
-    # Wallpaper blur avoids the live-window partial-redraw path.
+    # Live blur with full redraws avoids clipped-redraw artifacts. This affects
+    # the whole compositor and can increase GPU use; disclosed before copying.
+    run(*prefix, "set", ROOT_SCHEMA, "hacks-level", "2")
     # OpenPaint controls its own surface opacity; keep its text/artwork opaque.
-    for key, value in (("blur", "true"), ("opacity", "255"), ("dynamic-opacity", "false"), ("static-blur", "true")):
+    for key, value in (("blur", "true"), ("opacity", "255"), ("dynamic-opacity", "false"), ("static-blur", "false")):
         run(*prefix, "set", SCHEMA, key, value)
     if UUID not in enabled:
         enabled.append(UUID)
@@ -108,6 +116,7 @@ def configure(directory):
     active = run("gnome-extensions", "list", "--active", check=False) or ""
     print("Setup complete. Return to OpenPaint and click Check again." if UUID in active.splitlines()
           else "Setup saved. Save your work, sign out and back in, then open OpenPaint and click Check again.")
+    print("Live blur uses full desktop redraws and may increase GPU use or reduce desktop performance.")
     print("Previous settings were saved in the OpenPaint state folder. No restart or sign-out was forced.")
 
 

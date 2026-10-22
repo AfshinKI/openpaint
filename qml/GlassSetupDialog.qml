@@ -121,7 +121,7 @@ PaintDialog {
             }
             Label {
                 objectName: "blurSetupInstructions"
-                text: BlurSupport.ready ? qsTr("Glass is available. If it flickers, copy and run setup to use wallpaper-based blur instead of live windows behind OpenPaint.") : BlurSupport.instructions.length ? BlurSupport.instructions : qsTr("Desktop blur is not verified for this session. OpenPaint currently checks Ubuntu 24.04 with GNOME 46 on X11. Installing Extension Manager alone does not enable blur.")
+                text: BlurSupport.ready ? qsTr("Glass is available. Copy and run setup to use live blur with full desktop redraws to prevent flicker. This can increase GPU use or reduce desktop performance. Previous settings are backed up.") : BlurSupport.instructions.length ? BlurSupport.instructions : qsTr("Desktop blur is not verified for this session. OpenPaint currently checks Ubuntu 24.04 with GNOME 46 on X11. Installing Extension Manager alone does not enable blur.")
                 color: Theme.text
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap

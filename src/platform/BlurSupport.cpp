@@ -155,7 +155,8 @@ BlurSupport::Result BlurSupport::evaluate(const QString& desktop, const QString&
             result.instructions =
                 tr("Copy setup and paste it into a terminal. It downloads Blur My Shell "
                    "from GNOME Extensions only if missing, enables it and configures "
-                   "wallpaper-based application blur, instead of live windows behind OpenPaint. "
+                   "live application blur with full desktop redraws to prevent flicker. "
+                   "This can increase GPU use or reduce desktop performance. "
                    "No sudo or Extension Manager is needed. "
                    "Then click Check again; if the terminal asks, sign out and back in first.");
         }

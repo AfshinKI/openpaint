@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Use wallpaper blur in the manual glass setup recipe and keep setup accessible
+- Use live blur with full desktop redraws in the manual glass setup recipe and keep setup accessible
   for repairing flicker on an already-enabled desktop.
 
 - Restore the prior Image icons, add a footer zoom slider, and simplify blur setup

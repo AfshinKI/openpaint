@@ -424,7 +424,8 @@ an Enable Glass button beneath it. Saved glass intent is retained. Setup compare
 rounded real app corners, shows a small selectable command with a copy icon when
 applicable, and provides Check again and Close. Use Glass appears when ready.
 Appearance retains a Glass setup button when ready; Copy setup remains available
-to repair flickering by selecting wallpaper-based blur.
+to repair flickering with live blur and full desktop redraws. Setup explains the
+possible desktop-wide GPU/performance cost and backs up the original settings.
 Unverified systems keep the opaque appearance without a guessed command or
 package warning. No setup panel opens automatically.
 

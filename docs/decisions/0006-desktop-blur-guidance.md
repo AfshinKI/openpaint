@@ -56,7 +56,10 @@ The state service is tested with injected read-only command results and isolated
 settings. UI tests inject capability results rather than invoking host tools.
 See [implementation plan](../plans/0054-blur-onboarding-design.md).
 
-The setup recipe now selects static wallpaper blur, avoiding the live-window
-partial-redraw path implicated in the reported flicker. It leaves global compositor
-redraw settings unchanged. This is a mitigation, not proof of flicker-free rendering
-on every GPU. Existing readiness still accepts either compositor blur mode.
+The final setup recipe selects live application blur with full desktop redraws
+(Blur My Shell no-artifact mode). The wallpaper-only trial stopped flicker but
+obscured windows behind OpenPaint; the maintainer explicitly approved the global
+redraw trial and confirmed that it worked, then requested this recipe in setup.
+The copy panel discloses the desktop-wide GPU/performance tradeoff. Original
+application and redraw settings are backed up before mutation. Actual performance
+on other GPUs is unverified; readiness still accepts either compositor blur mode.

@@ -50,7 +50,7 @@ class BlurSetupTest(unittest.TestCase):
                             "opacity": "215", "dynamic-opacity": "true", "static-blur": "false",
                             "enabled-extensions": "['other@example']",
                             "disabled-extensions": "['blur-my-shell@aunetx', 'disabled@example']",
-                            "disable-user-extensions": "true"}
+                            "disable-user-extensions": "true", "hacks-level": "1"}
                 def run(*args, **kwargs):
                     calls.append(args)
                     if "get" in args:
@@ -63,12 +63,17 @@ class BlurSetupTest(unittest.TestCase):
                 backup.write_text(json.dumps({"applications": {"blur": "false", "opacity": "200"}}))
                 with patch.dict(os.environ, {"XDG_STATE_HOME": directory}), patch.object(setup, "run", side_effect=run):
                     setup.configure(Path("/synthetic/schemas"))
+                    settings["hacks-level"] = "2"
+                    settings["static-blur"] = "true"
+                    setup.configure(Path("/synthetic/schemas"))
                 saved = json.loads((Path(directory) / "openpaint/blur-setup-backup.json").read_text())
                 self.assertEqual(saved["applications"]["blur"], "false")
                 self.assertEqual(saved["applications"]["static-blur"], "false")
                 self.assertEqual(saved["applications"]["opacity"], "200")
                 writes = {args[-2]: args[-1] for args in calls if "set" in args}
-                self.assertEqual(writes["static-blur"], "true")
+                self.assertEqual(writes["static-blur"], "false")
+                self.assertEqual(writes["hacks-level"], "2")
+                self.assertEqual(saved["hacks-level"], "1")
                 self.assertEqual(writes["dynamic-opacity"], "false")
                 self.assertEqual(writes["opacity"], "255")
                 self.assertIn("other@example", writes["enabled-extensions"])
@@ -77,6 +82,14 @@ class BlurSetupTest(unittest.TestCase):
                     self.assertEqual(json.loads(writes["blacklist"]), ["OtherApp"])
                 else:
                     self.assertEqual(json.loads(writes["whitelist"]), ["OtherApp", "OpenPaint"])
+
+    def test_unknown_redraw_mode_never_changes_settings(self):
+        def run(*args, **kwargs):
+            return "unknown" if args[-1] == "hacks-level" else "false"
+        with patch.object(setup, "run", side_effect=run) as mocked:
+            with self.assertRaisesRegex(RuntimeError, "no settings were changed"):
+                setup.configure(Path("/synthetic/schemas"))
+            self.assertTrue(all("set" not in call.args for call in mocked.call_args_list))
 
     def test_existing_extension_is_not_reinstalled(self):
         with patch.object(setup.os, "geteuid", return_value=1000), \
