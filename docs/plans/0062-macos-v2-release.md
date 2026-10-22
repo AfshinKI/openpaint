@@ -34,7 +34,7 @@ bundle dependencies and record source/inventory/checksums. The first package use
 ## Validation and progress
 
 Local Release build, formatting and zero-warning QML lint pass. All 20 CTest
-suites passed (87.62 seconds), as did 40 Python tooling tests and repository/site
+suites passed (87.62 seconds), as did 41 Python tooling tests and repository/site
 checks. The affected blur and keyboard tests also passed on isolated X11/OpenGL
 (6 QtTest cases, 19.91 seconds) after strengthening the stripe fixture.
 
@@ -72,6 +72,14 @@ recipe now selects GUI/image/network plugins plus self-contained SQLite, deploys
 their frameworks with macdeployqt, and checks the actual Cocoa bundle. A tooling
 test verifies that external SQL drivers/debug/offscreen plugins are excluded
 without modifying the Qt SDK. Fresh-copy startup uses isolated preferences.
+Run [260](https://github.com/AfshinKI/openpaint/actions/runs/39710270558) again
+passes all 74 native checks and every Linux gate. Bundle signing and the Cocoa
+version check pass. Its audit exposed repeated `otool` architecture headings on
+universal Qt frameworks; the parser now distinguishes headings from dependency
+rows, covered by a regression fixture. External dependencies remain rejected.
+The 29-second keyboard accessibility case is separated into tool and control
+behaviors, preserving all assertions and the 30-second deadline for each; the
+Mac suite now contains 75 tests.
 
 The configured physical Mac is unreachable. Hosted native automation supplies
 build/input/render evidence; physical Mac visual review and Gatekeeper/notarized

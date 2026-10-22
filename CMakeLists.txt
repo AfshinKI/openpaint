@@ -201,6 +201,7 @@ if(BUILD_TESTING)
         brushMenuKeyboardAndLayout)
     add_shell_tests(shell-colors
         fillOptionsLayout
+        keyboardToolsAndAccessibility
         keyboardControlsAndAccessibility
         customColorEditor
         toolbarSlotAndRoleWorkflow

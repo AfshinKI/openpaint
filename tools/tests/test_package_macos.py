@@ -43,6 +43,19 @@ class MacPackageTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Build path leaked"):
                 package.audit_bundle(root)
 
+    def test_universal_architecture_headings_are_not_dependencies(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            binary = root / 'Contents/PlugIns/platforms/libqcocoa.dylib'
+            binary.parent.mkdir(parents=True)
+            binary.write_bytes(bytes.fromhex('cafebabe') + b'generated universal binary')
+            output = ''.join(f'{binary} (architecture {arch}):\n'
+                             '\t@rpath/QtCore.framework/Versions/A/QtCore (compatibility version 6.0.0)\n'
+                             '\t/usr/lib/libSystem.B.dylib (compatibility version 1.0.0)\n'
+                             for arch in ('arm64', 'x86_64'))
+            with patch.object(subprocess, 'check_output', return_value=output):
+                self.assertEqual(len(package.audit_bundle(root)), 1)
+
     def test_external_dependency_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

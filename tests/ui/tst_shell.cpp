@@ -2848,7 +2848,7 @@ class ShellTest : public QObject {
             Q_ARG(QObject*, nullptr)));
         QVERIFY(capture(QStringLiteral("fill-dark-1024.png")));
     }
-    void keyboardControlsAndAccessibility() {
+    void keyboardToolsAndAccessibility() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         QVERIFY(tabTo("pencilButton"));
         auto* focused = window->activeFocusItem();
@@ -2868,6 +2868,10 @@ class ShellTest : public QObject {
         QVERIFY(accessible->state().checked);
         keyClick(Qt::Key_Space);
         QVERIFY(accessible->state().checked);
+    }
+
+    void keyboardControlsAndAccessibility() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         QVERIFY(tabTo("pencilButton"));
         keyClick(Qt::Key_Space);
         QVERIFY(tabTo("strokeSize"));
@@ -2887,7 +2891,7 @@ class ShellTest : public QObject {
         keyClick(Qt::Key_Escape);
         QTRY_VERIFY(!colors->property("visible").toBool());
         auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));
-        accessible = QAccessible::queryAccessibleInterface(canvas);
+        auto* accessible = QAccessible::queryAccessibleInterface(canvas);
         QVERIFY(accessible);
         QCOMPARE(accessible->text(QAccessible::Name), QString("Drawing canvas"));
         QCOMPARE(accessible->role(), QAccessible::Canvas);

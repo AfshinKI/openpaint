@@ -52,11 +52,15 @@ def audit_bundle(bundle):
         if data[:4] in (b'\xcf\xfa\xed\xfe', b'\xce\xfa\xed\xfe', b'\xca\xfe\xba\xbe',
                          b'\xbe\xba\xfe\xca', b'\xfe\xed\xfa\xcf'):
             output = subprocess.check_output(['otool', '-L', str(path)], text=True)
-            for line in output.splitlines()[1:]:
+            for line in output.splitlines():
+                # Universal binaries repeat unindented per-architecture file headings.
+                if not line or not line[0].isspace():
+                    continue
                 dependency = line.strip().split(' (')[0]
                 if not dependency.startswith(('@rpath/', '@loader_path/', '@executable_path/',
                                                '/System/Library/', '/usr/lib/')):
-                    raise ValueError('External runtime dependency: ' + dependency)
+                    raise ValueError('External runtime dependency in ' + str(path.relative_to(bundle))
+                                     + ': ' + dependency)
         records.append({'path': str(path.relative_to(bundle)), 'bytes': len(data), 'sha256': digest(path)})
     if not (bundle / 'Contents/PlugIns/platforms/libqcocoa.dylib').is_file():
         raise ValueError('Missing Cocoa platform plugin')
