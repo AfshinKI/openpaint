@@ -264,7 +264,8 @@ jobs:
           echo "CMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/build/qt/6.12.0/macos" >> "$GITHUB_ENV"
       - name: Build macOS application
         run: |
-          cmake --preset release -DOPENPAINT_INSTALL_KIND=macos -DOPENPAINT_VERSION_SUFFIX="$VERSION_SUFFIX" -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.4 -DLibArchive_INCLUDE_DIR="$(xcrun --show-sdk-path)/usr/include" -DLibArchive_LIBRARY="$(xcrun --show-sdk-path)/usr/lib/libarchive.tbd"
+          brew install libarchive
+          cmake --preset release -DOPENPAINT_INSTALL_KIND=macos -DOPENPAINT_VERSION_SUFFIX="$VERSION_SUFFIX" -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.4 -DLibArchive_INCLUDE_DIR="$(brew --prefix libarchive)/include" -DLibArchive_LIBRARY="$(xcrun --show-sdk-path)/usr/lib/libarchive.tbd"
           cmake --build --preset release --parallel 3
           cmake --build --preset release --target format-check qml-lint
       - name: Run editor and Cocoa tests
