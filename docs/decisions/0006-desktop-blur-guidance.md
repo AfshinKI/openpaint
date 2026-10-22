@@ -19,12 +19,18 @@ never enables transparency. Known app identifiers must be whitelisted, or all
 applications enabled, using the extension’s inclusion/exclusion mode and application patterns. This is configuration evidence,
 not a guarantee about every compositor frame. Other environments stay opaque.
 
-A locally available Extension Manager package candidate permits installation
-instructions. An installed extension permits enable/preferences instructions.
-Each read-only subprocess has a deadline and output limit, uses explicit argv,
-and runs off the GUI thread. No setup command is executed by OpenPaint. No remote
-package query, host sandbox escape, privileged process or desktop screenshot is
-used. Flatpak and Snap skip the probe. Probe results are not persisted or logged.
+The supported session receives one copyable Python setup block. OpenPaint never
+executes it. Explicitly running the block in a terminal downloads a missing,
+checksum-pinned Blur My Shell archive from GNOME Extensions, installs it for the
+current user, backs up touched settings and configures/enables application blur.
+It requires no sudo, does not replace existing extensions, and never forces logout.
+This replaces the earlier multi-step Extension Manager recipe at the maintainer's
+request. See [plan 0060](../plans/0060-zoom-and-blur-setup.md) for the pinned source,
+settings affected and validation limits.
+
+Each app probe is read-only, has a deadline/output limit, uses explicit argv and
+runs off the GUI thread. The app makes no setup network calls or host sandbox
+escape; Flatpak and Snap skip the probe. Results are not persisted or logged.
 
 Appearance retains its saved glass/opacity preferences separately from effective
 glass rendering. The latter requires current blur evidence, so fallback does not
@@ -42,10 +48,18 @@ the privacy model. None of these is used.
 
 KDE, Wayland, unknown versions, unavailable packages and failed probes currently
 use opaque surfaces with no warning. The on-demand setup panel stays accessible
-but hides the command when no recipe exists. Additional recipes need separate desktop
-validation. Setup instructions include extension configuration, not just package
-installation. Installing a package remains a user action outside OpenPaint.
+but hides the command when no recipe exists and explains the verified scope. Additional recipes need separate desktop
+validation. Setup is an explicit user action outside OpenPaint. The copied block changes
+user-level GNOME settings and contacts GNOME only when the extension is missing.
 
 The state service is tested with injected read-only command results and isolated
 settings. UI tests inject capability results rather than invoking host tools.
 See [implementation plan](../plans/0054-blur-onboarding-design.md).
+
+The final setup recipe selects live application blur with full desktop redraws
+(Blur My Shell no-artifact mode). The wallpaper-only trial stopped flicker but
+obscured windows behind OpenPaint; the maintainer explicitly approved the global
+redraw trial and confirmed that it worked, then requested this recipe in setup.
+The copy panel discloses the desktop-wide GPU/performance tradeoff. Original
+application and redraw settings are backed up before mutation. Actual performance
+on other GPUs is unverified; readiness still accepts either compositor blur mode.

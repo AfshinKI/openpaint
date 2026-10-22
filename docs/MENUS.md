@@ -98,7 +98,10 @@ selected row. Invert/Delete may be disabled when no suitable selection exists.
 Transparent selection must expose its on/off state when implemented; its pixel
 and background-color rules need explicit tests.
 
-The Image group uses two rows: Crop and Rotate above Resize/Skew and Flip.
+The Image group uses two rows: Crop and Rotate above Resize/Skew and Flip,
+with an Invert colors contrast icon alongside both rows. Invert colors edits only
+the active visible layer, clipped to the selection when present, preserving alpha.
+It is one undoable command and is disabled during active edits and workers.
 Rotate and Flip each have a direct default action and an adjacent dropdown.
 Rotation offers right 90°, left 90° and 180°; Flip offers horizontal and vertical. Plan Crop, Rotate, Flip, Resize/Skew
 and background removal against their existing feature IDs. Unlabeled glyphs do
@@ -245,7 +248,7 @@ Selecting Text shows a non-modal toolbar immediately below the ribbon: font,
 size, bold/italic/underline/strikeout, alignment and opaque background. Formatting
 controls do not commit the active text box. Clicking the canvas/workspace outside
 the box applies it as one undoable raster edit and consumes that click, without
-starting another text box. Clicking inside keeps editing; middle-button/Space pan
+starting another text box. Clicking inside keeps editing; right-button/middle-button/Space pan
 does not commit. Escape cancels and Ctrl+Enter remains a keyboard commit shortcut.
 The text Apply/Options footer buttons are removed; other tools retain theirs.
 
@@ -382,7 +385,7 @@ selected color swatches use a bright outer ring without recoloring the swatch.
 The font picker retains its searchable per-family previews.
 
 Pencil, brush, eraser and eyedropper cursors identify the active tool over the canvas,
-with white contrast edges and tip-aligned hotspots. Space/middle-button panning
+with white contrast edges and tip-aligned hotspots. Right-button/Space/middle-button panning
 uses a hand and restores the tool cursor afterward. Shape controls show a solid
 filled drop when solid fill is active, and a small × on the outline icon when
 outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).
@@ -420,6 +423,9 @@ While requirements are unmet, the glass checkbox is unchecked and disabled, with
 an Enable Glass button beneath it. Saved glass intent is retained. Setup compares
 rounded real app corners, shows a small selectable command with a copy icon when
 applicable, and provides Check again and Close. Use Glass appears when ready.
+Appearance retains a Glass setup button when ready; Copy setup remains available
+to repair flickering with live blur and full desktop redraws. Setup explains the
+possible desktop-wide GPU/performance cost and backs up the original settings.
 Unverified systems keep the opaque appearance without a guessed command or
 package warning. No setup panel opens automatically.
 
@@ -448,3 +454,42 @@ Alignment, text color and opaque background remain box-wide. Local text undo/red
 includes formatting; committing rasterizes all runs into one document edit.
 
 The color editor OK/Cancel footer shares the dialog glass surface without a separate opaque panel.
+
+## Development layered documents
+
+Layers is available at the end of the ribbon and in View. Opening it for the first
+time on a flat document adds a transparent layer, undoably. A narrow thumbnail rail
+shows ordinary layers above a divider and a fixed Background tile. Hover/focus
+reveals each tile's top-right eye; a cross indicates hidden content. Drag ordinary tiles to
+reorder without moving the background. There are no persistent text action buttons
+or property fields in the rail. A circular + button in the header adds a layer.
+The larger ribbon button has its own separator; the rail follows glass settings with rounded corners and an inset matching the toolbar.
+
+Right-click a tile or blank rail for icon-labelled New layer, Show/Hide, Duplicate, Merge down,
+Delete, Move up/down, Properties and Picker: sample visible layers. Ctrl+Shift+N
+adds a layer; Shift+F10 opens tile options; F2 opens name/opacity properties;
+Alt+Up/Down provides keyboard reordering. Background cannot move or be deleted.
+Layer commands are guarded during active edits/workers. Copy visible layers uses
+Ctrl+Shift+C and copies the selection from the visible composite; ordinary Copy
+and Cut use the active layer. The selection mask and color-key option apply to both.
+
+Ctrl+S saves losslessly: layer structure or non-default properties require .ora;
+Save As (Ctrl+Shift+S) offers OpenRaster alongside PNG for a flat image. Existing
+.ora projects keep their format. Export copy flattens visible layers and never
+marks the project saved. The Open dialog includes .ora. Filename extensions are
+validated without changing a portal-granted destination.
+
+The Text tool spans the Tools group's two rows. Colored tool icons retain
+their original palette in menus; Fill and Brush ribbon previews follow the currently
+selected drawing color, including foreground/background switching and transparency.
+
+Footer zoom uses a horizontal slider between minus/plus, with percentage and Fit
+to its left. Range remains 1–3200%, with logarithmic travel, keyboard adjustment
+and synchronization with wheel/shortcuts/Fit. Image-group icons use the prior
+monochrome artwork. Blur setup provides Copy setup and optional Show setup code. Check again verifies
+actual extension configuration; it never treats package installation as readiness.
+
+Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
+secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
+the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
+Layer and palette context menus retain their right-click actions.

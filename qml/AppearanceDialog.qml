@@ -55,8 +55,8 @@ PaintDialog {
         PaintButton {
             id: enableGlass
             objectName: "enableGlassSetup"
-            text: qsTr("Enable Glass")
-            visible: !BlurSupport.ready
+            text: BlurSupport.ready ? qsTr("Glass setup") : qsTr("Enable Glass")
+            visible: true
             onClicked: dialog.glassSetupRequested()
         }
         PaintButton {

@@ -193,6 +193,11 @@ class CanvasTest : public QObject {
         editor.setProperty("secondary", QColor(Qt::red));
         editor.setProperty("shapeFill", true);
         QCOMPARE(editor.image().pixelColor(150, 150), QColor(Qt::red));
+        const auto preview = editor.image();
+        canvas.mouse(QEvent::MouseButtonPress, {400, 400}, Qt::RightButton, Qt::RightButton);
+        canvas.mouse(QEvent::MouseButtonRelease, {420, 430}, Qt::RightButton, Qt::NoButton);
+        QVERIFY(editor.previewActive());
+        QCOMPARE(editor.image(), preview);
         canvas.key(Qt::Key_Escape);
         QCOMPARE(editor.image(), original);
         QVERIFY(!editor.previewActive());
@@ -205,9 +210,9 @@ class CanvasTest : public QObject {
         QCOMPARE(editor.image(), original);
         editor.redo();
         QCOMPARE(editor.image(), shape);
-        canvas.press({300, 300}, Qt::RightButton);
-        canvas.release({400, 400}, Qt::RightButton);
-        QCOMPARE(editor.image().pixelColor(350, 350), QColor(Qt::black));
+        canvas.press({300, 300});
+        canvas.release({400, 400});
+        QCOMPARE(editor.image().pixelColor(350, 350), QColor(Qt::red));
         editor.setTool(Editor::Tool::Pencil);
         QVERIFY(!editor.previewActive());
         editor.undo();
@@ -240,7 +245,7 @@ class CanvasTest : public QObject {
         QCOMPARE(editor.image(), painted);
         canvas.press({100, 100}, Qt::RightButton);
         canvas.release({100, 100}, Qt::RightButton);
-        QCOMPARE(editor.secondary, QColor(Qt::red));
+        QCOMPARE(editor.secondary, QColor(Qt::white));
         canvas.key(Qt::Key_Space);
         canvas.press({400, 400});
         canvas.release({450, 450});
@@ -339,11 +344,14 @@ class CanvasTest : public QObject {
     }
     void panIncludesReleasePosition_data() {
         QTest::addColumn<bool>("space");
-        QTest::newRow("middle") << false;
-        QTest::newRow("space-left") << true;
+        QTest::addColumn<int>("panButton");
+        QTest::newRow("middle") << false << int(Qt::MiddleButton);
+        QTest::newRow("right") << false << int(Qt::RightButton);
+        QTest::newRow("space-left") << true << int(Qt::LeftButton);
     }
     void panIncludesReleasePosition() {
         QFETCH(bool, space);
+        QFETCH(int, panButton);
         TestEditor editor;
         InputCanvas canvas;
         canvas.setEditor(&editor);
@@ -351,13 +359,42 @@ class CanvasTest : public QObject {
         const auto origin = canvas.fromDocument({0, 0});
         if (space)
             canvas.key(Qt::Key_Space);
-        const auto button = space ? Qt::LeftButton : Qt::MiddleButton;
+        const auto button = Qt::MouseButton(panButton);
         canvas.mouse(QEvent::MouseButtonPress, {200, 200}, button, button);
+        QCOMPARE(canvas.cursor().shape(), Qt::ClosedHandCursor);
         canvas.mouse(QEvent::MouseMove, {240, 220}, Qt::NoButton, button);
         canvas.mouse(QEvent::MouseButtonRelease, {260, 250}, button, Qt::NoButton);
         QCOMPARE(canvas.fromDocument({0, 0}), origin + QPointF(60, 50));
+        QVERIFY(canvas.cursor().shape() != Qt::ClosedHandCursor);
+        QVERIFY(!editor.canUndo());
         QCOMPARE(editor.image(), original);
         QVERIFY(!editor.dirty());
+    }
+    void rightPanDoesNotUseToolAndReleasesCursor() {
+        for (const auto tool : {Editor::Tool::Pencil, Editor::Tool::Fill, Editor::Tool::ColorPicker,
+                                Editor::Tool::Text}) {
+            TestEditor editor;
+            InputCanvas canvas;
+            canvas.setEditor(&editor);
+            editor.setTool(tool);
+            const auto original = editor.image();
+            const auto secondary = editor.secondary;
+            canvas.mouse(QEvent::MouseButtonPress, {200, 200}, Qt::RightButton, Qt::RightButton);
+            QCOMPARE(canvas.cursor().shape(), Qt::ClosedHandCursor);
+            canvas.mouse(QEvent::MouseMove, {240, 220}, Qt::NoButton, Qt::RightButton);
+            const auto origin = canvas.fromDocument({0, 0});
+            canvas.loseFocus();
+            QVERIFY(canvas.cursor().shape() != Qt::ClosedHandCursor);
+            canvas.mouse(QEvent::MouseMove, {300, 250}, Qt::NoButton, Qt::NoButton);
+            QCOMPARE(canvas.fromDocument({0, 0}), origin);
+            QCOMPARE(editor.image(), original);
+            QCOMPARE(editor.secondary, secondary);
+            QVERIFY(!editor.canUndo());
+            QVERIFY(!editor.previewActive());
+            canvas.mouse(QEvent::MouseButtonPress, {200, 200}, Qt::RightButton, Qt::RightButton);
+            canvas.key(Qt::Key_Escape);
+            QVERIFY(canvas.cursor().shape() != Qt::ClosedHandCursor);
+        }
     }
     void clippingCancelAndCoordinateMapping() {
         TestEditor editor;
@@ -378,11 +415,11 @@ class CanvasTest : public QObject {
         editor.undo();
         QCOMPARE(editor.image(), original);
         editor.secondary = Qt::red;
-        canvas.press({100, 200}, Qt::RightButton);
-        canvas.move({200, 200}, Qt::RightButton);
+        canvas.press({100, 200});
+        canvas.move({200, 200});
         QVERIFY(editor.image() != original);
         canvas.key(Qt::Key_Escape);
-        canvas.release({300, 200}, Qt::RightButton);
+        canvas.release({300, 200});
         QCOMPARE(editor.image(), original);
         QVERIFY(!editor.active());
     }

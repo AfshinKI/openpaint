@@ -8,6 +8,7 @@ import OpenPaint
 PaintDialog {
     id: dialog
     property string copyStatus: ""
+    property bool showCode: false
     title: qsTr("Enable Glass")
     modal: true
     anchors.centerIn: parent
@@ -17,11 +18,20 @@ PaintDialog {
     footer: RowLayout {
         spacing: 10
         PaintButton {
+            id: copySetup
+            objectName: "copyGlassSetup"
+            text: qsTr("Copy setup")
+            visible: BlurSupport.setupAvailable
+            Layout.leftMargin: 20
+            Layout.bottomMargin: 12
+            onClicked: dialog.copyStatus = BlurSupport.copyCommand() ? qsTr("Copied. Paste into a terminal, then check again.") : qsTr("Open the setup code and copy it manually.")
+        }
+        PaintButton {
             id: checkButton
             objectName: "refreshBlurSupport"
             text: BlurSupport.busy ? qsTr("Checking…") : qsTr("Check again")
             enabled: !BlurSupport.busy
-            Layout.leftMargin: 20
+            Layout.leftMargin: copySetup.visible ? 0 : 20
             Layout.bottomMargin: 12
             onClicked: BlurSupport.refresh()
         }
@@ -55,6 +65,7 @@ PaintDialog {
     }
     onOpened: {
         copyStatus = "";
+        showCode = false;
         BlurSupport.refresh();
         checkButton.forceActiveFocus();
     }
@@ -66,7 +77,7 @@ PaintDialog {
             width: scroll.availableWidth
             spacing: 10
             Label {
-                text: qsTr("A softer workspace.")
+                text: qsTr("Enable desktop blur")
                 font.pixelSize: 22
                 font.bold: true
                 color: Theme.text
@@ -74,7 +85,7 @@ PaintDialog {
                 wrapMode: Text.WordWrap
             }
             Label {
-                text: qsTr("Choose your look.")
+                text: Qt.platform.os === "osx" ? qsTr("Native macOS glass. No setup code needed.") : qsTr("One setup block, then check again.")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
@@ -109,14 +120,21 @@ PaintDialog {
                 }
             }
             Label {
-                text: BlurSupport.ready ? qsTr("Glass is ready. Make it yours.") : BlurSupport.setupAvailable ? BlurSupport.instructions : qsTr("Enjoy OpenPaint’s clear, solid look on this desktop.")
+                objectName: "blurSetupInstructions"
+                text: Qt.platform.os === "osx" ? BlurSupport.instructions : BlurSupport.ready ? qsTr("Glass is available. Copy and run setup to use live blur with full desktop redraws to prevent flicker. This can increase GPU use or reduce desktop performance. Previous settings are backed up.") : BlurSupport.instructions.length ? BlurSupport.instructions : qsTr("Desktop blur is not verified for this session. OpenPaint currently checks Ubuntu 24.04 with GNOME 46 on X11. Installing Extension Manager alone does not enable blur.")
                 color: Theme.text
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
             }
+            PaintCheckBox {
+                text: qsTr("Show setup code")
+                visible: BlurSupport.setupAvailable
+                checked: dialog.showCode
+                onToggled: dialog.showCode = checked
+            }
             Rectangle {
                 objectName: "glassCommandWell"
-                visible: BlurSupport.setupAvailable && !BlurSupport.ready
+                visible: dialog.showCode && BlurSupport.setupAvailable
                 Layout.fillWidth: true
                 implicitHeight: commandText.implicitHeight + 56
                 radius: 8

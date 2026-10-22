@@ -1,8 +1,8 @@
 # Privacy and public-repository hygiene
 
 These are product requirements. The editor keeps core editing offline. Manual and default-on startup/daily release checks contact
-api.github.com; see the release-check disclosure below. It opens local PNG/JPEG/BMP/WebP images and saves PNG
-files or exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strips source metadata. File → Updates opens the public GitHub Releases page only after the explicit View releases action. The browser makes an ordinary request to GitHub; no artwork or document information is included. Recovery remains planned; bounded release notifications are implemented.
+api.github.com; see the release-check disclosure below. It opens local PNG/JPEG/BMP/WebP images and bounded OpenRaster projects, saves PNG
+or OpenRaster files, and exports PNG/JPEG/BMP/WebP copies, normalizes EXIF orientation and strips source metadata. File → Updates opens the public GitHub Releases page only after the explicit View releases action. The browser makes an ordinary request to GitHub; no artwork or document information is included. Recovery remains planned; bounded release notifications are implemented.
 
 ## Current local settings
 
@@ -15,7 +15,7 @@ Remove selected and Clear all remain available for the editor's session list.
 
 Core editing works without a network connection, account, analytics, advertising,
 or telemetry. No automatic crash uploads. No unique installation identifier.
-Recent files, settings, and recovery artwork remain in local XDG storage, with
+Recent files, settings, and recovery artwork remain in local platform settings storage, with
 visible controls to clear them. Do not include document paths or contents in logs.
 
 Manual and automatic update checks contact api.github.com. Automatic checks are
@@ -97,7 +97,7 @@ content or interrupt a user's unsaved document. A source harness is allowed for
 clearly labeled test evidence, but must not be presented as an installed capture.
 
 Development blur onboarding reads local desktop/version, extension settings and
-cached package availability without networking. The setup command is copied only
+extension activation/configuration without networking. The setup command is copied only
 on request; OpenPaint never runs it or changes desktop settings. A local welcome
 revision records dismissal. No capability results or command output are logged.
 
@@ -105,3 +105,16 @@ The separate Welcome to OpenPaint stores only its local dismissal revision. Get
 involved opens the public contribution guide on GitHub only after a click; the
 browser sends ordinary connection metadata. Glass setup is now on demand and
 stores no separate dismissal state.
+
+The optional Copy setup block performs network and desktop changes only when the
+user pastes and runs it in their terminal. It downloads a pinned/checksummed Blur
+My Shell archive from extensions.gnome.org only if missing, enables GNOME user
+extensions and configures application blur. GNOME receives ordinary download
+connection metadata; no artwork or app history is sent. Previous settings are
+backed up locally. OpenPaint itself never executes the block or installs software.
+
+The copied glass setup selects live application blur and disables clipped redraws
+through the extension’s no-artifact setting. This affects the whole compositor
+and may increase GPU use or reduce desktop performance; the setup panel discloses
+this before copying. Original settings are backed up before changes. OpenPaint
+does not capture desktop pixels or execute this setup itself.

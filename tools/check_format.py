@@ -14,7 +14,7 @@ def main():
     root = Path(__file__).resolve().parents[1]
     paths = sorted(path for directory in ("src", "tests", "qml")
                    for path in (root / directory).rglob("*")
-                   if path.suffix in {".cpp", ".h", ".hpp", ".qml"})
+                   if path.suffix in {".cpp", ".mm", ".h", ".hpp", ".qml"})
     failed = False
     for path in paths:
         tool = args.qmlformat if path.suffix == ".qml" else args.clang_format

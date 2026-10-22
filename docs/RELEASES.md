@@ -1,6 +1,7 @@
 # Releases and in-app updates
 
-Status: stable v1.3.0 is published; validation evidence is recorded in
+The v2 release and platform evidence are tracked in
+[plan 0062](plans/0062-macos-v2-release.md); prior v1.3.0 evidence remains in
 [plan 0057](plans/0057-release-1.3.0.md). Ordinary CI runs validate development
 packages; explicit main-branch release runs publish only after every check passes.
 No signing keys, OpenPaint update feed or automatic in-app installer exists.
@@ -14,14 +15,15 @@ No signing keys, OpenPaint update feed or automatic in-app installer exists.
 | AppImage | Portable download from GitHub Releases | Manual replacement; historical alpha format |
 | Source | Developers and distribution packagers | User or distribution package manager |
 | DEB | Ubuntu 24.04 amd64 installer; validation in [plan 0030](plans/0030-debian-installer.md) | APT; manual download until an update repository exists |
+| DMG | Apple silicon/macOS 14.4+; v2 validation in [plan 0062](plans/0062-macos-v2-release.md) | Manual app replacement; ad-hoc signed, not notarized |
 | RPM | Deferred; Flatpak available for other distributions | Distribution/package manager |
 
 The native release toolchain is pinned to Qt 6.12.0; [plan 0023](plans/0023-maintained-qt.md)
 records the migration. Flatpak uses its maintained KDE runtime with exact commits
 recorded per artifact.
 
-Start x86_64. Add aarch64 only after native build, install, drawing, save, and update
-tests on that architecture. M2 tests Ubuntu 24.04 and the then-supported stable
+Linux packages target x86_64. macOS targets Apple silicon, with its own native
+build, editor and package checks. Other architectures need equivalent validation. M2 tests Ubuntu 24.04 and the then-supported stable
 Fedora release; record exact versions in each release's matrix. Build AppImages
 against the oldest supported ABI baseline. Release tests cover installed artifacts
 on GNOME/KDE, Wayland/X11; an offscreen test is not proof of desktop integration.
@@ -46,8 +48,8 @@ prerelease enrollment is explicit. Downgrades are never automatic.
 A release contains versioned architecture-specific binaries, SHA-256 checksums,
 matching source/build recipes, third-party notices, a software bill of materials,
 release notes, supported systems, installation instructions, and known limitations.
-Current downloads are unsigned; checksums detect corruption but do not authenticate
-a release. Repository signing and signed update metadata remain future M5 work.
+Linux downloads are unsigned and the macOS bundle uses an ad-hoc signature;
+checksums detect corruption but do not authenticate a release. Repository signing and signed update metadata remain future M5 work.
 
 Binary paths/debug metadata must not include a developer's home directory; build in
 controlled paths and use compiler prefix mapping as appropriate. Do not ship local
@@ -183,11 +185,13 @@ CMake version (for example `1.0.0`) in `release_version`. Blank means validation
 only. Tags and release titles are exactly `v<version>`; stable builds have no suffix.
 PR/push builds share a `dev.<run number>` suffix across all formats and never publish.
 
-The release job waits for repository checks, all three native builds, portable,
-DEB, Flatpak and clean Ubuntu install/upgrade/remove tests. It downloads artifacts
+The release job waits for repository checks, all three Linux native builds,
+portable, DEB, Flatpak, macOS bundle/native tests and clean Ubuntu
+install/upgrade/remove tests. It downloads artifacts
 from that same run, verifies their checksums and source identities, then combines
-format-specific sources/notices/inventories into one compliance archive. The five
-public assets are DEB, Flatpak, portable tar.gz, sources-and-notices.tar and SHA256SUMS.
+format-specific sources/notices/inventories into one compliance archive. The six
+public assets are DEB, Flatpak, portable tar.gz, macOS DMG,
+sources-and-notices.tar and SHA256SUMS.
 
 The job uploads to a draft first and then publishes it as stable/latest. A failed
 upload leaves a draft; rerun the same source commit to resume. Existing published
@@ -257,4 +261,20 @@ binary digest was checked against GitHub's published asset digest; the source
 archive was downloaded and hashed independently. Continuous URLs can move again;
 checksum mismatches must continue to stop packaging, never trigger automatic trust.
 
-Current release evidence: [v1.3.0](plans/0057-release-1.3.0.md).
+Release evidence: [v2](plans/0062-macos-v2-release.md),
+[prior v1.3.0](plans/0057-release-1.3.0.md).
+
+## v2 macOS release lane
+
+The `macos-15` Apple silicon runner builds Qt 6.12.0 for macOS 14.4+, runs the
+editor suite and native Cocoa workflows, then audits a self-contained application
+bundle and creates `OpenPaint-<version>-macos-arm64.dmg`. Release promotion now
+requires this job alongside all existing Linux gates. The public release contains
+six assets: DEB, Flatpak, portable Linux archive, macOS DMG, combined
+sources-and-notices archive and SHA256SUMS. The Mac compliance archive is included
+inside the combined archive, with the DMG hash and source revision in its inventory.
+
+The current signing mode is ad-hoc, not Developer ID/notarized. State that on the
+download page and in release notes. Never claim Gatekeeper certification or
+physical Mac visual validation from offscreen/hosted tests. Native macOS glass
+uses AppKit and needs no Linux extension command. Intel Mac packaging is deferred.

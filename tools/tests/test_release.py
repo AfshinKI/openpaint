@@ -26,7 +26,8 @@ class ReleaseTests(unittest.TestCase):
         commit = 'a' * 40
         for kind, binary in [('portable', 'OpenPaint-1.0.0-linux-x86_64.tar.gz'),
                              ('deb', 'OpenPaint-1.0.0-ubuntu24.04-amd64.deb'),
-                             ('flatpak', 'OpenPaint-1.0.0-x86_64.flatpak')]:
+                             ('flatpak', 'OpenPaint-1.0.0-x86_64.flatpak'),
+                             ('macos', 'OpenPaint-1.0.0-macos-arm64.dmg')]:
             directory = root / kind
             directory.mkdir()
             (directory / binary).write_bytes(b'synthetic package')
@@ -37,6 +38,13 @@ class ReleaseTests(unittest.TestCase):
                                  source_sha256=digest(directory / 'openpaint-source.tar'))
                 (directory / 'flatpak-inventory.json').write_text(json.dumps(inventory))
                 (directory / 'manifest.json').write_text('{}')
+            elif kind == 'macos':
+                inventory.update(architecture='arm64', bundle_sha256=digest(directory / binary))
+                with tarfile.open(directory / 'OpenPaint-1.0.0-macos-sources-and-notices.tar', 'w') as archive:
+                    data = json.dumps(inventory).encode()
+                    info = tarfile.TarInfo('macos-inventory.json')
+                    info.size = len(data)
+                    archive.addfile(info, io.BytesIO(data))
             else:
                 with tarfile.open(directory / 'OpenPaint-1.0.0-sources-and-notices.tar', 'w') as archive:
                     data = json.dumps(inventory).encode()
@@ -52,18 +60,22 @@ class ReleaseTests(unittest.TestCase):
             root = Path(temporary)
             commit = self.fixture(root)
             stage(root, root / 'release', '1.0.0', commit)
-            self.assertEqual(len(list((root / 'release').iterdir())), 5)
+            self.assertEqual(len(list((root / 'release').iterdir())), 6)
             with tarfile.open(root / 'release/OpenPaint-1.0.0-sources-and-notices.tar') as archive:
-                self.assertEqual(len(archive.getnames()), 5)
+                self.assertEqual(len(archive.getnames()), 6)
 
     def test_tampered_missing_wrong_version_and_wrong_commit_fail_before_staging(self):
-        for failure in ('tampered', 'missing', 'version', 'commit', 'checksum', 'traversal'):
+        for failure in ('tampered', 'missing', 'version', 'commit', 'checksum', 'traversal', 'mac-tampered', 'mac-missing'):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
                 commit = self.fixture(root)
                 path = root / 'deb/OpenPaint-1.0.0-ubuntu24.04-amd64.deb'
                 version = '1.0.0'
-                if failure == 'tampered':
+                if failure == 'mac-tampered':
+                    (root / 'macos/OpenPaint-1.0.0-macos-arm64.dmg').write_bytes(b'changed')
+                elif failure == 'mac-missing':
+                    (root / 'macos/SHA256SUMS').unlink()
+                elif failure == 'tampered':
                     path.write_bytes(b'changed')
                 elif failure == 'missing':
                     path.unlink()

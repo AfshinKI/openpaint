@@ -73,9 +73,9 @@ than treating token selection as accessibility proof. Focus rings must be distin
 from selection. Color selection uses both a visible outline and an accessible name.
 Checkerboard contrast changes with theme but exported colors never do.
 
-At 1280×800, show the full toolbar and an optional 240-unit Layers panel. Support
+At 1280×800, show the full toolbar and an optional 200-unit Layers rail. Support
 1024×640 logical units without inaccessible actions. Use labeled overflow menus
-for toolbar groups and an overlay drawer for layers at smaller widths. Preserve
+for toolbar groups while keeping the narrow layer rail beside the canvas at smaller widths. Preserve
 the canvas, focus, and selection when panels collapse. Never shrink text to fit.
 Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200%.
 
@@ -85,11 +85,11 @@ Support fractional scaling and multiple monitors; test 100%, 125%, 150%, and 200
 | --- | --- |
 | Draw | Capture pointer, show preview immediately, commit one undo step on release |
 | Brushes | Nine named styles with generated previews; floating size and 0–100% stroke opacity; fixed-distance path sampling, one undo step |
-| Fill | Left/right press fills with primary/secondary; exact color matching with automatic smooth edges; busy indicator and Cancel/Escape leave original pixels intact |
-| Color picker | Select once per press: left sets primary, right sets secondary; exact containing artwork pixel including alpha; stays selected, never paints or changes history |
+| Fill | Left press fills with primary; exact color matching with automatic smooth edges; busy indicator and Cancel/Escape leave original pixels intact |
+| Color picker | Select once per press: left sets primary; right-drag pans; exact containing artwork pixel including alpha; stays selected, never paints or changes history |
 | Interrupted stroke | On missing initiating button, grab/focus loss, tool or viewport change, finish at the last valid sample; never bridge to a later pointer |
 | Escape | Cancel active preview/transform; otherwise dismiss the topmost transient UI |
-| Pan / zoom | Space+drag pans outside text entry; Ctrl+wheel zooms around pointer; plain wheel scrolls |
+| Pan / zoom | Right-button drag, middle-button drag and Space+drag pan outside text entry; dragging shows a closed hand; Ctrl+wheel zooms around pointer; plain wheel scrolls |
 | Selection | Rectangle/free-form marquee, inversion, numeric bounds, select-all/deselect and undoable alpha deletion; all drawing tools clip. Move/paste previews use Enter/Escape, arrows (Shift: 10 px) or numeric position; copy/cut/paste uses PNG. Resize/skew supports selected content or the whole image. |
 | Transform | Shift constrains proportions or rotation increments; numeric inputs provide keyboard precision |
 | Text | Inline editor and floating formatting toolbar below ribbon; outside-box canvas click or Ctrl+Enter commits, Escape cancels; top color is foreground and bottom is background |
@@ -190,7 +190,7 @@ Use the app-owned color chooser with a rectangular hue/saturation spectrum,
 vertical brightness slider and color preview, HEX input and switchable RGB/HSV
 fields, basic/custom grids and explicit accept/cancel. Both primary and secondary
 colors are editable. The top circle always controls foreground drawing color;
-the bottom always controls background/fill and right-button drawing. Selecting
+the bottom always controls background/shape-fill color. Selecting
 a circle changes only the color-editing target. Applying a new chooser color
 fills the first empty slot in each custom palette: 10 on the ribbon, 24 in the
 editor. Skip full palettes and existing duplicates. Both palettes are session-only
@@ -256,6 +256,9 @@ The startup client size is 1449 × 1008; the minimum remains 1024 × 640.
 
 Desktop blur is supplied by the compositor, not by screen capture. GNOME requires
 an extension such as Blur My Shell; it is not installed or configured by OpenPaint.
+The manually run setup block selects live application blur with full desktop
+redraws to avoid clipped-redraw artifacts. It keeps windows behind the app visible
+and discloses the possible GPU/performance cost before copying.
 Without desktop blur, transparency alone remains visible. This is frosted glass,
 not optical refraction. See [implementation and validation](plans/0039-window-transparency.md)
 and [rendering decision](decisions/0005-local-panel-blur.md).
@@ -280,7 +283,7 @@ selected color swatches use a bright outer ring without recoloring the swatch.
 The font picker retains its searchable per-family previews.
 
 Pencil, brush, eraser and eyedropper cursors identify the active tool over the canvas,
-with white contrast edges and tip-aligned hotspots. Space/middle-button panning
+with white contrast edges and tip-aligned hotspots. Right-button/Space/middle-button panning
 uses a hand and restores the tool cursor afterward. Shape controls show a solid
 filled drop when solid fill is active, and a small × on the outline icon when
 outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).
@@ -319,8 +322,8 @@ Current capability evidence is limited to Ubuntu 24.04 / GNOME 46 / X11. Without
 verified configuration, the effective appearance is opaque while saved glass
 preferences are retained. The glass checkbox is unchecked and disabled until requirements are met.
 Enable Glass opens setup on demand, even on an unverified desktop; commands are
-shown only for a verified recipe. Unavailable setup stays opaque without a package
-warning. This supersedes
+shown only for a verified recipe. Unavailable setup stays opaque, with an explanation of the verified session
+scope in the on-demand setup panel. This supersedes
 the earlier transparency-only fallback described above. No setup command runs
 inside OpenPaint, and the welcome panel waits until drawing and other popups finish.
 
@@ -331,3 +334,70 @@ copy and a selectable 11px monospace command below a Terminal label.
 Updates uses a compact status/action column and a softly elevated, perspective-angled actual-app corner preview. It checks on startup and opening without a check button or checkbox; failures never imply the installed version is current.
 
 The Select menu includes By color with an original magic-wand icon. Each click selects all exact-color pixels across the image; selection feedback and subsequent editing reuse the existing mask workflow. See [plan 0055](plans/0055-color-selection.md).
+
+## Development layer panel
+
+The Layers ribbon control has a separate divider and a 48×56 target with a 30-unit
+icon. It and View → Layers toggle a 200-unit vertical thumbnail
+rail that reserves space on the right of the canvas at every supported width.
+Like the main toolbar, its glass surface has 8-unit rounded corners and a 4-unit
+outer inset. A 4-unit gap separates it from the canvas.
+It starts hidden. First opening on a flat document creates one undoable transparent
+layer above the existing raster; subsequent toggles do not create more layers.
+
+The original bottom raster stays in a pinned Background tile beneath a divider.
+It cannot be dragged or deleted. Ordinary layer thumbnails appear topmost first
+in the scrollable region above it. Drag a thumbnail to reorder; a drag ghost and
+insertion line preview the destination. Drop commits once, Escape cancels, and
+auto-scroll reaches offscreen layers. The background is never a drop target.
+
+A top-right eye appears on hover or keyboard focus. Clicking it toggles that layer
+without selecting it; hidden layers retain a crossed-eye indication. Names and
+opacity appear in tooltips rather than permanent form controls. Right-click a
+thumbnail or empty rail for icon-labelled layer operations. A circular + control
+at the top-right of the rail or Ctrl+Shift+N creates a layer;
+Shift+F10 opens the context menu, F2 opens Properties, and Alt+Up/Down reorders.
+Properties contains the existing name and opacity fields. Merge down remains
+available for adjacent visible layers, including merging into the fixed background.
+
+The rail, tiles and circular add control follow the existing glass/blur appearance
+and surface opacity, with opaque styling when glass is disabled. Backdrop sources
+exclude the rail itself to prevent rendering feedback.
+
+The side-panel and background references are Microsoft's original
+[layer announcement](https://blogs.windows.com/windows-insider/2023/09/18/paint-app-update-adding-support-for-layers-and-transparency-begins-rolling-out-to-windows-insiders/)
+and [background update](https://blogs.windows.com/windows-insider/2024/03/13/paint-update-begins-rolling-out-to-windows-insiders/).
+The automatic first transparent layer and pinned original raster follow the
+maintainer's requested OpenPaint behavior; exact Microsoft build parity is not claimed.
+All icons and captured artwork remain original OpenPaint assets.
+
+The Image ribbon group includes an Invert colors contrast-circle icon. It inverts
+the active layer's RGB, or selected pixels only, preserving transparency and other
+layers. Selection inversion remains a separate selection-menu command.
+
+The Tools group centers Text across both rows, aligned with Invert colors.
+Original colored ribbon vectors use a warm orange pencil with red end, a blue
+color-picker bulb, and a wood-and-metal brush. Image operations retain their original monochrome
+icons, including distinct 90° and 180° rotation symbols.
+Colored tool icons use 24-unit artwork targets (brush 28). Brush artwork stays
+fixed regardless of paint selection. Fill restores the original monochrome bucket
+with an outlined drop; selecting Fill makes the drop solid in the theme foreground
+color. Paint selection, including transparency, does not recolor either icon.
+
+The footer presents Fit, current zoom percentage, minus, a horizontal slider and
+plus. Logarithmic travel covers the existing 1–3200% range; slider keyboard/pointer
+changes use the same center-anchored viewport operation as the other zoom controls.
+Viewport changes synchronize the slider and readout without modifying artwork.
+
+Blur setup offers Copy setup, optional Show setup code, and Check again. A single
+user-run terminal block handles missing extension installation and configuration;
+Extension Manager and repeated apt prompts are removed. The app still verifies
+active extension/application settings before enabling Glass. Any needed sign-out
+is requested by the block and never forced.
+
+On macOS, glass uses a native behind-window AppKit effect and respects Reduce
+Transparency. Enable Glass shows native guidance rather than a Linux terminal
+recipe. Shared surface-opacity and light/dark preferences still apply.
+The menu strip stays inside the shared toolbar on macOS; all controls remain
+reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
+opened with the visible menu buttons rather than Linux Alt-letter mnemonics.

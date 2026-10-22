@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.28)
-project(OpenPaint VERSION 1.3.0 LANGUAGES CXX)
+project(OpenPaint VERSION 2.0.0 LANGUAGES CXX)
+if(APPLE)
+    enable_language(OBJCXX)
+    set(CMAKE_OBJCXX_STANDARD 20)
+    set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)
+endif()
 
 set(OPENPAINT_VERSION_SUFFIX "" CACHE STRING "SemVer prerelease suffix; empty for stable")
-set(OPENPAINT_INSTALL_KIND "source" CACHE STRING "source, portable, appimage, flatpak, or system")
-set_property(CACHE OPENPAINT_INSTALL_KIND PROPERTY STRINGS source portable appimage flatpak system)
-if(NOT OPENPAINT_INSTALL_KIND MATCHES "^(source|portable|appimage|flatpak|system)$")
+set(OPENPAINT_INSTALL_KIND "source" CACHE STRING "source, portable, appimage, flatpak, system, or macos")
+set_property(CACHE OPENPAINT_INSTALL_KIND PROPERTY STRINGS source portable appimage flatpak system macos)
+if(NOT OPENPAINT_INSTALL_KIND MATCHES "^(source|portable|appimage|flatpak|system|macos)$")
     message(FATAL_ERROR "Invalid OPENPAINT_INSTALL_KIND")
 endif()
 set(OPENPAINT_VERSION "${PROJECT_VERSION}")
@@ -47,17 +52,39 @@ target_include_directories(openpaint_document PUBLIC src)
 target_link_libraries(openpaint_document PUBLIC Qt6::Gui)
 target_compile_options(openpaint_document PRIVATE -Wall -Wextra -Wpedantic)
 find_package(ZLIB REQUIRED)
-add_library(openpaint_io STATIC src/io/PngIo.cpp src/io/ImageIo.cpp)
-target_link_libraries(openpaint_io PUBLIC openpaint_document PRIVATE ZLIB::ZLIB)
+find_package(LibArchive REQUIRED)
+add_library(openpaint_io STATIC src/io/PngIo.cpp src/io/ImageIo.cpp src/io/OraIo.cpp)
+target_link_libraries(openpaint_io PUBLIC openpaint_document PRIVATE ZLIB::ZLIB LibArchive::LibArchive)
 target_compile_options(openpaint_io PRIVATE -Wall -Wextra -Wpedantic)
 add_subdirectory(qml)
 
 qt_add_executable(openpaint src/app/main.cpp)
+if(APPLE)
+    qt_add_executable(openpaint_icon_tool tools/macos_icon.cpp)
+    target_link_libraries(openpaint_icon_tool PRIVATE Qt6::Gui)
+    set_target_properties(openpaint PROPERTIES
+        MACOSX_BUNDLE TRUE OUTPUT_NAME OpenPaint
+        MACOSX_BUNDLE_GUI_IDENTIFIER io.github.AfshinKI.OpenPaint
+        MACOSX_BUNDLE_BUNDLE_NAME OpenPaint
+        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/packaging/macos/Info.plist.in")
+endif()
 target_link_libraries(openpaint PRIVATE openpaint_ui openpaint_uiplugin Qt6::QuickControls2)
 target_compile_options(openpaint PRIVATE -Wall -Wextra -Wpedantic)
 
 if(BUILD_TESTING)
     find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+    if(APPLE)
+        qt_add_executable(openpaint_macglass_tests tests/unit/tst_macglass.mm)
+        target_link_libraries(openpaint_macglass_tests PRIVATE openpaint_ui Qt6::Test "-framework AppKit")
+        set_source_files_properties(tests/unit/tst_macglass.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+        add_test(NAME macos-native-glass COMMAND openpaint_macglass_tests)
+        set_tests_properties(macos-native-glass PROPERTIES TIMEOUT 30 ENVIRONMENT "QT_QPA_PLATFORM=cocoa;QT_QUICK_BACKEND=rhi;QSG_RHI_BACKEND=metal")
+    endif()
+    qt_add_executable(openpaint_layers_tests tests/unit/tst_layers.cpp)
+    target_link_libraries(openpaint_layers_tests PRIVATE openpaint_ui Qt6::Test LibArchive::LibArchive)
+    add_test(NAME layers COMMAND openpaint_layers_tests)
     qt_add_executable(openpaint_blur_tests tests/unit/tst_blur.cpp)
     target_link_libraries(openpaint_blur_tests PRIVATE openpaint_ui Qt6::Test)
     add_test(NAME blur-support COMMAND openpaint_blur_tests)
@@ -99,7 +126,22 @@ if(BUILD_TESTING)
         openpaint_ui openpaint_uiplugin Qt6::QuickControls2 Qt6::Test)
     target_compile_options(openpaint_shell_tests PRIVATE -Wall -Wextra -Wpedantic)
     # Keep each bounded shell shard below 30 seconds as coverage grows.
-    add_test(NAME shell COMMAND openpaint_shell_tests
+    # Cocoa's window/animation lifecycle is slower than the offscreen backend.
+    # Keep the same 30-second bound for each behavior instead of timing out
+    # an entire multi-behavior group before its later cases can execute.
+    function(add_shell_tests name)
+        if(APPLE)
+            foreach(behavior IN LISTS ARGN)
+                add_test(NAME "${name}-${behavior}" COMMAND openpaint_shell_tests "${behavior}" -v2)
+                set_tests_properties("${name}-${behavior}" PROPERTIES TIMEOUT 30
+                    ENVIRONMENT "QT_QPA_PLATFORM=cocoa;QT_QUICK_BACKEND=rhi;QSG_RHI_BACKEND=metal")
+            endforeach()
+        else()
+            add_test(NAME "${name}" COMMAND openpaint_shell_tests ${ARGN})
+            set_tests_properties("${name}" PROPERTIES TIMEOUT 30)
+        endif()
+    endfunction()
+    add_shell_tests(shell
         launchAndResize
         toolCursorsAndIndicators
         eraserModeMenu
@@ -111,11 +153,15 @@ if(BUILD_TESTING)
         themeActions
         keyboardAboutAndEscape
         drawingAndTransforms
-        interruptedAndSecondaryStroke
+        interruptedStrokeAndRightPan
         welcomeWorkflow
         glassSetupWorkflow
         updatesWorkflow)
-    add_test(NAME shell-editing COMMAND openpaint_shell_tests
+    add_shell_tests(shell-editing
+        layersWorkflow
+        invertColorsWorkflow
+        coloredRibbonWorkflow
+        zoomSliderWorkflow
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory
@@ -124,7 +170,7 @@ if(BUILD_TESTING)
         colorSelectionWorkflow
         clipboardMoveWorkflow
         rectangularSelectionWorkflow)
-    add_test(NAME shell-text COMMAND openpaint_shell_tests
+    add_shell_tests(shell-text
         fontPickerWorkflow
         inlineTextWorkflow
         textRangeFormattingWorkflow
@@ -132,7 +178,7 @@ if(BUILD_TESTING)
         transparentBackgroundChoice
         canvasCornerResize
         cornerResizeHandles)
-    add_test(NAME shell-more COMMAND openpaint_shell_tests
+    add_shell_tests(shell-more
         textToolbarOutsideClickCommit
         chordAndPanLifecycle
         unsavedCancelAndSaveClose
@@ -147,21 +193,20 @@ if(BUILD_TESTING)
         glassBackdropRendering
         actualFloatingPanelBlur
         fileMenuBackdropBlur)
-    add_test(NAME shell-controls COMMAND openpaint_shell_tests
+    add_shell_tests(shell-controls
         brushMainActivation
         ribbonShapeKeyboard
         shapeStyleMenus
         shapeOptionsKeyboard
         brushMenuKeyboardAndLayout)
-    add_test(NAME shell-colors COMMAND openpaint_shell_tests
+    add_shell_tests(shell-colors
         fillOptionsLayout
+        keyboardToolsAndAccessibility
         keyboardControlsAndAccessibility
         customColorEditor
         toolbarSlotAndRoleWorkflow
         renderTiming
         quitClosesWindow)
-    set_tests_properties(shell shell-editing shell-text shell-more shell-controls shell-colors
-        PROPERTIES TIMEOUT 30)
     add_test(NAME cli-version COMMAND openpaint --version)
     set_tests_properties(cli-version PROPERTIES
         PASS_REGULAR_EXPRESSION "OpenPaint ${OPENPAINT_VERSION}" TIMEOUT 10)
@@ -190,9 +235,12 @@ if(BUILD_TESTING)
 endif()
 
 include(GNUInstallDirs)
-install(TARGETS openpaint RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS openpaint BUNDLE DESTINATION . RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if(NOT APPLE)
 install(FILES packaging/io.github.AfshinKI.OpenPaint.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications)
 install(FILES packaging/io.github.AfshinKI.OpenPaint.metainfo.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo)
 install(FILES qml/icons/app.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps RENAME io.github.AfshinKI.OpenPaint.svg)
 install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/io.github.AfshinKI.OpenPaint)
 install(FILES README.md CHANGELOG.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
+
+endif()

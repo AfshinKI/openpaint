@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Editor.h"
 #include "io/ImageIo.h"
+#include "io/OraIo.h"
 #include "tools/Shape.h"
 #include "tools/Text.h"
 #include <QClipboard>
@@ -45,7 +46,9 @@ void Editor::setTool(Tool tool) {
 }
 void Editor::begin(QPointF point, bool secondaryButton) {
     shapeInputBlocked_ = false;
-    if (loading() || textActive_)
+    if (loading() || textActive_ ||
+        (!document.layers()[size_t(activeLayer())].visible && tool_ != Tool::ColorPicker &&
+         tool_ != Tool::Select))
         return;
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()) || std::abs(point.x()) > 1000000 ||
         std::abs(point.y()) > 1000000)
@@ -99,8 +102,8 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         return;
     }
     if (tool_ == Tool::ColorPicker) {
-        const auto color =
-            image().pixelColor(int(std::floor(point.x())), int(std::floor(point.y())));
+        const auto color = (sampleMerged ? document.composite() : image())
+                               .pixelColor(int(std::floor(point.x())), int(std::floor(point.y())));
         auto& target = secondaryButton ? secondary : primary;
         if (target != color) {
             target = color;
@@ -553,7 +556,7 @@ void Editor::deleteSelection() {
     if (!canSelect() || !hasSelection())
         return;
     finish();
-    if (document.deleteSelection(secondary)) {
+    if (document.deleteSelection(needsProject() ? QColor(Qt::transparent) : secondary)) {
         emit pixelsChanged({});
         emit changed();
     }
@@ -666,17 +669,23 @@ Editor::Editor(QObject* parent) : QObject(parent) {
         busy_ = loading_ = pasting_ = clipboardBusy_ = exporting_ = false;
         if (result.ok()) {
             if (wasExporting) {
-                notice_ = tr("Exported a copy. Save still preserves your working drawing as PNG.");
+                notice_ = tr("Exported a copy. Use Save to preserve your working drawing.");
                 emit noticeChanged();
             } else if (wasPasting) {
                 if (!cancellation_ || !cancellation_->load())
                     pasteImage(result.image);
             } else if (wasLoading && (!cancellation_ || !cancellation_->load())) {
-                document.reset(result.image);
-                fileUrl_ = result.format == "png" &&
-                                   operationUrl_.toLocalFile().endsWith(".png", Qt::CaseInsensitive)
+                if (result.format == "ora")
+                    document.resetLayers(result.layers);
+                else
+                    document.reset(result.image);
+                fileUrl_ = result.format == "ora" ||
+                                   (result.format == "png" && operationUrl_.toLocalFile().endsWith(
+                                                                  ".png", Qt::CaseInsensitive))
                                ? operationUrl_
                                : QUrl();
+                layersInitialized_ = result.format == "ora";
+                emit documentSessionChanged();
                 sourceName_ = QFileInfo(operationUrl_.toLocalFile()).fileName();
                 notice_ = result.notice;
                 if (!notice_.isEmpty())
@@ -714,6 +723,8 @@ void Editor::newDocument() {
     document.reset(image);
     fileUrl_ = QUrl();
     sourceName_.clear();
+    layersInitialized_ = false;
+    emit documentSessionChanged();
     emit documentReplaced();
     emit pixelsChanged(QRect());
     emit changed();
@@ -731,27 +742,34 @@ void Editor::openFile(const QUrl& url) {
     cancellation_ = std::make_shared<std::atomic_bool>(false);
     emit changed();
     watcher_.setFuture(QtConcurrent::run([path = url.toLocalFile(), token = cancellation_] {
-        return openpaint::loadImage(path, token);
+        return path.endsWith(".ora", Qt::CaseInsensitive) ? openpaint::loadOra(path, token)
+                                                          : openpaint::loadImage(path, token);
     }));
 }
 void Editor::saveFile(const QUrl& url) {
     if (busy_)
         return;
     finish();
-    if (!url.isLocalFile() || !url.toLocalFile().endsWith(".png", Qt::CaseInsensitive)) {
-        fail(tr("Choose a local filename ending in .png."));
+    const bool project = url.toLocalFile().endsWith(".ora", Qt::CaseInsensitive);
+    if (!url.isLocalFile() || (!project && (needsProject() || !url.toLocalFile().endsWith(
+                                                                  ".png", Qt::CaseInsensitive)))) {
+        fail(needsProject() ? tr("Save this drawing as an .ora project to preserve its layers. Use "
+                                 "Export copy for PNG.")
+                            : tr("Choose a local filename ending in .png or .ora."));
         emit saved(false);
         return;
     }
     operationUrl_ = url;
     savingRevision_ = document.revision();
-    const QImage snapshot = image();
+    const QImage snapshot = project ? QImage() : image();
+    const auto layers = document.layers();
     busy_ = true;
     cancellation_ = std::make_shared<std::atomic_bool>(false);
     emit changed();
-    watcher_.setFuture(
-        QtConcurrent::run([path = url.toLocalFile(), snapshot, token = cancellation_] {
-            return openpaint::savePng(path, snapshot, token);
+    watcher_.setFuture(QtConcurrent::run(
+        [path = url.toLocalFile(), snapshot, layers, project, token = cancellation_] {
+            return project ? openpaint::saveOra(path, layers, token)
+                           : openpaint::savePng(path, snapshot, token);
         }));
 }
 void Editor::exportFile(const QUrl& url, int format, int quality, bool lossless, bool flatten,
@@ -766,16 +784,107 @@ void Editor::exportFile(const QUrl& url, int format, int quality, bool lossless,
     }
     const openpaint::ExportOptions options{openpaint::ExportFormat(format), quality, lossless,
                                            flatten, background};
-    const QImage snapshot = image();
+    const auto layers = document.layers();
     busy_ = exporting_ = true;
     cancellation_ = std::make_shared<std::atomic_bool>(false);
     emit changed();
-    watcher_.setFuture(
-        QtConcurrent::run([path = url.toLocalFile(), snapshot, options, token = cancellation_] {
-            return openpaint::exportImage(path, snapshot, options, token);
-        }));
+    watcher_.setFuture(QtConcurrent::run([path = url.toLocalFile(), layers, options,
+                                          token = cancellation_] {
+        return openpaint::exportImage(path, openpaint::Document::composite(layers), options, token);
+    }));
 }
 void Editor::cancelIo() {
     if (cancellation_)
         cancellation_->store(true);
+}
+
+QVariantList Editor::layers() const {
+    QVariantList result;
+    for (int i = int(document.layers().size()) - 1; i >= 0; --i) {
+        const auto& l = document.layers()[size_t(i)];
+        result.append(QVariantMap{{"index", i},
+                                  {"id", QString::number(l.id)},
+                                  {"name", l.name},
+                                  {"visible", l.visible},
+                                  {"opacity", qRound(l.opacity * 100)}});
+    }
+    return result;
+}
+void Editor::layerChanged(bool success) {
+    if (!success) {
+        fail(tr("The layer change could not be applied. Check the layer and undo limits."));
+        emit changed();
+        return;
+    }
+    emit pixelsChanged({});
+    emit changed();
+}
+void Editor::selectLayer(int index) {
+    if (canEditLayers() && document.selectLayer(index)) {
+        emit pixelsChanged({});
+        emit changed();
+    }
+}
+void Editor::addLayer(bool duplicate) {
+    if (canEditLayers()) {
+        const bool added = document.addLayer(duplicate);
+        if (added)
+            layersInitialized_ = true;
+        layerChanged(added);
+    }
+}
+void Editor::deleteLayer() {
+    if (canEditLayers())
+        layerChanged(document.deleteLayer());
+}
+void Editor::moveLayer(int index) {
+    if (canEditLayers())
+        layerChanged(document.moveLayer(index));
+}
+void Editor::renameLayer(const QString& name) {
+    if (canEditLayers() && name.trimmed() != document.layers()[size_t(activeLayer())].name)
+        layerChanged(document.renameLayer(name));
+}
+void Editor::setLayerVisible(bool visible) {
+    if (canEditLayers() && visible != document.layers()[size_t(activeLayer())].visible)
+        layerChanged(document.setLayerVisible(visible));
+}
+void Editor::setLayerOpacity(int opacity) {
+    if (canEditLayers() &&
+        opacity != qRound(document.layers()[size_t(activeLayer())].opacity * 100))
+        layerChanged(document.setLayerOpacity(opacity / 100.0));
+}
+void Editor::mergeLayerDown() {
+    if (canEditLayers())
+        layerChanged(document.mergeDown());
+}
+
+bool Editor::enableLayers() {
+    if (!canEditLayers())
+        return false;
+    if (!layersInitialized_ && document.layers().size() == 1) {
+        const bool added = document.addLayer();
+        layerChanged(added);
+        if (!added)
+            return false;
+    }
+    layersInitialized_ = true;
+    return true;
+}
+void Editor::toggleLayerVisibility(int index) {
+    if (canEditLayers() && index >= 0 && index < int(document.layers().size()))
+        layerChanged(document.setLayerVisibility(index, !document.layers()[size_t(index)].visible));
+}
+void Editor::reorderLayer(const QString& id, int target) {
+    if (!canEditLayers() || target < 1 || target >= int(document.layers().size()))
+        return;
+    for (int i = 1; i < int(document.layers().size()); ++i) {
+        if (QString::number(document.layers()[size_t(i)].id) != id)
+            continue;
+        if (i == target)
+            return;
+        document.selectLayer(i);
+        layerChanged(document.moveLayer(target));
+        return;
+    }
 }

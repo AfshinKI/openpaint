@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
+#include "document/Document.h"
 #include <QImage>
 #include <QString>
 #include <atomic>
@@ -16,6 +17,7 @@ struct ImageResult {
     bool cancelled = false;
     QString notice = {};
     QByteArray format = {};
+    Layers layers = {};
     bool ok() const {
         return error.isEmpty() && !cancelled;
     }

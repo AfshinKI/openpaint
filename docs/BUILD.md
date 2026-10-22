@@ -26,7 +26,7 @@ From the repository root, install system prerequisites:
 ```sh
 sudo apt-get update
 sudo apt-get install -y g++-13 cmake ninja-build python3-venv \
-  zlib1g-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
+  libarchive-dev zlib1g-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
 ```
 
 Install development tools and Qt in the ignored build directory:
@@ -151,7 +151,7 @@ Color editor: [Light preview](assets/color-editor-light.png),
 ## Use the basic editor
 
 Run `./build/dev/openpaint` after building. Draw with the left button; the right
-button uses the secondary color. Choose a palette color or click Primary for a
+button holds and drags to pan with a closed-hand cursor. Choose a palette color or click Primary for a
 custom color. Click the secondary swatch to edit it independently. The editor has a
 rectangular hue/saturation spectrum, brightness slider and HEX/RGB/HSV fields.
 Choose RGB or HSV from the mode menu; changing modes preserves the color. OK applies the draft;
@@ -160,11 +160,11 @@ custom colors locally immediately, independently of OK/Cancel. Saved swatches
 appear on restart. The toolbar shows the first ten, including hollow empty slots;
 all 24 are available in the editor. Empty toolbar slots open the editor, while +
 or an empty dialog slot saves the draft in the next free slot. The ⋯ menu offers
-replace/remove/clear; removal compacts the palette. Swap exchanges primary/secondary. Eraser uses the secondary color
-unless Transparent is checked. Each drag is one undo step; Escape cancels it.
+replace/remove/clear; removal compacts the palette. Eraser offers Paper white
+and Transparent modes. Each drag is one undo step; Escape cancels it.
 
 Ctrl+Z undoes; Ctrl+Y/Ctrl+Shift+Z redo. Ctrl+wheel zooms around the pointer;
-Space+drag or middle-drag pans; Ctrl+0 fits. Ctrl+N creates a blank image, Ctrl+O
+Right-drag, Space+drag or middle-drag pans; Ctrl+0 fits. Ctrl+N creates a blank image, Ctrl+O
 opens supported images, Ctrl+S saves and Ctrl+Shift+S chooses another PNG filename. Unsaved
 New/Open/Close offers Save, Discard and Cancel. Failed saves keep the drawing open.
 
@@ -173,8 +173,8 @@ removed, colors normalize to sRGB and JPEG/PNG/WebP EXIF orientation is applied.
 Animated PNG/WebP and BMP V4/V5 color headers are rejected. Save writes PNG;
 non-PNG imports ask for a PNG destination. File → Export copy writes PNG/JPEG/BMP/WebP
 with explicit quality/background options and leaves the drawing’s saved state intact. Recovery after a
-crash, layers, shapes, text, selection, packaged downloads and updates are not yet
-available. The developer build is useful for basic drawings, not a stable release.
+crash remains planned. Current implemented tools and development layer support
+are tracked in [the feature checklist](FEATURES.md).
 
 Controller/codec tests verify snapshot saves, errors and lossless reopen. After a
 Release build, measure startup, strokes, viewport updates, worker-save responsiveness
@@ -201,3 +201,34 @@ is shown by `--version` and Help → Updates.
 
 `openpaint [image]` opens one local image in a new window/process. More than one
 argument is rejected. Save and export retain the same safety rules as File → Open.
+
+Development layer support: use the Layers ribbon button or View → Layers. Tools
+edit the selected layer. Save layered drawings as `.ora`; use Export copy for
+flattened images. The build now also requires `libarchive-dev`. See
+[layer scope and current validation](plans/0058-layers.md).
+
+## macOS release build
+
+Use an Apple silicon Mac with Xcode 16 or newer and macOS 14.4+. The CI runner
+installs Qt 6.12.0 (`aqt install-qt mac desktop 6.12.0 clang_64`) with qtbase,
+qtdeclarative, qtsvg, qttools and qtimageformats. Install development tooling from
+`tools/requirements-dev.txt`, CMake 3.30.5, Ninja and Homebrew libarchive headers.
+The package links Apple's system libarchive, not the Homebrew runtime.
+
+Set `CMAKE_PREFIX_PATH` to the installed Qt `macos` directory, then configure:
+
+```sh
+cmake --preset release -DOPENPAINT_INSTALL_KIND=macos \
+  -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.4 \
+  -DLibArchive_INCLUDE_DIR="$(brew --prefix libarchive)/include" \
+  -DLibArchive_LIBRARY="$(xcrun --show-sdk-path)/usr/lib/libarchive.tbd"
+cmake --build --preset release
+ctest --preset release
+python3 tools/package_macos.py --qt "$CMAKE_PREFIX_PATH" --version 2.0.0
+```
+
+The package tool runs macdeployqt, generates the original app icon, signs ad-hoc,
+audits runtime paths and builds a DMG plus matching source/license inventory.
+Developer ID signing and notarization are not configured. The Cocoa smoke tests
+need a logged-in graphical session; offscreen tests do not establish native glass
+appearance. CI runs both editor tests and selected native Cocoa workflows.

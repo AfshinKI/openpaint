@@ -78,7 +78,7 @@ void Editor::invertSelection() {
     emit pixelsChanged({});
     emit changed();
 }
-QImage Editor::selectedImage() const {
+QImage Editor::selectedImage(bool merged) const {
     if (!hasSelection() || previewActive())
         return {};
     const auto rect = selectionRect();
@@ -90,20 +90,23 @@ QImage Editor::selectedImage() const {
     QPainter painter(&selected);
     painter.setClipRegion(selection().translated(-rect.topLeft()));
     painter.setCompositionMode(QPainter::CompositionMode_Source);
-    painter.drawImage(-rect.topLeft(), image());
+    painter.drawImage(-rect.topLeft(), merged ? document.composite() : image());
     return selected;
 }
 bool Editor::copySelection() {
     return startCopy(false);
 }
+bool Editor::copyVisibleLayers() {
+    return startCopy(false, true);
+}
 void Editor::cutSelection() {
     startCopy(true);
 }
-bool Editor::startCopy(bool cut) {
+bool Editor::startCopy(bool cut, bool merged) {
     if (!canSelect() || !hasSelection() || busy_)
         return false;
     finish();
-    const auto selected = selectedImage();
+    const auto selected = selectedImage(merged);
     if (selected.isNull()) {
         fail(tr("The selection could not be copied. The drawing is unchanged."));
         return false;
@@ -252,7 +255,8 @@ void Editor::refreshFloating() {
         if (floatingMove_) {
             painter.setClipRegion(floatingOriginalSelection_);
             painter.setCompositionMode(QPainter::CompositionMode_Source);
-            painter.fillRect(floatingOriginalSelection_.boundingRect(), secondary);
+            painter.fillRect(floatingOriginalSelection_.boundingRect(),
+                             needsProject() ? QColor(Qt::transparent) : secondary);
         }
         painter.setClipRegion(destination);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);

@@ -72,6 +72,8 @@ authentication mechanism. Verified portable self-updates remain M5.
 - [AppImage runtime](https://github.com/AppImage/type2-runtime/tree/8f39b89e2ac31e1640b3d3f7e9a5108e6ce805fa): MIT; libfuse source patch/build recipe included.
 - [musl](https://git.musl-libc.org/cgit/musl/tree/COPYRIGHT?h=v1.2.5): MIT and additional permissive notices.
 - [mimalloc](https://github.com/microsoft/mimalloc/blob/v2.1.7/LICENSE): MIT. This is an open-source allocator dependency of the upstream runtime, not Microsoft Paint code or assets.
+- [libarchive](https://github.com/libarchive/libarchive/blob/master/COPYING): BSD;
+  ZIP project codec, with runtime/transitive attribution collected from system packages.
 - [zlib](https://github.com/madler/zlib/blob/v1.3.1/LICENSE): zlib license.
 - [zstd](https://github.com/facebook/zstd/blob/v1.5.6/LICENSE): BSD-3-Clause.
 

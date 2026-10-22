@@ -2,6 +2,7 @@
 #include "color/ColorPalette.h"
 #include "color/ColorSpectrum.h"
 #include "io/ImageIo.h"
+#include "io/OraIo.h"
 #include "platform/AppInfo.h"
 #include "platform/Appearance.h"
 #include "platform/BlurSupport.h"
@@ -102,6 +103,241 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void zoomSliderWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* slider = window->findChild<QQuickItem*>("zoomSlider");
+        QVERIFY(slider);
+        const auto original = editor->image();
+        const bool dirty = editor->dirty();
+        window->resize(1024, 640);
+        QVERIFY(tabTo("zoomSlider"));
+        const auto before = canvas->zoom();
+        keyClick(Qt::Key_Right);
+        QVERIFY(canvas->zoom() > before);
+        canvas->zoomBy(2 / canvas->zoom());
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - 1) < 0.001);
+        QTest::mouseClick(
+            window, Qt::LeftButton, {},
+            slider->mapToScene({slider->width() * 0.75, slider->height() / 2}).toPoint());
+        QVERIFY(qAbs(canvas->zoom() - 2) > 0.1);
+        canvas->zoomBy(100000);
+        QCOMPARE(canvas->zoom(), 32.0);
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - slider->property("to").toDouble()) <
+                    0.001);
+        canvas->zoomBy(0.0000001);
+        QCOMPARE(canvas->zoom(), 0.01);
+        canvas->fit();
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - std::log2(canvas->zoom())) < 0.001);
+        QVERIFY(capture("zoom-slider-1024.png"));
+        QVERIFY(slider->mapToScene({slider->width(), 0}).x() < window->width() - 30);
+        QCOMPARE(editor->image(), original);
+        QCOMPARE(editor->dirty(), dirty);
+    }
+    void coloredRibbonWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* fill = window->findChild<QQuickItem*>("fillButton");
+        auto* brush = window->findChild<QQuickItem*>("brushesButton");
+        auto* text = window->findChild<QQuickItem*>("textButton");
+        auto* invert = window->findChild<QQuickItem*>("invertColorsButton");
+        QVERIFY(fill && brush && text && invert);
+        const auto paintsColor = [&](QQuickItem* item, QColor color) {
+            QGuiApplication::sync();
+            const auto frame = window->grabWindow();
+            const qreal scale = qreal(frame.width()) / window->width();
+            const auto position = item->mapToScene({0, 0});
+            int matching = 0;
+            for (int y = int(position.y() * scale);
+                 y < int((position.y() + item->height()) * scale); ++y)
+                for (int x = int(position.x() * scale);
+                     x < int((position.x() + item->width()) * scale); ++x)
+                    if (frame.pixelColor(x, y).rgb() == color.rgb())
+                        ++matching;
+            return matching >= 2;
+        };
+        window->resize(1024, 640);
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        appearance->setThemeMode(1);
+        editor->setEditingSecondary(false);
+        editor->setSelectedColor(QColor("#db5036"));
+        QVERIFY(!fill->property("colored").toBool());
+        QTRY_VERIFY(paintsColor(brush, QColor("#f0dec3")));
+        editor->setTool(Editor::Tool::Fill);
+        QTRY_VERIFY(fill->property("checked").toBool());
+        QVERIFY(capture("colored-ribbon-light.png"));
+        QVERIFY(std::abs(text->mapToScene({0, text->height() / 2}).y() -
+                         invert->mapToScene({0, invert->height() / 2}).y()) <= 2);
+        editor->setEditingSecondary(true);
+        editor->setSelectedColor(QColor("#348bd5"));
+        appearance->setThemeMode(2);
+        QVERIFY(!fill->property("colored").toBool());
+        QTRY_VERIFY(paintsColor(brush, QColor("#f0dec3")));
+        QVERIFY(capture("colored-ribbon-dark.png"));
+        auto* layers = window->findChild<QQuickItem*>("layersButton");
+        QVERIFY(layers->mapToScene({layers->width(), 0}).x() <= window->width() - 4);
+        editor->setSelectedColor(Qt::transparent);
+        QVERIFY(!fill->property("colored").toBool());
+        QTRY_VERIFY(paintsColor(brush, QColor("#f0dec3")));
+        QVERIFY(tabTo("textButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->tool(), Editor::Tool::Text);
+        QTRY_VERIFY(!fill->property("checked").toBool());
+    }
+    void invertColorsWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        const auto original = editor->image();
+        QVERIFY(tabTo("invertColorsButton"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!editor->busy());
+        QCOMPARE(editor->image().pixelColor(0, 0), QColor(Qt::black));
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image().pixelColor(0, 0), QColor(Qt::black));
+        window->resize(1024, 640);
+        QVERIFY(capture("invert-colors-ribbon.png"));
+        auto* button = window->findChild<QQuickItem*>("invertColorsButton");
+        QVERIFY(button->mapToScene({button->width(), 0}).x() < window->width());
+        auto* layers = window->findChild<QQuickItem*>("layersButton");
+        QVERIFY(layers->mapToScene({layers->width(), 0}).x() <= window->width() - 4);
+    }
+    void layersWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* panel = window->findChild<QQuickItem*>("layersPanel");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        QVERIFY(panel);
+        QVERIFY(!panel->isVisible());
+        QVERIFY(tabTo("layersButton"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(panel->isVisible());
+        QCOMPARE(editor->layers().size(), 2);
+        QCOMPARE(editor->activeLayer(), 1);
+        auto* addLayer = window->findChild<QQuickItem*>("addLayerButton");
+        QVERIFY(addLayer);
+        auto* layersButton = window->findChild<QQuickItem*>("layersButton");
+        QVERIFY(layersButton->width() >= 48);
+        QVERIFY(layersButton->height() >= 56);
+        QVERIFY(window->findChild<QQuickItem*>("layersRibbonDivider"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(!panel->isVisible());
+        QVERIFY(tabTo("layersButton"));
+        keyClick(Qt::Key_Space);
+        QTRY_VERIFY(panel->isVisible());
+        QCOMPARE(editor->layers().size(), 2);
+        QTest::mouseClick(window, Qt::LeftButton, {}, addLayer->mapToScene({16, 16}).toPoint());
+        QCOMPARE(editor->layers().size(), 3);
+        editor->undo();
+        QCOMPARE(editor->layers().size(), 2);
+        editor->renameLayer("Foreground");
+        editor->primary = QColor("#e87945");
+        editor->brushSize = 100;
+        editor->begin({200, 200}, false);
+        editor->extend({650, 350});
+        editor->finish();
+        editor->setLayerOpacity(65);
+        const auto tile = [&](const QString& name) -> QQuickItem* {
+            const auto matches = visualItems(window->contentItem(), name);
+            return matches.isEmpty() ? nullptr : matches.first();
+        };
+        canvas->forceActiveFocus();
+        keyClick(Qt::Key_N, Qt::ControlModifier | Qt::ShiftModifier);
+        QCOMPARE(editor->layers().size(), 3);
+        editor->renameLayer("Top");
+        QVERIFY(capture("layers-before-drag.png"));
+        auto* upper = tile("layerTile2");
+        auto* lower = tile("layerTile1");
+        QVERIFY(upper);
+        QVERIFY(lower);
+        const auto start = upper->mapToScene({upper->width() / 2, upper->height() / 2}).toPoint();
+        const auto end = lower->mapToScene({lower->width() / 2, lower->height() / 2}).toPoint();
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, start + QPoint(0, 20), 20);
+        QTest::mouseMove(window, end, 20);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QCOMPARE(editor->layers()[1].toMap()["name"].toString(), QString("Top"));
+        QCOMPARE(editor->activeLayer(), 1);
+        editor->undo();
+        QCOMPARE(editor->layers()[0].toMap()["name"].toString(), QString("Top"));
+        editor->redo();
+        QCOMPARE(editor->layers()[1].toMap()["name"].toString(), QString("Top"));
+        // Escape cancels a held drag without changing stack order.
+        upper = tile("layerTile2");
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, start + QPoint(0, 20), 20);
+        keyClick(Qt::Key_Escape);
+        QTest::mouseMove(window, end, 20);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QCOMPARE(editor->layers()[0].toMap()["name"].toString(), QString("Foreground"));
+        auto* background = tile("backgroundLayerTile");
+        QVERIFY(background);
+        auto* eye = tile("layerEye0");
+        QVERIFY(eye);
+        QVERIFY(eye->x() > background->width() / 2);
+        canvas->forceActiveFocus();
+        QTest::mouseMove(window, QPoint(100, 200));
+        QTRY_VERIFY(!eye->isVisible());
+        QTest::mouseMove(window, background->mapToScene({80, 40}).toPoint());
+        QTRY_VERIFY(eye->isVisible());
+        const int active = editor->activeLayer();
+        QTest::mouseClick(window, Qt::LeftButton, {}, eye->mapToScene({16, 16}).toPoint());
+        QCOMPARE(editor->activeLayer(), active);
+        QVERIFY(!editor->layers().last().toMap()["visible"].toBool());
+        QCOMPARE(eye->property("symbol").toString(), QString("layer-eye-hidden"));
+        QTest::mouseClick(window, Qt::LeftButton, {}, eye->mapToScene({16, 16}).toPoint());
+        QVERIFY(editor->layers().last().toMap()["visible"].toBool());
+        // The background never participates in dragging.
+        const auto base = background->mapToScene({80, 50}).toPoint();
+        QTest::mousePress(window, Qt::LeftButton, {}, base);
+        QTest::mouseMove(window, start, 20);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, start);
+        QCOMPARE(editor->layers().last().toMap()["name"].toString(), QString("Background"));
+        upper = tile("layerTile2");
+        upper->forceActiveFocus();
+        keyClick(Qt::Key_F2);
+        auto* dialog = window->findChild<QObject*>("layerPropertiesDialog");
+        QVERIFY(dialog);
+        QTRY_VERIFY(dialog->property("visible").toBool());
+        QVERIFY(tabTo("layerNameField"));
+        keyClick(Qt::Key_A, Qt::ControlModifier);
+        keyClick(Qt::Key_R);
+        keyClick(Qt::Key_E);
+        keyClick(Qt::Key_N);
+        QVERIFY(QMetaObject::invokeMethod(dialog, "accept"));
+        QCOMPARE(editor->layers()[0].toMap()["name"].toString(), QString("ren"));
+        editor->undo();
+        QCOMPARE(editor->layers()[0].toMap()["name"].toString(), QString("Foreground"));
+        // Layer operations remain discoverable from the thumbnail context menu.
+        QTest::mouseClick(window, Qt::RightButton, {}, start);
+        auto* menu = window->findChild<QObject*>("layerContextMenu");
+        QVERIFY(menu);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        QVERIFY(capture("layers-context-menu.png"));
+        keyClick(Qt::Key_Escape);
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        appearance->setGlassEnabled(false);
+        QTRY_COMPARE(panel->property("surfaceAlpha").toDouble(), 1.0);
+        appearance->setSurfaceOpacity(40);
+        appearance->setGlassEnabled(true);
+        QTRY_COMPARE(panel->property("surfaceAlpha").toDouble(), 0.4);
+        if (window->rendererInterface()->graphicsApi() != QSGRendererInterface::Software)
+            QTRY_VERIFY(panel->property("backdropBlurEnabled").toBool());
+        appearance->setThemeMode(1);
+        window->resize(1280, 800);
+        QVERIFY(capture("layers-light-1280.png"));
+        appearance->setThemeMode(2);
+        window->resize(1024, 640);
+        QVERIFY(capture("layers-dark-1024.png"));
+        QVERIFY(layersButton->mapToScene({layersButton->width(), 0}).x() <= window->width() - 4);
+        const auto shielded = editor->image();
+        QTest::mouseClick(window, Qt::LeftButton, {}, panel->mapToScene({2, 200}).toPoint());
+        QCOMPARE(editor->image(), shielded);
+        const auto directory = qEnvironmentVariable("OPENPAINT_CAPTURE_DIR");
+        if (!directory.isEmpty()) {
+            editor->saveFile(QUrl::fromLocalFile(QDir(directory).filePath("layers-synthetic.ora")));
+            QTRY_VERIFY(!editor->busy());
+            QVERIFY(!editor->dirty());
+        }
+    }
     void selectAllKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));
@@ -316,6 +552,15 @@ class ShellTest : public QObject {
         auto* editor = window->findChild<Editor*>("editor");
         const auto image = editor->image();
         window->resize(1024, 640);
+#ifdef Q_OS_MACOS
+        // Cocoa owns the native frame/corners; do not apply the Linux client mask.
+        QCOMPARE(window->property("clientRadius").toDouble(), 0.0);
+        QVERIFY(window->mask().isEmpty());
+        QVERIFY(!window->grabWindow().isNull());
+        QCOMPARE(editor->image(), image);
+        QVERIFY(!editor->dirty());
+        return;
+#endif
         QVERIFY(window->mask().contains({0, 0}));
         QTRY_VERIFY(!window->mask().contains({0, window->height() - 1}));
         QVERIFY(window->mask().contains({100, 100}));
@@ -488,14 +733,14 @@ class ShellTest : public QObject {
         editor->undo();
     }
 
-    void interruptedAndSecondaryStroke() {
+    void interruptedStrokeAndRightPan() {
         auto* canvas = window->findChild<CanvasItem*>(QStringLiteral("canvas"));
         auto* editor = canvas->editor();
-        editor->secondary = Qt::red;
+        editor->primary = Qt::red;
         canvas->zoomAt(1.5, {200, 200});
         auto at = [&](QPointF p) { return canvas->mapToScene(canvas->fromDocument(p)).toPoint(); };
-        QTest::mousePress(window, Qt::RightButton, {}, at({100, 100}));
-        QTest::mouseRelease(window, Qt::RightButton, {}, at({200, 100}));
+        QTest::mousePress(window, Qt::LeftButton, {}, at({100, 100}));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, at({200, 100}));
         QCOMPARE(editor->image().pixelColor(150, 100), QColor(Qt::red));
         const auto first = editor->image();
         QTest::mousePress(window, Qt::LeftButton, {}, at({100, 150}));
@@ -508,6 +753,17 @@ class ShellTest : public QObject {
         editor->undo();
         QCOMPARE(editor->image(), first);
         editor->undo();
+        const auto original = editor->image();
+        const auto origin = canvas->fromDocument({0, 0});
+        const QPoint start = canvas->mapToScene({200, 200}).toPoint();
+        QTest::mousePress(window, Qt::RightButton, {}, start);
+        QCOMPARE(canvas->cursor().shape(), Qt::ClosedHandCursor);
+        QTest::mouseMove(window, start + QPoint(40, 20));
+        QTest::mouseRelease(window, Qt::RightButton, {}, start + QPoint(60, 50));
+        QCOMPARE(canvas->fromDocument({0, 0}), origin + QPointF(60, 50));
+        QVERIFY(canvas->cursor().shape() != Qt::ClosedHandCursor);
+        QCOMPARE(editor->image(), original);
+        QVERIFY(!editor->canUndo());
     }
 
     void captureReleaseUrl(const QUrl& url) {
@@ -592,7 +848,7 @@ class ShellTest : public QObject {
         QVERIFY(enable->property("visible").toBool());
         QVERIFY(QMetaObject::invokeMethod(enable, "clicked"));
         QTRY_VERIFY(setup->property("visible").toBool());
-        auto* copy = window->findChild<QObject*>("copyBlurCommand");
+        auto* copy = window->findChild<QObject*>("copyGlassSetup");
         QVERIFY(QMetaObject::invokeMethod(copy, "clicked"));
         QCOMPARE(QGuiApplication::clipboard()->text(), blur->command());
         for (const auto& theme : {QString("light"), QString("dark")}) {
@@ -600,6 +856,27 @@ class ShellTest : public QObject {
                                               "trigger", Q_ARG(QObject*, nullptr)));
             QVERIFY(capture("enable-glass-" + theme + "-1024.png"));
         }
+        QTRY_VERIFY(!blur->busy());
+        blur->setProbe([] {
+            return BlurSupport::evaluate("GNOME", "x11", "xcb", "ubuntu", "24.04", false, {},
+                                         [](const QString& program, const QStringList&) {
+                                             if (program == "gnome-shell")
+                                                 return QString("GNOME Shell 46.0");
+                                             if (program == "dpkg-query")
+                                                 return QString("installed");
+                                             return QString{};
+                                         });
+        });
+        QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>("refreshBlurSupport"),
+                                          "clicked"));
+        QTRY_VERIFY(!blur->busy());
+        QVERIFY(blur->command().startsWith("/usr/bin/python3"));
+        QVERIFY(!blur->command().contains("sudo apt install"));
+        QVERIFY(window->findChild<QObject*>("blurSetupInstructions")
+                    ->property("text")
+                    .toString()
+                    .contains("No sudo or Extension Manager"));
+        QVERIFY(capture("glass-one-block-setup.png"));
         keyClick(Qt::Key_Escape);
         QTRY_VERIFY(!setup->property("visible").toBool());
         QTRY_VERIFY(enable->property("activeFocus").toBool());
@@ -625,6 +902,11 @@ class ShellTest : public QObject {
         blur->setProbe([] { return BlurSupport::Result{true, {}, {}}; });
         blur->refresh();
         QTRY_VERIFY(blur->ready());
+        blur->setProbe([] { return BlurSupport::Result{true, "repair-command", {}}; });
+        blur->refresh();
+        QTRY_VERIFY(blur->setupAvailable());
+        QVERIFY(copy->property("visible").toBool());
+        QCOMPARE(enable->property("text").toString(), QString("Glass setup"));
         auto* useGlass = window->findChild<QObject*>("useGlass");
         QVERIFY(useGlass->property("visible").toBool());
         QVERIFY(QMetaObject::invokeMethod(useGlass, "clicked"));
@@ -655,7 +937,15 @@ class ShellTest : public QObject {
         editor->extend({80, 50});
         editor->finish();
         const auto artwork = editor->image();
+#ifdef Q_OS_MACOS
+        // macOS has no Alt-letter menu mnemonics; exercise its visible menu.
+        auto* fileButton = window->findChild<QQuickItem*>("fileMenuButton");
+        QVERIFY(fileButton);
+        QTest::mouseClick(window, Qt::LeftButton, {},
+                          fileButton->mapToScene(fileButton->boundingRect().center()).toPoint());
+#else
         keyClick(Qt::Key_F, Qt::AltModifier);
+#endif
         for (int i = 0; i < 6; ++i)
             keyClick(Qt::Key_Down); // New/Open/Save/Save As/Export/Updates.
         keyClick(Qt::Key_Return);
@@ -2104,6 +2394,12 @@ class ShellTest : public QObject {
         painter.setPen(Qt::NoPen);
         painter.setBrush(QColor("#FFE7AD"));
         painter.drawEllipse(QPointF(785, 208), 82, 82);
+        painter.end();
+        QImage distant(art.size(), QImage::Format_ARGB32_Premultiplied);
+        distant.fill(Qt::transparent);
+        painter.begin(&distant);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(Qt::NoPen);
         painter.setBrush(QColor("#82779D"));
         painter.drawPolygon(QPolygonF{{0, 430},
                                       {165, 245},
@@ -2114,6 +2410,12 @@ class ShellTest : public QObject {
                                       {1152, 422},
                                       {1152, 648},
                                       {0, 648}});
+        painter.end();
+        QImage near(art.size(), QImage::Format_ARGB32_Premultiplied);
+        near.fill(Qt::transparent);
+        painter.begin(&near);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(Qt::NoPen);
         painter.setBrush(QColor("#375F7C"));
         painter.drawPolygon(QPolygonF{{0, 505},
                                       {246, 355},
@@ -2123,6 +2425,11 @@ class ShellTest : public QObject {
                                       {1152, 379},
                                       {1152, 648},
                                       {0, 648}});
+        painter.end();
+        QImage hills(art.size(), QImage::Format_ARGB32_Premultiplied);
+        hills.fill(Qt::transparent);
+        painter.begin(&hills);
+        painter.setRenderHint(QPainter::Antialiasing);
         QPainterPath foreground;
         foreground.moveTo(0, 530);
         foreground.cubicTo(270, 435, 415, 610, 660, 504);
@@ -2133,12 +2440,20 @@ class ShellTest : public QObject {
         painter.fillPath(foreground, QColor("#204E59"));
         painter.end();
         QTemporaryDir dir;
-        const auto path = dir.filePath("Frost study.png");
-        QVERIFY(art.save(path));
+        const auto path = dir.filePath("Frost study.ora");
+        const openpaint::Layers artwork{
+            {1, "Background", art.convertToFormat(QImage::Format_ARGB32_Premultiplied), true, 1.0},
+            {2, "Distant peaks", distant, true, 1.0},
+            {3, "Mountain ridge", near, true, 1.0},
+            {4, "Foreground hills", hills, true, 1.0}};
+        QVERIFY(openpaint::saveOra(path, artwork).error.isEmpty());
         auto* editor = window->findChild<Editor*>("editor");
         editor->openFile(QUrl::fromLocalFile(path));
         QTRY_VERIFY(!editor->loading());
         QCOMPARE(editor->image().size(), art.size());
+        QCOMPARE(editor->layers().size(), 4);
+        QTRY_VERIFY(window->findChild<QQuickItem*>("layersPanel")->isVisible());
+        editor->selectLayer(2);
         for (const auto& theme : {QStringLiteral("light"), QStringLiteral("dark")}) {
             auto* action = window->findChild<QObject*>(theme + "ThemeAction");
             QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
@@ -2182,7 +2497,7 @@ class ShellTest : public QObject {
         component.setData(R"(
             import QtQuick
             Item {
-                anchors.fill: parent; z: 100; opacity: 0.6
+                anchors.fill: parent; z: 100
                 Repeater {
                     model: 20
                     Rectangle {
@@ -2231,7 +2546,8 @@ class ShellTest : public QObject {
         QTest::qWait(200);
         const auto plain = window->grabWindow();
         QVERIFY(capture(dark ? "file-menu-dark-plain.png" : "file-menu-light-plain.png"));
-        QVERIFY(contrast(plain) > 50);
+        // Opaque fixture stripes keep the baseline above 50 even after the menu tint.
+        QVERIFY2(contrast(plain) > 50, qPrintable(QString::number(contrast(plain))));
         if (!software)
             QVERIFY2(contrast(blurred) < contrast(plain) / 3,
                      "File menu must blur the toolbar behind it");
@@ -2532,7 +2848,7 @@ class ShellTest : public QObject {
             Q_ARG(QObject*, nullptr)));
         QVERIFY(capture(QStringLiteral("fill-dark-1024.png")));
     }
-    void keyboardControlsAndAccessibility() {
+    void keyboardToolsAndAccessibility() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         QVERIFY(tabTo("pencilButton"));
         auto* focused = window->activeFocusItem();
@@ -2552,6 +2868,10 @@ class ShellTest : public QObject {
         QVERIFY(accessible->state().checked);
         keyClick(Qt::Key_Space);
         QVERIFY(accessible->state().checked);
+    }
+
+    void keyboardControlsAndAccessibility() {
+        auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         QVERIFY(tabTo("pencilButton"));
         keyClick(Qt::Key_Space);
         QVERIFY(tabTo("strokeSize"));
@@ -2571,7 +2891,7 @@ class ShellTest : public QObject {
         keyClick(Qt::Key_Escape);
         QTRY_VERIFY(!colors->property("visible").toBool());
         auto* canvas = window->findChild<QQuickItem*>(QStringLiteral("canvas"));
-        accessible = QAccessible::queryAccessibleInterface(canvas);
+        auto* accessible = QAccessible::queryAccessibleInterface(canvas);
         QVERIFY(accessible);
         QCOMPARE(accessible->text(QAccessible::Name), QString("Drawing canvas"));
         QCOMPARE(accessible->role(), QAccessible::Canvas);
@@ -2923,12 +3243,15 @@ class ShellTest : public QObject {
     bool tabUntil(const std::function<bool(QQuickItem*)>& matches) {
         for (int i = 0; i < 100; ++i) {
             auto* target = qobject_cast<QQuickWindow*>(keyWindow());
-            for (auto* item = target ? target->activeFocusItem() : nullptr; item;
-                 item = item->parentItem()) {
+            if (!target)
+                return false;
+            for (auto* item = target->activeFocusItem(); item; item = item->parentItem()) {
                 if (matches(item))
                     return true;
             }
-            keyClick(Qt::Key_Tab);
+            // keyWindow already synchronized and activated this target above.
+            // Do not repeat its native-window wait for the same Tab event.
+            QTest::keyClick(target, Qt::Key_Tab);
         }
         return false;
     }
@@ -2968,7 +3291,9 @@ int main(int argc, char* argv[]) {
         return 1;
     qputenv("XDG_CONFIG_HOME", settings.path().toUtf8());
     QQuickWindow::setDefaultAlphaBuffer(true);
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
     QGuiApplication app(argc, argv);
+    app.styleHints()->setTabFocusBehavior(Qt::TabFocusAllControls);
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     ShellTest test;
     return QTest::qExec(&test, argc, argv);

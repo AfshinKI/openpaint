@@ -10,6 +10,11 @@ class TransformEditor : public Editor {
     void reset(const QImage& image) {
         document.reset(image);
     }
+    void limitHistory(qsizetype budget) {
+        const auto pixels = image();
+        document = openpaint::Document(pixels.size(), budget);
+        document.reset(pixels);
+    }
     void select(const QRegion& region) {
         document.setSelection(region);
     }
@@ -25,6 +30,111 @@ class TransformTest : public QObject {
         return image;
     }
   private slots:
+    void invertColorsAlphaAndMask() {
+        auto source = fixture();
+        source.setPixelColor(0, 0, Qt::transparent);
+        source.setPixelColor(1, 0, Qt::red);
+        auto token = std::make_shared<std::atomic_bool>(false);
+        const QRegion mask = QRegion(QRect(0, 0, 3, 2)) + QRegion(QRect(4, 3, 2, 1));
+        const auto result =
+            openpaint::transformImage(source, mask, openpaint::TransformKind::InvertColors, token);
+        QVERIFY(result.error.isEmpty());
+        QCOMPARE(result.mask, mask);
+        QCOMPARE(result.image.colorSpace(), source.colorSpace());
+        for (int y = 0; y < source.height(); ++y)
+            for (int x = 0; x < source.width(); ++x) {
+                const auto before = source.pixel(x, y);
+                const auto after = result.image.pixel(x, y);
+                if (!mask.contains({x, y})) {
+                    QCOMPARE(after, before);
+                    continue;
+                }
+                QCOMPARE(qAlpha(after), qAlpha(before));
+                QCOMPARE(qRed(after), qAlpha(before) - qRed(before));
+                QCOMPARE(qGreen(after), qAlpha(before) - qGreen(before));
+                QCOMPARE(qBlue(after), qAlpha(before) - qBlue(before));
+            }
+        QCOMPARE(result.image.pixelColor(1, 0), QColor(Qt::cyan));
+        QCOMPARE(result.image.pixelColor(0, 0), QColor(Qt::transparent));
+        QCOMPARE(openpaint::transformImage(result.image, mask,
+                                           openpaint::TransformKind::InvertColors, token)
+                     .image,
+                 source);
+        token->store(true);
+        const auto cancelled =
+            openpaint::transformImage(source, {}, openpaint::TransformKind::InvertColors, token);
+        QVERIFY(cancelled.cancelled);
+        QVERIFY(cancelled.image.isNull());
+    }
+    void invertColorsLayerHistoryAndGuards() {
+        TransformEditor editor;
+        const auto source = fixture();
+        editor.reset(source);
+        editor.addLayer(true);
+        const QRegion mask = QRegion(QRect(0, 0, 2, 2)) + QRegion(QRect(4, 2, 2, 2));
+        editor.select(mask);
+        editor.invertColors();
+        QVERIFY(editor.busy());
+        editor.selectLayer(0);
+        QCOMPARE(editor.activeLayer(), 1);
+        QTRY_VERIFY(!editor.busy());
+        const auto inverted = editor.image();
+        QVERIFY(inverted != source);
+        QCOMPARE(editor.selection(), mask);
+        QCOMPARE(inverted.pixel(3, 1), source.pixel(3, 1));
+        editor.undo();
+        QCOMPARE(editor.image(), source);
+        editor.redo();
+        QCOMPARE(editor.image(), inverted);
+        editor.selectLayer(0);
+        QCOMPARE(editor.image(), source);
+        editor.setLayerVisible(false);
+        QVERIFY(!editor.canInvertColors());
+        editor.invertColors();
+        QVERIFY(!editor.busy());
+        QCOMPARE(editor.image(), source);
+        editor.setLayerVisible(true);
+        editor.invertColors();
+        editor.cancelIo();
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image(), source);
+        editor.begin({1, 1}, false);
+        QVERIFY(!editor.canInvertColors());
+        editor.invertColors();
+        QVERIFY(!editor.busy());
+        editor.cancel();
+        editor.invertColors();
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(editor.image() != source);
+        editor.undo();
+        QCOMPARE(editor.image(), source);
+    }
+    void invertColorsSaveAndFailure() {
+        TransformEditor editor;
+        const auto source = fixture();
+        editor.reset(source);
+        editor.limitHistory(8);
+        QSignalSpy errors(&editor, &Editor::errorChanged);
+        editor.invertColors();
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image(), source);
+        QVERIFY(!editor.canUndo());
+        QCOMPARE(errors.count(), 1);
+        editor.limitHistory(1024 * 1024);
+        editor.invertColors();
+        QTRY_VERIFY(!editor.busy());
+        const auto inverted = editor.image();
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const auto url = QUrl::fromLocalFile(directory.filePath("inverted.png"));
+        editor.saveFile(url);
+        QTRY_VERIFY(!editor.busy());
+        QVERIFY(!editor.dirty());
+        editor.newDocument();
+        editor.openFile(url);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image(), inverted);
+    }
     void canvasResizeHistory() {
         TransformEditor editor;
         const auto original = fixture();

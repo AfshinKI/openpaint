@@ -8,11 +8,14 @@
 #include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
+#include <QStyleHints>
 #include <QSurfaceFormat>
 #include <QTimer>
 
 int main(int argc, char* argv[]) {
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
     QGuiApplication app(argc, argv);
+    app.styleHints()->setTabFocusBehavior(Qt::TabFocusAllControls);
     QCoreApplication::setApplicationName(QStringLiteral("OpenPaint"));
     QCoreApplication::setApplicationVersion(AppInfo::version());
     QGuiApplication::setDesktopFileName(QStringLiteral("io.github.AfshinKI.OpenPaint"));

@@ -16,7 +16,7 @@ Rectangle {
     width: editor.textRect.width * canvas.zoom
     height: editor.textRect.height * canvas.zoom
     visible: editor.textActive
-    color: !editor.hasSelection && editor.textBackground && editor.textDraft.length > 0 ? editor.textBackgroundColor : "transparent"
+    color: !editor.hasSelection && !editor.needsProject && editor.textBackground && editor.textDraft.length > 0 ? editor.textBackgroundColor : "transparent"
     TextEdit {
         id: input
         objectName: "inlineTextInput"
@@ -40,7 +40,7 @@ Rectangle {
             event.accepted = true;
         }
         persistentSelection: true
-        color: box.editor.hasSelection ? "transparent" : box.editor.textColor
+        color: (box.editor.hasSelection || box.editor.needsProject) ? "transparent" : box.editor.textColor
         selectionColor: Theme.accent
         selectedTextColor: Theme.accentText
         font.pixelSize: 20

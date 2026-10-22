@@ -11,11 +11,18 @@
 #include <QPolygon>
 #include <QQuickTextDocument>
 #include <QUrl>
+#include <QVariantList>
 #include <QtQml/qqmlregistration.h>
 
 class Editor : public QObject {
     Q_OBJECT
     QML_ELEMENT
+    Q_PROPERTY(QVariantList layers READ layers NOTIFY changed)
+    Q_PROPERTY(int activeLayer READ activeLayer NOTIFY changed)
+    Q_PROPERTY(bool canInvertColors READ canInvertColors NOTIFY changed)
+    Q_PROPERTY(bool canEditLayers READ canEditLayers NOTIFY changed)
+    Q_PROPERTY(bool needsProject READ needsProject NOTIFY changed)
+    Q_PROPERTY(bool sampleMerged MEMBER sampleMerged NOTIFY settingsChanged)
     Q_PROPERTY(bool exporting READ exporting NOTIFY changed)
     Q_PROPERTY(bool transforming READ transforming NOTIFY changed)
     Q_PROPERTY(bool colorSelection MEMBER colorSelection NOTIFY settingsChanged)
@@ -76,6 +83,34 @@ class Editor : public QObject {
     Q_PROPERTY(Tool tool READ tool WRITE setTool NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentEraser MEMBER transparentEraser NOTIFY settingsChanged)
   public:
+    QVariantList layers() const;
+    QImage layerImage(int index) const {
+        return index >= 0 && index < int(document.layers().size())
+                   ? document.layers()[size_t(index)].pixels
+                   : QImage();
+    }
+    int activeLayer() const {
+        return document.activeLayer();
+    }
+    bool canEditLayers() const {
+        return !busy() && !interactionActive() && !selecting_;
+    }
+    bool needsProject() const {
+        return document.needsProject() ||
+               fileUrl_.toLocalFile().endsWith(".ora", Qt::CaseInsensitive);
+    }
+    bool sampleMerged = false;
+    Q_INVOKABLE bool enableLayers();
+    Q_INVOKABLE void reorderLayer(const QString& id, int target);
+    Q_INVOKABLE void toggleLayerVisibility(int index);
+    Q_INVOKABLE void selectLayer(int index);
+    Q_INVOKABLE void addLayer(bool duplicate = false);
+    Q_INVOKABLE void deleteLayer();
+    Q_INVOKABLE void moveLayer(int index);
+    Q_INVOKABLE void renameLayer(const QString& name);
+    Q_INVOKABLE void setLayerVisible(bool visible);
+    Q_INVOKABLE void setLayerOpacity(int opacity);
+    Q_INVOKABLE void mergeLayerDown();
     enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape, Text, Select };
     Q_ENUM(Tool)
     Tool tool() const {
@@ -148,8 +183,8 @@ class Editor : public QObject {
     const QImage& image() const {
         return document.image();
     }
-    const QImage& displayImage() const {
-        return textActive_ && !hasSelection() ? document.previewBase() : image();
+    QImage displayImage() const {
+        return document.composite(textActive_ && !hasSelection() && !needsProject());
     }
     bool hasSelection() const {
         return !selection().isEmpty();
@@ -167,8 +202,9 @@ class Editor : public QObject {
     QPoint floatingPosition() const {
         return floatingPosition_;
     }
-    QImage selectedImage() const;
+    QImage selectedImage(bool merged = false) const;
     Q_INVOKABLE bool copySelection();
+    Q_INVOKABLE bool copyVisibleLayers();
     Q_INVOKABLE void cutSelection();
     Q_INVOKABLE void pasteClipboard();
     bool pasteImage(const QImage& image);
@@ -180,6 +216,10 @@ class Editor : public QObject {
     Q_INVOKABLE void selectRect(int x, int y, int width, int height);
     Q_INVOKABLE void selectAll();
     Q_INVOKABLE void invertSelection();
+    bool canInvertColors() const {
+        return canEditLayers() && document.layers()[size_t(activeLayer())].visible;
+    }
+    Q_INVOKABLE void invertColors();
     const QPolygon& selectionDraft() const {
         return selectionPoints_;
     }
@@ -255,12 +295,15 @@ class Editor : public QObject {
     void errorChanged();
     void noticeChanged();
     void documentReplaced();
+    void documentSessionChanged();
     void saved(bool success);
     void exported(bool success);
     void settingsChanged();
     void pixelsChanged(QRect rect);
 
   private:
+    void layerChanged(bool success);
+    bool layersInitialized_ = false;
     bool editingSecondary_ = false;
     void fail(const QString& message);
     void finishTransform();
@@ -268,11 +311,12 @@ class Editor : public QObject {
                         const openpaint::TransformOptions& options = {});
     QFutureWatcher<openpaint::TransformResult> transformWatcher_;
     quint64 transformRevision_ = 0;
+    bool transformColors_ = false;
     bool transforming_ = false, transformSelection_ = false, transformFromFloating_ = false;
     QPoint transformPosition_;
     void refreshShape();
     void refreshText();
-    bool startCopy(bool cut);
+    bool startCopy(bool cut, bool merged = false);
     void finishCopy();
     QFutureWatcher<QByteArray> copyWatcher_;
     bool cutAfterCopy_ = false, clipboardBusy_ = false;

@@ -6,6 +6,6 @@ Exec=openpaint %f
 Icon=io.github.AfshinKI.OpenPaint
 Terminal=false
 Categories=Graphics;2DGraphics;RasterGraphics;
-MimeType=image/png;image/jpeg;image/bmp;image/x-bmp;image/webp;
+MimeType=image/openraster;image/png;image/jpeg;image/bmp;image/x-bmp;image/webp;
 StartupNotify=true
 StartupWMClass=OpenPaint

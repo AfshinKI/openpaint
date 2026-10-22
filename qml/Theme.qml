@@ -5,6 +5,9 @@ import QtQuick
 import OpenPaint
 
 QtObject {
+    function coloredIcon(source: url): bool {
+        return /\/(pencil|eyedropper|brush)\.svg$/.test(source.toString());
+    }
     // 0 follows the desktop, 1 is light, 2 is dark. Persisted with appearance preferences.
     readonly property int controlRadius: 6
     readonly property int surfaceRadius: 8

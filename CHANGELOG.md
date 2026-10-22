@@ -1,5 +1,39 @@
 # Changelog
 
+## 2.0.0 — 2026-10-21
+
+- Add an Apple silicon macOS app bundle, native glass and platform keyboard shortcuts.
+- Build, test and audit the macOS DMG alongside Linux release packages.
+- Refresh website and README images with the layered v2 UI at 40% glass opacity.
+
+- Pan the canvas with right-button hold-and-drag and a closed-hand cursor,
+  replacing canvas right-button drawing/sampling.
+
+- Use live blur with full desktop redraws in the manual glass setup recipe and keep setup accessible
+  for repairing flicker on an already-enabled desktop.
+
+- Restore the prior Image icons, add a footer zoom slider, and simplify blur setup
+  to one user-run terminal block with verified extension installation/configuration.
+
+- Restore the monochrome Fill icon; its drop becomes solid when Fill is selected.
+
+- Center the Text tool and refresh original colored ribbon icons, with fixed
+  fill and brush artwork colors independent of the selected paint color.
+
+- Add an Image-ribbon Invert colors command for the active layer or selection,
+  preserving transparency and supporting undo/redo.
+
+- Refine layer controls with a larger separated ribbon button, circular add
+  button, right-side eyes, context-menu icons and glass appearance.
+- Add a thumbnail layer rail with hover visibility icons, drag reordering and a
+  fixed background; first opening adds a transparent drawing layer.
+- Add undoable raster layers with thumbnails, names, reordering, duplication,
+  merge down, visibility and opacity controls.
+- Save/reopen bounded OpenRaster projects; PNG and other exports flatten visible
+  layers without changing the project's saved state.
+- Keep tools and selected-content edits on the active layer; transform the whole
+  stack together and optionally sample or copy visible layers.
+
 ## 1.3.0 — 2026-10-20
 
 - Select all exact matching pixels with the new By color magic wand.

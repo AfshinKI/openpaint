@@ -19,6 +19,29 @@ TransformResult transformImage(const QImage& source, const QRegion& mask, Transf
         (!mask.isEmpty() && !source.rect().contains(mask.boundingRect())))
         return {
             {}, {}, QCoreApplication::translate("Transform", "Invalid source image or selection.")};
+    if (kind == TransformKind::InvertColors) {
+        auto result = source.copy();
+        if (result.isNull())
+            return {
+                {},
+                {},
+                QCoreApplication::translate("Transform", "Not enough memory to invert colors.")};
+        const auto region = mask.isEmpty() ? QRegion(source.rect()) : mask;
+        for (const auto rect : region) {
+            for (int y = rect.top(); y <= rect.bottom(); ++y) {
+                if (token->load())
+                    return {{}, {}, {}, true};
+                auto* pixels = reinterpret_cast<QRgb*>(result.scanLine(y));
+                for (int x = rect.left(); x <= rect.right(); ++x) {
+                    const auto pixel = pixels[x];
+                    const int alpha = qAlpha(pixel);
+                    pixels[x] = qRgba(alpha - qRed(pixel), alpha - qGreen(pixel),
+                                      alpha - qBlue(pixel), alpha);
+                }
+            }
+        }
+        return {result, mask, {}};
+    }
     if (kind == TransformKind::CanvasResize) {
         if (!Document::validSize(options.size) || !mask.isEmpty() ||
             std::abs(qint64(options.canvasOrigin.x())) > 16384 ||

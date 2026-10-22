@@ -75,7 +75,8 @@ The GCC Debug lane additionally runs the shell suite on isolated X11/software at
 it is not compositor, GPU or physical-device validation. Tests synchronize and
 grab the rendered window before coordinate actions instead of requiring an extra
 frame when the requested state may already have rendered.
-M3 adds parser fuzz targets with bounded corpora. M4 adds representative UI smoke
+Layer project tests cover bounded ZIP/XML rejection, round-trips and failed atomic saves.
+Dedicated parser fuzz targets with bounded corpora remain a later M3 gate. M4 adds representative UI smoke
 tests. M5 adds artifact and updater gates. Sanitizers run in separate compatible
 jobs; known external-library exceptions must be narrow and documented.
 
@@ -90,3 +91,10 @@ upgrade with unsaved artwork. Use generated files only and record actual results
 Review image metadata, diagnostics, binary paths, license inventory, known bugs,
 and all advertised features before a stable release. See [ROADMAP.md](ROADMAP.md)
 for the gate; a checklist with unchecked items is not a release approval.
+
+Initial layered editing caps the stack at 32 layers and 128 MiB of resident pixels.
+Structural commands conservatively charge before/after raster snapshots to the
+256 MiB history budget. OpenRaster archives and total expanded entries each cap
+at 128 MiB, with 80 entries, a 200:1 expansion ratio (1 MiB allowance), 240-character
+paths and 64 KiB stack XML. PNG decode retains its existing limits. Large-document,
+physical input latency and cross-application certification remain release gates.

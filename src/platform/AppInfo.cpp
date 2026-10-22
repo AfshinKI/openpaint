@@ -15,6 +15,8 @@ QString AppInfo::channel() const {
 }
 QString AppInfo::installation() const {
     const auto kind = QStringLiteral(OPENPAINT_INSTALL_KIND);
+    if (kind == "macos")
+        return tr("macOS application");
     if (kind == "portable")
         return tr("Portable archive");
     if (kind == "appimage")
@@ -27,6 +29,9 @@ QString AppInfo::installation() const {
 }
 QString AppInfo::instructions() const {
     const auto kind = QStringLiteral(OPENPAINT_INSTALL_KIND);
+    if (kind == "macos")
+        return tr("Download the newer Mac disk image from GitHub Releases. Save your work, "
+                  "quit OpenPaint, then replace OpenPaint in Applications.");
     if (kind == "portable")
         return tr("Download and extract a newer portable archive from GitHub Releases. Save "
                   "your work and close OpenPaint before replacing the application folder.");

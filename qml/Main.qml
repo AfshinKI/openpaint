@@ -10,7 +10,7 @@ ApplicationWindow {
     id: window
     property Action lastRotation: rotateRightAction
     property Action lastFlip: flipHorizontalAction
-    readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible
+    readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible || layersPanel.propertiesOpen
     readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
     readonly property CanvasItem canvasController: canvas
@@ -23,6 +23,7 @@ ApplicationWindow {
     minimumHeight: 640
     visible: false
     Component.onCompleted: Qt.callLater(function () {
+        BlurSupport.attachWindow(window, Appearance);
         window.show();
         BlurSupport.refresh();
     })
@@ -49,6 +50,31 @@ ApplicationWindow {
     palette.buttonText: Theme.text
     palette.highlight: Theme.accent
     palette.highlightedText: Theme.accentText
+    property bool layersVisible: false
+    function toggleLayers() {
+        if (layersVisible) {
+            layersVisible = false;
+            canvas.forceActiveFocus();
+        } else if (editor.enableLayers()) {
+            layersVisible = true;
+        }
+    }
+    Action {
+        id: newLayerAction
+        text: qsTr("New layer")
+        shortcut: "Ctrl+Shift+N"
+        enabled: editor.canEditLayers && editor.layers.length < 32 && !window.documentOptionsOpen && !window.textInputFocused
+        onTriggered: {
+            editor.addLayer();
+            window.layersVisible = true;
+        }
+    }
+    Connections {
+        target: editor
+        function onDocumentSessionChanged() {
+            window.layersVisible = editor.needsProject;
+        }
+    }
     property bool discardClose: false
     property string pendingAction: ""
     function performPending() {
@@ -79,7 +105,7 @@ ApplicationWindow {
     }
     function saveDrawing() {
         editor.commitPreview();
-        if (editor.fileUrl.toString() === "")
+        if (editor.fileUrl.toString() === "" || (editor.needsProject && !editor.fileUrl.toString().toLowerCase().endsWith(".ora")))
             saveDialog.open();
         else
             editor.saveFile(editor.fileUrl);
@@ -342,6 +368,7 @@ ApplicationWindow {
         id: zoomInAction
         icon.source: "icons/zoom-in.svg"
         text: qsTr("Zoom in")
+        enabled: canvas.zoom < 32
         shortcut: StandardKey.ZoomIn
         onTriggered: canvas.zoomBy(1.25)
     }
@@ -349,8 +376,17 @@ ApplicationWindow {
         id: zoomOutAction
         icon.source: "icons/zoom-out.svg"
         text: qsTr("Zoom out")
+        enabled: canvas.zoom > 0.01
         shortcut: StandardKey.ZoomOut
         onTriggered: canvas.zoomBy(0.8)
+    }
+    Action {
+        id: invertColorsAction
+        objectName: "invertColorsAction"
+        icon.source: "icons/invert-colors.svg"
+        text: qsTr("Invert colors")
+        enabled: editor.canInvertColors && !window.documentOptionsOpen
+        onTriggered: editor.invertColors()
     }
     Action {
         id: rotateRightAction
@@ -426,15 +462,23 @@ ApplicationWindow {
         id: copyAction
         icon.source: "icons/copy.svg"
         text: qsTr("Copy")
-        shortcut: "Ctrl+C"
+        shortcut: StandardKey.Copy
         enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.copySelection()
+    }
+    Action {
+        id: copyVisibleAction
+        icon.source: "icons/copy.svg"
+        text: qsTr("Copy visible layers")
+        shortcut: "Ctrl+Shift+C"
+        enabled: copyAction.enabled
+        onTriggered: editor.copyVisibleLayers()
     }
     Action {
         id: cutAction
         icon.source: "icons/cut.svg"
         text: qsTr("Cut")
-        shortcut: "Ctrl+X"
+        shortcut: StandardKey.Cut
         enabled: editor.canSelect && !editor.busy && editor.hasSelection && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.cutSelection()
     }
@@ -442,7 +486,7 @@ ApplicationWindow {
         id: pasteAction
         icon.source: "icons/paste.svg"
         text: qsTr("Paste")
-        shortcut: "Ctrl+V"
+        shortcut: StandardKey.Paste
         enabled: editor.canSelect && !editor.busy && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.pasteClipboard()
     }
@@ -451,7 +495,7 @@ ApplicationWindow {
         icon.source: "icons/selection.svg"
         objectName: "selectAllAction"
         text: qsTr("Select all")
-        shortcut: "Ctrl+A"
+        shortcut: StandardKey.SelectAll
         enabled: !editor.busy && !editor.textActive && !window.textInputFocused && !window.documentOptionsOpen
         onTriggered: editor.selectAll()
     }
@@ -529,6 +573,7 @@ ApplicationWindow {
                 background: Item {}
                 delegate: MenuBarItem {
                     id: menuEntry
+                    objectName: menu === fileMenu ? "fileMenuButton" : ""
                     background: GlassSurface {
                         backdropLayers: [window.background, canvas]
                         radius: Theme.controlRadius
@@ -538,6 +583,7 @@ ApplicationWindow {
                     }
                 }
                 PaintMenu {
+                    id: fileMenu
                     objectName: "fileMenu"
                     title: qsTr("&File")
                     PaintMenuItem {
@@ -590,6 +636,10 @@ ApplicationWindow {
                     }
                     MenuSeparator {}
                     PaintMenuItem {
+                        action: copyVisibleAction
+                    }
+                    MenuSeparator {}
+                    PaintMenuItem {
                         action: selectAllAction
                     }
                     PaintMenuItem {
@@ -601,6 +651,13 @@ ApplicationWindow {
                 }
                 PaintMenu {
                     title: qsTr("&View")
+                    PaintMenuItem {
+                        text: qsTr("Layers")
+                        checkable: true
+                        checked: window.layersVisible
+                        enabled: window.layersVisible || editor.canEditLayers
+                        onTriggered: window.toggleLayers()
+                    }
                     PaintMenuItem {
                         action: fitAction
                     }
@@ -708,7 +765,7 @@ ApplicationWindow {
         RowLayout {
             anchors.fill: parent
             anchors.margins: 8
-            spacing: 4
+            spacing: window.width < 1100 ? 0 : 4
             ColumnLayout {
                 Layout.alignment: Qt.AlignBottom
                 spacing: 0
@@ -858,16 +915,20 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignBottom
                 spacing: 4
                 GridLayout {
-                    columns: 2
+                    columns: 3
                     rowSpacing: 2
                     columnSpacing: 4
                     IconButton {
+                        Layout.row: 0
+                        Layout.column: 0
                         flat: true
                         symbol: "crop"
                         objectName: "cropButton"
                         action: cropAction
                     }
                     RowLayout {
+                        Layout.row: 0
+                        Layout.column: 1
                         spacing: 0
                         IconButton {
                             flat: true
@@ -901,12 +962,16 @@ ApplicationWindow {
                         }
                     }
                     IconButton {
+                        Layout.row: 1
+                        Layout.column: 0
                         flat: true
                         symbol: "resize"
                         objectName: "resizeButton"
                         action: resizeAction
                     }
                     RowLayout {
+                        Layout.row: 1
+                        Layout.column: 1
                         spacing: 0
                         IconButton {
                             flat: true
@@ -936,6 +1001,15 @@ ApplicationWindow {
                             }
                         }
                     }
+                    IconButton {
+                        Layout.row: 0
+                        Layout.column: 2
+                        Layout.rowSpan: 2
+                        flat: true
+                        symbol: "invert-colors"
+                        objectName: "invertColorsButton"
+                        action: invertColorsAction
+                    }
                 }
                 Label {
                     text: qsTr("Image")
@@ -952,6 +1026,8 @@ ApplicationWindow {
                     columns: 3
                     IconButton {
                         flat: true
+                        Layout.row: 0
+                        Layout.column: 0
                         symbol: "pencil"
                         objectName: "pencilButton"
                         text: qsTr("Pencil")
@@ -964,6 +1040,8 @@ ApplicationWindow {
                     }
                     IconButton {
                         flat: true
+                        Layout.row: 0
+                        Layout.column: 1
                         symbol: "fill"
                         objectName: "fillButton"
                         text: qsTr("Fill")
@@ -976,6 +1054,9 @@ ApplicationWindow {
                     }
                     IconButton {
                         flat: true
+                        Layout.row: 0
+                        Layout.column: 2
+                        Layout.rowSpan: 2
                         symbol: "text"
                         objectName: "textButton"
                         text: qsTr("Text")
@@ -988,6 +1069,8 @@ ApplicationWindow {
                     }
                     IconButton {
                         flat: true
+                        Layout.row: 1
+                        Layout.column: 0
                         symbol: "eyedropper"
                         objectName: "pickerButton"
                         text: qsTr("Color picker")
@@ -999,6 +1082,8 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     Row {
+                        Layout.row: 1
+                        Layout.column: 1
                         spacing: 0
                         IconButton {
                             flat: true
@@ -1392,15 +1477,49 @@ ApplicationWindow {
                     }
                 }
             }
+            Rectangle {
+                objectName: "layersRibbonDivider"
+                Layout.preferredWidth: 1
+                Layout.preferredHeight: 80
+                Layout.leftMargin: 4
+                Layout.rightMargin: 4
+                color: Theme.divider
+            }
+            IconButton {
+                Layout.preferredWidth: 48
+                Layout.preferredHeight: 56
+                icon.width: 30
+                icon.height: 30
+                objectName: "layersButton"
+                symbol: "layers"
+                text: qsTr("Layers")
+                checkable: true
+                checked: window.layersVisible
+                enabled: window.layersVisible || editor.canEditLayers
+                onClicked: window.toggleLayers()
+            }
             Item {
                 Layout.fillWidth: true
             }
         }
     }
+    LayersPanel {
+        id: layersPanel
+        objectName: "layersPanel"
+        editor: window.editorController
+        visible: window.layersVisible
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.margins: 4
+        width: 200
+        z: 5
+    }
     CanvasItem {
         id: canvas
         objectName: "canvas"
         anchors.fill: parent
+        anchors.rightMargin: window.layersVisible ? layersPanel.width + 8 : 0
         editor: window.editorController
         enabled: !window.editorController.loading || window.editorController.filling
         focus: true
@@ -1525,9 +1644,11 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? ((editor.shapeKind === 15 || editor.shapeKind === 19) ? qsTr("Add points · Backspace removes · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Space+drag to pan")
+                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? ((editor.shapeKind === 15 || editor.shapeKind === 19) ? qsTr("Add points · Backspace removes · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Right-drag or Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                elide: Text.ElideRight
             }
             PaintButton {
                 flat: Appearance.effectiveGlassEnabled
@@ -1568,6 +1689,13 @@ ApplicationWindow {
                 shortcutLabel: "Ctrl+0"
                 action: fitAction
             }
+            Label {
+                objectName: "zoomPercentage"
+                text: Math.round(canvas.zoom * 100) + "%"
+                Layout.preferredWidth: 44
+                horizontalAlignment: Text.AlignHCenter
+                color: Theme.text
+            }
             IconButton {
                 flat: Appearance.effectiveGlassEnabled
                 symbol: "zoom-out"
@@ -1575,10 +1703,45 @@ ApplicationWindow {
                 action: zoomOutAction
                 Accessible.name: qsTr("Zoom out")
             }
-            Label {
-                text: Math.round(canvas.zoom * 100) + "%"
-                Layout.preferredWidth: 44
-                horizontalAlignment: Text.AlignHCenter
+            Slider {
+                id: zoomSlider
+                objectName: "zoomSlider"
+                Layout.preferredWidth: 120
+                Layout.preferredHeight: 28
+                // Logarithmic travel keeps low zoom levels easy to reach.
+                from: Math.log2(0.01)
+                to: Math.log2(32)
+                stepSize: 0.05
+                value: Math.log2(canvas.zoom)
+                Accessible.name: qsTr("Zoom %1%").arg(Math.round(canvas.zoom * 100))
+                Accessible.description: qsTr("Adjust zoom from 1% to 3200%")
+                onMoved: canvas.zoomBy(Math.pow(2, value) / canvas.zoom)
+                ToolTip.visible: hovered || pressed
+                ToolTip.text: Math.round(canvas.zoom * 100) + "%"
+                background: Rectangle {
+                    x: zoomSlider.leftPadding
+                    y: (zoomSlider.height - height) / 2
+                    width: zoomSlider.availableWidth
+                    height: 4
+                    radius: 2
+                    color: Theme.divider
+                    Rectangle {
+                        width: zoomSlider.position * parent.width
+                        height: parent.height
+                        radius: 2
+                        color: Theme.accent
+                    }
+                }
+                handle: Rectangle {
+                    x: zoomSlider.leftPadding + zoomSlider.visualPosition * (zoomSlider.availableWidth - width)
+                    y: (zoomSlider.height - height) / 2
+                    width: 16
+                    height: 16
+                    radius: 8
+                    color: Theme.accent
+                    border.width: zoomSlider.visualFocus ? 3 : 2
+                    border.color: zoomSlider.visualFocus ? Theme.text : Theme.panel
+                }
             }
             IconButton {
                 flat: Appearance.effectiveGlassEnabled
@@ -1594,7 +1757,7 @@ ApplicationWindow {
         objectName: "openDialog"
         title: qsTr("Open image")
         fileMode: FileDialog.OpenFile
-        nameFilters: [qsTr("Images (*.png *.jpg *.jpeg *.bmp *.webp)"), qsTr("PNG images (*.png)"), qsTr("JPEG images (*.jpg *.jpeg)"), qsTr("BMP images (*.bmp)"), qsTr("WebP images (*.webp)")]
+        nameFilters: [qsTr("Images and projects (*.ora *.png *.jpg *.jpeg *.bmp *.webp)"), qsTr("OpenRaster projects (*.ora)"), qsTr("PNG images (*.png)"), qsTr("JPEG images (*.jpg *.jpeg)"), qsTr("BMP images (*.bmp)"), qsTr("WebP images (*.webp)")]
         onAccepted: editor.openFile(selectedFile)
     }
     FileDialog {
@@ -1610,11 +1773,11 @@ ApplicationWindow {
     FileDialog {
         id: saveDialog
         objectName: "saveDialog"
-        title: qsTr("Save PNG (.png)")
+        title: editor.needsProject ? qsTr("Save project (.ora)") : qsTr("Save drawing")
         fileMode: FileDialog.SaveFile
         // Appending a suffix after portal selection writes outside its file grant.
         defaultSuffix: ""
-        nameFilters: [qsTr("PNG images (*.png)")]
+        nameFilters: editor.needsProject ? [qsTr("OpenRaster projects (*.ora)")] : [qsTr("PNG images (*.png)"), qsTr("OpenRaster projects (*.ora)")]
         onAccepted: editor.saveFile(selectedFile)
         onRejected: window.pendingAction = ""
     }

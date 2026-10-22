@@ -16,7 +16,7 @@ SKIP_DIRS = {
     ".idea", ".vscode", ".pytest_cache",
 }
 TEXT_SUFFIXES = {".md", ".py", ".yml", ".yaml", ".json", ".toml", ".txt",
-                 ".cmake", ".cpp", ".h", ".hpp", ".qml", ".svg", ".html",
+                 ".cmake", ".cpp", ".mm", ".h", ".hpp", ".qml", ".svg", ".html",
                  ".sh", ".xml", ".desktop", ".in"}
 TEXT_NAMES = {"AppRun", "LICENSE", "CMakeLists.txt", ".gitignore", ".gitattributes", ".editorconfig"}
 REQUIRED = ("README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", "LICENSE",

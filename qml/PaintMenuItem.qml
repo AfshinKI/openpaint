@@ -11,7 +11,7 @@ MenuItem {
     icon.source: symbol.length ? "icons/" + symbol + ".svg" : action ? action.icon.source : ""
     icon.width: 18
     icon.height: 18
-    icon.color: enabled ? Theme.text : Theme.secondaryText
+    icon.color: Theme.coloredIcon(symbol.length ? "icons/" + symbol + ".svg" : action ? action.icon.source : "") ? "transparent" : enabled ? Theme.text : Theme.secondaryText
     implicitHeight: 36
     leftPadding: 40
     palette.windowText: enabled ? Theme.text : Theme.secondaryText

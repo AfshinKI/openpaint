@@ -238,12 +238,12 @@ void CanvasItem::mousePressEvent(QMouseEvent* event) {
     // Sampling emits settingsChanged synchronously. Do it before establishing the
     // gesture so the settings handler cannot release ownership of this press.
     const bool picking = editor_ && editor_->tool() == Editor::Tool::ColorPicker && !space_ &&
-                         event->button() != Qt::MiddleButton;
+                         event->button() == Qt::LeftButton;
     if (picking)
         editor_->begin(toDocument(event->position()), event->button() == Qt::RightButton);
     gestureButton_ = event->button();
     last_ = event->position();
-    panning_ = space_ || gestureButton_ == Qt::MiddleButton;
+    panning_ = space_ || gestureButton_ == Qt::MiddleButton || gestureButton_ == Qt::RightButton;
     updateToolCursor();
     drawing_ = !panning_ && !picking && editor_;
     if (drawing_)
@@ -346,11 +346,13 @@ void CanvasItem::keyPressEvent(QKeyEvent* event) {
         editor_->finish();
         drawing_ = panning_ = false;
         gestureButton_ = Qt::NoButton;
+        updateToolCursor();
         event->accept();
     } else if (event->key() == Qt::Key_Escape && editor_) {
         editor_->cancel();
         drawing_ = panning_ = false;
         gestureButton_ = Qt::NoButton;
+        updateToolCursor();
         event->accept();
     } else {
         QQuickPaintedItem::keyPressEvent(event);

@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "BlurSupport.h"
+#include "Appearance.h"
+#include <QPointer>
+#include <QQuickWindow>
+#ifdef Q_OS_MACOS
+#include "MacGlass.h"
+#endif
 #include <QClipboard>
 #include <QDir>
 #include <QElapsedTimer>
@@ -82,10 +88,40 @@ BlurSupport::BlurSupport(Probe probe, QObject* parent) : QObject(parent), probe_
     });
 }
 void BlurSupport::setProbe(Probe probe) {
-    if (!busy())
+    if (!busy()) {
+        probeInjected_ = true;
         probe_ = std::move(probe);
+    }
+}
+void BlurSupport::attachWindow(QQuickWindow* window, Appearance* appearance) {
+#ifdef Q_OS_MACOS
+    if (!window || !appearance || nativeMac_ || probeInjected_ ||
+        QGuiApplication::platformName() != "cocoa")
+        return;
+    nativeMac_ = true;
+    const QPointer<BlurSupport> self(this);
+    installMacGlass(window, appearance, [self](bool available) {
+        if (!self)
+            return;
+        self->result_ = {
+            available,
+            {},
+            available
+                ? tr("macOS provides native glass automatically. No terminal setup is needed.")
+                : tr("Native glass is unavailable. Check macOS Reduce Transparency in "
+                     "Accessibility settings.")};
+        emit self->changed();
+    });
+#else
+    Q_UNUSED(window);
+    Q_UNUSED(appearance);
+#endif
 }
 void BlurSupport::refresh() {
+    if (nativeMac_) {
+        emit probeFinished();
+        return;
+    }
     if (busy())
         return;
     busy_ = true;
@@ -147,19 +183,19 @@ BlurSupport::Result BlurSupport::evaluate(const QString& desktop, const QString&
         result.ready = blur == "true" && ((all == "false" && included.value_or(false)) ||
                                           (all == "true" && excluded.has_value() && !*excluded));
     }
-    if (installed) {
-        result.command = "gnome-extensions enable blur-my-shell@aunetx && "
-                         "gnome-extensions prefs blur-my-shell@aunetx";
-        result.instructions = tr("Open Blur My Shell. Turn on Applications blur, add OpenPaint, "
-                                 "then check again.");
-    } else {
-        const auto candidate = run("apt-cache", {"policy", "gnome-shell-extension-manager"});
-        const QRegularExpression available("(?:^|\\n)\\s*Candidate: ([0-9][^\\s]*)");
-        if (!available.match(candidate).hasMatch())
-            return result;
-        result.command = "sudo apt install gnome-shell-extension-manager";
-        result.instructions = tr("Install Extension Manager, then use it to add Blur My Shell. "
-                                 "Turn on Applications blur and add OpenPaint.");
+    {
+        QFile setup(":/qt/qml/OpenPaint/setup/enable-glass.py");
+        if (setup.open(QIODevice::ReadOnly)) {
+            result.command = "/usr/bin/python3 <<'OPENPAINT_GLASS'\n" +
+                             QString::fromUtf8(setup.readAll()) + "OPENPAINT_GLASS";
+            result.instructions =
+                tr("Copy setup and paste it into a terminal. It downloads Blur My Shell "
+                   "from GNOME Extensions only if missing, enables it and configures "
+                   "live application blur with full desktop redraws to prevent flicker. "
+                   "This can increase GPU use or reduce desktop performance. "
+                   "No sudo or Extension Manager is needed. "
+                   "Then click Check again; if the terminal asks, sign out and back in first.");
+        }
     }
     return result;
 }

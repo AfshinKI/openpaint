@@ -1,6 +1,6 @@
 # Architecture
 
-Status: native shell implemented; single-layer document/patch history implemented; drawing UI and background PNG lifecycle implemented.
+Status: native shell, bounded raster layers, patch/stack history, drawing UI and background image/project lifecycle implemented in development. See [layer decision](decisions/0008-bounded-layer-projects.md).
 See [decision 0001](decisions/0001-native-stack.md) for alternatives and tradeoffs.
 
 ## Stack
@@ -67,8 +67,9 @@ QML, network access, GitHub, installation format, or AI providers.
   selection mask, and history. A layer owns name, visibility, opacity, and pixels.
   M1 has one layer but uses the same ownership boundary.
 - M1 may use a full QImage per layer and bounded dirty-rectangle undo patches.
-  M3 introduces 256×256 pixel tile storage behind the same raster interface before
-  large multilayer documents ship. Missing tiles mean transparent pixels.
+  The initial layered implementation retains bounded full rasters (32 layers,
+  128 MiB total layer pixels). Tile storage remains required before raising those
+  bounds for large multilayer documents; see ADR 0008.
 - All durable edits are commands with before/after state or deterministic patch
   data. A stroke is one command, regardless of input-event count. Dialog previews,
   selection moves, and transforms commit once or cancel without changing pixels.
@@ -177,7 +178,7 @@ Read/write the interoperable subset; document unsupported blending modes and
 produce an explicit import warning or reject instead of silently corrupting work.
 Microsoft `.paint` compatibility is a separate deferred research item.
 
-Choose and license-review a maintained ZIP implementation at M3. Cap entry count,
+The initial project codec uses system libarchive (BSD license); see ADR 0008. Cap entry count,
 total decoded bytes, dimensions, compression ratio, and path lengths; reject
 absolute paths, parent traversal, duplicate conflicting entries, and symlinks.
 Prefer streaming reads over extracting untrusted archives to disk.
@@ -227,3 +228,41 @@ Inline text retains font runs in the transient Qt Quick text document. C++ merge
 requested character properties and clones the bounded plain-input document for
 raster preview/commit; saved pixels still belong to Document. Logical-pixel layout
 and view scaling keep zoom out of text formatting. See [ADR 0007](decisions/0007-inline-text-formats.md).
+
+## Initial layer integration
+
+Document::image is the active layer raster; composite returns the visible stack.
+Patch commands carry stable layer IDs. Stack/property commands retain bounded
+before/after snapshots; both pixel and structural history share saved revisions.
+Selecting a layer clears the transient selection without dirtying content. Layer
+changes are disabled during gestures, previews and asynchronous operations. Hidden
+layers cannot receive drawing or paste previews. Whole-image transforms process
+every layer on a worker and commit the stack once; selected-content transforms
+remain local to the active layer. Layered selection delete/move clears alpha.
+
+The initial OpenRaster subset accepts a flat source-over stack of PNG layers,
+including contained offsets. Unsupported groups, blend modes and off-canvas pixels
+are rejected. Limits and the dependency choice are in ADR 0008. Recovery remains
+planned. No full OpenRaster baseline or cross-application certification is claimed.
+
+The bottom raster is the fixed Background in the thumbnail rail: the engine rejects
+moving/deleting it or moving another layer below it. No codec extension is needed;
+the lowest stored raster retains this role on reopen. Merge down may update its
+pixels while preserving its identity. Dragging resolves the captured stable layer
+ID on drop and commits one reorder command. Per-tile visibility changes retain the
+active layer. The controller initializes a flat document's layers once per document
+session; panel toggles after undo do not recreate a removed layer.
+
+Color inversion uses the existing cancellable transform worker but remains an
+active-layer pixel edit. The worker preserves alpha and clips to the selection;
+the GUI thread checks revision/cancellation before committing one bounded patch.
+It does not transform or flatten the stack, and rejects hidden layers or active edits.
+
+## macOS appearance boundary
+
+`MacGlass.mm` is the AppKit-only adapter. A non-interactive NSVisualEffectView sits
+behind the Qt content view and follows window size, appearance preferences and
+Reduce Transparency. All access stays on the GUI thread. The shared document,
+commands, persistence and canvas remain C++/Qt; no pixels or edits live in the
+adapter. BlurSupport attaches it only on Cocoa and never offers GNOME commands
+there. Tests with injected desktop probes retain their isolated behavior.
