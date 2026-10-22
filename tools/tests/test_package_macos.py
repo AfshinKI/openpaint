@@ -1,4 +1,6 @@
 import importlib.util
+import io
+import tarfile
 from pathlib import Path
 import subprocess
 import sys
@@ -29,6 +31,22 @@ class MacPackageTests(unittest.TestCase):
             self.assertEqual({str(p.relative_to(bundle / 'Contents/PlugIns')) for p in deployed},
                              set(included))
             self.assertTrue(all((qt / 'plugins' / name).is_file() for name in excluded))
+
+    def test_source_collection_creates_cache_and_retains_notices(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive = root / 'generated-source.tar'
+            notice = b'Generated fixture license notice'
+            with tarfile.open(archive, 'w') as output:
+                member = tarfile.TarInfo('fixture/LICENSE')
+                member.size = len(notice)
+                output.addfile(member, io.BytesIO(notice))
+            entry = dict(name=archive.name, url=archive.as_uri(), sha256=package.digest(archive))
+            cache, sources, notices = (root / name for name in ('cache', 'sources', 'notices'))
+            package.collect_sources([entry], cache, sources, notices)
+            self.assertEqual(package.digest(sources / archive.name), entry['sha256'])
+            self.assertEqual((notices / archive.name / 'fixture/LICENSE').read_bytes(), notice)
+            self.assertFalse(list(cache.glob('*.partial')))
 
     def test_required_plugin_and_private_paths(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -37,6 +37,16 @@ def stage_plugins(qt, bundle):
     return deployed
 
 
+def collect_sources(upstream, cache, sources, notices):
+    cache.mkdir(parents=True, exist_ok=True)
+    sources.mkdir(parents=True, exist_ok=True)
+    notices.mkdir(parents=True, exist_ok=True)
+    for entry in upstream:
+        source = fetch(entry, cache)
+        shutil.copyfile(source, sources / source.name)
+        license_files(source, notices / source.name)
+
+
 def audit_bundle(bundle):
     records = []
     for path in sorted(bundle.rglob('*')):
@@ -146,15 +156,10 @@ def main():
     subprocess.run(['hdiutil', 'create', '-volname', 'OpenPaint', '-srcfolder', str(stage),
                     '-ov', '-format', 'UDZO', str(dmg)], check=True)
     sources = work / 'sources'
-    sources.mkdir()
     notices = work / 'notices'
-    notices.mkdir()
     upstream = [entry for entry in json.loads((ROOT / 'packaging/appimage-sources.json').read_text())
                 if entry['name'].startswith(('qtbase-', 'qtdeclarative-', 'qtsvg-', 'qtimageformats-'))]
-    for entry in upstream:
-        source = fetch(entry, ROOT / 'build/download-cache')
-        shutil.copyfile(source, sources / source.name)
-        license_files(source, notices / source.name)
+    collect_sources(upstream, ROOT / 'build/download-cache', sources, notices)
     subprocess.run(['git', 'archive', '--format=tar', '--output=' + str(sources / 'openpaint-source.tar'),
                     'HEAD'], cwd=ROOT, check=True)
     inventory = dict(version=args.version, source_commit=subprocess.check_output(
