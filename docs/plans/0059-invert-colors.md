@@ -68,3 +68,11 @@ The existing ribbon workflow now checks fixed rendered colors in both themes and
 after foreground/background/transparency changes. Build and the focused offscreen
 ribbon workflow pass (3 cases including initialization/cleanup), as do formatting,
 zero-warning QML lint, repository and diff checks. Next: review on existing PR #56.
+
+## Monochrome Fill refinement
+
+Acceptance: restore the original monochrome bucket, outline its drop when inactive
+and fill the drop with the theme foreground when Fill is selected. Selected paint
+color must not tint it. Brush retains its fixed colored artwork. Build and focused
+ribbon UI checks pass (3 cases including initialization/cleanup), along with
+formatting, zero-warning QML lint and repository/diff checks. Next: PR review.

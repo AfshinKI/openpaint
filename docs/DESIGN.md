@@ -376,8 +376,10 @@ The Tools group centers Text across both rows, aligned with Invert colors.
 Original colored ribbon vectors use a warm orange pencil with red end, a blue
 color-picker bulb, and a wood-and-metal brush. Image operations retain their original monochrome
 icons, including distinct 90° and 180° rotation symbols.
-Colored tool icons use 24-unit artwork targets (brush 28); fill and brush use fixed artwork colors independent of the selected foreground/
-background color, including transparency. Other icons retain theme tinting.
+Colored tool icons use 24-unit artwork targets (brush 28). Brush artwork stays
+fixed regardless of paint selection. Fill restores the original monochrome bucket
+with an outlined drop; selecting Fill makes the drop solid in the theme foreground
+color. Paint selection, including transparency, does not recolor either icon.
 
 The footer presents Fit, current zoom percentage, minus, a horizontal slider and
 plus. Logarithmic travel covers the existing 1–3200% range; slider keyboard/pointer

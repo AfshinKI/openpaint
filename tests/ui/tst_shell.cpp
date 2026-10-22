@@ -159,25 +159,28 @@ class ShellTest : public QObject {
         appearance->setThemeMode(1);
         editor->setEditingSecondary(false);
         editor->setSelectedColor(QColor("#db5036"));
-        QTRY_VERIFY(paintsColor(fill, QColor("#d8e1e9")));
+        QVERIFY(!fill->property("colored").toBool());
         QTRY_VERIFY(paintsColor(brush, QColor("#f0dec3")));
+        editor->setTool(Editor::Tool::Fill);
+        QTRY_VERIFY(fill->property("checked").toBool());
         QVERIFY(capture("colored-ribbon-light.png"));
         QVERIFY(std::abs(text->mapToScene({0, text->height() / 2}).y() -
                          invert->mapToScene({0, invert->height() / 2}).y()) <= 2);
         editor->setEditingSecondary(true);
         editor->setSelectedColor(QColor("#348bd5"));
         appearance->setThemeMode(2);
-        QTRY_VERIFY(paintsColor(fill, QColor("#d8e1e9")));
+        QVERIFY(!fill->property("colored").toBool());
         QTRY_VERIFY(paintsColor(brush, QColor("#f0dec3")));
         QVERIFY(capture("colored-ribbon-dark.png"));
         auto* layers = window->findChild<QQuickItem*>("layersButton");
         QVERIFY(layers->mapToScene({layers->width(), 0}).x() <= window->width() - 4);
         editor->setSelectedColor(Qt::transparent);
-        QTRY_VERIFY(paintsColor(fill, QColor("#d8e1e9")));
+        QVERIFY(!fill->property("colored").toBool());
         QTRY_VERIFY(paintsColor(brush, QColor("#f0dec3")));
         QVERIFY(tabTo("textButton"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Text);
+        QTRY_VERIFY(!fill->property("checked").toBool());
     }
     void invertColorsWorkflow() {
         auto* editor = window->findChild<Editor*>("editor");

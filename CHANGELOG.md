@@ -5,6 +5,8 @@
 - Restore the prior Image icons, add a footer zoom slider, and simplify blur setup
   to one user-run terminal block with verified extension installation/configuration.
 
+- Restore the monochrome Fill icon; its drop becomes solid when Fill is selected.
+
 - Center the Text tool and refresh original colored ribbon icons, with fixed
   fill and brush artwork colors independent of the selected paint color.
 

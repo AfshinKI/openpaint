@@ -12,7 +12,7 @@ PaintButton {
     implicitHeight: 32
     padding: colored ? 4 : 6
     display: AbstractButton.IconOnly
-    icon.source: "icons/" + symbol + ".svg"
+    icon.source: "icons/" + symbol + (symbol === "fill" && checked ? "-selected" : "") + ".svg"
     icon.width: colored ? 24 : 20
     icon.height: colored ? 24 : 20
     icon.color: colored ? "transparent" : enabled ? Theme.text : Theme.secondaryText
