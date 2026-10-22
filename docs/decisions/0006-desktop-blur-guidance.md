@@ -55,3 +55,8 @@ user-level GNOME settings and contacts GNOME only when the extension is missing.
 The state service is tested with injected read-only command results and isolated
 settings. UI tests inject capability results rather than invoking host tools.
 See [implementation plan](../plans/0054-blur-onboarding-design.md).
+
+The setup recipe now selects static wallpaper blur, avoiding the live-window
+partial-redraw path implicated in the reported flicker. It leaves global compositor
+redraw settings unchanged. This is a mitigation, not proof of flicker-free rendering
+on every GPU. Existing readiness still accepts either compositor blur mode.

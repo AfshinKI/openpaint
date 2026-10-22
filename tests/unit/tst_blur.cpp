@@ -93,7 +93,8 @@ class BlurTest : public QObject {
         service.refresh();
         QTRY_COMPARE(finished.count(), 3);
         QVERIFY(service.ready());
-        QVERIFY(!service.setupAvailable());
+        QVERIFY(service.setupAvailable());
+        QCOMPARE(service.command(), setup);
     }
     void activeExtensionNeedsApplicationSettings() {
         installed = true;

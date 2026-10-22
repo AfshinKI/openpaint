@@ -21,7 +21,7 @@ PaintDialog {
             id: copySetup
             objectName: "copyGlassSetup"
             text: qsTr("Copy setup")
-            visible: BlurSupport.setupAvailable && !BlurSupport.ready
+            visible: BlurSupport.setupAvailable
             Layout.leftMargin: 20
             Layout.bottomMargin: 12
             onClicked: dialog.copyStatus = BlurSupport.copyCommand() ? qsTr("Copied. Paste into a terminal, then check again.") : qsTr("Open the setup code and copy it manually.")
@@ -121,20 +121,20 @@ PaintDialog {
             }
             Label {
                 objectName: "blurSetupInstructions"
-                text: BlurSupport.ready ? qsTr("Glass is ready. Make it yours.") : BlurSupport.instructions.length ? BlurSupport.instructions : qsTr("Desktop blur is not verified for this session. OpenPaint currently checks Ubuntu 24.04 with GNOME 46 on X11. Installing Extension Manager alone does not enable blur.")
+                text: BlurSupport.ready ? qsTr("Glass is available. If it flickers, copy and run setup to use wallpaper-based blur instead of live windows behind OpenPaint.") : BlurSupport.instructions.length ? BlurSupport.instructions : qsTr("Desktop blur is not verified for this session. OpenPaint currently checks Ubuntu 24.04 with GNOME 46 on X11. Installing Extension Manager alone does not enable blur.")
                 color: Theme.text
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
             }
             PaintCheckBox {
                 text: qsTr("Show setup code")
-                visible: BlurSupport.setupAvailable && !BlurSupport.ready
+                visible: BlurSupport.setupAvailable
                 checked: dialog.showCode
                 onToggled: dialog.showCode = checked
             }
             Rectangle {
                 objectName: "glassCommandWell"
-                visible: dialog.showCode && BlurSupport.setupAvailable && !BlurSupport.ready
+                visible: dialog.showCode && BlurSupport.setupAvailable
                 Layout.fillWidth: true
                 implicitHeight: commandText.implicitHeight + 56
                 radius: 8

@@ -147,7 +147,7 @@ BlurSupport::Result BlurSupport::evaluate(const QString& desktop, const QString&
         result.ready = blur == "true" && ((all == "false" && included.value_or(false)) ||
                                           (all == "true" && excluded.has_value() && !*excluded));
     }
-    if (!result.ready) {
+    {
         QFile setup(":/qt/qml/OpenPaint/setup/enable-glass.py");
         if (setup.open(QIODevice::ReadOnly)) {
             result.command = "/usr/bin/python3 <<'OPENPAINT_GLASS'\n" +
@@ -155,7 +155,8 @@ BlurSupport::Result BlurSupport::evaluate(const QString& desktop, const QString&
             result.instructions =
                 tr("Copy setup and paste it into a terminal. It downloads Blur My Shell "
                    "from GNOME Extensions only if missing, enables it and configures "
-                   "application blur. No sudo or Extension Manager is needed. "
+                   "wallpaper-based application blur, instead of live windows behind OpenPaint. "
+                   "No sudo or Extension Manager is needed. "
                    "Then click Check again; if the terminal asks, sign out and back in first.");
         }
     }

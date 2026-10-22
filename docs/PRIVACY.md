@@ -112,3 +112,7 @@ My Shell archive from extensions.gnome.org only if missing, enables GNOME user
 extensions and configures application blur. GNOME receives ordinary download
 connection metadata; no artwork or app history is sent. Previous settings are
 backed up locally. OpenPaint itself never executes the block or installs software.
+
+The copied glass setup selects wallpaper-based application blur rather than
+live-window blur. This is an extension-wide application setting, backed up before
+change; it does not involve OpenPaint capturing wallpaper or desktop pixels.

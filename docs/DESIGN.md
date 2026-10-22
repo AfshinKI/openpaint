@@ -256,6 +256,8 @@ The startup client size is 1449 × 1008; the minimum remains 1024 × 640.
 
 Desktop blur is supplied by the compositor, not by screen capture. GNOME requires
 an extension such as Blur My Shell; it is not installed or configured by OpenPaint.
+The manually run setup block selects wallpaper-based application blur to avoid
+the live-window redraw path. Windows behind the app are no longer its blur source.
 Without desktop blur, transparency alone remains visible. This is frosted glass,
 not optical refraction. See [implementation and validation](plans/0039-window-transparency.md)
 and [rendering decision](decisions/0005-local-panel-blur.md).

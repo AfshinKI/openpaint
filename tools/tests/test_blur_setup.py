@@ -47,7 +47,7 @@ class BlurSetupTest(unittest.TestCase):
                 calls = []
                 settings = {"blur": "false", "enable-all": all_apps,
                             "whitelist": "['OtherApp']", "blacklist": "['OtherApp', 'Open*']",
-                            "opacity": "215", "dynamic-opacity": "true",
+                            "opacity": "215", "dynamic-opacity": "true", "static-blur": "false",
                             "enabled-extensions": "['other@example']",
                             "disabled-extensions": "['blur-my-shell@aunetx', 'disabled@example']",
                             "disable-user-extensions": "true"}
@@ -58,11 +58,19 @@ class BlurSetupTest(unittest.TestCase):
                     if args[:2] == ("gnome-extensions", "list"):
                         return ""
                     return ""
+                backup = Path(directory) / "openpaint/blur-setup-backup.json"
+                backup.parent.mkdir()
+                backup.write_text(json.dumps({"applications": {"blur": "false", "opacity": "200"}}))
                 with patch.dict(os.environ, {"XDG_STATE_HOME": directory}), patch.object(setup, "run", side_effect=run):
                     setup.configure(Path("/synthetic/schemas"))
                 saved = json.loads((Path(directory) / "openpaint/blur-setup-backup.json").read_text())
                 self.assertEqual(saved["applications"]["blur"], "false")
+                self.assertEqual(saved["applications"]["static-blur"], "false")
+                self.assertEqual(saved["applications"]["opacity"], "200")
                 writes = {args[-2]: args[-1] for args in calls if "set" in args}
+                self.assertEqual(writes["static-blur"], "true")
+                self.assertEqual(writes["dynamic-opacity"], "false")
+                self.assertEqual(writes["opacity"], "255")
                 self.assertIn("other@example", writes["enabled-extensions"])
                 self.assertEqual(json.loads(writes["disabled-extensions"]), ["disabled@example"])
                 if all_apps == "true":

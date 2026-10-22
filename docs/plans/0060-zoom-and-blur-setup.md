@@ -63,3 +63,22 @@ Reference: [Microsoft zoom improvements](https://blogs.windows.com/windows-insid
 
 Local implementation and validation complete. Publish to existing PR #56; next
 step is user verification of the setup on the other Ubuntu machine. No merge or release.
+
+## Wallpaper blur follow-up
+
+Acceptance: the setup block selects static wallpaper blur, preserves previous
+values even when extending an older backup, and remains copyable for an already
+ready desktop. Appearance exposes Glass setup in both states. No global repaint
+workaround or forced restart. The source behind the app becomes wallpaper rather
+than live windows. This extension-wide setting can affect other whitelisted apps.
+
+Local investigation found dynamic-opacity false, opacity 255, static-blur false
+and default redraw handling (level 1) in Blur My Shell 75. The extension source
+uses a separate wallpaper pipeline when static-blur is true. The local static-blur
+value was backed up to the OpenPaint state folder (blur-static-backup.json), set
+to true and read back successfully. No artwork or app settings were changed.
+Visual resolution of the reported flicker still needs user verification.
+Build, formatting, zero-warning QML lint and repository checks pass. All 35 Python
+tooling tests, 8 blur unit cases and 3 focused glass UI cases pass (C++ counts
+include initialization/cleanup). Backup-upgrade tests preserve prior originals
+while recording the newly changed mode. No claim of visual flicker resolution.

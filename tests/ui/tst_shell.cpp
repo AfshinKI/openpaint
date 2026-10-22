@@ -881,6 +881,11 @@ class ShellTest : public QObject {
         blur->setProbe([] { return BlurSupport::Result{true, {}, {}}; });
         blur->refresh();
         QTRY_VERIFY(blur->ready());
+        blur->setProbe([] { return BlurSupport::Result{true, "repair-command", {}}; });
+        blur->refresh();
+        QTRY_VERIFY(blur->setupAvailable());
+        QVERIFY(copy->property("visible").toBool());
+        QCOMPARE(enable->property("text").toString(), QString("Glass setup"));
         auto* useGlass = window->findChild<QObject*>("useGlass");
         QVERIFY(useGlass->property("visible").toBool());
         QVERIFY(QMetaObject::invokeMethod(useGlass, "clicked"));

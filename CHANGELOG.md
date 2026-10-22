@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Use wallpaper blur in the manual glass setup recipe and keep setup accessible
+  for repairing flicker on an already-enabled desktop.
+
 - Restore the prior Image icons, add a footer zoom slider, and simplify blur setup
   to one user-run terminal block with verified extension installation/configuration.
 

@@ -64,7 +64,7 @@ def install_extension():
 def configure(directory):
     prefix = ("gsettings", "--schemadir", str(directory))
     values = {key: run(*prefix, "get", SCHEMA, key)
-              for key in ("blur", "enable-all", "whitelist", "blacklist", "opacity", "dynamic-opacity")}
+              for key in ("blur", "enable-all", "whitelist", "blacklist", "opacity", "dynamic-opacity", "static-blur")}
     enabled = array(run("gsettings", "get", "org.gnome.shell", "enabled-extensions"))
     disabled = array(run("gsettings", "get", "org.gnome.shell", "disabled-extensions"))
     disabled_all = run("gsettings", "get", "org.gnome.shell", "disable-user-extensions")
@@ -73,17 +73,31 @@ def configure(directory):
         raise RuntimeError("Unrecognized application blur mode.")
     backup = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "openpaint/blur-setup-backup.json"
     backup.parent.mkdir(parents=True, exist_ok=True)
-    if not backup.exists():
-        backup.write_text(json.dumps({"applications": values, "enabled-extensions": enabled,
-                                     "disabled-extensions": disabled, "disable-user-extensions": disabled_all}, indent=2))
+    saved = json.loads(backup.read_text()) if backup.exists() else {}
+    original = saved.setdefault("applications", {})
+    for key, value in values.items():
+        original.setdefault(key, value)
+    saved.setdefault("enabled-extensions", enabled)
+    saved.setdefault("disabled-extensions", disabled)
+    saved.setdefault("disable-user-extensions", disabled_all)
+    # Replace atomically so a failed write preserves the original backup.
+    with tempfile.NamedTemporaryFile(mode="w", dir=backup.parent, delete=False) as output:
+        temporary_backup = Path(output.name)
+        try:
+            json.dump(saved, output, indent=2)
+            output.close()
+            temporary_backup.replace(backup)
+        finally:
+            temporary_backup.unlink(missing_ok=True)
     if values["enable-all"] == "true":
         blacklist = [pattern for pattern in blacklist
                      if not fnmatch.fnmatchcase("openpaint", pattern.lower())]
         run(*prefix, "set", SCHEMA, "blacklist", json.dumps(blacklist))
     elif "OpenPaint" not in whitelist:
         run(*prefix, "set", SCHEMA, "whitelist", json.dumps(whitelist + ["OpenPaint"]))
+    # Wallpaper blur avoids the live-window partial-redraw path.
     # OpenPaint controls its own surface opacity; keep its text/artwork opaque.
-    for key, value in (("blur", "true"), ("opacity", "255"), ("dynamic-opacity", "false")):
+    for key, value in (("blur", "true"), ("opacity", "255"), ("dynamic-opacity", "false"), ("static-blur", "true")):
         run(*prefix, "set", SCHEMA, key, value)
     if UUID not in enabled:
         enabled.append(UUID)
