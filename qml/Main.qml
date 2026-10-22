@@ -1021,6 +1021,8 @@ ApplicationWindow {
                     columns: 3
                     IconButton {
                         flat: true
+                        Layout.row: 0
+                        Layout.column: 0
                         symbol: "pencil"
                         objectName: "pencilButton"
                         text: qsTr("Pencil")
@@ -1033,8 +1035,11 @@ ApplicationWindow {
                     }
                     IconButton {
                         flat: true
+                        Layout.row: 0
+                        Layout.column: 1
                         symbol: "fill"
                         objectName: "fillButton"
+                        paintColor: editor.selectedColor
                         text: qsTr("Fill")
                         enabled: !editor.textActive
                         checkable: true
@@ -1045,6 +1050,9 @@ ApplicationWindow {
                     }
                     IconButton {
                         flat: true
+                        Layout.row: 0
+                        Layout.column: 2
+                        Layout.rowSpan: 2
                         symbol: "text"
                         objectName: "textButton"
                         text: qsTr("Text")
@@ -1057,6 +1065,8 @@ ApplicationWindow {
                     }
                     IconButton {
                         flat: true
+                        Layout.row: 1
+                        Layout.column: 0
                         symbol: "eyedropper"
                         objectName: "pickerButton"
                         text: qsTr("Color picker")
@@ -1068,6 +1078,8 @@ ApplicationWindow {
                         Accessible.name: text
                     }
                     Row {
+                        Layout.row: 1
+                        Layout.column: 1
                         spacing: 0
                         IconButton {
                             flat: true
@@ -1149,6 +1161,7 @@ ApplicationWindow {
                         objectName: "brushesButton"
                         enabled: !editor.textActive
                         symbol: "brush"
+                        paintColor: editor.selectedColor
                         icon.width: 28
                         icon.height: 28
                         width: 40

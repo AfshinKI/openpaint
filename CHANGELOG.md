@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Center the Text tool and refresh original colored ribbon icons, with live
+  selected-color previews in the fill bucket/drop and brush tip.
+
 - Add an Image-ribbon Invert colors command for the active layer or selection,
   preserving transparency and supporting undo/redo.
 

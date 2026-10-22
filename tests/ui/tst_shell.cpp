@@ -102,6 +102,57 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void coloredRibbonWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* fill = window->findChild<QQuickItem*>("fillButton");
+        auto* brush = window->findChild<QQuickItem*>("brushesButton");
+        auto* text = window->findChild<QQuickItem*>("textButton");
+        auto* invert = window->findChild<QQuickItem*>("invertColorsButton");
+        QVERIFY(fill && brush && text && invert);
+        const auto paintsColor = [&](QQuickItem* item, QColor color) {
+            QGuiApplication::sync();
+            const auto frame = window->grabWindow();
+            const qreal scale = qreal(frame.width()) / window->width();
+            const auto position = item->mapToScene({0, 0});
+            int matching = 0;
+            for (int y = int(position.y() * scale);
+                 y < int((position.y() + item->height()) * scale); ++y)
+                for (int x = int(position.x() * scale);
+                     x < int((position.x() + item->width()) * scale); ++x)
+                    if (frame.pixelColor(x, y).rgb() == color.rgb())
+                        ++matching;
+            return matching >= 2;
+        };
+        window->resize(1024, 640);
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        appearance->setThemeMode(1);
+        editor->setEditingSecondary(false);
+        editor->setSelectedColor(QColor("#db5036"));
+        QTRY_COMPARE(fill->property("paintColor").value<QColor>(), QColor("#db5036"));
+        QTRY_COMPARE(brush->property("paintColor").value<QColor>(), QColor("#db5036"));
+        QTRY_VERIFY(paintsColor(fill, QColor("#db5036")));
+        QTRY_VERIFY(paintsColor(brush, QColor("#db5036")));
+        QVERIFY(capture("colored-ribbon-light.png"));
+        QVERIFY(std::abs(text->mapToScene({0, text->height() / 2}).y() -
+                         invert->mapToScene({0, invert->height() / 2}).y()) <= 2);
+        editor->setEditingSecondary(true);
+        editor->setSelectedColor(QColor("#348bd5"));
+        QTRY_COMPARE(fill->property("paintColor").value<QColor>(), QColor("#348bd5"));
+        QTRY_COMPARE(brush->property("paintColor").value<QColor>(), QColor("#348bd5"));
+        appearance->setThemeMode(2);
+        QTRY_VERIFY(paintsColor(fill, QColor("#348bd5")));
+        QTRY_VERIFY(paintsColor(brush, QColor("#348bd5")));
+        QVERIFY(capture("colored-ribbon-dark.png"));
+        auto* layers = window->findChild<QQuickItem*>("layersButton");
+        QVERIFY(layers->mapToScene({layers->width(), 0}).x() <= window->width() - 4);
+        auto* paint = fill->findChild<QQuickItem*>("toolPaintOverlay");
+        QVERIFY(paint);
+        editor->setSelectedColor(Qt::transparent);
+        QTRY_VERIFY(!paint->isVisible());
+        QVERIFY(tabTo("textButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->tool(), Editor::Tool::Text);
+    }
     void invertColorsWorkflow() {
         auto* editor = window->findChild<Editor*>("editor");
         const auto original = editor->image();

@@ -104,7 +104,7 @@ build/release/openpaint_shell_tests websiteReleasePreview
 ## Layer feature development evidence
 
 `layers-light-1280.png` and `layers-dark-1024.png` were captured on 2026-10-21
-from the plan 0059 Image-ribbon color-inversion revision using `openpaint_shell_tests layersWorkflow`,
+from the plan 0059 colored-ribbon follow-up revision using `openpaint_shell_tests layersWorkflow`,
 Qt 6.12.0 offscreen/software, at 1280×800 and 1024×640. They show a generated
 orange stroke at 65% layer opacity, an empty transparent layer, and the pinned
 white background below its divider. The right rail uses top-right hover/focus eye controls, a circular add button
@@ -122,3 +122,11 @@ invertColorsWorkflow` on 2026-10-21 using Qt 6.12.0 offscreen/software at
 1024×640. It shows a generated white canvas inverted to black and the original
 contrast icon in the Image group. The isolated settings and development-only
 evidence limitations above also apply.
+
+`colored-ribbon-light.png` and `colored-ribbon-dark.png` were captured by
+`openpaint_shell_tests coloredRibbonWorkflow` on 2026-10-21 from the colored-icon
+follow-up, Qt 6.12.0 offscreen/software at 1024×640. The blank white canvas is
+generated; red foreground and blue background selections demonstrate the live
+fill/brush paint regions. All vectors are original project artwork. Settings are
+isolated; these are development UI captures, not release/compositor evidence.
+The layer and inversion captures above were refreshed from the same source.

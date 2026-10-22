@@ -371,3 +371,10 @@ All icons and captured artwork remain original OpenPaint assets.
 The Image ribbon group includes an Invert colors contrast-circle icon. It inverts
 the active layer's RGB, or selected pixels only, preserving transparency and other
 layers. Selection inversion remains a separate selection-menu command.
+
+The Tools group centers Text across both rows, aligned with Invert colors.
+Original colored ribbon vectors use a warm orange pencil with red end, a blue
+color-picker bulb, a wood-and-metal brush and blue image-transform accents.
+Colored tool/image icons use 24-unit artwork targets (brush 28); fill liquid/drop
+and brush-tip overlays follow the selected foreground/background color. Fully
+transparent color hides the paint overlay. Other icons retain theme tinting.

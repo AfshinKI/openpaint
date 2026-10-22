@@ -122,6 +122,7 @@ if(BUILD_TESTING)
     add_test(NAME shell-editing COMMAND openpaint_shell_tests
         layersWorkflow
         invertColorsWorkflow
+        coloredRibbonWorkflow
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory

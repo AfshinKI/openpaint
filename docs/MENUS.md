@@ -475,3 +475,7 @@ Save As (Ctrl+Shift+S) offers OpenRaster alongside PNG for a flat image. Existin
 .ora projects keep their format. Export copy flattens visible layers and never
 marks the project saved. The Open dialog includes .ora. Filename extensions are
 validated without changing a portal-granted destination.
+
+The Text tool spans the Tools group's two rows. Colored tool/image icons retain
+their original palette in menus; Fill and Brush ribbon previews follow the currently
+selected drawing color, including foreground/background switching and transparency.

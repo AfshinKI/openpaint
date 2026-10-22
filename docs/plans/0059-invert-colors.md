@@ -45,3 +45,16 @@ captures were visually inspected; provenance is in [assets](../assets/README.md)
 
 Implemented on feat/layers per the ongoing one-branch request. Published to existing
 PR #56; protected CI/review is the next unfinished step. No merge or release.
+
+## Ribbon artwork follow-up
+
+Acceptance: center Text like Invert colors; use original colored pencil/picker and
+blue image icons; color only the fill liquid/drop and brush tip from the selected
+color; retain readable light/dark, disabled and minimum-width controls. Preserve
+keyboard activation and icon meanings. Implemented with original SVG vectors and
+separate tint masks. Rendered-pixel assertions verify red/blue selected paint in
+both Fill and Brush, foreground/background switching, transparent overlay hiding,
+Text centering and keyboard activation. The workflow passes offscreen/software
+and X11/Mesa OpenGL at 100% and 200%. Light/dark captures were visually inspected
+and refreshed. Build, formatting, zero-warning QML lint and repository/diff checks
+pass. All six shell regression suites passed (55.65 seconds). Protected CI/review remains next; no release.
