@@ -1,7 +1,8 @@
 # Working on OpenPaint
 
-OpenPaint is a Linux desktop paint app. A native canvas supports drawing, erasing,
-colors, history, navigation and safe PNG open/save. Do not claim planned features exist.
+OpenPaint is a Linux and macOS desktop paint app. The v2 editor supports raster
+layers, OpenRaster projects, drawing tools, selections, transforms, history and
+image import/export. Do not claim planned features exist.
 
 ## Start with the relevant contract
 
