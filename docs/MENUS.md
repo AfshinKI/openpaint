@@ -493,3 +493,7 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Development Save As offers PNG/OpenRaster document saving and explicit image-copy
+choices (JPEG, BMP, monochrome 1-bit BMP, WebP, and layered PNG). Copies retain
+the editable document's saved state. [Acceptance](plans/0068-save-as-image-formats.md).

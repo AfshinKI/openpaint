@@ -10,7 +10,7 @@ ApplicationWindow {
     id: window
     property Action lastRotation: rotateRightAction
     property Action lastFlip: flipHorizontalAction
-    readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible || layersPanel.propertiesOpen
+    readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible || saveAsFileDialog.visible || layersPanel.propertiesOpen
     readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
     readonly property CanvasItem canvasController: canvas
@@ -184,7 +184,12 @@ ApplicationWindow {
         objectName: "exportOptions"
         editor: window.editorController
         parent: Overlay.overlay
-        onChooseDestination: exportDialog.open()
+        onChooseDestination: {
+            if (exportOptions.savesDocument)
+                saveAsFileDialog.open();
+            else
+                exportDialog.open();
+        }
     }
     ResizeDialog {
         id: resizeDialog
@@ -310,13 +315,15 @@ ApplicationWindow {
     }
     Action {
         id: saveAsAction
+        objectName: "saveAsAction"
         icon.source: "icons/save.svg"
         text: qsTr("Save &As…")
         shortcut: StandardKey.SaveAs
         enabled: !editor.busy && !window.documentOptionsOpen
         onTriggered: {
             editor.commitPreview();
-            saveDialog.open();
+            exportOptions.saveAsMode = true;
+            exportOptions.open();
         }
     }
     Action {
@@ -325,7 +332,10 @@ ApplicationWindow {
         objectName: "exportAction"
         text: qsTr("Export &copy…")
         enabled: !editor.busy && !editor.previewActive && !window.documentOptionsOpen
-        onTriggered: exportOptions.open()
+        onTriggered: {
+            exportOptions.saveAsMode = false;
+            exportOptions.open();
+        }
     }
     Action {
         id: quitAction
@@ -1769,6 +1779,15 @@ ApplicationWindow {
         defaultSuffix: ""
         nameFilters: [exportOptions.fileFilter]
         onAccepted: editor.exportFile(selectedFile, exportOptions.formatIndex, exportOptions.quality, exportOptions.lossless, exportOptions.flatten, exportOptions.backgroundColor)
+    }
+    FileDialog {
+        id: saveAsFileDialog
+        objectName: "saveAsFileDialog"
+        title: qsTr("Save drawing (.%1)").arg(exportOptions.suffix)
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: ""
+        nameFilters: [exportOptions.fileFilter]
+        onAccepted: editor.saveFile(selectedFile)
     }
     FileDialog {
         id: saveDialog

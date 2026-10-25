@@ -7,26 +7,29 @@ import OpenPaint
 PaintDialog {
     id: dialog
     required property Editor editor
+    property bool saveAsMode: false
     property int formatIndex: 0
+    readonly property bool savesDocument: saveAsMode && (formatIndex === 5 || (formatIndex === 0 && !editor.needsProject))
     property int backgroundIndex: 0
     property color secondaryDraft: "white"
     property bool acceptedDraft: false
     readonly property int quality: qualityInput.value
     readonly property bool lossless: losslessInput.checked
-    readonly property bool requiresOpaque: formatIndex === 1 || formatIndex === 2
+    readonly property bool requiresOpaque: formatIndex === 1 || formatIndex === 2 || formatIndex === 4
     readonly property bool flatten: requiresOpaque || flattenInput.checked
     readonly property color backgroundColor: backgroundIndex === 0 ? "white" : backgroundIndex === 1 ? "black" : secondaryDraft
-    readonly property string suffix: ["png", "jpg", "bmp", "webp"][formatIndex]
-    readonly property string fileFilter: [qsTr("PNG images (*.png)"), qsTr("JPEG images (*.jpg *.jpeg)"), qsTr("BMP images (*.bmp)"), qsTr("WebP images (*.webp)")][formatIndex]
+    readonly property string suffix: ["png", "jpg", "bmp", "webp", "bmp", "ora"][formatIndex]
+    readonly property string fileFilter: [qsTr("PNG images (*.png)"), qsTr("JPEG images (*.jpg *.jpeg)"), qsTr("BMP images (*.bmp)"), qsTr("WebP images (*.webp)"), qsTr("Monochrome BMP images (*.bmp)"), qsTr("OpenRaster projects (*.ora)")][formatIndex]
     signal chooseDestination
-    title: qsTr("Export a copy")
+    title: saveAsMode ? qsTr("Save As") : qsTr("Export a copy")
     modal: true
     anchors.centerIn: parent
     width: 460
     standardButtons: Dialog.Ok | Dialog.Cancel
     onOpened: {
         acceptedDraft = false;
-        formatIndex = backgroundIndex = 0;
+        formatIndex = saveAsMode && editor.needsProject ? 5 : 0;
+        backgroundIndex = 0;
         qualityInput.value = 90;
         losslessInput.checked = true;
         flattenInput.checked = false;
@@ -48,7 +51,7 @@ PaintDialog {
         }
         PaintButton {
             objectName: "exportFormat"
-            text: ["PNG", "JPEG", "BMP", "WebP"][dialog.formatIndex] + " ▾"
+            text: ["PNG", "JPEG", "BMP", qsTr("WebP"), qsTr("Monochrome BMP (1-bit)"), qsTr("OpenRaster project")][dialog.formatIndex] + " ▾"
             Accessible.name: qsTr("Export format")
             Layout.fillWidth: true
             onClicked: formats.open()
@@ -75,6 +78,18 @@ PaintDialog {
                     symbol: "rectangle"
                     text: "WebP"
                     onTriggered: dialog.formatIndex = 3
+                }
+                PaintMenuItem {
+                    symbol: "rectangle"
+                    text: qsTr("Monochrome BMP (1-bit)")
+                    onTriggered: dialog.formatIndex = 4
+                }
+                PaintMenuItem {
+                    symbol: "layers"
+                    text: qsTr("OpenRaster project")
+                    visible: dialog.saveAsMode
+                    height: visible ? implicitHeight : 0
+                    onTriggered: dialog.formatIndex = 5
                 }
             }
         }
@@ -106,7 +121,7 @@ PaintDialog {
             objectName: "exportFlatten"
             text: qsTr("Replace transparency with a background")
             enabled: !dialog.requiresOpaque
-            visible: !dialog.requiresOpaque
+            visible: !dialog.requiresOpaque && !dialog.savesDocument
         }
         RowLayout {
             visible: dialog.flatten
@@ -150,13 +165,13 @@ PaintDialog {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             color: Theme.text
-            text: dialog.formatIndex === 1 ? qsTr("JPEG loses detail and replaces transparency with the chosen background.") : dialog.formatIndex === 2 ? qsTr("BMP replaces transparency with the chosen background.") : dialog.formatIndex === 3 && !dialog.lossless ? qsTr("Lossy WebP reduces detail. Transparency is preserved unless a background is selected.") : qsTr("Lossless pixels. Transparency is preserved unless a background is selected.")
+            text: dialog.formatIndex === 5 ? qsTr("Preserves editable layers, visibility and opacity.") : dialog.formatIndex === 4 ? qsTr("Monochrome BMP replaces transparency with the chosen background and converts colors to black or white at a 50% grayscale threshold, without dithering.") : dialog.formatIndex === 1 ? qsTr("JPEG loses detail and replaces transparency with the chosen background.") : dialog.formatIndex === 2 ? qsTr("BMP replaces transparency with the chosen background.") : dialog.formatIndex === 3 && !dialog.lossless ? qsTr("Lossy WebP reduces detail. Transparency is preserved unless a background is selected.") : qsTr("Lossless pixels. Transparency is preserved unless a background is selected.")
         }
         Label {
             Layout.fillWidth: true
             wrapMode: Text.WordWrap
             color: Theme.secondaryText
-            text: qsTr("This writes a separate copy without marking your drawing saved. Source metadata is removed.")
+            text: dialog.savesDocument ? qsTr("Saves your drawing to the chosen destination.") : qsTr("This writes a flattened image copy without marking your editable drawing saved. Use PNG for a flat drawing or OpenRaster for a layered project to save the document. Source metadata is removed.")
         }
     }
 }

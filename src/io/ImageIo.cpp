@@ -182,6 +182,7 @@ QByteArray exportCodec(ExportFormat format) {
     case ExportFormat::Jpeg:
         return "jpeg";
     case ExportFormat::Bmp:
+    case ExportFormat::MonoBmp:
         return "bmp";
     case ExportFormat::WebP:
         return "webp";
@@ -203,7 +204,8 @@ ImageResult exportImage(const QString& path, const QImage& image, const ExportOp
         !Document::validSize(image.size()) || options.quality < 1 || options.quality > 99 ||
         (options.flatten && (!options.background.isValid() || options.background.alpha() != 255)) ||
         (!options.flatten &&
-         (options.format == ExportFormat::Jpeg || options.format == ExportFormat::Bmp)))
+         (options.format == ExportFormat::Jpeg || options.format == ExportFormat::Bmp ||
+          options.format == ExportFormat::MonoBmp)))
         return {{}, tr("Choose valid export options and a matching filename extension.")};
     auto raster = cleanImage(image);
     if (raster.isNull())
@@ -218,6 +220,20 @@ ImageResult exportImage(const QString& path, const QImage& image, const ExportOp
         painter.end();
         opaque.setColorSpace(QColorSpace::SRgb);
         raster = opaque;
+    }
+    if (options.format == ExportFormat::MonoBmp) {
+        QImage mono(raster.size(), QImage::Format_Mono);
+        if (mono.isNull())
+            return {{}, tr("There is not enough memory to convert this image.")};
+        mono.setColorTable({qRgb(0, 0, 0), qRgb(255, 255, 255)});
+        mono.fill(0);
+        for (int y = 0; y < raster.height(); ++y) {
+            if (token && token->load())
+                return {{}, {}, true};
+            for (int x = 0; x < raster.width(); ++x)
+                mono.setPixel(x, y, qGray(raster.pixel(x, y)) >= 128 ? 1 : 0);
+        }
+        raster = mono;
     }
     // Encode to memory so a failing destination never interrupts codec cleanup.
     QByteArray bytes;

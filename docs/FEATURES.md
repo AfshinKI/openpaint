@@ -192,3 +192,7 @@ Apple silicon/macOS 14.4+ build and DMG packaging are implemented, with native
 AppKit glass and Command shortcuts. Validation is tracked in [plan 0062](plans/0062-macos-v2-release.md);
 physical Mac visual review remains pending. Intel packages and Apple notarization
 are not part of this release candidate.
+
+Development Save As offers PNG/OpenRaster document saving and explicit image-copy
+choices (JPEG, BMP, monochrome 1-bit BMP, WebP, and layered PNG). Copies retain
+the editable document's saved state. [Acceptance](plans/0068-save-as-image-formats.md).

@@ -967,6 +967,32 @@ class ShellTest : public QObject {
         QVERIFY(editor->dirty());
     }
 
+    void saveAsFormatChoices() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* action = window->findChild<QObject*>("saveAsAction");
+        auto* options = window->findChild<QObject*>("exportOptions");
+        QVERIFY(editor && action && options);
+        const auto before = editor->image();
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QTRY_VERIFY(options->property("opened").toBool());
+        QVERIFY(options->property("savesDocument").toBool());
+        QVERIFY(options->setProperty("formatIndex", 4));
+        QVERIFY(!options->property("savesDocument").toBool());
+        QVERIFY(options->property("flatten").toBool());
+        QCOMPARE(options->property("suffix").toString(), QString("bmp"));
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!options->property("visible").toBool());
+        QCOMPARE(editor->image(), before);
+        editor->addLayer();
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QTRY_VERIFY(options->property("opened").toBool());
+        QCOMPARE(options->property("formatIndex").toInt(), 5);
+        QVERIFY(options->property("savesDocument").toBool());
+        QVERIFY(options->setProperty("formatIndex", 0));
+        QVERIFY(!options->property("savesDocument").toBool());
+        keyClick(Qt::Key_Escape);
+        QVERIFY(editor->dirty());
+    }
     void exportDialogWorkflow() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         auto* action = window->findChild<QObject*>(QStringLiteral("exportAction"));

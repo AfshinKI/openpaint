@@ -3,7 +3,7 @@
 #include "PngIo.h"
 #include <QColor>
 namespace openpaint {
-enum class ExportFormat { Png, Jpeg, Bmp, WebP };
+enum class ExportFormat { Png, Jpeg, Bmp, WebP, MonoBmp };
 struct ExportOptions {
     ExportFormat format = ExportFormat::Png;
     int quality = 90;
