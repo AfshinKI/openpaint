@@ -29,19 +29,12 @@ Item {
     onInkColorChanged: ticks.requestPaint()
     onTickColorChanged: ticks.requestPaint()
     onMajorStepChanged: ticks.requestPaint()
-    Rectangle {
-        anchors.fill: parent
-        anchors.margins: 2
-        anchors.topMargin: 3
-        radius: 3
-        color: "#20000000"
-    }
     GlassSurface {
         objectName: "rulerSurface"
         anchors.fill: parent
         anchors.margins: 2
         radius: 3
-        raisedSurface: true
+        raisedSurface: false
         backdropSource: null
     }
     Canvas {

@@ -110,6 +110,31 @@ class ShellTest : public QObject {
         auto* vertical = window->findChild<QQuickItem*>("verticalRuler");
         auto* action = window->findChild<QObject*>("rulersAction");
         QVERIFY(editor && canvas && horizontal && vertical && action);
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        auto* ribbon = window->findChild<QObject*>("ribbonSurface");
+        auto* topSurface = horizontal->findChild<QObject*>("rulerSurface");
+        auto* leftSurface = vertical->findChild<QObject*>("rulerSurface");
+        QVERIFY(ribbon && topSurface && leftSurface);
+        const int oldTheme = appearance->themeMode();
+        const int oldOpacity = appearance->surfaceOpacity();
+        const bool oldGlass = appearance->glassEnabled();
+        for (int theme : {1, 2}) {
+            appearance->setThemeMode(theme);
+            for (bool glass : {false, true}) {
+                appearance->setGlassEnabled(glass);
+                for (int opacity : {40, 70, 100}) {
+                    appearance->setSurfaceOpacity(opacity);
+                    for (auto* surface : {topSurface, leftSurface}) {
+                        QCOMPARE(surface->property("surfaceAlpha"),
+                                 ribbon->property("surfaceAlpha"));
+                        QCOMPARE(surface->property("tintAlpha"), ribbon->property("tintAlpha"));
+                    }
+                }
+            }
+        }
+        appearance->setThemeMode(oldTheme);
+        appearance->setSurfaceOpacity(oldOpacity);
+        appearance->setGlassEnabled(oldGlass);
         const auto pixels = editor->image();
         const auto dirty = editor->dirty();
         window->resize(1024, 640);

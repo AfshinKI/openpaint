@@ -75,3 +75,12 @@ are hidden. The ruler workflow checks both placements without changing pixels.
 Overlap fix validation: combined Qt build, formatting and zero-warning QML lint
 pass. Ruler/Updates workflows pass (4 Qt cases), along with the shell-text CTest
 suite. The light-theme text-toolbar capture was inspected below the top ruler.
+
+## Ribbon-matched opacity
+
+Remove the stronger raised-surface tint and the full-area dark underlay from
+rulers. Use the ribbon’s flat GlassSurface treatment, retaining 3px corners and
+outline. The ruler workflow compares both ruler surfaces to the ribbon in light
+and dark themes, at 40/70/100% opacity and with glass on/off. The combined Qt
+build, formatting, zero-warning QML lint and ruler workflow pass (3 Qt cases).
+The generated light-theme capture was inspected.
