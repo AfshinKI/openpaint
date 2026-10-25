@@ -49,6 +49,10 @@ class AppInfoTest : public QObject {
         QCOMPARE(received, info.releaseUrl());
         QVERIFY(info.openContributing());
         QCOMPARE(received, QUrl("https://github.com/AfshinKI/openpaint/blob/main/CONTRIBUTING.md"));
+        QVERIFY(info.openWebsite());
+        QCOMPARE(received, QUrl("https://afshinki.github.io/openpaint/"));
+        QVERIFY(info.openContact());
+        QCOMPARE(received, QUrl("https://github.com/AfshinKI/openpaint/issues"));
         QDesktopServices::unsetUrlHandler("https");
     }
 };
