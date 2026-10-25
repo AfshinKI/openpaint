@@ -84,3 +84,9 @@ outline. The ruler workflow compares both ruler surfaces to the ribbon in light
 and dark themes, at 40/70/100% opacity and with glass on/off. The combined Qt
 build, formatting, zero-warning QML lint and ruler workflow pass (3 Qt cases).
 The generated light-theme capture was inspected.
+
+Ruler label padding revision: increase strip thickness from 24px to 28px and
+move label baselines inward by 3px. Matching canvas margins keep controls clear;
+length, position, zoom ticks and ribbon-matched opacity are unchanged.
+The combined build, formatting, QML lint and ruler/floating-shape workflows pass
+(4 Qt cases). The generated ruler capture was inspected for label clearance.

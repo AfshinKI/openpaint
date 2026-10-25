@@ -70,11 +70,11 @@ Item {
                     ctx.fillStyle = ruler.inkColor;
                     ctx.save();
                     if (ruler.vertical) {
-                        ctx.translate(11, position + 3);
+                        ctx.translate(14, position + 3);
                         ctx.rotate(-Math.PI / 2);
                         ctx.fillText(String(Math.round(value)), 0, 0);
                     } else {
-                        ctx.fillText(String(Math.round(value)), position + 3, 11);
+                        ctx.fillText(String(Math.round(value)), position + 3, 14);
                     }
                     ctx.restore();
                 }

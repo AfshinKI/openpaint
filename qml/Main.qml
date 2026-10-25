@@ -1537,7 +1537,7 @@ ApplicationWindow {
         visible: window.rulersVisible
         x: canvas.x
         width: canvas.width
-        height: 24
+        height: 28
     }
     ImageRuler {
         objectName: "verticalRuler"
@@ -1547,14 +1547,14 @@ ApplicationWindow {
         visible: window.rulersVisible
         y: canvas.y
         height: canvas.height
-        width: 24
+        width: 28
     }
     CanvasItem {
         id: canvas
         objectName: "canvas"
         anchors.fill: parent
-        anchors.leftMargin: window.rulersVisible ? 24 : 0
-        anchors.topMargin: window.rulersVisible ? 24 : 0
+        anchors.leftMargin: window.rulersVisible ? 28 : 0
+        anchors.topMargin: window.rulersVisible ? 28 : 0
         anchors.rightMargin: window.layersVisible ? layersPanel.width + 8 : 0
         editor: window.editorController
         enabled: !window.editorController.loading || window.editorController.filling
