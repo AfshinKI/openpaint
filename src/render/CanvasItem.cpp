@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "CanvasItem.h"
+#include "tools/Shape.h"
 #include <QCursor>
 #include <QImageReader>
 #include <QKeyEvent>
@@ -54,7 +55,7 @@ void CanvasItem::updateToolCursor() {
         return;
     }
     QString symbol;
-    QPoint hotSpot(6, 22);
+    const QPoint hotSpot(5, 5);
     if (editor_) {
         switch (editor_->tool()) {
         case Editor::Tool::Pencil:
@@ -62,10 +63,23 @@ void CanvasItem::updateToolCursor() {
             break;
         case Editor::Tool::Eraser:
             symbol = editor_->transparentEraser ? "eraser" : "eraser-paper";
-            hotSpot = {5, 22};
             break;
         case Editor::Tool::ColorPicker:
             symbol = "eyedropper";
+            break;
+        case Editor::Tool::Text:
+            symbol = "text";
+            break;
+        case Editor::Tool::Select:
+            symbol = editor_->colorSelection      ? "wand"
+                     : editor_->freeFormSelection ? "lasso"
+                                                  : "selection";
+            break;
+        case Editor::Tool::Fill:
+            symbol = "fill";
+            break;
+        case Editor::Tool::Shape:
+            symbol = "shape-" + QString::number(editor_->shapeKind);
             break;
         case Editor::Tool::Brush:
             symbol = "brush";
@@ -83,9 +97,28 @@ void CanvasItem::updateToolCursor() {
     // Native cursors are created and cached only on the GUI thread.
     static QHash<QString, QCursor> cursors;
     if (!cursors.contains(key)) {
-        QImageReader reader(":/qt/qml/OpenPaint/icons/" + symbol + ".svg");
-        reader.setScaledSize(QSize(qRound(24 * scale), qRound(24 * scale)));
-        QImage image = reader.read();
+        QImage image;
+        if (symbol.startsWith("shape-")) {
+            QImage base(28, 28, QImage::Format_ARGB32_Premultiplied);
+            base.fill(Qt::transparent);
+            const int kind = editor_->shapeKind;
+            const QList<QPointF> vertices =
+                kind == openpaint::SplineShape
+                    ? QList<QPointF>{{4, 20}, {10, 6}, {18, 22}, {24, 8}}
+                    : QList<QPointF>{{4, 4}, {24, 8}, {15, 15}, {24, 24}, {4, 24}};
+            const auto patch = openpaint::renderShape(base, {4, 4}, {24, 24}, kind, Qt::black,
+                                                      Qt::black, 2, true, false, 30, -30, vertices);
+            {
+                QPainter painter(&base);
+                painter.drawImage(patch.rect.topLeft(), patch.image);
+            }
+            image = base.scaled(qRound(20 * scale), qRound(20 * scale), Qt::IgnoreAspectRatio,
+                                Qt::SmoothTransformation);
+        } else {
+            QImageReader reader(":/qt/qml/OpenPaint/icons/" + symbol + ".svg");
+            reader.setScaledSize(QSize(qRound(20 * scale), qRound(20 * scale)));
+            image = reader.read();
+        }
         if (image.isNull()) {
             setCursor(Qt::CrossCursor);
             return;
@@ -98,17 +131,17 @@ void CanvasItem::updateToolCursor() {
             painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
             painter.fillRect(halo.rect(), Qt::white);
         }
-        QPixmap bitmap(qRound(28 * scale), qRound(28 * scale));
+        QPixmap bitmap(qRound(32 * scale), qRound(32 * scale));
         bitmap.setDevicePixelRatio(scale);
         bitmap.fill(Qt::transparent);
         {
             QPainter painter(&bitmap);
-            for (int x = 1; x <= 3; ++x)
-                for (int y = 1; y <= 3; ++y)
+            for (int x = 9; x <= 11; ++x)
+                for (int y = 9; y <= 11; ++y)
                     painter.drawPixmap(x, y, halo);
-            painter.drawPixmap(2, 2, glyph);
-            if (symbol.startsWith("eraser")) {
-                // The cross marks the actual stroke center, separate from the glyph.
+            painter.drawPixmap(10, 10, glyph);
+            {
+                // The cross marks the exact action point; the glyph stays out of its way.
                 painter.setPen(QPen(Qt::white, 3));
                 painter.drawLine(hotSpot + QPoint(-3, 0), hotSpot + QPoint(3, 0));
                 painter.drawLine(hotSpot + QPoint(0, -3), hotSpot + QPoint(0, 3));

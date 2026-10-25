@@ -2848,6 +2848,27 @@ class ShellTest : public QObject {
             Q_ARG(QObject*, nullptr)));
         QVERIFY(capture(QStringLiteral("fill-dark-1024.png")));
     }
+    void toolIconCursors() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        for (auto tool : {Editor::Tool::Pencil, Editor::Tool::Brush, Editor::Tool::Eraser,
+                          Editor::Tool::Fill, Editor::Tool::ColorPicker, Editor::Tool::Select,
+                          Editor::Tool::Text, Editor::Tool::Shape}) {
+            editor->setTool(tool);
+            QVERIFY(!canvas->cursor().pixmap().isNull());
+            QCOMPARE(canvas->cursor().hotSpot(), QPoint(5, 5));
+        }
+        for (int kind = 0; kind < 20; ++kind) {
+            editor->setProperty("shapeKind", kind);
+            QVERIFY(!canvas->cursor().pixmap().isNull());
+            QCOMPARE(canvas->cursor().hotSpot(), QPoint(5, 5));
+        }
+        canvas->forceActiveFocus();
+        QTest::keyPress(window, Qt::Key_Space);
+        QCOMPARE(canvas->cursor().shape(), Qt::OpenHandCursor);
+        QTest::keyRelease(window, Qt::Key_Space);
+        QCOMPARE(canvas->cursor().hotSpot(), QPoint(5, 5));
+    }
     void keyboardToolsAndAccessibility() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         QVERIFY(tabTo("pencilButton"));
