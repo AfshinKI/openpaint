@@ -59,19 +59,11 @@ formatting and zero-warning QML lint pass. Focused X11/Mesa checks at 125% pass
 captures were inspected. These results supersede earlier visual-preview evidence.
 Required hosted review/checks and release/package validation remain outstanding.
 
-## Canvas-length revision
+## Canvas-following revision
 
-Keep rulers at their original fixed top and left workspace locations, with their
-original 24px thickness. Each length follows the displayed canvas and extends
-12px beyond each end. Panning changes the longitudinal alignment only; offscreen
-segments are clipped. Tick offsets account for each ruler’s local origin, and
-adaptive zoom behavior remains unchanged.
-Acceptance: fit lengths, fixed top/left positions during pan and zoom, correct
-zero alignment, bounded rendering at 1–3200% and unchanged pixels.
-
-Final combined Qt 6.12.0 build, formatting and zero-warning QML lint pass.
-Ruler/Save As/export workflows pass offscreen at 100% and 200% (5 Qt cases each),
-and with the floating-glass check on X11/Mesa at 125% (6 cases). All six shell
-CTest suites passed before the final fixed-edge clarification; its geometry was
-then rechecked by the targeted cases above. Final light/dark captures inspected.
-Required protected review and release/package checks remain outstanding.
+Rulers now float along the artwork rather than spanning the workspace. Each strip
+is 20px thick, separated by 4px, and extends 12px beyond each end of the scaled
+canvas. Panning carries the strips with the artwork; offscreen portions are clipped.
+Tick offsets account for clipped ruler origins and adaptive zoom behavior remains.
+Acceptance: fit dimensions, pan attachment, correct zero alignment, bounded
+rendering at 1–3200% and unchanged pixels. Validation pending rebuild.
