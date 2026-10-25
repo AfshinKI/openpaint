@@ -11,7 +11,6 @@ Item {
     readonly property real offset: vertical ? viewport.origin.y : viewport.origin.x
     readonly property real zoomFactor: viewport.zoom
     readonly property real length: vertical ? height : width
-    readonly property color surfaceColor: Theme.panel
     readonly property color inkColor: Theme.text
     readonly property color tickColor: Theme.secondaryText
     readonly property real marker: vertical ? viewport.cursorPosition.y : viewport.cursorPosition.x
@@ -27,10 +26,24 @@ Item {
     onOffsetChanged: ticks.requestPaint()
     onZoomFactorChanged: ticks.requestPaint()
     onImageLengthChanged: ticks.requestPaint()
-    onSurfaceColorChanged: ticks.requestPaint()
     onInkColorChanged: ticks.requestPaint()
     onTickColorChanged: ticks.requestPaint()
     onMajorStepChanged: ticks.requestPaint()
+    Rectangle {
+        anchors.fill: parent
+        anchors.margins: 2
+        anchors.topMargin: 3
+        radius: 3
+        color: "#20000000"
+    }
+    GlassSurface {
+        objectName: "rulerSurface"
+        anchors.fill: parent
+        anchors.margins: 2
+        radius: 3
+        raisedSurface: true
+        backdropSource: null
+    }
     Canvas {
         id: ticks
         anchors.fill: parent
@@ -39,9 +52,8 @@ Item {
         onPaint: {
             const ctx = getContext("2d");
             ctx.reset();
-            ctx.fillStyle = ruler.surfaceColor;
-            ctx.fillRect(0, 0, width, height);
-            const thickness = ruler.vertical ? width : height;
+            ctx.clearRect(0, 0, width, height);
+            const thickness = (ruler.vertical ? width : height) - 2;
             const step = Math.max(1, ruler.majorStep / 5);
             const first = Math.max(0, Math.ceil(-ruler.offset / ruler.zoomFactor / step));
             const last = Math.min(Math.floor(ruler.imageLength / step), Math.floor((ruler.length - ruler.offset) / ruler.zoomFactor / step));
@@ -79,9 +91,10 @@ Item {
     Rectangle {
         visible: ruler.viewport.cursorVisible && ruler.viewport.cursorPosition.x >= 0 && ruler.viewport.cursorPosition.y >= 0 && ruler.viewport.cursorPosition.x <= ruler.viewport.editor.imageSize.width && ruler.viewport.cursorPosition.y <= ruler.viewport.editor.imageSize.height
         color: Theme.accent
-        x: ruler.vertical ? 0 : ruler.offset + ruler.marker * ruler.zoomFactor
-        y: ruler.vertical ? ruler.offset + ruler.marker * ruler.zoomFactor : 0
-        width: ruler.vertical ? parent.width : 1
-        height: ruler.vertical ? 1 : parent.height
+        opacity: 0.8
+        x: ruler.vertical ? 2 : ruler.offset + ruler.marker * ruler.zoomFactor
+        y: ruler.vertical ? ruler.offset + ruler.marker * ruler.zoomFactor : 2
+        width: ruler.vertical ? parent.width - 4 : 1
+        height: ruler.vertical ? 1 : parent.height - 4
     }
 }

@@ -39,3 +39,11 @@ Xvfb test outside the sandbox. No live-desktop input or glass setup was performe
 This is local combined-source validation, not package or physical Mac certification.
 Next: required hosted checks and protected review/merge of the individual PR;
 then v2.1 release metadata, fresh release screenshots and package validation.
+
+## Visual revision
+
+User review requests the same transparency/material rules as the app, a small
+corner radius and subtle elevation. Rulers now use inset GlassSurface panels
+with 3px corners and a soft one-pixel shadow. Tick canvases remain transparent;
+text/markers keep their own opacity. Glass-off/100% uses the standard opaque
+fallback. Revalidate themes, 40% opacity and disabled glass before approval.
