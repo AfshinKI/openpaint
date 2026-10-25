@@ -37,6 +37,7 @@ void CanvasItem::setEditor(Editor* editor) {
                            .adjusted(-2, -2, 2, 2)
                            .toAlignedRect());
         });
+        connect(editor_, &Editor::guidesChanged, this, [this] { update(); });
         connect(editor_, &Editor::documentReplaced, this, &CanvasItem::fit);
         connect(editor_, &Editor::settingsChanged, this, [this] {
             finishGesture();
@@ -200,6 +201,16 @@ void CanvasItem::paint(QPainter* painter) {
         painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
         painter->drawPolyline(path);
     }
+    const auto guides = editor_->guidePosition();
+    painter->setPen(QPen(QColor("#e94ed7"), 1));
+    if (guides.x() >= 0) {
+        const qreal x = fromDocument({guides.x(), 0}).x();
+        painter->drawLine(QPointF(x, target.top()), QPointF(x, target.bottom()));
+    }
+    if (guides.y() >= 0) {
+        const qreal y = fromDocument({0, guides.y()}).y();
+        painter->drawLine(QPointF(target.left(), y), QPointF(target.right(), y));
+    }
     const auto samplePoint = toDocument(hoverPoint_);
     if (hovering_ && !space_ && !panning_ && !editor_->busy() &&
         editor_->tool() == Editor::Tool::ColorPicker &&
@@ -250,7 +261,7 @@ void CanvasItem::mousePressEvent(QMouseEvent* event) {
         editor_->begin(toDocument(last_), gestureButton_ == Qt::RightButton);
     event->accept();
 }
-void CanvasItem::updateGesture(QPointF point, bool constrain) {
+void CanvasItem::updateGesture(QPointF point, bool constrain, bool bypassSnap) {
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()))
         return;
     if (panning_) {
@@ -259,7 +270,7 @@ void CanvasItem::updateGesture(QPointF point, bool constrain) {
         emit viewportChanged();
         update();
     } else if (drawing_ && editor_) {
-        editor_->extend(toDocument(point), constrain);
+        editor_->extend(toDocument(point), constrain, bypassSnap ? 0 : 6 / zoom_);
     }
     last_ = point;
     hoverPoint_ = point;
@@ -274,12 +285,14 @@ void CanvasItem::mouseMoveEvent(QMouseEvent* event) {
         finishGesture();
         return;
     }
-    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier);
+    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier,
+                  event->modifiers() & Qt::ControlModifier);
 }
 void CanvasItem::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() != gestureButton_)
         return;
-    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier);
+    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier,
+                  event->modifiers() & Qt::ControlModifier);
     finishGesture();
 }
 void CanvasItem::finishGesture() {
@@ -303,6 +316,7 @@ void CanvasItem::hoverMoveEvent(QHoverEvent* event) {
 }
 void CanvasItem::hoverLeaveEvent(QHoverEvent* event) {
     hovering_ = false;
+    emit cursorPositionChanged();
     if (editor_ && editor_->tool() == Editor::Tool::ColorPicker)
         update();
     QQuickPaintedItem::hoverLeaveEvent(event);

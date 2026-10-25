@@ -1,6 +1,6 @@
 # Feature: macOS port and v2 release
 
-Status: implementation validated; release packaging/promotion in progress
+Status: v2.0.0 published; remaining manual validation listed below
 Feature IDs: F25; platform support
 Target: 2.0.0
 
@@ -81,3 +81,27 @@ Next: complete source/notices packaging and all required checks, merge
 dispatch the explicit v2.0.0 release run. Record promotion, public-download and
 Pages verification on the linked PR, which remains the live release record after
 the immutable release source is tagged. No release is published at this commit.
+
+## Publication reconciliation — 2026-10-25
+
+The pre-publication handoff above is historical. GitHub records
+[PR #56](https://github.com/AfshinKI/openpaint/pull/56) merged on 2026-10-22 at
+02:57:16 UTC as `71c4e80fbc895c5699375e6fbdb4be96f3a8014f`; the `v2.0.0` tag
+resolves to that commit. [v2.0.0](https://github.com/AfshinKI/openpaint/releases/tag/v2.0.0)
+was published at 03:15:19 UTC. The changelog's October 21 date is the local release
+date; this record uses UTC.
+
+The public release lists the Linux portable archive, Ubuntu 24.04 amd64 DEB,
+x86_64 Flatpak, Apple silicon DMG, sources-and-notices archive and SHA256SUMS.
+[Release workflow](https://github.com/AfshinKI/openpaint/actions/runs/39714535405)
+and [main checks](https://github.com/AfshinKI/openpaint/actions/runs/39714184866)
+completed successfully. [Website deployment](https://github.com/AfshinKI/openpaint/actions/runs/39714184902)
+also completed successfully. This reconciliation checked public API metadata and
+local tag identity; it did not download/re-hash the binaries or visually inspect
+the deployed page, and does not promote those acceptance cases to verified.
+
+Next unfinished steps: independently verify public artifact checksums and the
+deployed page, and record physical Mac visual/first-launch evidence when available.
+Cross-editor OpenRaster round-trips, crash recovery, tiling, Intel packages and
+Apple notarization remain outside the shipped scope. Earlier source-cache and
+PR-review handoffs are superseded by the successful release run above.
