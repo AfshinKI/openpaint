@@ -493,3 +493,7 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Updates includes “Skip this version” when a newer release is available. It is
+disabled while checking or once skipped. The choice persists across launches;
+only that version’s notice is suppressed, and its manual download remains available.

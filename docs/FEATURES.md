@@ -192,3 +192,6 @@ Apple silicon/macOS 14.4+ build and DMG packaging are implemented, with native
 AppKit glass and Command shortcuts. Validation is tracked in [plan 0062](plans/0062-macos-v2-release.md);
 physical Mac visual review remains pending. Intel packages and Apple notarization
 are not part of this release candidate.
+
+Development Updates can remember a skipped release across launches while still
+notifying for later versions ([plan 0071](plans/0071-skip-update-version.md)).

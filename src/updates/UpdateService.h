@@ -14,6 +14,7 @@ class UpdateService : public QObject {
     Q_PROPERTY(bool automatic READ automatic WRITE setAutomatic NOTIFY changed)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(bool available READ available NOTIFY changed)
+    Q_PROPERTY(bool skipped READ skipped NOTIFY changed)
     Q_PROPERTY(bool supported READ supported CONSTANT)
     Q_PROPERTY(QString summary READ summary NOTIFY changed)
     Q_PROPERTY(QString message READ message NOTIFY changed)
@@ -31,6 +32,9 @@ class UpdateService : public QObject {
     bool available() const {
         return available_;
     }
+    bool skipped() const {
+        return available_ && latestVersion_ == skippedVersion_;
+    }
     bool supported() const;
     QString summary() const;
     QString message() const {
@@ -44,6 +48,7 @@ class UpdateService : public QObject {
     Q_INVOKABLE void check();
     Q_INVOKABLE void cancel();
     Q_INVOKABLE bool openRelease() const;
+    Q_INVOKABLE bool skipVersion();
     void checkAutomatic();
     static bool newerStable(const QString& tag, const QString& installed, bool* valid);
   signals:
@@ -63,5 +68,5 @@ class UpdateService : public QObject {
     bool automatic_ = false, available_ = false, tooLarge_ = false, timedOut_ = false;
     bool attempted_ = false, verified_ = false;
     qint64 lastAttempt_ = 0, retryAt_ = 0;
-    QString latestVersion_, message_;
+    QString latestVersion_, message_, skippedVersion_;
 };

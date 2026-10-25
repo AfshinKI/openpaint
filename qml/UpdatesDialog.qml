@@ -39,6 +39,17 @@ PaintDialog {
             Layout.fillWidth: true
         }
         PaintButton {
+            objectName: "skipUpdateVersion"
+            text: qsTr("Skip this version")
+            visible: dialog.service.available
+            enabled: !dialog.service.busy && !dialog.service.skipped
+            Layout.bottomMargin: 12
+            onClicked: {
+                if (!dialog.service.skipVersion())
+                    dialog.browserError = dialog.service.message;
+            }
+        }
+        PaintButton {
             id: doneButton
             objectName: "updatesDone"
             text: qsTr("Done")
@@ -86,7 +97,7 @@ PaintDialog {
                     wrapMode: Text.WordWrap
                 }
                 Label {
-                    text: dialog.service.available ? qsTr("Version %1 is ready. Get it on GitHub.").arg(dialog.service.latestVersion) : (dialog.service.supported ? qsTr("Updates are checked automatically.") : qsTr("Find the latest release on GitHub."))
+                    text: dialog.service.skipped ? qsTr("Version %1 is skipped. You’ll be notified about newer releases. You can still get this version below.").arg(dialog.service.latestVersion) : dialog.service.available ? qsTr("Version %1 is ready. Get it on GitHub.").arg(dialog.service.latestVersion) : (dialog.service.supported ? qsTr("Updates are checked automatically.") : qsTr("Find the latest release on GitHub."))
                     color: Theme.secondaryText
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap

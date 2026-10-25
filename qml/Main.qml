@@ -1540,7 +1540,7 @@ ApplicationWindow {
     Rectangle {
         id: updateNotice
         property bool dismissed: false
-        visible: updateService.available && !dismissed
+        visible: updateService.available && !updateService.skipped && !dismissed
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 12

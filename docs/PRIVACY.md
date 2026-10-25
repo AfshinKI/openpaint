@@ -118,3 +118,6 @@ through the extension’s no-artifact setting. This affects the whole compositor
 and may increase GPU use or reduce desktop performance; the setup panel discloses
 this before copying. Original settings are backed up before changes. OpenPaint
 does not capture desktop pixels or execute this setup itself.
+
+The optional “Skip this version” choice stores the skipped release version in
+local settings. It filters notifications only; it is not sent with update checks.

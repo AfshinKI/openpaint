@@ -278,3 +278,10 @@ The current signing mode is ad-hoc, not Developer ID/notarized. State that on th
 download page and in release notes. Never claim Gatekeeper certification or
 physical Mac visual validation from offscreen/hosted tests. Native macOS glass
 uses AppKit and needs no Linux extension command. Intel Mac packaging is deferred.
+
+### Skip one release (v2.1 development)
+
+Updates → Skip this version remembers the current available release locally and
+suppresses its startup notice across launches. Checks continue; newer versions
+notify normally. Opening Updates manually still offers the skipped release’s
+GitHub download link. See [plan 0071](plans/0071-skip-update-version.md).
