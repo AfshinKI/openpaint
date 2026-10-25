@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — toward 2.1.0
+
+- Add top/left pixel rulers and pointer markers synchronized with canvas zoom and pan.
+
 ## 2.0.0 — 2026-10-21
 
 - Add an Apple silicon macOS app bundle, native glass and platform keyboard shortcuts.
