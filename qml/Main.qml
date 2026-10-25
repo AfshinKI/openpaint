@@ -1371,6 +1371,7 @@ ApplicationWindow {
                             radius: Theme.controlRadius
                             raisedSurface: false
                             backdropLayers: [window.background, canvas]
+                            objectName: "eraserSelectedSurface"
                             selectedSurface: editor.tool === Editor.Eraser
                             visible: selectedSurface || eraserMain.hovered || eraserDropdown.hovered || eraserMain.visualFocus || eraserDropdown.visualFocus
                             border.width: eraserMain.visualFocus || eraserDropdown.visualFocus ? 2 : 1
