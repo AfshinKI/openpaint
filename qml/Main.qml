@@ -776,6 +776,7 @@ ApplicationWindow {
             raisedSurface: false
             anchors.fill: parent
             anchors.margins: 4
+            anchors.bottomMargin: 0
         }
         RowLayout {
             anchors.fill: parent
