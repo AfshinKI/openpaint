@@ -1,7 +1,13 @@
 # Feature: right-drag canvas panning
 
-Status: implemented and locally validated
+Status: shipped in v2.0.0 via merged PR #56
 Feature IDs: F11
+
+
+Release reconciliation (2026-10-25): PR #56 merged on 2026-10-22 UTC and this
+feature shipped in v2.0.0. [Plan 0062](0062-macos-v2-release.md) records publication
+and remaining validation. Below, review/no-release handoffs are historical
+checkpoints; their implementation evidence and stated manual limits are retained.
 
 ## User outcome and scope
 

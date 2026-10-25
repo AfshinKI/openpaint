@@ -1,11 +1,10 @@
 # Delivery plan
 
-A usable basic source editor supports drawing, history and safe PNG files.
-M1 and M2 are complete for their validated gates. The first useful alpha is
-[published and verified](plans/0027-alpha-release.md); bounded layer editing and OpenRaster projects are implemented in development
-in [plan 0058](plans/0058-layers.md); recovery remains future work. The maintainer selected this
-single-layer feature set for v1.0.0; see [the stable release plan](plans/0031-stable-release.md).
-See [M1 closure evidence and limits](plans/0009-m1-closure.md). See [the build guide](BUILD.md) to run the preview.
+The current stable release is [v2.0.0](plans/0062-macos-v2-release.md), with bounded
+raster layers, OpenRaster projects and Linux/Apple silicon macOS packages.
+M1 and M2 are complete for their validated gates. M3 is partially delivered:
+recovery, tiling and cross-application interoperability remain open. See the
+[build guide](BUILD.md) to run from source.
 Milestones are exit gates, not promised dates. Complete thin, usable slices before
 adding breadth. [FEATURES.md](FEATURES.md) is the implementation status ledger.
 
@@ -24,22 +23,29 @@ M1; M3 and release packaging improvements can progress independently once their
 interfaces stabilize. M4 depends on editing and document contracts from M2/M3.
 These future gates are not prerequisites for the scoped single-layer v1. M6 may be researched earlier, but must not delay core reliability.
 
-## Current handoff toward v2
+## Current handoff after v2
 
-Stable [v1.3.0](plans/0057-release-1.3.0.md) is published. The maintainer has now
-authorized v2 publication, including the bounded layer feature, Apple silicon
-macOS distribution and refreshed glass screenshots. [Plan 0062](plans/0062-macos-v2-release.md)
-tracks platform validation, protected PR review, package promotion and website
-verification. [Plan 0058](plans/0058-layers.md) records the raster layer and
-OpenRaster implementation. Recovery, tiling and full M3 interoperability remain
-separate; the v2 label does not claim those future gates are complete.
+[PR #56](https://github.com/AfshinKI/openpaint/pull/56) merged and v2.0.0 was
+published on 2026-10-22 UTC. [Plan 0062](plans/0062-macos-v2-release.md) records
+publication evidence separately from physical Mac, public-download and deployed
+website verification. The release label does not close those unverified gates.
+Next work is to finish outstanding release validation, then scope a fresh plan
+for a selected remaining milestone item; no additional feature is implied here.
 
 ## Release progression
 
-M1/M2 produced the first alpha. Version 1.0.0 keeps the implemented single-layer
-editing scope and adds an installed Ubuntu package and deliberate stable releases.
-M3–M6 remain later work; their completion is not implied by the v1 label. Stable
-publication requires the scoped package, document-safety and release checks below.
+| Release | Delivered changes and decision trail |
+| --- | --- |
+| Alpha / v1.0 | M1/M2 editor and Linux packages; [alpha polish](plans/0028-alpha-ui-polish.md) replaced shared saved palettes, Swap and earlier layout targets; [stable scope](plans/0031-stable-release.md). |
+| v1.1 | Canvas edges, selection dismissal, fill fringe cleanup, glass and release notifications ([plans 0033–0038](plans/0038-release-1.1.0.md)). |
+| v1.2 | Frosted window surfaces, persistent theme, blinking text caret and exact-match fill with automatic smoothing ([release plan](plans/0040-release-1.2.0.md)); the original adjustable fill tolerance was superseded. |
+| v1.3 | Searchable fonts, text range formatting, color selection, spline, eraser modes/cursors, 40% glass, menu readability and onboarding ([release plan](plans/0057-release-1.3.0.md), [plans 0042–0056](plans/0054-blur-onboarding-design.md)). Updates became automatic on startup/open with cooldown; the old opt-out/check controls were removed. |
+| v2 | [Layers and rail revisions](plans/0058-layers.md), [inversion and final icon choices](plans/0059-invert-colors.md), [zoom and final live-blur setup](plans/0060-zoom-and-blur-setup.md), [right-drag pan](plans/0061-right-drag-pan.md), [macOS and release](plans/0062-macos-v2-release.md). Right-button canvas painting/picking was replaced by panning. Live blur with full redraw superseded the intermediate wallpaper recipe. |
+
+Plans retain dated implementation evidence and intermediate experiments. Their
+latest revision and release-status note govern current behavior; earlier “no
+merge/release” statements describe that checkpoint, not today's release status.
+M3–M6 remain later gates; neither v1 nor v2 implies their completion.
 
 Keep alpha/stable channels distinct. Nightly artifacts, if added, are development
 outputs with no automatic stable-update eligibility. Publish an actual support
