@@ -14,7 +14,7 @@ ApplicationWindow {
     readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
     readonly property CanvasItem canvasController: canvas
-    readonly property list<Item> glassOverlayBackdropLayers: [window.background, window.menuBar, window.header, window.footer, canvas, floatingControls, textOptions, updateNotice]
+    readonly property list<Item> glassOverlayBackdropLayers: [window.background, window.menuBar, window.header, window.footer, canvas, floatingControls, textOptions, shapeToolbar, updateNotice]
     readonly property list<Item> glassBackdropLayers: [window.background, window.menuBar, window.header, window.footer, canvas]
     objectName: "mainWindow"
     width: 1449
@@ -245,6 +245,61 @@ ApplicationWindow {
         Label {
             text: qsTr("Apply text, discard this text box, or keep editing.")
             color: Theme.text
+        }
+    }
+    GlassSurface {
+        id: shapeToolbar
+        objectName: "shapeToolbar"
+        anchors.top: canvas.top
+        anchors.topMargin: 8
+        anchors.horizontalCenter: canvas.horizontalCenter
+        width: shapeControls.implicitWidth + 16
+        height: shapeControls.implicitHeight + 16
+        radius: Theme.surfaceRadius
+        z: 3
+        visible: editor.previewActive && !editor.textActive && !editor.floatingActive
+        enabled: !editor.busy
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.AllButtons
+            onWheel: wheel => wheel.accepted = true
+        }
+        RowLayout {
+            id: shapeControls
+            anchors.fill: parent
+            anchors.margins: 8
+            spacing: 6
+            Label {
+                text: qsTr("Shape")
+                color: Theme.secondaryText
+                Layout.leftMargin: 4
+                Layout.rightMargin: 6
+            }
+            PaintButton {
+                objectName: "shapeOptionsButton"
+                text: qsTr("Options")
+                onClicked: shapeOptions.open()
+            }
+            PaintButton {
+                objectName: "applyPreviewButton"
+                text: qsTr("Apply")
+                onClicked: {
+                    editor.commitPreview();
+                    canvas.forceActiveFocus();
+                }
+            }
+            PaintButton {
+                objectName: "cancelShapeButton"
+                text: qsTr("Cancel")
+                onClicked: {
+                    editor.cancel();
+                    canvas.forceActiveFocus();
+                }
+            }
+        }
+        Keys.onEscapePressed: {
+            editor.cancel();
+            canvas.forceActiveFocus();
         }
     }
     ShapeOptions {
@@ -1652,16 +1707,16 @@ ApplicationWindow {
             }
             PaintButton {
                 flat: Appearance.effectiveGlassEnabled
-                objectName: "shapeOptionsButton"
+                objectName: "selectionOptionsButton"
                 text: qsTr("Options")
-                visible: editor.previewActive && !editor.textActive
+                visible: editor.floatingActive
                 onClicked: editor.floatingActive ? selectionOptions.open() : shapeOptions.open()
             }
             PaintButton {
                 flat: Appearance.effectiveGlassEnabled
-                objectName: "applyPreviewButton"
+                objectName: "applySelectionButton"
                 text: qsTr("Apply")
-                visible: editor.previewActive && !editor.textActive
+                visible: editor.floatingActive
                 onClicked: {
                     editor.commitPreview();
                 }
@@ -1669,7 +1724,7 @@ ApplicationWindow {
             PaintButton {
                 flat: Appearance.effectiveGlassEnabled
                 text: qsTr("Cancel")
-                visible: editor.previewActive
+                visible: editor.floatingActive || editor.textActive
                 onClicked: editor.cancel()
             }
             BusyIndicator {

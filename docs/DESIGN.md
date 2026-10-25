@@ -401,3 +401,7 @@ recipe. Shared surface-opacity and light/dark preferences still apply.
 The menu strip stays inside the shared toolbar on macOS; all controls remain
 reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
 opened with the visible menu buttons rather than Linux Alt-letter mnemonics.
+
+The shape preview toolbar uses the same glass surface, spacing and controls as
+the text toolbar. It is centered on the canvas viewport, 8px below its top edge,
+and appears only while a shape is being edited. See [plan 0072](plans/0072-floating-shape-toolbar.md).

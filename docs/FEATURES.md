@@ -192,3 +192,6 @@ Apple silicon/macOS 14.4+ build and DMG packaging are implemented, with native
 AppKit glass and Command shortcuts. Validation is tracked in [plan 0062](plans/0062-macos-v2-release.md);
 physical Mac visual review remains pending. Intel packages and Apple notarization
 are not part of this release candidate.
+
+Development shape previews use a floating Options / Apply / Cancel toolbar
+([plan 0072](plans/0072-floating-shape-toolbar.md)), retaining preview undo/cancel semantics.

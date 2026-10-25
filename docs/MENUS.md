@@ -493,3 +493,7 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Shape previews show a compact floating Options / Apply / Cancel toolbar below the
+ribbon and rulers. These actions no longer occupy the footer for shapes. Selection
+and text footer behavior is unchanged; Enter/Escape still apply/cancel shapes.

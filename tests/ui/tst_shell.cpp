@@ -2755,6 +2755,45 @@ class ShellTest : public QObject {
         }
         QVERIFY(!editor->dirty());
     }
+    void floatingShapeToolbar() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* toolbar = window->findChild<QQuickItem*>("shapeToolbar");
+        auto* apply = window->findChild<QQuickItem*>("applyPreviewButton");
+        auto* cancel = window->findChild<QQuickItem*>("cancelShapeButton");
+        auto* footerApply = window->findChild<QQuickItem*>("applySelectionButton");
+        QVERIFY(editor && canvas && toolbar && apply && cancel && footerApply);
+        const auto original = editor->image();
+        QVERIFY(!toolbar->isVisible());
+        editor->setTool(Editor::Tool::Shape);
+        QVERIFY(!toolbar->isVisible());
+        editor->begin({100, 100}, false);
+        editor->extend({300, 200});
+        editor->endGesture();
+        QTRY_VERIFY(toolbar->isVisible());
+        QVERIFY(!footerApply->isVisible());
+        QCOMPARE(toolbar->y(), canvas->y() + 8);
+        QVERIFY(capture("shape-toolbar-light.png"));
+        const auto preview = editor->image();
+        QVERIFY(preview != original);
+        QTest::mouseClick(window, Qt::LeftButton, {},
+                          apply->mapToScene({apply->width() / 2, apply->height() / 2}).toPoint());
+        QTRY_VERIFY(!toolbar->isVisible());
+        QVERIFY(!editor->previewActive());
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image(), preview);
+        editor->begin({350, 200}, false);
+        editor->extend({450, 300});
+        editor->endGesture();
+        QTRY_VERIFY(toolbar->isVisible());
+        QTest::mouseClick(
+            window, Qt::LeftButton, {},
+            cancel->mapToScene({cancel->width() / 2, cancel->height() / 2}).toPoint());
+        QTRY_VERIFY(!toolbar->isVisible());
+        QCOMPARE(editor->image(), preview);
+    }
     void shapeOptionsKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         const auto original = editor->image();
