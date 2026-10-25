@@ -38,3 +38,14 @@ then v2.1 release metadata, fresh release screenshots and package validation.
 Remove the designer credit from Updates at the maintainer’s request. Keep public
 developer details in About. The Updates workflow asserts the old credit is absent;
 this revision awaits the final combined rebuild and test pass.
+
+## Revised preview validation — 2026-10-25
+
+The compact icons, glass rulers, Updates cleanup and optional smart guides were
+rebuilt together with all v2.1 slices in the isolated combined checkout. All 20
+CTest suites pass across the full run and editor/text rerun; a font-dependent
+smart-guide test was moved into the existing GUI text suite. All 44 tooling tests,
+formatting and zero-warning QML lint pass. Focused X11/Mesa checks at 125% pass
+(10 Qt cases); offscreen checks at 200% pass (6 cases). Synthetic light/dark
+captures were inspected. These results supersede earlier visual-preview evidence.
+Required hosted review/checks and release/package validation remain outstanding.
