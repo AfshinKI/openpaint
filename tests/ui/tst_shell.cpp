@@ -164,6 +164,19 @@ class ShellTest : public QObject {
         QTRY_VERIFY(paintsColor(brush, QColor("#f0dec3")));
         editor->setTool(Editor::Tool::Fill);
         QTRY_VERIFY(fill->property("checked").toBool());
+        for (const auto* name :
+             {"cropButton", "rotateButton", "resizeButton", "flipButton", "invertColorsButton",
+              "pencilButton", "fillButton", "textButton", "pickerButton", "eraserButton"}) {
+            auto* button = window->findChild<QQuickItem*>(name);
+            QVERIFY(button);
+            QQmlExpression fits(qmlContext(button), button,
+                                "icon.width + leftPadding + rightPadding <= width && "
+                                "icon.height + topPadding + bottomPadding <= height");
+            QVERIFY(fits.evaluate().toBool());
+            QVERIFY(!fits.hasError());
+            QVERIFY(button->mapToScene({0, 0}).x() >= 0);
+            QVERIFY(button->mapToScene({button->width(), 0}).x() <= window->width());
+        }
         QVERIFY(capture("colored-ribbon-light.png"));
         QVERIFY(std::abs(text->mapToScene({0, text->height() / 2}).y() -
                          invert->mapToScene({0, invert->height() / 2}).y()) <= 2);
