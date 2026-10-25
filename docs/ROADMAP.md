@@ -1,6 +1,6 @@
 # Delivery plan
 
-The current stable release is [v2.0.0](plans/0062-macos-v2-release.md), with bounded
+The current stable release is [v2.1.0](plans/0080-release-2.1.0.md), with bounded
 raster layers, OpenRaster projects and Linux/Apple silicon macOS packages.
 M1 and M2 are complete for their validated gates. M3 is partially delivered:
 recovery, tiling and cross-application interoperability remain open. See the
@@ -23,15 +23,15 @@ M1; M3 and release packaging improvements can progress independently once their
 interfaces stabilize. M4 depends on editing and document contracts from M2/M3.
 These future gates are not prerequisites for the scoped single-layer v1. M6 may be researched earlier, but must not delay core reliability.
 
-## Current handoff toward v2.1.0
+## Current handoff after v2.1.0
 
-[PR #56](https://github.com/AfshinKI/openpaint/pull/56) merged and v2.0.0 was
-published on 2026-10-22 UTC. [Plan 0062](plans/0062-macos-v2-release.md) records
-publication evidence separately from physical Mac, public-download and deployed
-website verification. The release label does not close those unverified gates.
-The requested v2.1.0 editing and UI slices are now integrated for release validation.
-[Plan 0080](plans/0080-release-2.1.0.md) tracks protected merges, exact package
-evidence, fresh screenshots, publication and cleanup. Publication is still gated.
+[PR #82](https://github.com/AfshinKI/openpaint/pull/82) consolidated the approved
+editing and UI refinements; superseded PRs #59–#81 were closed at the maintainer's
+request. v2.1.0 was published on 2026-10-25 UTC after all release gates passed.
+[Plan 0080](plans/0080-release-2.1.0.md) records validation, public downloads,
+updated website captures and branch cleanup. Physical Mac visual validation,
+notarization and the broader desktop/input matrix remain open; publication does
+not imply completion of those gates or the remaining M3 work.
 
 ## Release progression
 
@@ -42,6 +42,7 @@ evidence, fresh screenshots, publication and cleanup. Publication is still gated
 | v1.2 | Frosted window surfaces, persistent theme, blinking text caret and exact-match fill with automatic smoothing ([release plan](plans/0040-release-1.2.0.md)); the original adjustable fill tolerance was superseded. |
 | v1.3 | Searchable fonts, text range formatting, color selection, spline, eraser modes/cursors, 40% glass, menu readability and onboarding ([release plan](plans/0057-release-1.3.0.md), [plans 0042–0056](plans/0054-blur-onboarding-design.md)). Updates became automatic on startup/open with cooldown; the old opt-out/check controls were removed. |
 | v2 | [Layers and rail revisions](plans/0058-layers.md), [inversion and final icon choices](plans/0059-invert-colors.md), [zoom and final live-blur setup](plans/0060-zoom-and-blur-setup.md), [right-drag pan](plans/0061-right-drag-pan.md), [macOS and release](plans/0062-macos-v2-release.md). Right-button canvas painting/picking was replaced by panning. Live blur with full redraw superseded the intermediate wallpaper recipe. |
+| v2.1 | Compact original ribbon icons, persistent rulers and optional smart guides, expanded Save As including monochrome BMP, floating shape controls, drawing opacity, fill-edge/global matching improvements, region zoom and presets, tool previews/cursors, skip-version updates and glass refinements; [release evidence](plans/0080-release-2.1.0.md). |
 
 Plans retain dated implementation evidence and intermediate experiments. Their
 latest revision and release-status note govern current behavior; earlier “no

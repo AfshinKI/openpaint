@@ -23,8 +23,8 @@ environment to main in repository settings.
 If Pages was not enabled when the main workflow ran, enable it and manually run
 Project website on main. The project deployment URL is
 <https://afshinki.github.io/openpaint/>; verify the successful deployment before
-advertising a new deployment. The v2 deployment workflow succeeded; independent
-visual verification remains recorded as open in [release evidence](../docs/plans/0062-macos-v2-release.md).
+advertising a new deployment. The v2.1 deployment succeeded and the public page was visually checked at desktop
+and 390×844 mobile viewport sizes; see [release evidence](../docs/plans/0080-release-2.1.0.md).
 Repository settings are not changed by adding the workflow.
 
 Download links point to the latest GitHub release rather than fixed filenames.

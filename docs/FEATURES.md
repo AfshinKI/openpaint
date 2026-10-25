@@ -1,13 +1,11 @@
 # Feature checklist and reference audit
 
-Current release: [v2.0.0](https://github.com/AfshinKI/openpaint/releases/tag/v2.0.0),
-published 2026-10-22 UTC from merged PR #56. [Plan 0062](plans/0062-macos-v2-release.md)
-records release/platform evidence and remaining limits. Raster layers and
-OpenRaster shipped in v2; this does not complete the recovery, tiling or
-cross-application acceptance gates of M3. See [release progression](ROADMAP.md#release-progression)
-for changes introduced between the alpha and v2.
-
-The v2.1.0 candidate adds the changes below; [release validation and publication](plans/0080-release-2.1.0.md) remain the final gate.
+Current release: [v2.1.0](https://github.com/AfshinKI/openpaint/releases/tag/v2.1.0),
+published 2026-10-25 UTC from merged PR #82. [Plan 0080](plans/0080-release-2.1.0.md)
+records release validation, public assets and remaining platform limits. Raster
+layers and OpenRaster shipped in v2; this does not complete the recovery, tiling
+or cross-application acceptance gates of M3. See [release progression](ROADMAP.md#release-progression)
+for changes introduced between the alpha and v2.1.
 
 Reference audit date: 2026-10-12. The reference audit is historical; current
 OpenPaint implementation status is recorded below. M1/M2 closure evidence remains
