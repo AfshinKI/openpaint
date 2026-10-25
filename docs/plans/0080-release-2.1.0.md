@@ -1,6 +1,6 @@
 # Release: v2.1.0
 
-Status: release candidate; publication pending
+Status: consolidated release candidate in PR #82; publication pending
 Date: 2026-10-25
 
 ## Scope and authorization
@@ -17,7 +17,8 @@ title bar was explicitly left out. No copied Microsoft artwork or fonts are used
 
 - [x] Preserve all local refinements and audit the assembled code against the tested preview.
 - [x] Merge documentation PR 58 through protection; retain focused PRs for the remaining slices.
-- [ ] Required checks pass and feature PRs merge through protection.
+- [x] Feature PRs #59–#81 consolidated in #82 and closed at maintainer request.
+- [ ] Consolidated release PR passes required checks and merges through protection.
 - [x] Release build, full native/tooling tests, format/QML checks and scaled UI validation pass.
 - [x] Fresh light/dark release captures use original artwork/backdrop at 40% surface opacity.
 - [ ] README, website, notes, version and metadata are reconciled and visually reviewed.
@@ -63,13 +64,24 @@ Merged historical branch heads and their ancestors were removed after preserving
 a verified recovery bundle locally. Two obsolete documentation-only branches were
 archived in the same bundle: generic DEB troubleshooting is retained in RELEASES;
 the unconfirmed v1.3 “Waiting to check” report remains a follow-up below. Active
-v2.1 branches are retained until their protected PRs merge.
+v2.1 branches are retained until the consolidated release PR merges.
 
 The historical v1.3 waiting-state report was not reproduced against an installed
 v2.1 package. Unit tests cover release-check states; they do not prove the cause
 of that report. If reported again, record package/session/network conditions and
 confirm startup/open transitions to checking, cooldown, success or error. Do not
 claim this historical report fixed solely from the current test suite.
+
+### Consolidation authorized by maintainer
+
+To avoid duplicate builds and serial squash-merge conflicts, the maintainer
+explicitly authorized using the release PR containing all changes and closing
+superseded feature PRs. PR #82 now targets main; #59–#81 are closed. All feature
+implementations are in the release history. Eight independent formatting commits
+are not ancestors, but their before/after contents differ only in whitespace;
+the final release passes the same formatting gate. No feature code was omitted.
+The superseded workflow runs are no longer active. The complete validation and
+packaging workflow still gates #82; no required check or protection was removed.
 
 ## Next step
 
