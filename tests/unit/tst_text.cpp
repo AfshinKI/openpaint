@@ -6,6 +6,24 @@
 class TextTest : public QObject {
     Q_OBJECT
   private slots:
+    void smartGuideTextMoves() {
+        Editor editor;
+        const auto base = editor.image();
+        editor.setSmartGuides(true);
+        editor.setTool(Editor::Tool::Text);
+        editor.begin({10, 10}, false);
+        editor.extend({130, 70});
+        editor.endGesture();
+        editor.setTextDraft(QStringLiteral("Guide test"));
+        const auto size = editor.resizeBounds().size();
+        editor.moveActiveBounds(2, 2, 6);
+        QCOMPARE(editor.resizeBounds().topLeft(), QPointF(0, 0));
+        QCOMPARE(editor.resizeBounds().size(), size);
+        QCOMPARE(editor.guidePosition(), QPointF(0, 0));
+        editor.cancel();
+        QCOMPARE(editor.image(), base);
+        QCOMPARE(editor.guidePosition(), QPointF(-1, -1));
+    }
     void selectedTextClipsRaster() {
         Editor editor;
         editor.setTool(Editor::Tool::Text);
