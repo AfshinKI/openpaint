@@ -11,6 +11,7 @@ Appearance::Appearance(const QString& file, QObject* parent) : QObject(parent) {
                     ? std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
                                                   "OpenPaint", "OpenPaint")
                     : std::make_unique<QSettings>(file, QSettings::IniFormat);
+    rulersVisible_ = settings_->value("view/rulersVisible", true).toBool();
     themeMode_ = std::clamp(settings_->value("appearance/theme", 0).toInt(), 0, 2);
     glassEnabled_ = settings_->value("appearance/glass", true).toBool();
     bool ok = false;
@@ -46,6 +47,14 @@ void Appearance::save() {
     settings_->setValue("appearance/opacity", surfaceOpacity_);
     settings_->sync();
     updateApplicationIcon();
+    emit changed();
+}
+void Appearance::setRulersVisible(bool visible) {
+    if (visible == rulersVisible_)
+        return;
+    rulersVisible_ = visible;
+    settings_->setValue("view/rulersVisible", visible);
+    settings_->sync();
     emit changed();
 }
 void Appearance::setGlassEnabled(bool enabled) {

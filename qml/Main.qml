@@ -50,7 +50,7 @@ ApplicationWindow {
     palette.buttonText: Theme.text
     palette.highlight: Theme.accent
     palette.highlightedText: Theme.accentText
-    property bool rulersVisible: true
+    readonly property bool rulersVisible: Appearance.rulersVisible
     Action {
         id: rulersAction
         objectName: "rulersAction"
@@ -59,7 +59,7 @@ ApplicationWindow {
         checkable: true
         checked: window.rulersVisible
         enabled: !window.textInputFocused
-        onTriggered: window.rulersVisible = !window.rulersVisible
+        onTriggered: Appearance.rulersVisible = !Appearance.rulersVisible
     }
     property bool layersVisible: false
     function toggleLayers() {

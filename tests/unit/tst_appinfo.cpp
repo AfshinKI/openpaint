@@ -13,6 +13,21 @@ class AppInfoTest : public QObject {
         received = url;
     }
   private slots:
+    void rulerPreferencePersists() {
+        QTemporaryDir dir;
+        const auto file = dir.filePath("appearance.ini");
+        Appearance first(file);
+        QVERIFY(first.rulersVisible());
+        first.setRulersVisible(false);
+        Appearance reopened(file);
+        QVERIFY(!reopened.rulersVisible());
+        reopened.restoreDefaults(); // Glass reset does not reset View choices.
+        Appearance afterGlassReset(file);
+        QVERIFY(!afterGlassReset.rulersVisible());
+        afterGlassReset.setRulersVisible(true);
+        Appearance enabledAgain(file);
+        QVERIFY(enabledAgain.rulersVisible());
+    }
     void appearancePersistenceAndBounds() {
         QTemporaryDir dir;
         const auto file = dir.filePath("appearance.ini");

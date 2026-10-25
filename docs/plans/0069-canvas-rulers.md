@@ -4,7 +4,7 @@ Status: implemented; combined Linux validation passed; protected review pending
 Feature IDs: F11
 Target: v2.1.0
 
-Add optional top/left rulers in image pixels, enabled by default for the session.
+Add optional top/left rulers in image pixels, enabled by default with the View choice remembered across launches.
 View → Rulers (Ctrl+R, Command+R on macOS) toggles both. Adaptive tick spacing and
 labels follow the canvas origin, zoom and dimensions, with pointer markers only
 while the pointer is over the image. Keep the Layers rail and controls reachable
@@ -96,3 +96,7 @@ inset. The remaining 2px gap matches the left ruler’s outer inset; ruler thick
 labels and viewport placement stay unchanged.
 Combined build, formatting, QML lint and ruler workflow pass; the updated
 spacing was inspected in the generated capture.
+
+View → Rulers now persists its checked state in local settings. Theme/glass
+changes and restoring glass defaults do not overwrite it. A temporary-settings
+regression verifies disabled/enabled values across fresh Appearance instances.
