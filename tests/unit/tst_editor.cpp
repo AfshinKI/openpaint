@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "app/Editor.h"
+#include "tools/Fill.h"
 #include "tools/Shape.h"
 #include <QColorSpace>
 #include <QTemporaryDir>
@@ -14,6 +15,48 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void matchingFillMode() {
+        SampleEditor editor;
+        QImage fixture(12, 8, QImage::Format_ARGB32_Premultiplied);
+        fixture.fill(Qt::white);
+        for (int y = 0; y < 8; ++y)
+            fixture.setPixelColor(5, y, Qt::black);
+        fixture.setColorSpace(QColorSpace::SRgb);
+        editor.reset(fixture);
+        auto token = std::make_shared<std::atomic_bool>(true);
+        QVERIFY(openpaint::fillRegion(fixture, {1, 1}, Qt::red, 0, token, {}, false, true)
+                    .image.isNull());
+        token->store(false);
+        QVERIFY(openpaint::fillRegion(fixture, {1, 1}, Qt::white, 0, token, {}, false, true)
+                    .image.isNull());
+        editor.primary = Qt::red;
+        editor.setTool(Editor::Tool::Fill);
+        QVERIFY(!editor.fillAllMatching);
+        editor.begin({1, 1}, false);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image().pixelColor(10, 1), QColor(Qt::white));
+        editor.undo();
+        editor.fillAllMatching = true;
+        editor.begin({1, 1}, false);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image().pixelColor(1, 1), QColor(Qt::red));
+        QCOMPARE(editor.image().pixelColor(10, 1), QColor(Qt::red));
+        QCOMPARE(editor.image().pixelColor(5, 1), QColor(Qt::black));
+        const auto filled = editor.image();
+        editor.undo();
+        QCOMPARE(editor.image(), fixture);
+        editor.redo();
+        QCOMPARE(editor.image(), filled);
+        editor.undo();
+        editor.selectRect(0, 0, 12, 4);
+        editor.secondary = Qt::transparent;
+        editor.begin({1, 1}, true);
+        QTRY_VERIFY(!editor.busy());
+        QCOMPARE(editor.image().pixelColor(10, 1), QColor(Qt::transparent));
+        QCOMPARE(editor.image().pixelColor(10, 6), QColor(Qt::white));
+        editor.undo();
+        QCOMPARE(editor.image(), fixture);
+    }
     void eraserUsesPaperOrTransparency() {
         SampleEditor editor;
         QImage fixture(24, 24, QImage::Format_ARGB32_Premultiplied);

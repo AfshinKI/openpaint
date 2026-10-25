@@ -1038,19 +1038,98 @@ ApplicationWindow {
                         onClicked: editor.tool = Editor.Pencil
                         Accessible.name: text
                     }
-                    IconButton {
-                        flat: true
+                    Item {
                         Layout.row: 0
                         Layout.column: 1
-                        symbol: "fill"
-                        objectName: "fillButton"
-                        text: qsTr("Fill")
-                        enabled: !editor.textActive
-                        checkable: true
-                        autoExclusive: true
-                        checked: editor.tool === Editor.Fill
-                        onClicked: editor.tool = Editor.Fill
-                        Accessible.name: text
+                        Layout.preferredWidth: 48
+                        Layout.preferredHeight: 32
+                        GlassSurface {
+                            anchors.fill: parent
+                            radius: Theme.controlRadius
+                            raisedSurface: false
+                            backdropLayers: [window.background, canvas]
+                            selectedSurface: editor.tool === Editor.Fill
+                            visible: selectedSurface || fillMain.hovered || fillDropdown.hovered || fillMain.visualFocus || fillDropdown.visualFocus
+                            border.width: fillMain.visualFocus || fillDropdown.visualFocus ? 2 : 1
+                            border.color: selectedSurface ? Theme.selectionOutline : Theme.divider
+                        }
+                        IconButton {
+                            id: fillMain
+                            width: 32
+                            height: 32
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                topRightRadius: 0
+                                bottomRightRadius: 0
+                                color: fillMain.down ? Theme.pressed : fillMain.hovered ? Theme.hover : "transparent"
+                            }
+                            flat: true
+                            symbol: editor.fillAllMatching ? "fill-all" : "fill"
+                            objectName: "fillButton"
+                            text: editor.fillAllMatching ? qsTr("Replace matching color") : qsTr("Contiguous fill")
+                            enabled: !editor.textActive && !editor.busy
+                            checkable: true
+                            autoExclusive: true
+                            checked: editor.tool === Editor.Fill
+                            onClicked: editor.tool = Editor.Fill
+                            Accessible.name: text
+                        }
+                        PaintButton {
+                            id: fillDropdown
+                            x: 32
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                topLeftRadius: 0
+                                bottomLeftRadius: 0
+                                color: fillDropdown.down ? Theme.pressed : fillDropdown.hovered ? Theme.hover : (Theme.dark ? "#0CFFFFFF" : "#08000000")
+                                Rectangle {
+                                    y: 1
+                                    width: 1
+                                    height: parent.height - 2
+                                    color: Theme.text
+                                    opacity: 0.14
+                                }
+                            }
+                            objectName: "fillMenuButton"
+                            text: "⌄"
+                            flat: true
+                            width: 16
+                            implicitWidth: 16
+                            height: 32
+                            padding: 0
+                            enabled: !editor.textActive && !editor.busy
+                            Accessible.name: qsTr("Fill mode")
+                            ToolTip.visible: hovered
+                            ToolTip.text: Accessible.name
+                            onClicked: fillModeMenu.open()
+                            PaintMenu {
+                                id: fillModeMenu
+                                objectName: "fillModeMenu"
+                                y: parent.height
+                                PaintMenuItem {
+                                    objectName: "contiguousFillItem"
+                                    text: qsTr("Contiguous fill")
+                                    symbol: "fill"
+                                    checkable: true
+                                    checked: !editor.fillAllMatching
+                                    onTriggered: {
+                                        editor.fillAllMatching = false;
+                                        editor.tool = Editor.Fill;
+                                    }
+                                }
+                                PaintMenuItem {
+                                    objectName: "replaceMatchingFillItem"
+                                    text: qsTr("Replace matching color")
+                                    symbol: "fill-all"
+                                    checkable: true
+                                    checked: editor.fillAllMatching
+                                    onTriggered: {
+                                        editor.fillAllMatching = true;
+                                        editor.tool = Editor.Fill;
+                                    }
+                                }
+                            }
+                        }
                     }
                     IconButton {
                         flat: true

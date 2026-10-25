@@ -62,6 +62,7 @@ class Editor : public QObject {
     Q_PROPERTY(int curveBend2 MEMBER curveBend2 NOTIFY settingsChanged)
     Q_PROPERTY(bool shapeFill MEMBER shapeFill NOTIFY settingsChanged)
     Q_PROPERTY(int brushStyle MEMBER brushStyle NOTIFY settingsChanged)
+    Q_PROPERTY(bool fillAllMatching MEMBER fillAllMatching NOTIFY settingsChanged)
     Q_PROPERTY(int opacity MEMBER opacity NOTIFY settingsChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY changed)
     Q_PROPERTY(QString fileName READ fileName NOTIFY changed)
@@ -279,6 +280,7 @@ class Editor : public QObject {
     Q_INVOKABLE void redo();
     QColor primary = Qt::black, secondary = Qt::white;
     int brushSize = 3, brushStyle = 0, opacity = 100;
+    bool fillAllMatching = false;
     bool colorSelection = false;
     bool freeFormSelection = false, transparentSelection = false;
     bool transparentEraser = false, shapeOutline = true, shapeFill = false;

@@ -493,3 +493,8 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Fill offers Contiguous fill (default) and Replace matching color from a compact
+right dropdown. Replace matching color affects matching pixels across the active
+layer, limited by the current selection, with the same undo and smooth-edge
+behavior. Each mode has a distinct original icon. Mode resets on launch.

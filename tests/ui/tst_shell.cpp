@@ -433,6 +433,29 @@ class ShellTest : public QObject {
         QVERIFY(!editor->canUndo());
     }
 
+    void fillModeMenu() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* button = window->findChild<QQuickItem*>("fillButton");
+        QVERIFY(button);
+        QVERIFY(tabTo("fillMenuButton"));
+        keyClick(Qt::Key_Space);
+        auto* item = window->findChild<QQuickItem*>("replaceMatchingFillItem");
+        QVERIFY(item);
+        QTRY_VERIFY(item->isVisible());
+        QTest::mouseClick(window, Qt::LeftButton, {},
+                          item->mapToScene({item->width() / 2, item->height() / 2}).toPoint());
+        QTRY_VERIFY(editor->fillAllMatching);
+        QCOMPARE(editor->tool(), Editor::Tool::Fill);
+        QCOMPARE(button->property("symbol").toString(), QString("fill-all"));
+        QVERIFY(tabTo("fillMenuButton"));
+        keyClick(Qt::Key_Space);
+        item = window->findChild<QQuickItem*>("contiguousFillItem");
+        QTRY_VERIFY(item->isVisible());
+        QTest::mouseClick(window, Qt::LeftButton, {},
+                          item->mapToScene({item->width() / 2, item->height() / 2}).toPoint());
+        QTRY_VERIFY(!editor->fillAllMatching);
+        QCOMPARE(button->property("symbol").toString(), QString("fill"));
+    }
     void eraserModeMenu() {
         auto* pickerPosition = window->findChild<QQuickItem*>("pickerButton");
         auto* eraserPosition = window->findChild<QQuickItem*>("eraserButton");

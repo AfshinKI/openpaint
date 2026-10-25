@@ -144,6 +144,7 @@ if(BUILD_TESTING)
     add_shell_tests(shell
         launchAndResize
         toolCursorsAndIndicators
+        fillModeMenu
         eraserModeMenu
         themedApplicationIcon
         splineKeyboardWorkflow
