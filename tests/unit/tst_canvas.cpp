@@ -71,6 +71,22 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void fitAvoidsToolInsetWithoutConstrainingZoom() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        const auto pixels = editor.image();
+        canvas.setFitLeftInset(48);
+        canvas.fit();
+        QVERIFY(canvas.origin().x() >= 72);
+        QVERIFY(canvas.fromDocument({qreal(editor.imageSize().width()), 0}).x() <=
+                canvas.width() - 24);
+        canvas.zoomAt(4, canvas.fromDocument({200, 200}));
+        QVERIFY(canvas.origin().x() < 72); // Free zoom remains unrestricted.
+        canvas.fit();
+        QVERIFY(canvas.origin().x() >= 72);
+        QCOMPARE(editor.image(), pixels);
+    }
     void canvasDoesNotDrawOutsideArtwork() {
         TestEditor editor;
         InputCanvas canvas;

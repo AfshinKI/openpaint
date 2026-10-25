@@ -10,6 +10,7 @@ class CanvasItem : public QQuickPaintedItem {
     QML_ELEMENT
     Q_PROPERTY(Editor* editor READ editor WRITE setEditor NOTIFY editorChanged)
     Q_PROPERTY(QPointF origin READ origin NOTIFY viewportChanged)
+    Q_PROPERTY(qreal fitLeftInset READ fitLeftInset WRITE setFitLeftInset NOTIFY fitInsetsChanged)
     Q_PROPERTY(qreal zoom READ zoom NOTIFY viewportChanged)
     Q_PROPERTY(QPointF cursorPosition READ cursorPosition NOTIFY cursorPositionChanged)
   public:
@@ -33,6 +34,10 @@ class CanvasItem : public QQuickPaintedItem {
     QPointF fromDocument(QPointF point) const {
         return point * zoom_ + origin_;
     }
+    qreal fitLeftInset() const {
+        return fitLeftInset_;
+    }
+    void setFitLeftInset(qreal inset);
     Q_INVOKABLE void fit();
     Q_INVOKABLE void zoomBy(qreal factor);
     void zoomAt(qreal factor, QPointF anchor);
@@ -51,6 +56,7 @@ class CanvasItem : public QQuickPaintedItem {
     void keyReleaseEvent(QKeyEvent* event) override;
     void focusOutEvent(QFocusEvent* event) override;
   signals:
+    void fitInsetsChanged();
     void editorChanged();
     void viewportChanged();
     void cursorPositionChanged();
@@ -63,6 +69,7 @@ class CanvasItem : public QQuickPaintedItem {
     QRegion selectionCache_;
     QPainterPath selectionBoundary_;
     Qt::MouseButton gestureButton_ = Qt::NoButton;
+    qreal fitLeftInset_ = 0;
     qreal zoom_ = 1;
     QPointF origin_, last_, cursor_, hoverPoint_;
     bool hovering_ = false;

@@ -493,3 +493,8 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Fit uses the space to the right of visible floating width/opacity controls, with
+normal canvas padding. Ordinary zoom and pan can still move artwork beneath the
+controls. Minimum window width is at least 1024px and expands with the ribbon’s
+measured content so Layers remains visible.

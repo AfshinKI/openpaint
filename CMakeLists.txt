@@ -158,6 +158,7 @@ if(BUILD_TESTING)
         glassSetupWorkflow
         updatesWorkflow)
     add_shell_tests(shell-editing
+        fitAndMinimumWidthClearControls
         layersWorkflow
         invertColorsWorkflow
         coloredRibbonWorkflow

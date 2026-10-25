@@ -19,7 +19,7 @@ ApplicationWindow {
     objectName: "mainWindow"
     width: 1449
     height: 1008
-    minimumWidth: 1024
+    minimumWidth: Math.max(1024, Math.ceil(ribbonControls.implicitWidth + 16))
     minimumHeight: 640
     visible: false
     Component.onCompleted: Qt.callLater(function () {
@@ -763,6 +763,7 @@ ApplicationWindow {
             anchors.margins: 4
         }
         RowLayout {
+            id: ribbonControls
             anchors.fill: parent
             anchors.margins: 8
             spacing: window.width < 1100 ? 0 : 4
@@ -1518,6 +1519,7 @@ ApplicationWindow {
     CanvasItem {
         id: canvas
         objectName: "canvas"
+        fitLeftInset: floatingControls.width > 0 ? floatingControls.x - canvas.x + floatingControls.width : 0
         anchors.fill: parent
         anchors.rightMargin: window.layersVisible ? layersPanel.width + 8 : 0
         editor: window.editorController

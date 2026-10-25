@@ -121,14 +121,21 @@ void CanvasItem::updateToolCursor() {
     }
     setCursor(cursors.value(key));
 }
+void CanvasItem::setFitLeftInset(qreal inset) {
+    if (!std::isfinite(inset) || inset < 0 || inset == fitLeftInset_)
+        return;
+    fitLeftInset_ = inset;
+    emit fitInsetsChanged();
+}
 void CanvasItem::fit() {
     if (!editor_ || width() <= 48 || height() <= 48)
         return;
     finishGesture();
-    zoom_ = std::clamp(std::min((width() - 48) / editor_->imageSize().width(),
+    const qreal inset = std::min(fitLeftInset_, width() - 49);
+    zoom_ = std::clamp(std::min((width() - 48 - inset) / editor_->imageSize().width(),
                                 (height() - 48) / editor_->imageSize().height()),
                        0.01, 1.0);
-    origin_ = {(width() - editor_->imageSize().width() * zoom_) / 2,
+    origin_ = {inset + (width() - inset - editor_->imageSize().width() * zoom_) / 2,
                (height() - editor_->imageSize().height() * zoom_) / 2};
     fitted_ = true;
     emit viewportChanged();

@@ -586,12 +586,30 @@ class ShellTest : public QObject {
         QVERIFY(!editor->dirty());
     }
 
+    void fitAndMinimumWidthClearControls() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* rail = window->findChild<QQuickItem*>("floatingToolControls");
+        auto* layers = window->findChild<QQuickItem*>("layersButton");
+        QVERIFY(editor && canvas && rail && layers);
+        window->resize(window->minimumWidth(), 640);
+        QGuiApplication::sync();
+        QVERIFY(layers->mapToScene({layers->width(), 0}).x() <= window->width() - 4);
+        for (auto tool : {Editor::Tool::Pencil, Editor::Tool::Brush, Editor::Tool::Shape}) {
+            editor->setTool(tool);
+            QGuiApplication::sync();
+            canvas->fit();
+            QVERIFY(canvas->mapToScene(canvas->origin()).x() >=
+                    rail->mapToScene({rail->width(), 0}).x() + 24);
+        }
+    }
     void launchAndResize() {
         QVERIFY(window->isVisible());
         QVERIFY(window->title().contains(QStringLiteral("OpenPaint")));
         QVERIFY(window->findChild<QObject*>(QStringLiteral("canvas")));
-        window->resize(1024, 640);
-        QTRY_COMPARE(window->size(), QSize(1024, 640));
+        const int width = window->minimumWidth();
+        window->resize(width, 640);
+        QTRY_COMPARE(window->size(), QSize(width, 640));
         QVERIFY(!window->grabWindow().isNull());
         for (auto* swatch : visualItems(window->contentItem(), QStringLiteral("colorSwatch"))) {
             QVERIFY(swatch->width() >= 24);
