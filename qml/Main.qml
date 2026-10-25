@@ -1530,32 +1530,24 @@ ApplicationWindow {
         width: 200
         z: 5
     }
-    Item {
-        anchors.fill: canvas
-        clip: true
-        z: 1
+    ImageRuler {
+        objectName: "horizontalRuler"
+        viewport: canvas
+        imageLength: editor.imageSize.width
         visible: window.rulersVisible
-        ImageRuler {
-            objectName: "horizontalRuler"
-            viewport: canvas
-            imageLength: editor.imageSize.width
-            x: Math.max(0, canvas.origin.x - 12)
-            y: canvas.origin.y - 24
-            width: Math.max(0, Math.min(canvas.width, canvas.origin.x + imageLength * canvas.zoom + 12) - x)
-            height: 20
-            viewportOffset: x
-        }
-        ImageRuler {
-            objectName: "verticalRuler"
-            viewport: canvas
-            imageLength: editor.imageSize.height
-            vertical: true
-            x: canvas.origin.x - 24
-            y: Math.max(0, canvas.origin.y - 12)
-            height: Math.max(0, Math.min(canvas.height, canvas.origin.y + imageLength * canvas.zoom + 12) - y)
-            width: 20
-            viewportOffset: y
-        }
+        x: canvas.x
+        width: canvas.width
+        height: 24
+    }
+    ImageRuler {
+        objectName: "verticalRuler"
+        viewport: canvas
+        imageLength: editor.imageSize.height
+        vertical: true
+        visible: window.rulersVisible
+        y: canvas.y
+        height: canvas.height
+        width: 24
     }
     CanvasItem {
         id: canvas

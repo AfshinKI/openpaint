@@ -498,8 +498,3 @@ Development v2.1 adds top/left pixel rulers with adaptive ticks and pointer
 markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
 canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
 [Acceptance and pending validation](plans/0069-canvas-rulers.md).
-
-Rulers float beside the artwork: 20px strips with a 4px gap, extending 12px
-past each end. They follow canvas pan/zoom; visible segments are clipped to the
-workspace, keeping ruler rendering bounded at extreme zoom. Tick values remain
-image pixels.

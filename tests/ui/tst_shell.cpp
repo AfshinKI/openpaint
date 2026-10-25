@@ -113,34 +113,16 @@ class ShellTest : public QObject {
         const auto pixels = editor->image();
         const auto dirty = editor->dirty();
         window->resize(1024, 640);
-        canvas->fit();
-        QTRY_VERIFY(
-            qAbs(horizontal->width() - (editor->imageSize().width() * canvas->zoom() + 24)) < 0.01);
-        QVERIFY(qAbs(vertical->height() - (editor->imageSize().height() * canvas->zoom() + 24)) <
-                0.01);
-        QCOMPARE(horizontal->y(), canvas->origin().y() - 24);
-        QCOMPARE(vertical->x(), canvas->origin().x() - 24);
+        QTRY_COMPARE(horizontal->width(), canvas->width());
+        QCOMPARE(vertical->height(), canvas->height());
         QCOMPARE(horizontal->property("imageLength").toReal(), qreal(editor->imageSize().width()));
         for (const qreal zoom : {0.01, 1.25, 32.0}) {
             canvas->zoomBy(zoom / canvas->zoom());
             QTRY_COMPARE(horizontal->property("zoomFactor").toReal(), canvas->zoom());
-            QCOMPARE(horizontal->property("offset").toReal() + horizontal->x(),
-                     canvas->origin().x());
-            QCOMPARE(vertical->property("offset").toReal() + vertical->y(), canvas->origin().y());
-            QVERIFY(horizontal->width() <= canvas->width());
-            QVERIFY(vertical->height() <= canvas->height());
-            QCOMPARE(horizontal->y(), canvas->origin().y() - 24);
-            QCOMPARE(vertical->x(), canvas->origin().x() - 24);
+            QCOMPARE(horizontal->property("offset").toReal(), canvas->origin().x());
+            QCOMPARE(vertical->property("offset").toReal(), canvas->origin().y());
             QVERIFY(horizontal->property("majorStep").toReal() >= 1);
         }
-        canvas->fit();
-        const auto start = canvas->mapToScene(canvas->fromDocument({100, 100})).toPoint();
-        QTest::mousePress(window, Qt::RightButton, {}, start);
-        QTest::mouseMove(window, start + QPoint(35, 27));
-        QTest::mouseRelease(window, Qt::RightButton, {}, start + QPoint(35, 27));
-        QCOMPARE(horizontal->y(), canvas->origin().y() - 24);
-        QCOMPARE(vertical->x(), canvas->origin().x() - 24);
-        QCOMPARE(horizontal->property("offset").toReal() + horizontal->x(), canvas->origin().x());
         canvas->fit();
         QVERIFY(capture("rulers-light.png"));
         QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));

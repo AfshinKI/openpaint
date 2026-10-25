@@ -58,12 +58,3 @@ formatting and zero-warning QML lint pass. Focused X11/Mesa checks at 125% pass
 (10 Qt cases); offscreen checks at 200% pass (6 cases). Synthetic light/dark
 captures were inspected. These results supersede earlier visual-preview evidence.
 Required hosted review/checks and release/package validation remain outstanding.
-
-## Canvas-following revision
-
-Rulers now float along the artwork rather than spanning the workspace. Each strip
-is 20px thick, separated by 4px, and extends 12px beyond each end of the scaled
-canvas. Panning carries the strips with the artwork; offscreen portions are clipped.
-Tick offsets account for clipped ruler origins and adaptive zoom behavior remains.
-Acceptance: fit dimensions, pan attachment, correct zero alignment, bounded
-rendering at 1–3200% and unchanged pixels. Validation pending rebuild.
