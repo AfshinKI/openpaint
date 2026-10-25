@@ -58,3 +58,12 @@ formatting and zero-warning QML lint pass. Focused X11/Mesa checks at 125% pass
 (10 Qt cases); offscreen checks at 200% pass (6 cases). Synthetic light/dark
 captures were inspected. These results supersede earlier visual-preview evidence.
 Required hosted review/checks and release/package validation remain outstanding.
+
+## Restored original layout
+
+The maintainer preferred the original design after trying canvas-length rulers.
+Both geometry revisions were reverted: the top ruler spans the workspace width
+and the left ruler spans its height again. Glass surfaces, 3px corners, pointer
+markers and adaptive zoom ticks remain. The rebuilt combined preview passes
+formatting, zero-warning QML lint and ruler/Save As/export workflows (5 Qt cases).
+Save As styling is retained independently in PR #62.
