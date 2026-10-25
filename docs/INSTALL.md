@@ -2,14 +2,15 @@
 
 Download assets from [GitHub Releases](https://github.com/AfshinKI/openpaint/releases).
 
-Linux x86_64 and Apple silicon macOS 14.4+. Tested release environments and artifact digests are recorded in the
-release evidence. Keep copies of important originals; crash recovery is not implemented.
+Linux x86_64 and Apple silicon macOS 14.4+. Tested release environments and remaining verification limits are recorded in the
+[v2 release evidence](plans/0062-macos-v2-release.md). Keep copies of important originals; crash recovery is not implemented.
 
 ## Verify downloads
 
 Download `SHA256SUMS` and the desired assets from the same GitHub release. In that
-directory, run `sha256sum --ignore-missing -c SHA256SUMS`. Every downloaded entry
-must report OK. Checksums detect changed bytes; these artifacts do not have
+directory on Linux, run `sha256sum --ignore-missing -c SHA256SUMS`.
+Every downloaded entry must report OK. On macOS, compare the digest using
+`shasum` as described below. Checksums detect changed bytes; these artifacts do not have
 an OpenPaint signing signature or an automatic updater.
 
 ## macOS (Apple silicon)
@@ -129,5 +130,9 @@ portable application also includes license notices. These materials are for
 source availability and license compliance; they are not required to run the app.
 Older AppImage/Flatpak releases publish these materials as separate assets.
 
-Help → Updates shows the installed version and a manual link to
-GitHub Releases. It does not check, download, install or restart automatically.
+File → Updates shows the installed version and a link to GitHub Releases.
+Network-capable builds check automatically at startup, when Updates opens, and
+at most daily while running, subject to cooldown/backoff. Flatpak uses explicit
+browser links and makes no in-app network requests. All platforms require manual
+installation; OpenPaint never downloads an update or restarts itself to install it.
+See [release checks and privacy](PRIVACY.md#release-check-disclosure).

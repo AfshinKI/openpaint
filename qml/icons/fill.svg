@@ -1,2 +1,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later; original OpenPaint artwork -->
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M8 5 17 14l-7 6-8-8 6-7Zm-4 9h12M8 3v7M20 13s-3 4-3 5a3 3 0 0 0 6 0c0-1-3-5-3-5Z" fill="none" stroke="#000000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+<g fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="m3 9 6-6 7 7-6 6a2 2 0 0 1-3 0l-4-4a2 2 0 0 1 0-3ZM7 3l5 5M3 11h11"/>
+<path d="M18 10s-2 2.5-2 4a2 2 0 0 0 4 0c0-1.5-2-4-2-4Z"/>
+<rect x="2" y="20" width="20" height="2" rx=".5"/>
+</g></svg>

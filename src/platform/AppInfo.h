@@ -24,4 +24,6 @@ class AppInfo : public QObject {
     Q_INVOKABLE QString shortcutText(const QVariant& shortcut) const;
     Q_INVOKABLE bool openReleases() const;
     Q_INVOKABLE bool openContributing() const;
+    Q_INVOKABLE bool openWebsite() const;
+    Q_INVOKABLE bool openContact() const;
 };
