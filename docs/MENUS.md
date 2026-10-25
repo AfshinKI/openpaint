@@ -493,3 +493,8 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Development v2.1 adds top/left pixel rulers with adaptive ticks and pointer
+markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
+canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
+[Acceptance and pending validation](plans/0069-canvas-rulers.md).

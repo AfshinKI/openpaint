@@ -303,6 +303,7 @@ void CanvasItem::hoverMoveEvent(QHoverEvent* event) {
 }
 void CanvasItem::hoverLeaveEvent(QHoverEvent* event) {
     hovering_ = false;
+    emit cursorPositionChanged();
     if (editor_ && editor_->tool() == Editor::Tool::ColorPicker)
         update();
     QQuickPaintedItem::hoverLeaveEvent(event);

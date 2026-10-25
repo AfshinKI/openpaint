@@ -103,6 +103,37 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void rulersWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* horizontal = window->findChild<QQuickItem*>("horizontalRuler");
+        auto* vertical = window->findChild<QQuickItem*>("verticalRuler");
+        auto* action = window->findChild<QObject*>("rulersAction");
+        QVERIFY(editor && canvas && horizontal && vertical && action);
+        const auto pixels = editor->image();
+        const auto dirty = editor->dirty();
+        window->resize(1024, 640);
+        QTRY_COMPARE(horizontal->width(), canvas->width());
+        QCOMPARE(vertical->height(), canvas->height());
+        QCOMPARE(horizontal->property("imageLength").toReal(), qreal(editor->imageSize().width()));
+        for (const qreal zoom : {0.01, 1.25, 32.0}) {
+            canvas->zoomBy(zoom / canvas->zoom());
+            QTRY_COMPARE(horizontal->property("scale").toReal(), canvas->zoom());
+            QCOMPARE(horizontal->property("offset").toReal(), canvas->origin().x());
+            QCOMPARE(vertical->property("offset").toReal(), canvas->origin().y());
+            QVERIFY(horizontal->property("majorStep").toReal() >= 1);
+        }
+        canvas->fit();
+        QVERIFY(capture("rulers-light.png"));
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(!horizontal->isVisible());
+        QVERIFY(!vertical->isVisible());
+        QTRY_COMPARE(canvas->x(), 0.0);
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(horizontal->isVisible());
+        QCOMPARE(editor->image(), pixels);
+        QCOMPARE(editor->dirty(), dirty);
+    }
     void zoomSliderWorkflow() {
         auto* editor = window->findChild<Editor*>("editor");
         auto* canvas = window->findChild<CanvasItem*>("canvas");

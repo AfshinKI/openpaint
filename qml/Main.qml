@@ -50,6 +50,17 @@ ApplicationWindow {
     palette.buttonText: Theme.text
     palette.highlight: Theme.accent
     palette.highlightedText: Theme.accentText
+    property bool rulersVisible: true
+    Action {
+        id: rulersAction
+        objectName: "rulersAction"
+        text: qsTr("Rulers")
+        shortcut: Qt.platform.os === "osx" ? "Meta+R" : "Ctrl+R"
+        checkable: true
+        checked: window.rulersVisible
+        enabled: !window.textInputFocused
+        onTriggered: window.rulersVisible = !window.rulersVisible
+    }
     property bool layersVisible: false
     function toggleLayers() {
         if (layersVisible) {
@@ -651,6 +662,10 @@ ApplicationWindow {
                 }
                 PaintMenu {
                     title: qsTr("&View")
+                    PaintMenuItem {
+                        action: rulersAction
+                    }
+                    MenuSeparator {}
                     PaintMenuItem {
                         text: qsTr("Layers")
                         checkable: true
@@ -1515,10 +1530,31 @@ ApplicationWindow {
         width: 200
         z: 5
     }
+    ImageRuler {
+        objectName: "horizontalRuler"
+        viewport: canvas
+        imageLength: editor.imageSize.width
+        visible: window.rulersVisible
+        x: canvas.x
+        width: canvas.width
+        height: 24
+    }
+    ImageRuler {
+        objectName: "verticalRuler"
+        viewport: canvas
+        imageLength: editor.imageSize.height
+        vertical: true
+        visible: window.rulersVisible
+        y: canvas.y
+        height: canvas.height
+        width: 24
+    }
     CanvasItem {
         id: canvas
         objectName: "canvas"
         anchors.fill: parent
+        anchors.leftMargin: window.rulersVisible ? 24 : 0
+        anchors.topMargin: window.rulersVisible ? 24 : 0
         anchors.rightMargin: window.layersVisible ? layersPanel.width + 8 : 0
         editor: window.editorController
         enabled: !window.editorController.loading || window.editorController.filling
