@@ -83,6 +83,16 @@ the final release passes the same formatting gate. No feature code was omitted.
 The superseded workflow runs are no longer active. The complete validation and
 packaging workflow still gates #82; no required check or protection was removed.
 
+### arm64 numeric boundary regression
+
+The first consolidated CI run passed all Linux/native/package/lifecycle checks
+and 82 of 83 macOS tests. The canvas-fit assertion rejected an arm64 fused
+multiply-add result of 71.999999999999972 for the exact 72px inset. The same
+arithmetic was reproduced locally with `fma`; no visible overlap or application
+behavior change was involved. The regression now allows 1e-9 screen pixels of
+rounding at both fit boundaries, while retaining the free-zoom assertion and
+pixel-preservation check. Hosted validation must pass again before merge.
+
 ## Next step
 
 Complete exact release-source build and CI, refresh screenshots, then publish

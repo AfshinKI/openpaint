@@ -77,14 +77,16 @@ class CanvasTest : public QObject {
         canvas.setEditor(&editor);
         const auto pixels = editor.image();
         canvas.setFitLeftInset(48);
+        // Fused multiply-add on arm64 can place an exact 72px boundary a few ULPs below 72.
+        constexpr qreal roundingTolerance = 1e-9;
         canvas.fit();
-        QVERIFY(canvas.origin().x() >= 72);
+        QVERIFY(canvas.origin().x() >= 72 - roundingTolerance);
         QVERIFY(canvas.fromDocument({qreal(editor.imageSize().width()), 0}).x() <=
-                canvas.width() - 24);
+                canvas.width() - 24 + roundingTolerance);
         canvas.zoomAt(4, canvas.fromDocument({200, 200}));
         QVERIFY(canvas.origin().x() < 72); // Free zoom remains unrestricted.
         canvas.fit();
-        QVERIFY(canvas.origin().x() >= 72);
+        QVERIFY(canvas.origin().x() >= 72 - roundingTolerance);
         QCOMPARE(editor.image(), pixels);
     }
     void regionZoomIsViewOnly() {
