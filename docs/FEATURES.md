@@ -136,7 +136,8 @@ top corners stay square, and other platforms receive no custom corner mask.
 maximized/fullscreen edges are square. Native decorations remain desktop-owned.
 Development glass selection uses stronger neutral frost and light outlines instead
 of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
-Development Updates attribution is recorded in [plan 0048](plans/0048-designer-credit.md).
+Developer attribution now belongs in About; its removal from Updates is recorded
+in [plan 0067](plans/0067-about-project-details.md).
 
 
 Development refinements retain the 40–100% glass range with a 40% default and no

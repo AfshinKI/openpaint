@@ -32,3 +32,9 @@ Xvfb test outside the sandbox. No live-desktop input or glass setup was performe
 This is local combined-source validation, not package or physical Mac certification.
 Next: required hosted checks and protected review/merge of the individual PR;
 then v2.1 release metadata, fresh release screenshots and package validation.
+
+## Attribution placement revision
+
+Remove the designer credit from Updates at the maintainer’s request. Keep public
+developer details in About. The Updates workflow asserts the old credit is absent;
+this revision awaits the final combined rebuild and test pass.
