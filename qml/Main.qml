@@ -1273,7 +1273,7 @@ ApplicationWindow {
                         IconButton {
                             objectName: "shapeFillButton"
                             flat: true
-                            symbol: editor.shapeFill ? "fill-solid" : "fill"
+                            symbol: editor.shapeFill ? "fill-solid" : "fill-none"
                             text: "⌄"
                             display: AbstractButton.TextBesideIcon
                             implicitWidth: 48
@@ -1289,7 +1289,7 @@ ApplicationWindow {
                                 PaintMenuItem {
                                     objectName: "noFillItem"
                                     autoExclusive: true
-                                    symbol: "none"
+                                    symbol: "fill-none"
                                     text: qsTr("No fill")
                                     checkable: true
                                     checked: !editor.shapeFill
