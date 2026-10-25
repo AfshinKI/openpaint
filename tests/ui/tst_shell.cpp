@@ -2878,6 +2878,25 @@ class ShellTest : public QObject {
         const auto previousSize = editor->brushSize;
         keyClick(Qt::Key_Up);
         QCOMPARE(editor->brushSize, previousSize + 1);
+        auto* preview = window->findChild<QQuickItem*>("toolAdjustmentPreview");
+        auto* circle = window->findChild<QQuickItem*>("toolPreviewCircle");
+        auto* previewCanvas = window->findChild<CanvasItem*>("canvas");
+        QVERIFY(preview && circle && previewCanvas);
+        const auto originalPixels = editor->image();
+        const bool originalDirty = editor->dirty();
+        QTRY_VERIFY(preview->isVisible());
+        QCOMPARE(circle->width(), editor->brushSize * previewCanvas->zoom());
+        QCOMPARE(circle->property("color").value<QColor>(), editor->primary);
+        QTRY_VERIFY(!preview->isVisible());
+        editor->setTool(Editor::Tool::Brush);
+        QVERIFY(tabTo("brushOpacity"));
+        keyClick(Qt::Key_Down);
+        QTRY_VERIFY(preview->isVisible());
+        QCOMPARE(circle->opacity(), editor->opacity / 100.0);
+        QTRY_VERIFY(!preview->isVisible());
+        QCOMPARE(editor->image(), originalPixels);
+        QCOMPARE(editor->dirty(), originalDirty);
+
         QVERIFY(tabTo("fillButton"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Fill);

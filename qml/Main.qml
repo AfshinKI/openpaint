@@ -1594,6 +1594,7 @@ ApplicationWindow {
         enabled: !editor.busy
         property real panelHeight: Math.max(120, Math.min(280, (parent.height - 64) / 2))
         ToolSlider {
+            id: sizeControl
             visible: editor.tool === Editor.Pencil || editor.tool === Editor.Brush || editor.tool === Editor.Eraser || editor.tool === Editor.Shape
             height: parent.panelHeight
             label: qsTr("Size")
@@ -1606,6 +1607,7 @@ ApplicationWindow {
             onAdjusted: value => editor.brushSize = value
         }
         ToolSlider {
+            id: opacityControl
             visible: editor.tool === Editor.Brush
             height: parent.panelHeight
             label: qsTr("Opacity")
@@ -1616,6 +1618,38 @@ ApplicationWindow {
             value: editor.opacity
             suffix: "%"
             onAdjusted: value => editor.opacity = value
+        }
+    }
+    Item {
+        objectName: "toolAdjustmentPreview"
+        // View-only overlay: never consumes pointer input or changes document pixels.
+        readonly property real leftEdge: Math.max(0, canvas.origin.x)
+        readonly property real topEdge: Math.max(0, canvas.origin.y)
+        x: canvas.x + leftEdge
+        y: canvas.y + topEdge
+        width: Math.max(0, Math.min(canvas.width, canvas.origin.x + editor.imageSize.width * canvas.zoom) - leftEdge)
+        height: Math.max(0, Math.min(canvas.height, canvas.origin.y + editor.imageSize.height * canvas.zoom) - topEdge)
+        clip: true
+        z: 1
+        visible: !editor.busy && (sizeControl.previewActive || opacityControl.previewActive)
+        Rectangle {
+            objectName: "toolPreviewCircle"
+            anchors.centerIn: parent
+            width: editor.brushSize * canvas.zoom
+            height: width
+            radius: width / 2
+            color: editor.tool === Editor.Eraser ? (editor.transparentEraser ? "transparent" : "white") : editor.primary
+            opacity: editor.tool === Editor.Eraser ? 1 : editor.opacity / 100
+        }
+        Rectangle {
+            anchors.centerIn: parent
+            width: editor.brushSize * canvas.zoom + 2
+            height: width
+            radius: width / 2
+            color: "transparent"
+            border.width: 1
+            border.color: Theme.text
+            opacity: 0.5
         }
     }
     footer: ToolBar {

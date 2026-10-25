@@ -493,3 +493,9 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Adjusting Size or Opacity shows a temporary circle over the visible canvas. Its
+diameter follows brush size and canvas zoom, with primary color and tool opacity;
+a faint outline remains visible at zero opacity. It stays while hovering/dragging
+the slider and for 900ms after keyboard adjustment, without painting or consuming
+canvas input. This is a size/color sample, not a textured brush-tip simulation.

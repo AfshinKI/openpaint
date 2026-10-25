@@ -14,6 +14,11 @@ GlassSurface {
     property int maximum: 100
     property int value: 0
     property string suffix: ""
+    readonly property bool previewActive: visible && (slider.hovered || slider.pressed || previewTimer.running)
+    Timer {
+        id: previewTimer
+        interval: 900
+    }
     signal adjusted(int value)
     implicitWidth: 36
     implicitHeight: 204
@@ -51,7 +56,10 @@ GlassSurface {
             Layout.alignment: Qt.AlignHCenter
             implicitWidth: 28
             Accessible.name: panel.label + " " + panel.minimum + "–" + panel.maximum + panel.suffix
-            onMoved: panel.adjusted(Math.round(value))
+            onMoved: {
+                panel.adjusted(Math.round(value));
+                previewTimer.restart();
+            }
             ToolTip.visible: hovered || pressed
             ToolTip.text: panel.label + ": " + Math.round(value) + panel.suffix
             background: Rectangle {
