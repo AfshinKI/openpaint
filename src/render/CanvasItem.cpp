@@ -311,7 +311,8 @@ void CanvasItem::mouseMoveEvent(QMouseEvent* event) {
 void CanvasItem::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() != gestureButton_)
         return;
-    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier, event->modifiers() & Qt::ControlModifier);
+    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier,
+                  event->modifiers() & Qt::ControlModifier);
     const bool applyZoom = zooming_;
     const QRectF region = QRectF(zoomStart_, zoomEnd_).normalized();
     const bool largeEnough = region.width() * zoom_ >= 4 && region.height() * zoom_ >= 4;
