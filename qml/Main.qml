@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import QtQml.Models
 import OpenPaint
 
 ApplicationWindow {
@@ -1689,12 +1690,34 @@ ApplicationWindow {
                 shortcutLabel: "Ctrl+0"
                 action: fitAction
             }
-            Label {
+            PaintButton {
+                id: zoomPresetButton
                 objectName: "zoomPercentage"
-                text: Math.round(canvas.zoom * 100) + "%"
-                Layout.preferredWidth: 44
-                horizontalAlignment: Text.AlignHCenter
-                color: Theme.text
+                text: Math.round(canvas.zoom * 100) + "% ⌄"
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: 28
+                flat: true
+                Accessible.name: qsTr("Zoom %1%, choose preset").arg(Math.round(canvas.zoom * 100))
+                onClicked: zoomPresetMenu.open()
+                PaintMenu {
+                    id: zoomPresetMenu
+                    objectName: "zoomPresetMenu"
+                    y: -height
+                    implicitWidth: 144
+                    Instantiator {
+                        model: [25, 50, 100, 200, 400, 800, 1600]
+                        delegate: PaintMenuItem {
+                            required property int modelData
+                            objectName: "zoomPreset" + modelData
+                            text: modelData + "%"
+                            checkable: true
+                            checked: Math.abs(canvas.zoom * 100 - modelData) < 0.001
+                            onTriggered: canvas.zoomBy(modelData / (100 * canvas.zoom))
+                        }
+                        onObjectAdded: (index, object) => zoomPresetMenu.insertItem(index, object)
+                        onObjectRemoved: (index, object) => zoomPresetMenu.removeItem(object)
+                    }
+                }
             }
             IconButton {
                 flat: Appearance.effectiveGlassEnabled

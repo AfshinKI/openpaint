@@ -108,6 +108,20 @@ class ShellTest : public QObject {
         auto* canvas = window->findChild<CanvasItem*>("canvas");
         auto* slider = window->findChild<QQuickItem*>("zoomSlider");
         QVERIFY(slider);
+        auto* percentage = window->findChild<QQuickItem*>("zoomPercentage");
+        QVERIFY(percentage);
+        QVERIFY(QMetaObject::invokeMethod(percentage, "clicked"));
+        auto* preset = window->findChild<QQuickItem*>("zoomPreset200");
+        QVERIFY(preset);
+        QTRY_VERIFY(preset->isVisible());
+        QTest::mouseClick(
+            window, Qt::LeftButton, {},
+            preset->mapToScene({preset->width() / 2, preset->height() / 2}).toPoint());
+        QTRY_COMPARE(canvas->zoom(), 2.0);
+        QTRY_VERIFY(percentage->property("text").toString().startsWith("200%"));
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - std::log2(2.0)) < 0.001);
+        canvas->zoomBy(1.37 / canvas->zoom());
+        QTRY_VERIFY(percentage->property("text").toString().startsWith("137%"));
         const auto original = editor->image();
         const bool dirty = editor->dirty();
         window->resize(1024, 640);

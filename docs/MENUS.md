@@ -193,7 +193,9 @@ its margins and does not resize or reposition the canvas.
 The bottom status strip separates cursor/selection information from image size.
 The right side groups fit-to-window, a percentage dropdown, zoom-out, a horizontal
 zoom slider and zoom-in. Fractional percentage display should remain readable.
-The expanded zoom dropdown remains planned. Canvas operations still belong to undoable document commands;
+The percentage button opens a styled preset menu: 25, 50, 100,
+200, 400, 800 and 1600%. The slider retains its full 1–3200% range. It shows the current rounded zoom
+from the slider, Fit and other zoom controls, even between presets. Canvas operations still belong to undoable document commands;
 view-only changes never dirty the drawing.
 
 ## Settings
