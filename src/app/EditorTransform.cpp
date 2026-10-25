@@ -16,6 +16,85 @@ QRectF Editor::resizeBounds() const {
         return {floatingPosition_, floatingImage_.size()};
     return hasSelection() ? QRectF(selectionRect()) : QRectF();
 }
+void Editor::setSmartGuides(bool enabled) {
+    if (smartGuides_ == enabled)
+        return;
+    smartGuides_ = enabled;
+    guidePosition_ = {-1, -1};
+    emit guidesChanged();
+}
+void Editor::clearGuides() {
+    if (guidePosition_ == QPointF(-1, -1))
+        return;
+    guidePosition_ = {-1, -1};
+    emit guidesChanged();
+}
+void Editor::moveActiveBounds(int x, int y, qreal tolerance) {
+    clearGuides();
+    const auto before = resizeBounds();
+    if (before.isEmpty() || std::abs(qint64(x)) > 1000000 || std::abs(qint64(y)) > 1000000)
+        return;
+    // Geometry and preview mutation stay on the editor's GUI thread. Tolerance is
+    // supplied in image pixels by the view, so the capture distance stays constant on screen.
+    QPointF guides(-1, -1);
+    auto snap = [&](int position, qreal extent, int canvasExtent, qreal& guide) {
+        qreal best = tolerance;
+        int result = position;
+        for (qreal target : {0.0, canvasExtent / 2.0, double(canvasExtent)}) {
+            for (qreal edge : {0.0, extent / 2.0, extent}) {
+                const qreal candidate = target - edge;
+                const int pixel = qRound(candidate);
+                const qreal distance = std::abs(candidate - position);
+                if (std::abs(candidate - pixel) < 0.001 && distance <= best &&
+                    (guide < 0 || distance < best)) {
+                    best = distance;
+                    result = pixel;
+                    guide = target;
+                }
+            }
+        }
+        return result;
+    };
+    if (smartGuides_ && std::isfinite(tolerance) && tolerance > 0 && tolerance <= 600) {
+        qreal gx = -1, gy = -1;
+        x = snap(x, before.width(), imageSize().width(), gx);
+        y = snap(y, before.height(), imageSize().height(), gy);
+        guides = {gx, gy};
+    }
+    if (textActive_ || shapeActive_) {
+        const int boundedX =
+            std::clamp(x, 0, std::max(0, int(imageSize().width() - before.width())));
+        const int boundedY =
+            std::clamp(y, 0, std::max(0, int(imageSize().height() - before.height())));
+        if (boundedX != x)
+            guides.setX(-1);
+        if (boundedY != y)
+            guides.setY(-1);
+        x = boundedX;
+        y = boundedY;
+        if (textActive_) {
+            setTextBounds(x, y, textRect_.width(), textRect_.height());
+        } else {
+            const QPointF delta = QPointF(x, y) - before.topLeft();
+            shapeStart_ += delta;
+            shapeEnd_ += delta;
+            for (auto& point : shapePoints_)
+                point += delta;
+            refreshShape();
+        }
+    } else {
+        if (!floatingActive_) {
+            beginMove(selectionRect().topLeft());
+            floatingDragging_ = false;
+        }
+        if (!floatingActive_ || x <= -floatingImage_.width() || y <= -floatingImage_.height() ||
+            x >= imageSize().width() || y >= imageSize().height())
+            return;
+        moveFloating(x, y);
+    }
+    guidePosition_ = guides;
+    emit guidesChanged();
+}
 void Editor::resizeCanvas(int x, int y, int width, int height) {
     if (busy() || previewActive() || hasSelection() ||
         !openpaint::Document::validSize({width, height}) || std::abs(qint64(x)) > 16384 ||

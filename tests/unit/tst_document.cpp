@@ -6,6 +6,55 @@ using openpaint::Document;
 class DocumentTest : public QObject {
     Q_OBJECT
   private slots:
+    void pencilAndFillOpacity() {
+        for (bool transparent : {false, true}) {
+            for (int opacity : {0, 50, 100}) {
+                Document doc({40, 40});
+                QImage initial = doc.image();
+                initial.fill(transparent ? Qt::transparent : Qt::white);
+                QVERIFY(doc.reset(initial));
+                const auto base = doc.image();
+                QVERIFY(doc.beginStroke({15, 20}, Qt::black, 10, false, -1, opacity));
+                doc.extendStroke({25, 20});
+                const auto once = doc.image().pixel(20, 20);
+                doc.extendStroke({15, 20});
+                QCOMPARE(doc.image().pixel(20, 20), once);
+                QCOMPARE(doc.commitStroke(), opacity > 0);
+                const auto painted = doc.image();
+                if (opacity > 0) {
+                    if (transparent)
+                        QCOMPARE(painted.pixelColor(20, 20).alpha(), qRound(255 * opacity / 100.0));
+                    else
+                        QCOMPARE(painted.pixelColor(20, 20).red(),
+                                 qRound(255 * (100 - opacity) / 100.0));
+                    doc.undo();
+                    QCOMPARE(doc.image(), base);
+                    doc.redo();
+                    QCOMPARE(doc.image(), painted);
+                } else
+                    QCOMPARE(painted, base);
+                const auto token = std::make_shared<std::atomic_bool>(false);
+                auto fill = openpaint::fillRegion(base, {10, 10}, Qt::black, 0, token,
+                                                  QRegion(QRect(5, 5, 20, 20)), true, opacity);
+                QVERIFY(!fill.failed);
+                if (!opacity)
+                    QVERIFY(fill.image.isNull());
+                else {
+                    QCOMPARE(fill.image.pixel(10, 10), once);
+                    QCOMPARE(fill.image.pixel(0, 0), base.pixel(0, 0));
+                }
+                const auto shape =
+                    openpaint::renderShape(base, {15, 20}, {25, 20}, 0, Qt::black, Qt::black, 10,
+                                           true, false, 30, -30, {}, opacity);
+                QVERIFY(!shape.image.isNull());
+                QCOMPARE(shape.image.pixel(20 - shape.rect.x(), 20 - shape.rect.y()), once);
+                token->store(true);
+                QVERIFY(
+                    openpaint::fillRegion(base, {10, 10}, Qt::black, 0, token, {}, true, opacity)
+                        .image.isNull());
+            }
+        }
+    }
     void selectionClipsStrokesAndPreviews() {
         const QRegion mask(QRect(20, 20, 20, 20));
         for (int brush = -1; brush < 9; ++brush) {

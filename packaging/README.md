@@ -1,4 +1,4 @@
-# Linux packages
+# Linux and macOS packages
 
 Packaging produces review artifacts. It never publishes releases or installs into
 the host system. Release approval and exact-byte clean-machine tests follow the
@@ -116,10 +116,12 @@ flatpak run io.github.AfshinKI.OpenPaint
 flatpak uninstall --user io.github.AfshinKI.OpenPaint
 ```
 
-This alpha-channel bundle is not a Flathub listing or an OpenPaint update remote.
+The default development suffix produces an `alpha` branch bundle; explicit
+release packaging with `--suffix ""` produces the `stable` branch. Neither is a
+Flathub listing or an OpenPaint update remote.
 Replace it manually by installing the next verified bundle. Uninstall keeps user
 settings unless explicitly removed. No OpenPaint signing key authenticates these
-test bundles; verify downloads and checksums from the release page. Signing and
+bundles; verify downloads and checksums from the release page. Signing and
 managed update distribution remain later release gates.
 
 ## Ubuntu DEB (amd64)
@@ -143,3 +145,21 @@ machine with sudo, Xvfb and xauth. It installs/reinstalls/removes the package an
 checks launcher survival and generated-file preservation. Desktop menu and actual
 draw/save checks remain separate release acceptance cases in
 [plan 0030](../docs/plans/0030-debian-installer.md).
+
+## macOS DMG (Apple silicon)
+
+Follow the [macOS build and packaging commands](../docs/BUILD.md#macos-release-build)
+with the pinned Qt toolchain, system libarchive and development headers. The
+`package_macos.py` recipe bundles Qt, audits runtime paths, signs ad-hoc and emits
+a DMG with source/license inventory. It does not provide Developer ID signing,
+notarization or Intel support. Native Cocoa tests require a graphical session.
+See [v2 platform evidence and limits](../docs/plans/0062-macos-v2-release.md).
+
+## Public release assets
+
+The v2 release publishes Linux portable tar.gz, Ubuntu DEB, Flatpak and macOS DMG,
+plus combined source/notices and checksums. AppImage remains a packaging/audit
+intermediate and a historical alpha download. Packaging alone does not publish;
+the explicit [release workflow](../docs/RELEASES.md#stable-publishing-automation)
+promotes checked artifacts. User installation belongs in the
+[installation guide](../docs/INSTALL.md).
