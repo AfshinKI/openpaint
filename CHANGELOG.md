@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — toward 2.1.0
+
+- Increase Image/Tools, Selection and Brush ribbon icons while retaining button targets.
+
 ## 2.0.0 — 2026-10-21
 
 - Add an Apple silicon macOS app bundle, native glass and platform keyboard shortcuts.
