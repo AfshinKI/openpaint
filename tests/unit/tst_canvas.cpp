@@ -71,6 +71,87 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void fitAvoidsToolInsetWithoutConstrainingZoom() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        const auto pixels = editor.image();
+        canvas.setFitLeftInset(48);
+        // Fused multiply-add on arm64 can place an exact 72px boundary a few ULPs below 72.
+        constexpr qreal roundingTolerance = 1e-9;
+        canvas.fit();
+        QVERIFY(canvas.origin().x() >= 72 - roundingTolerance);
+        QVERIFY(canvas.fromDocument({qreal(editor.imageSize().width()), 0}).x() <=
+                canvas.width() - 24 + roundingTolerance);
+        canvas.zoomAt(4, canvas.fromDocument({200, 200}));
+        QVERIFY(canvas.origin().x() < 72); // Free zoom remains unrestricted.
+        canvas.fit();
+        QVERIFY(canvas.origin().x() >= 72 - roundingTolerance);
+        QCOMPARE(editor.image(), pixels);
+    }
+    void regionZoomIsViewOnly() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        editor.setTool(Editor::Tool::Zoom);
+        const auto original = editor.image();
+        const auto dirty = editor.dirty();
+        const auto before = canvas.zoom();
+        canvas.press({100, 100});
+        canvas.move({200, 180});
+        canvas.release({200, 180});
+        QVERIFY(canvas.zoom() > before);
+        const auto center = canvas.fromDocument({150, 140});
+        QVERIFY(qAbs(center.y() - canvas.height() / 2) < 0.01);
+        QVERIFY(canvas.fromDocument({100, 100}).x() >= 24);
+        QVERIFY(canvas.fromDocument({200, 180}).x() <= canvas.width() - 24);
+        const auto fittedZoom = canvas.zoom();
+        canvas.press({120, 120});
+        canvas.move({160, 150});
+        canvas.key(Qt::Key_Escape);
+        canvas.release({160, 150});
+        QCOMPARE(canvas.zoom(), fittedZoom);
+        canvas.press({120, 120});
+        canvas.release({120, 120});
+        QCOMPARE(canvas.zoom(), fittedZoom);
+        canvas.press({160, 150});
+        canvas.move({120, 120});
+        canvas.loseFocus();
+        canvas.release({120, 120});
+        QCOMPARE(canvas.zoom(), fittedZoom);
+        canvas.press({160, 150});
+        canvas.release({120, 120});
+        QVERIFY(canvas.zoom() > fittedZoom);
+        QCOMPARE(editor.image(), original);
+        QCOMPARE(editor.dirty(), dirty);
+        QVERIFY(!editor.canUndo());
+    }
+    void smartGuideZoomAndBypass() {
+        for (qreal zoom : {0.5, 1.0, 2.0}) {
+            TestEditor editor;
+            InputCanvas canvas;
+            canvas.setEditor(&editor);
+            canvas.zoomBy(zoom / canvas.zoom());
+            editor.setSmartGuides(true);
+            QImage patch(20, 20, QImage::Format_ARGB32_Premultiplied);
+            patch.fill(Qt::red);
+            editor.pasteImage(patch);
+            canvas.press({10, 10});
+            const QPointF near(10 + 4 / zoom, 110);
+            canvas.move(near);
+            QCOMPARE(editor.floatingPosition().x(), 0);
+            QCOMPARE(editor.guidePosition().x(), 0.0);
+            canvas.mouse(QEvent::MouseMove, canvas.fromDocument(near), Qt::NoButton, Qt::LeftButton,
+                         Qt::ControlModifier);
+            QCOMPARE(editor.floatingPosition().x(), int(4 / zoom));
+            QCOMPARE(editor.guidePosition(), QPointF(-1, -1));
+            canvas.move({10 + 8 / zoom, 110});
+            QCOMPARE(editor.floatingPosition().x(), int(8 / zoom));
+            canvas.release(near);
+            QCOMPARE(editor.guidePosition(), QPointF(-1, -1));
+            editor.cancel();
+        }
+    }
     void canvasDoesNotDrawOutsideArtwork() {
         TestEditor editor;
         InputCanvas canvas;

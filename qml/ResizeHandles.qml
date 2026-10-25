@@ -70,6 +70,75 @@ Item {
         border.color: Theme.accent
         visible: handles.dragging
     }
+    Rectangle {
+        id: moveGrip
+        objectName: "movePreviewHandle"
+        visible: !handles.canvasMode
+        x: Math.max(0, Math.min(handles.width - width, handles.canvas.origin.x + (handles.bounds.x + handles.bounds.width / 2) * handles.canvas.zoom - width / 2))
+        y: Math.max(0, handles.canvas.origin.y + handles.bounds.y * handles.canvas.zoom - height - 10)
+        width: 36
+        height: 20
+        radius: 3
+        color: Theme.panel
+        border.color: activeFocus ? Theme.accent : Theme.secondaryText
+        activeFocusOnTab: true
+        Accessible.role: Accessible.Button
+        Accessible.name: qsTr("Move selection, shape or text")
+        property point startPoint
+        property rect startBounds
+        Keys.onEscapePressed: {
+            handles.editor.cancel();
+            handles.canvas.forceActiveFocus();
+        }
+        Keys.onPressed: event => {
+            let dx = 0, dy = 0;
+            if (event.key === Qt.Key_Left)
+                dx = -1;
+            else if (event.key === Qt.Key_Right)
+                dx = 1;
+            else if (event.key === Qt.Key_Up)
+                dy = -1;
+            else if (event.key === Qt.Key_Down)
+                dy = 1;
+            else
+                return;
+            const step = event.modifiers & Qt.ShiftModifier ? 10 : 1;
+            handles.editor.moveActiveBounds(Math.round(handles.bounds.x + dx * step), Math.round(handles.bounds.y + dy * step), 0);
+            event.accepted = true;
+        }
+        Label {
+            anchors.centerIn: parent
+            text: "↔"
+            color: Theme.text
+        }
+        MouseArea {
+            id: moveArea
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton
+            cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+            preventStealing: true
+            onPressed: mouse => {
+                moveGrip.forceActiveFocus();
+                moveGrip.startPoint = mapToItem(handles.canvas, mouse.x, mouse.y);
+                moveGrip.startBounds = handles.activeBounds;
+            }
+            function move(mouse) {
+                const point = mapToItem(handles.canvas, mouse.x, mouse.y);
+                handles.editor.moveActiveBounds(Math.round(moveGrip.startBounds.x + (point.x - moveGrip.startPoint.x) / handles.canvas.zoom), Math.round(moveGrip.startBounds.y + (point.y - moveGrip.startPoint.y) / handles.canvas.zoom), mouse.modifiers & Qt.ControlModifier ? 0 : 6 / handles.canvas.zoom);
+            }
+            onPositionChanged: mouse => {
+                if (pressed)
+                    move(mouse);
+            }
+            onReleased: mouse => {
+                move(mouse);
+                handles.editor.clearGuides();
+            }
+            onCanceled: handles.editor.clearGuides()
+        }
+        ToolTip.visible: activeFocus || moveArea.containsMouse
+        ToolTip.text: qsTr("Drag to move · Ctrl bypasses smart guides · arrow keys nudge")
+    }
     Repeater {
         model: 8
         delegate: Item {

@@ -1,5 +1,7 @@
 # Releases and in-app updates
 
+v2.1.0 preparation and publication evidence: [release plan](plans/0080-release-2.1.0.md).
+
 The current stable release is v2.0.0, published 2026-10-22 UTC. Release and platform evidence are tracked in
 [plan 0062](plans/0062-macos-v2-release.md); prior v1.3.0 evidence remains in
 [plan 0057](plans/0057-release-1.3.0.md). Ordinary CI runs validate development
@@ -38,6 +40,16 @@ Flatpak starts as a tested manifest and downloadable test bundle. Flathub is the
 preferred eventual stable channel, but publication requires its submission/review
 process. A GitHub `.flatpak` bundle alone does not establish an update repository.
 Until a remote exists, explain manual replacement accurately in the Updates screen.
+
+## DEB installation troubleshooting
+
+Record fresh-install and previous-version upgrade results separately from app
+launch/edit/save checks. If APT reports failure, inspect the OpenPaint package
+status and `dpkg --audit` to distinguish an app-package failure from unrelated
+pending system-package configuration. A local-file `_apt` access notice alone is
+not proof that OpenPaint failed to install. Stage downloads in a readable folder;
+do not relax home-directory permissions or add driver/kernel repair to package
+scripts. Keep support logs sanitized before publishing evidence.
 
 ## Version and artifact contract
 
@@ -278,3 +290,10 @@ The current signing mode is ad-hoc, not Developer ID/notarized. State that on th
 download page and in release notes. Never claim Gatekeeper certification or
 physical Mac visual validation from offscreen/hosted tests. Native macOS glass
 uses AppKit and needs no Linux extension command. Intel Mac packaging is deferred.
+
+### Skip one release (v2.1)
+
+Updates → Skip this version remembers the current available release locally and
+suppresses its startup notice across launches. Checks continue; newer versions
+notify normally. Opening Updates manually still offers the skipped release’s
+GitHub download link. See [plan 0071](plans/0071-skip-update-version.md).

@@ -120,7 +120,8 @@ class Document {
     Layers layers_;
     int activeLayer_ = 0;
     quint64 nextLayerId_ = 1;
-    QImage original_;
+    QImage original_, opacityRaster_;
+    int strokeOpacity_ = 100;
     mutable QImage compositeCache_;
     mutable bool compositeValid_ = false, compositePreview_ = false;
     QRegion selection_;

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(OpenPaint VERSION 2.0.0 LANGUAGES CXX)
+project(OpenPaint VERSION 2.1.0 LANGUAGES CXX)
 if(APPLE)
     enable_language(OBJCXX)
     set(CMAKE_OBJCXX_STANDARD 20)
@@ -144,6 +144,7 @@ if(BUILD_TESTING)
     add_shell_tests(shell
         launchAndResize
         toolCursorsAndIndicators
+        fillModeMenu
         eraserModeMenu
         themedApplicationIcon
         splineKeyboardWorkflow
@@ -158,10 +159,16 @@ if(BUILD_TESTING)
         glassSetupWorkflow
         updatesWorkflow)
     add_shell_tests(shell-editing
+        fitAndMinimumWidthClearControls
+        floatingShapeToolbar
+        smartGuidesWorkflow
         layersWorkflow
         invertColorsWorkflow
         coloredRibbonWorkflow
+        regionZoomToolWorkflow
+        rulersWorkflow
         zoomSliderWorkflow
+        saveAsFormatChoices
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory
@@ -201,6 +208,7 @@ if(BUILD_TESTING)
         brushMenuKeyboardAndLayout)
     add_shell_tests(shell-colors
         fillOptionsLayout
+        toolIconCursors
         keyboardToolsAndAccessibility
         keyboardControlsAndAccessibility
         customColorEditor

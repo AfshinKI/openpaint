@@ -15,6 +15,9 @@
   <url type="homepage">https://github.com/AfshinKI/openpaint</url>
   <url type="bugtracker">https://github.com/AfshinKI/openpaint/issues</url>
   <releases>
+    <release version="2.1.0" date="2026-10-25" type="stable">
+      <description><p>Pixel rulers, optional smart guides, expanded Save As formats, drawing opacity, matching-color fill, region zoom and refined controls. Improved canvas background extension and glass setup.</p></description>
+    </release>
     <release version="2.0.0" date="2026-10-21" type="stable">
       <description><p>Raster layers and OpenRaster projects, a glass layer panel, invert colors, zoom slider and right-drag canvas navigation.</p></description>
     </release>

@@ -7,6 +7,8 @@ OpenRaster shipped in v2; this does not complete the recovery, tiling or
 cross-application acceptance gates of M3. See [release progression](ROADMAP.md#release-progression)
 for changes introduced between the alpha and v2.
 
+The v2.1.0 candidate adds the changes below; [release validation and publication](plans/0080-release-2.1.0.md) remain the final gate.
+
 Reference audit date: 2026-10-12. The reference audit is historical; current
 OpenPaint implementation status is recorded below. M1/M2 closure evidence remains
 in [M1 closure](plans/0009-m1-closure.md) and [the alpha plan](plans/0027-alpha-release.md).
@@ -27,14 +29,14 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F01 | Familiar toolbar, light/dark, responsive canvas | R1; visual layout in the menu/control specification; interaction audit pending | M1–M4 | In progress: original icon toolbar/menus, borderless idle ribbon controls, session-aware selection/transform icons, shared rounded surfaces, narrow left-side size/opacity controls, canvas and themes implemented; exact parity audit pending. See [M1 evidence](plans/0001-foundation.md#evidence-and-handoff). |
 | F02 | Pencil, eraser, basic brush, sizes | R1 | M1 | Implemented: round pencil, opaque/transparent eraser, 1–128 px size; mouse gesture/edge regression coverage in [plan 0006](plans/0006-canvas-gesture-lifecycle.md); additional styles in F03. |
 | F03 | Additional brush styles, stroke opacity | R1, R2; nine-style inventory in the menu/control specification | M2 | Implemented: nine original deterministic raster styles, generated previews and per-stroke opacity; [plan 0012](plans/0012-brush-styles.md). Proprietary simulation parity and pressure remain unverified. |
-| F04 | Fill with smooth edges | R1 | M2 | Implemented: cancellable four-connected fill, exact color matching, automatic smooth edges and alpha replacement; [plan 0011](plans/0011-fill-tolerance.md). Selection clipping is implemented in [plan 0016](plans/0016-rectangular-selection.md). |
+| F04 | Fill with smooth edges | R1 | M2 | Implemented: cancellable contiguous and global matching-color modes, selection clipping, alpha/opacity and inferred edge recoloring; [fill modes](plans/0078-fill-modes.md), [edge limits](plans/0075-fill-edge-background.md). |
 | F05 | Primary/secondary colors, picker, HEX/RGB/HSV | R1 | M1–M2 | Implemented: primary/secondary rectangular spectrum, brightness, HEX/RGB/HSV, 24 session custom colors. Alpha polish adds a fixed foreground/background pair with selectable editing target, automatic 10/24 session palette insertion, transparent-background choice with checkerboard swatches, and removes Swap; see [plan 0028](plans/0028-alpha-ui-polish.md). Behavioral and visual evidence in the [reference layout plan](plans/0005-reference-color-layout.md); pointer-attached hover swatch and canvas eyedropper implemented with alpha-preserving sampling; see [plan 0010](plans/0010-canvas-eyedropper.md). |
 | F06 | Lines, rectangles, ellipses, shape palette | R1; partial visible shape inventory specified, full palette still unverified | M2 | Implemented: 20-shape 7×3 ribbon gallery with separate Outline and Fill menus, retained previews, outline/fill, numeric geometry, curve bends, polygon and spline entry and Shift constraints; [basic previews](plans/0013-basic-shapes.md) and [palette](plans/0014-shape-palette.md). Exact full-reference inventory remains unverified. |
 | F07 | Text, font/style/size/alignment and background | R1; detailed control behavior needs observation | M2 | Implemented: inline plain text, system font/style/alignment, optional background, floating formatting toolbar and outside-click/Ctrl+Enter raster commit; [plan 0015](plans/0015-inline-text.md). |
 | F08 | Rectangle/free-form/color selection; copy/cut/paste | R1 | M2 | Implemented: rectangle/free-form selection, inversion, color-key transparency, numeric bounds, selection clearing on tool changes and undoable background-color deletion; [plan 0016](plans/0016-rectangular-selection.md). Move and PNG clipboard: [plan 0017](plans/0017-selection-clipboard.md); free-form and transparent selection: [plan 0018](plans/0018-freeform-selection.md). |
 | F09 | Crop, resize/skew, flip, right-angle rotate, invert colors | R1 supports crop/resize/flip/rotate; skew needs observation | M2 | Implemented: crop, flips and right-angle rotations for image/selection, with dimension-aware undo; [plan 0019](plans/0019-crop-rotate-flip.md). Canvas crop/expand and active selection, shape and text corner handles: [alpha polish](plans/0028-alpha-ui-polish.md). Active-layer color inversion shipped in v2; see [plan 0059](plans/0059-invert-colors.md). Pixel/percent resize, resampling and bounded skew: [plan 0020](plans/0020-resize-skew.md). |
 | F10 | Freeform rotation of active content | R4: Paint 11.2601.391.0 preview | M4 | Planned |
-| F11 | Zoom, pan, status, rulers, grid | R1; exact bounds and ruler behavior need observation | M1–M4 | In progress: zoom/pan (including right-drag with a closed-hand cursor), synchronized 1–3200% footer slider, fit and basic status implemented ([plan 0060](plans/0060-zoom-and-blur-setup.md)); rulers, grid and thumbnail planned. |
+| F11 | Zoom, pan, status, rulers, grid | R1; exact parity not claimed | M1–M4 | Implemented: zoom/pan, region zoom, presets, synchronized 1–3200% slider, Fit, status and persistent pixel rulers; [rulers](plans/0069-canvas-rulers.md), [region zoom](plans/0079-region-zoom-tool.md). Grid and thumbnail remain planned. |
 | F12 | Add/delete/rename/reorder/duplicate/merge layers | R1 covers layers/reorder/merge; other operations are product choices pending audit | M3 | Shipped in v2: bounded raster layers, undoable stack operations and OpenRaster persistence; [plan 0058](plans/0058-layers.md), [release evidence and platform limits](plans/0062-macos-v2-release.md). |
 | F13 | Transparent canvas, layer visibility/opacity | R1 plus OpenPaint contract; detailed parity needs observation | M3 | Shipped in v2: bounded raster layers, undoable stack operations and OpenRaster persistence; [plan 0058](plans/0058-layers.md), [release evidence and platform limits](plans/0062-macos-v2-release.md). |
 | F14 | Editable layered project save/reopen | R2; OpenPaint uses .ora initially | M3 | Shipped in v2: bounded raster layers, undoable stack operations and OpenRaster persistence; [plan 0058](plans/0058-layers.md), [release evidence and platform limits](plans/0062-macos-v2-release.md). |
@@ -134,7 +136,8 @@ top corners stay square, and other platforms receive no custom corner mask.
 maximized/fullscreen edges are square. Native decorations remain desktop-owned.
 Glass selection uses stronger neutral frost and light outlines instead
 of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
-Updates attribution is recorded in [plan 0048](plans/0048-designer-credit.md).
+Developer attribution now belongs in About; its removal from Updates is recorded
+in [plan 0067](plans/0067-about-project-details.md).
 
 
 Current refinements retain the 40–100% glass range with a 40% default and no
@@ -190,3 +193,30 @@ Apple silicon/macOS 14.4+ build and DMG packaging are implemented, with native
 AppKit glass and Command shortcuts. Validation is tracked in [plan 0062](plans/0062-macos-v2-release.md);
 physical Mac visual review remains pending. Intel packages and Apple notarization
 are not part of v2.0.0.
+
+Development opacity controls now cover pencil, fill and shapes as well as brushes
+([plan 0073](plans/0073-drawing-tool-opacity.md)).
+
+Shape previews use a floating Options / Apply / Cancel toolbar
+([plan 0072](plans/0072-floating-shape-toolbar.md)), retaining preview undo/cancel semantics.
+
+Updates can remember a skipped release across launches while still
+notifying for later versions ([plan 0071](plans/0071-skip-update-version.md)).
+
+Optional canvas-edge/center smart guides and preview move grips are implemented
+for v2.1, with validation ([plan 0070](plans/0070-smart-guides.md)).
+Automatic painted-object alignment and equal-spacing guides remain outside scope.
+
+v2.1 adds top/left pixel rulers with adaptive ticks and pointer
+markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
+canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
+[Implementation and validation](plans/0069-canvas-rulers.md).
+
+Save As offers PNG/OpenRaster document saving and explicit image-copy
+choices (JPEG, BMP, monochrome 1-bit BMP, WebP, and layered PNG). Copies retain
+the editable document's saved state. [Acceptance](plans/0068-save-as-image-formats.md).
+
+Fix for [issue #57](plans/0065-glass-schema-compatibility.md): copied
+glass setup detects optional extension redraw keys before use. v2.1 planning is
+tracked in [the request plan](plans/0064-v2.1-roadmap.md); publication evidence
+is recorded in [the release plan](plans/0080-release-2.1.0.md).

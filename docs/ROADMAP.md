@@ -23,14 +23,15 @@ M1; M3 and release packaging improvements can progress independently once their
 interfaces stabilize. M4 depends on editing and document contracts from M2/M3.
 These future gates are not prerequisites for the scoped single-layer v1. M6 may be researched earlier, but must not delay core reliability.
 
-## Current handoff after v2
+## Current handoff toward v2.1.0
 
 [PR #56](https://github.com/AfshinKI/openpaint/pull/56) merged and v2.0.0 was
 published on 2026-10-22 UTC. [Plan 0062](plans/0062-macos-v2-release.md) records
 publication evidence separately from physical Mac, public-download and deployed
 website verification. The release label does not close those unverified gates.
-Next work is to finish outstanding release validation, then scope a fresh plan
-for a selected remaining milestone item; no additional feature is implied here.
+The requested v2.1.0 editing and UI slices are now integrated for release validation.
+[Plan 0080](plans/0080-release-2.1.0.md) tracks protected merges, exact package
+evidence, fresh screenshots, publication and cleanup. Publication is still gated.
 
 ## Release progression
 

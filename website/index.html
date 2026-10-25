@@ -17,7 +17,7 @@
   <nav aria-label="Main navigation">
     <a href="#tools">Features</a>
     <a href="#download">Download</a>
-    <a href="https://github.com/AfshinKI/openpaint">Source code <span aria-hidden="true">↗</span></a>
+    <a href="https://github.com/AfshinKI/openpaint">Source code <svg class="external-link-icon" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 3h6v6M17 3l-8 8M8 4H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4"/></svg></a>
   </nav>
 </header>
 <main id="main">
@@ -28,8 +28,8 @@
     <p class="description">Draw, add text and make quick image edits.<br>Free and open source. No account needed.</p>
     <a class="button" href="#download">Download OpenPaint</a>
     <figure class="hero-shot">
-      <img src="assets/openpaint-2.0.0-light.png" alt="OpenPaint 2.0.0 in light mode with a mountain drawing and translucent workspace" width="1449" height="1008" fetchpriority="high">
-      <figcaption>OpenPaint 2.0.0 · Light mode · Glass at 40% surface opacity.</figcaption>
+      <img src="assets/openpaint-2.1.0-light.png" alt="OpenPaint 2.1.0 in light mode with a mountain drawing and translucent workspace" width="1449" height="1008" fetchpriority="high">
+      <figcaption>OpenPaint 2.1.0 · Light mode · Glass at 40% surface opacity.</figcaption>
     </figure>
   </section>
   <nav class="section-nav" aria-label="Feature sections">
@@ -37,7 +37,7 @@
   </nav>
   <section class="tools section" id="tools" aria-labelledby="tools-title">
     <h2 id="tools-title">The tools you need for everyday edits</h2>
-    <p class="section-intro">Use a pencil or brush, fill an area, add shapes and text, or select part of an image.</p>
+    <p class="section-intro">Use a pencil or brush, fill connected or matching colors, add shapes and text, or select part of an image. Pixel rulers, optional alignment guides and region zoom help place your edits.</p>
     <div class="tool-grid">
       <article><img src="assets/brush.svg" alt="" width="36" height="36"><h3>Draw and paint</h3><p>Choose from nine brush styles and adjust the size and opacity of your strokes.</p></article>
       <article><img src="assets/text.svg" alt="" width="36" height="36"><h3>Add text and shapes</h3><p>Mix fonts and styles within a caption, or draw lines, splines, arrows and other shapes.</p></article>
@@ -49,10 +49,10 @@
     <h2 id="theme-title">Light and dark mode</h2>
     <p>Choose a theme in Settings, or follow your system theme.</p>
     <div class="theme-pair">
-      <figure><img src="assets/openpaint-2.0.0-light.png" alt="OpenPaint 2.0.0 in light mode with generated landscape artwork" width="1449" height="1008" loading="lazy"><figcaption>Light mode</figcaption></figure>
-      <figure><img src="assets/openpaint-2.0.0-dark.png" alt="OpenPaint 2.0.0 in dark mode with the same landscape artwork" width="1449" height="1008" loading="lazy"><figcaption>Dark mode</figcaption></figure>
+      <figure><img src="assets/openpaint-2.1.0-light.png" alt="OpenPaint 2.1.0 in light mode with generated landscape artwork" width="1449" height="1008" loading="lazy"><figcaption>Light mode</figcaption></figure>
+      <figure><img src="assets/openpaint-2.1.0-dark.png" alt="OpenPaint 2.1.0 in dark mode with the same landscape artwork" width="1449" height="1008" loading="lazy"><figcaption>Dark mode</figcaption></figure>
     </div>
-    <p class="caption">Captured from the OpenPaint 2.0.0 release UI with glass enabled at 40% surface opacity, over a staged original gradient backdrop. These isolated UI captures use a staged backdrop; desktop blur requires a supported compositor.</p>
+    <p class="caption">Captured from the OpenPaint 2.1.0 release UI with glass enabled at 40% surface opacity, over a staged original gradient backdrop. These isolated UI captures use a staged backdrop; desktop blur requires a supported compositor.</p>
   </section>
   <section class="brushes section" id="brushes" aria-labelledby="brush-title">
     <div class="section-heading"><h2 id="brush-title">Brushes</h2><p>From a thin pencil line to a broad marker stroke.<br>Change the brush style, size and opacity as you draw.</p></div>
@@ -65,20 +65,28 @@
   </section>
   <section class="feature-row section" id="colors" aria-labelledby="color-title">
     <div class="feature-copy"><h2 id="color-title">Colors</h2><p>Choose from the palette, pick a color from your image, or enter a precise HEX, RGB or HSV value.</p><p>Use light or dark mode, and adjust the app’s glass appearance in Settings.</p><a href="https://github.com/AfshinKI/openpaint/blob/main/docs/FEATURES.md">See all current features <span aria-hidden="true">›</span></a></div>
-    <figure><img src="assets/openpaint-2.0.0-colors-dark.png" alt="The OpenPaint color editor in dark mode" width="1449" height="1008" loading="lazy"><figcaption>OpenPaint 2.0.0 · Color editor in dark mode.</figcaption></figure>
+    <figure><img src="assets/openpaint-2.1.0-colors-dark.png" alt="The OpenPaint color editor in dark mode" width="1449" height="1008" loading="lazy"><figcaption>OpenPaint 2.1.0 · Color editor in dark mode.</figcaption></figure>
   </section>
   <section class="feature-row reverse section" id="editing" aria-labelledby="edit-title">
-    <div class="feature-copy"><h2 id="edit-title">Crop, resize and rotate</h2><p>Remove the edges of an image, change its dimensions, or flip and rotate it. Use the zoom slider and right-drag to pan while working on small details.</p><p>Open and export PNG, JPEG, BMP and WebP. Keep editable layers in OpenRaster (.ora), or save a flat drawing as PNG.</p></div>
-    <figure><img src="assets/openpaint-2.0.0-resize-light.png" alt="OpenPaint with the resize dialog open" width="1449" height="1008" loading="lazy"><figcaption>OpenPaint 2.0.0 · Resize controls in light mode.</figcaption></figure>
+    <div class="feature-copy"><h2 id="edit-title">Crop, resize and rotate</h2><p>Remove the edges of an image, change its dimensions, or flip and rotate it. Use the zoom slider and right-drag to pan while working on small details.</p><p>Open and export PNG, JPEG, BMP and WebP. Save As also offers monochrome 1-bit BMP copies. Keep editable layers in OpenRaster (.ora), or save a flat drawing as PNG.</p></div>
+    <figure><img src="assets/openpaint-2.1.0-resize-light.png" alt="OpenPaint with the resize dialog open" width="1449" height="1008" loading="lazy"><figcaption>OpenPaint 2.1.0 · Resize controls in light mode.</figcaption></figure>
+  </section>
+  <section class="theme-preview section" aria-labelledby="formats-title">
+    <h2 id="formats-title">More ways to save and fill</h2>
+    <p>Save an editable project or export an image copy, including monochrome BMP. Fill one connected area or replace matching colors across the active layer.</p>
+    <div class="theme-pair">
+      <figure><img src="assets/openpaint-2.1.0-save-as-light.png" alt="OpenPaint Save As dialog with an editable OpenRaster project selected" width="1449" height="1008" loading="lazy"><figcaption>Save As</figcaption></figure>
+      <figure><img src="assets/openpaint-2.1.0-fill-modes-light.png" alt="OpenPaint fill menu offering a connected area or matching colors" width="1449" height="1008" loading="lazy"><figcaption>Fill modes</figcaption></figure>
+    </div>
   </section>
   <section class="download section" id="download" aria-labelledby="download-title">
     <img src="assets/app.svg" alt="" width="60" height="60">
     <h2 id="download-title">Get OpenPaint</h2>
     <p>Free downloads for Linux x86_64 and Apple silicon Macs.</p>
     <div class="download-options">
-      <article><h3>Ubuntu 24.04</h3><p>Download the <strong>.deb installer</strong> for amd64. OpenPaint appears in your application menu.</p><a class="button" href="https://github.com/AfshinKI/openpaint/releases/latest">Go to downloads <span aria-hidden="true">↗</span></a></article>
-      <article><h3>Other Linux desktops</h3><p>Use the <strong>Flatpak bundle</strong> or <strong>portable archive</strong>. Check the guide for system requirements.</p><a class="button outline" href="https://github.com/AfshinKI/openpaint/blob/main/docs/INSTALL.md">Installation guide <span aria-hidden="true">↗</span></a></article>
-      <article><h3>macOS</h3><p><strong>Apple silicon · macOS 14.4+</strong><br>Open the DMG and drag OpenPaint to Applications. This build is not notarized by Apple.</p><a class="button outline" href="https://github.com/AfshinKI/openpaint/releases/latest">Mac download <span aria-hidden="true">↗</span></a></article>
+      <article><h3>Ubuntu 24.04</h3><p>Download the <strong>.deb installer</strong> for amd64. OpenPaint appears in your application menu.</p><a class="button" href="https://github.com/AfshinKI/openpaint/releases/latest">Go to downloads <svg class="external-link-icon" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 3h6v6M17 3l-8 8M8 4H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4"/></svg></a></article>
+      <article><h3>Other Linux desktops</h3><p>Use the <strong>Flatpak bundle</strong> or <strong>portable archive</strong>. Check the guide for system requirements.</p><a class="button outline" href="https://github.com/AfshinKI/openpaint/blob/main/docs/INSTALL.md">Installation guide <svg class="external-link-icon" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 3h6v6M17 3l-8 8M8 4H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4"/></svg></a></article>
+      <article><h3>macOS</h3><p><strong>Apple silicon · macOS 14.4+</strong><br>Open the DMG and drag OpenPaint to Applications. This build is not notarized by Apple.</p><a class="button outline" href="https://github.com/AfshinKI/openpaint/releases/latest">Mac download <svg class="external-link-icon" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 3h6v6M17 3l-8 8M8 4H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4"/></svg></a></article>
     </div>
     <p class="download-note">Packages are hosted on GitHub Releases. The Flatpak bundle is not a Flathub listing.<br>Check the installation guide for compatibility, checksums and update instructions.</p>
   </section>
