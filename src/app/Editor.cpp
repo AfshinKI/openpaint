@@ -31,9 +31,10 @@ void Editor::setSelectedColor(QColor color) {
 void Editor::setTool(Tool tool) {
     if (textActive_ || (loading() && !filling_))
         return;
-    if (tool == tool_ || (tool != Tool::Pencil && tool != Tool::Eraser &&
-                          tool != Tool::ColorPicker && tool != Tool::Fill && tool != Tool::Brush &&
-                          tool != Tool::Shape && tool != Tool::Text && tool != Tool::Select))
+    if (tool == tool_ ||
+        (tool != Tool::Pencil && tool != Tool::Eraser && tool != Tool::ColorPicker &&
+         tool != Tool::Fill && tool != Tool::Brush && tool != Tool::Shape && tool != Tool::Text &&
+         tool != Tool::Select && tool != Tool::Zoom))
         return;
     if (filling_)
         cancelIo();
@@ -45,6 +46,8 @@ void Editor::setTool(Tool tool) {
     emit settingsChanged();
 }
 void Editor::begin(QPointF point, bool secondaryButton) {
+    if (tool_ == Tool::Zoom)
+        return;
     shapeInputBlocked_ = false;
     if (loading() || textActive_ ||
         (!document.layers()[size_t(activeLayer())].visible && tool_ != Tool::ColorPicker &&

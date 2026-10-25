@@ -71,6 +71,43 @@ class InputCanvas : public CanvasItem {
 class CanvasTest : public QObject {
     Q_OBJECT
   private slots:
+    void regionZoomIsViewOnly() {
+        TestEditor editor;
+        InputCanvas canvas;
+        canvas.setEditor(&editor);
+        editor.setTool(Editor::Tool::Zoom);
+        const auto original = editor.image();
+        const auto dirty = editor.dirty();
+        const auto before = canvas.zoom();
+        canvas.press({100, 100});
+        canvas.move({200, 180});
+        canvas.release({200, 180});
+        QVERIFY(canvas.zoom() > before);
+        const auto center = canvas.fromDocument({150, 140});
+        QVERIFY(qAbs(center.y() - canvas.height() / 2) < 0.01);
+        QVERIFY(canvas.fromDocument({100, 100}).x() >= 24);
+        QVERIFY(canvas.fromDocument({200, 180}).x() <= canvas.width() - 24);
+        const auto fittedZoom = canvas.zoom();
+        canvas.press({120, 120});
+        canvas.move({160, 150});
+        canvas.key(Qt::Key_Escape);
+        canvas.release({160, 150});
+        QCOMPARE(canvas.zoom(), fittedZoom);
+        canvas.press({120, 120});
+        canvas.release({120, 120});
+        QCOMPARE(canvas.zoom(), fittedZoom);
+        canvas.press({160, 150});
+        canvas.move({120, 120});
+        canvas.loseFocus();
+        canvas.release({120, 120});
+        QCOMPARE(canvas.zoom(), fittedZoom);
+        canvas.press({160, 150});
+        canvas.release({120, 120});
+        QVERIFY(canvas.zoom() > fittedZoom);
+        QCOMPARE(editor.image(), original);
+        QCOMPARE(editor.dirty(), dirty);
+        QVERIFY(!editor.canUndo());
+    }
     void canvasDoesNotDrawOutsideArtwork() {
         TestEditor editor;
         InputCanvas canvas;

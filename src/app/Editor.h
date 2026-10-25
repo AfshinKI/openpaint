@@ -111,7 +111,7 @@ class Editor : public QObject {
     Q_INVOKABLE void setLayerVisible(bool visible);
     Q_INVOKABLE void setLayerOpacity(int opacity);
     Q_INVOKABLE void mergeLayerDown();
-    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape, Text, Select };
+    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape, Text, Select, Zoom };
     Q_ENUM(Tool)
     Tool tool() const {
         return tool_;

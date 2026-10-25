@@ -493,3 +493,7 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Tools includes Zoom to region: drag a rectangle over artwork to fit it in the
+viewport. Escape cancels; tiny drags leave zoom unchanged. It changes only the
+view and synchronizes the existing zoom slider and percentage readout.

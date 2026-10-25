@@ -103,6 +103,24 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void regionZoomToolWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        QVERIFY(tabTo("regionZoomButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->tool(), Editor::Tool::Zoom);
+        const auto original = editor->image();
+        const auto before = canvas->zoom();
+        const auto start = canvas->mapToScene(canvas->fromDocument({200, 150})).toPoint();
+        const auto end = canvas->mapToScene(canvas->fromDocument({400, 300})).toPoint();
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QVERIFY(canvas->zoom() > before);
+        auto* slider = window->findChild<QQuickItem*>("zoomSlider");
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - std::log2(canvas->zoom())) < 0.001);
+        QCOMPARE(editor->image(), original);
+    }
     void zoomSliderWorkflow() {
         auto* editor = window->findChild<Editor*>("editor");
         auto* canvas = window->findChild<CanvasItem*>("canvas");
@@ -165,8 +183,14 @@ class ShellTest : public QObject {
         editor->setTool(Editor::Tool::Fill);
         QTRY_VERIFY(fill->property("checked").toBool());
         QVERIFY(capture("colored-ribbon-light.png"));
+        auto* pencil = window->findChild<QQuickItem*>("pencilButton");
+        auto* zoomTool = window->findChild<QQuickItem*>("regionZoomButton");
+        auto* picker = window->findChild<QQuickItem*>("pickerButton");
+        QVERIFY(pencil && zoomTool && picker);
         QVERIFY(std::abs(text->mapToScene({0, text->height() / 2}).y() -
-                         invert->mapToScene({0, invert->height() / 2}).y()) <= 2);
+                         pencil->mapToScene({0, pencil->height() / 2}).y()) <= 2);
+        QVERIFY(std::abs(zoomTool->mapToScene({0, zoomTool->height() / 2}).y() -
+                         picker->mapToScene({0, picker->height() / 2}).y()) <= 2);
         editor->setEditingSecondary(true);
         editor->setSelectedColor(QColor("#348bd5"));
         appearance->setThemeMode(2);

@@ -57,6 +57,9 @@ class CanvasItem : public QQuickPaintedItem {
 
   private:
     void updateToolCursor();
+    bool zooming_ = false;
+    QPointF zoomStart_, zoomEnd_;
+    void zoomToRegion(QRectF region);
     void finishGesture();
     void updateGesture(QPointF point, bool constrain = false);
     QPointer<Editor> editor_;

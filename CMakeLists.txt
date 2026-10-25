@@ -161,6 +161,7 @@ if(BUILD_TESTING)
         layersWorkflow
         invertColorsWorkflow
         coloredRibbonWorkflow
+        regionZoomToolWorkflow
         zoomSliderWorkflow
         exportDialogWorkflow
         resizeDialogWorkflow

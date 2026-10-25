@@ -1056,7 +1056,6 @@ ApplicationWindow {
                         flat: true
                         Layout.row: 0
                         Layout.column: 2
-                        Layout.rowSpan: 2
                         symbol: "text"
                         objectName: "textButton"
                         text: qsTr("Text")
@@ -1066,6 +1065,19 @@ ApplicationWindow {
                         checked: editor.tool === Editor.Text
                         onClicked: editor.tool = Editor.Text
                         Accessible.name: text
+                    }
+                    IconButton {
+                        Layout.row: 1
+                        Layout.column: 2
+                        flat: true
+                        symbol: "zoom-region"
+                        objectName: "regionZoomButton"
+                        text: qsTr("Zoom to region")
+                        Accessible.description: qsTr("Drag a rectangle on the canvas to zoom into it. Escape cancels.")
+                        enabled: !editor.textActive && !editor.busy
+                        checkable: true
+                        checked: editor.tool === Editor.Zoom
+                        onClicked: editor.tool = Editor.Zoom
                     }
                     IconButton {
                         flat: true
@@ -1644,7 +1656,7 @@ ApplicationWindow {
                 color: Theme.secondaryText
             }
             Label {
-                text: editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? ((editor.shapeKind === 15 || editor.shapeKind === 19) ? qsTr("Add points · Backspace removes · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Right-drag or Space+drag to pan")
+                text: editor.tool === Editor.Zoom ? qsTr("Drag a region to zoom · Escape cancels") : editor.floatingActive ? qsTr("Drag to move · Enter applies · Escape cancels") : editor.textActive ? qsTr("Click outside text to apply · Escape cancels") : editor.previewActive ? ((editor.shapeKind === 15 || editor.shapeKind === 19) ? qsTr("Add points · Backspace removes · Enter applies") : qsTr("Enter to apply · Escape to cancel")) : editor.transforming ? qsTr("Transforming image…") : editor.clipboardBusy ? qsTr("Processing clipboard…") : editor.filling ? qsTr("Filling…") : editor.exporting ? qsTr("Exporting copy…") : editor.busy ? (editor.loading ? qsTr("Opening image…") : qsTr("Saving PNG…")) : qsTr("Right-drag or Space+drag to pan")
                 color: Theme.secondaryText
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0

@@ -375,7 +375,8 @@ The Image ribbon group includes an Invert colors contrast-circle icon. It invert
 the active layer's RGB, or selected pixels only, preserving transparency and other
 layers. Selection inversion remains a separate selection-menu command.
 
-The Tools group centers Text across both rows, aligned with Invert colors.
+The Tools group places Text in the upper row and Zoom to region below it.
+Zoom uses an original magnifier with a plus sign.
 Original colored ribbon vectors use a warm orange pencil with red end, a blue
 color-picker bulb, and a wood-and-metal brush. Image operations retain their original monochrome
 icons, including distinct 90° and 180° rotation symbols.
