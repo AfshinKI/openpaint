@@ -689,6 +689,43 @@ class ShellTest : public QObject {
         QVERIFY(!light->property("checked").toBool());
     }
 
+    void smartGuidesWorkflow() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* toggle = window->findChild<QObject*>("smartGuidesMenuItem");
+        auto* grip = window->findChild<QQuickItem*>("movePreviewHandle");
+        QVERIFY(canvas && editor && toggle && grip);
+        QVERIFY(!editor->smartGuides());
+        QVERIFY(QMetaObject::invokeMethod(toggle, "triggered"));
+        QVERIFY(editor->smartGuides());
+        const auto original = editor->image();
+        QImage patch(40, 40, QImage::Format_ARGB32_Premultiplied);
+        patch.fill(Qt::red);
+        editor->pasteImage(patch);
+        editor->moveFloating(100, 100);
+        QTRY_VERIFY(grip->isVisible());
+        grip->forceActiveFocus();
+        QTest::keyClick(window, Qt::Key_Right);
+        QCOMPARE(editor->floatingPosition(), QPoint(101, 100));
+        QTest::keyClick(window, Qt::Key_Down, Qt::ShiftModifier);
+        QCOMPARE(editor->floatingPosition(), QPoint(101, 110));
+        const auto start =
+            grip->mapToScene(QPointF(grip->width() / 2, grip->height() / 2)).toPoint();
+        const int targetX = editor->imageSize().width() / 2 - 20;
+        const auto end = start + QPoint(qRound((targetX - 101 - 2) * canvas->zoom()), 0);
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QTRY_COMPARE(editor->floatingPosition().x(), targetX);
+        QCOMPARE(editor->guidePosition().x(), editor->imageSize().width() / 2.0);
+        QVERIFY(capture(QStringLiteral("smart-guides.png")));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QCOMPARE(editor->guidePosition(), QPointF(-1, -1));
+        QTest::keyClick(window, Qt::Key_Escape);
+        QCOMPARE(editor->image(), original);
+        QVERIFY(QMetaObject::invokeMethod(toggle, "triggered"));
+        QVERIFY(!editor->smartGuides());
+    }
+
     void keyboardAboutAndEscape() {
         auto* dialog = window->findChild<QObject*>(QStringLiteral("aboutDialog"));
         QVERIFY(dialog);

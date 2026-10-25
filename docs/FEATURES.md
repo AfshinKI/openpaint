@@ -192,3 +192,7 @@ Apple silicon/macOS 14.4+ build and DMG packaging are implemented, with native
 AppKit glass and Command shortcuts. Validation is tracked in [plan 0062](plans/0062-macos-v2-release.md);
 physical Mac visual review remains pending. Intel packages and Apple notarization
 are not part of this release candidate.
+
+Optional canvas-edge/center smart guides and preview move grips are implemented
+for v2.1 development, with local combined validation ([plan 0070](plans/0070-smart-guides.md)).
+Automatic painted-object alignment and equal-spacing guides remain outside scope.

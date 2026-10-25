@@ -14,6 +14,78 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void smartGuideMoves() {
+        SampleEditor editor;
+        QImage base(100, 80, QImage::Format_ARGB32_Premultiplied);
+        base.fill(Qt::white);
+        base.setColorSpace(QColorSpace::SRgb);
+        editor.reset(base);
+        QImage patch(20, 20, base.format());
+        patch.fill(Qt::red);
+        editor.pasteImage(patch);
+        QVERIFY(!editor.smartGuides());
+        editor.moveActiveBounds(38, 28, 6);
+        QCOMPARE(editor.floatingPosition(), QPoint(38, 28));
+        editor.setSmartGuides(true);
+        editor.moveActiveBounds(38, 28, 6);
+        QCOMPARE(editor.floatingPosition(), QPoint(40, 30));
+        QCOMPARE(editor.guidePosition(), QPointF(50, 40));
+        editor.moveActiveBounds(38, 28, 0);
+        QCOMPARE(editor.floatingPosition(), QPoint(38, 28));
+        QCOMPARE(editor.guidePosition(), QPointF(-1, -1));
+        editor.moveActiveBounds(78, 58, 6);
+        QCOMPARE(editor.floatingPosition(), QPoint(80, 60));
+        QCOMPARE(editor.guidePosition(), QPointF(100, 80));
+        editor.endGesture();
+        QCOMPARE(editor.guidePosition(), QPointF(-1, -1));
+        const auto moved = editor.image();
+        editor.commitPreview();
+        editor.undo();
+        QCOMPARE(editor.image(), base);
+        editor.redo();
+        QCOMPARE(editor.image(), moved);
+        editor.pasteImage(patch);
+        editor.moveActiveBounds(2, 2, 6);
+        QCOMPARE(editor.floatingPosition(), QPoint(0, 0));
+        editor.setSmartGuides(false);
+        QCOMPARE(editor.guidePosition(), QPointF(-1, -1));
+        editor.cancel();
+        QCOMPARE(editor.image(), moved);
+        editor.selectRect(80, 60, 20, 20);
+        editor.setSmartGuides(true);
+        editor.moveActiveBounds(2, 2, 6);
+        QCOMPARE(editor.floatingPosition(), QPoint(0, 0));
+        QCOMPARE(editor.image().pixelColor(1, 1), QColor(Qt::red));
+        QVERIFY(editor.image().pixelColor(81, 61) != QColor(Qt::red));
+        editor.cancel();
+        QCOMPARE(editor.image(), moved);
+        QImage oddPatch(21, 21, patch.format());
+        oddPatch.fill(Qt::red);
+        editor.pasteImage(oddPatch);
+        editor.moveActiveBounds(38, 28, 6);
+        QCOMPARE(editor.floatingPosition(), QPoint(38, 28));
+        QCOMPARE(editor.guidePosition(), QPointF(-1, -1));
+        editor.cancel();
+    }
+    void smartGuideShapeMoves() {
+        SampleEditor editor;
+        QImage base(100, 80, QImage::Format_ARGB32_Premultiplied);
+        base.fill(Qt::white);
+        base.setColorSpace(QColorSpace::SRgb);
+        editor.reset(base);
+        editor.setSmartGuides(true);
+        editor.setTool(Editor::Tool::Shape);
+        editor.begin({10, 10}, false);
+        editor.extend({30, 30});
+        editor.endGesture();
+        const auto size = editor.resizeBounds().size();
+        editor.moveActiveBounds(2, 2, 6);
+        QCOMPARE(editor.resizeBounds().topLeft(), QPointF(0, 0));
+        QCOMPARE(editor.resizeBounds().size(), size);
+        editor.cancel();
+        QCOMPARE(editor.image(), base);
+        QCOMPARE(editor.guidePosition(), QPointF(-1, -1));
+    }
     void eraserUsesPaperOrTransparency() {
         SampleEditor editor;
         QImage fixture(24, 24, QImage::Format_ARGB32_Premultiplied);

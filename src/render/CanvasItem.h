@@ -58,7 +58,7 @@ class CanvasItem : public QQuickPaintedItem {
   private:
     void updateToolCursor();
     void finishGesture();
-    void updateGesture(QPointF point, bool constrain = false);
+    void updateGesture(QPointF point, bool constrain = false, bool bypassSnap = false);
     QPointer<Editor> editor_;
     QRegion selectionCache_;
     QPainterPath selectionBoundary_;

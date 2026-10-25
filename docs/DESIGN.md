@@ -401,3 +401,11 @@ recipe. Shared surface-opacity and light/dark preferences still apply.
 The menu strip stays inside the shared toolbar on macOS; all controls remain
 reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
 opened with the visible menu buttons rather than Linux Alt-letter mnemonics.
+
+### Optional smart guides (v2.1 development)
+
+View → Smart guides starts off and enables magenta canvas-edge/center alignment
+while moving previews. Snap distance is six screen pixels; Ctrl bypasses it.
+A compact move grip above selections/shapes/text supports dragging and keyboard
+nudges. Guides disappear after gestures and never enter saved pixels. Object
+recognition and equal-spacing guides are not included. See [plan 0070](plans/0070-smart-guides.md).

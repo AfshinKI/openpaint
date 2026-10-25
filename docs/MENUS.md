@@ -493,3 +493,10 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+### Smart guides (v2.1 development)
+
+View → Smart guides toggles optional canvas-edge/center snapping, initially off.
+Drag selections normally or use the move grip above active selection/shape/text
+bounds. Hold Ctrl to bypass snapping. The focused grip accepts arrow keys (1 px),
+Shift+arrow (10 px), and Escape to cancel the preview. See [plan 0070](plans/0070-smart-guides.md).

@@ -652,6 +652,13 @@ ApplicationWindow {
                 PaintMenu {
                     title: qsTr("&View")
                     PaintMenuItem {
+                        objectName: "smartGuidesMenuItem"
+                        text: qsTr("Smart guides")
+                        checkable: true
+                        checked: editor.smartGuides
+                        onTriggered: editor.smartGuides = !editor.smartGuides
+                    }
+                    PaintMenuItem {
                         text: qsTr("Layers")
                         checkable: true
                         checked: window.layersVisible

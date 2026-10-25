@@ -176,12 +176,12 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         emit changed();
     }
 }
-void Editor::extend(QPointF point, bool constrain) {
+void Editor::extend(QPointF point, bool constrain, qreal snapTolerance) {
     if (floatingActive_) {
         if (floatingDragging_ && std::isfinite(point.x()) && std::isfinite(point.y()) &&
             std::abs(point.x()) <= 1000000 && std::abs(point.y()) <= 1000000)
-            moveFloating(int(std::floor(point.x())) - floatingDragOffset_.x(),
-                         int(std::floor(point.y())) - floatingDragOffset_.y());
+            moveActiveBounds(int(std::floor(point.x())) - floatingDragOffset_.x(),
+                             int(std::floor(point.y())) - floatingDragOffset_.y(), snapTolerance);
         return;
     }
     if (selecting_) {
@@ -252,6 +252,7 @@ void Editor::extend(QPointF point, bool constrain) {
         emit pixelsChanged(rect);
 }
 void Editor::endGesture() {
+    clearGuides();
     if (floatingActive_) {
         floatingDragging_ = false;
         return;
@@ -567,6 +568,7 @@ void Editor::commitPreview() {
     finish();
 }
 void Editor::finish() {
+    clearGuides();
     finishSelection();
     if (shapeActive_ && shapeKind == openpaint::PolygonShape && shapePoints_.size() < 3) {
         cancel();
@@ -586,6 +588,7 @@ void Editor::finish() {
     emit changed();
 }
 void Editor::cancel() {
+    clearGuides();
     if (selecting_) {
         document.setSelection(previousSelection_);
         selecting_ = false;
