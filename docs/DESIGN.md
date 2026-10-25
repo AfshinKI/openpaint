@@ -401,3 +401,11 @@ recipe. Shared surface-opacity and light/dark preferences still apply.
 The menu strip stays inside the shared toolbar on macOS; all controls remain
 reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
 opened with the visible menu buttons rather than Linux Alt-letter mnemonics.
+
+Ribbon group captions use 90% of the application font point size for a compact
+appearance. They retain the current font family and follow application font
+scaling; icon sizes, hit targets, menus and dialogs are unchanged.
+The Layers button displays its caption beneath its icon at the same text scale.
+Menu-bar captions omit mnemonic underlines while retaining Alt-key navigation.
+The Layers button has a flat idle surface; its selected highlight tracks panel
+visibility. Hover and keyboard-focus feedback remain available.

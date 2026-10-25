@@ -574,6 +574,14 @@ ApplicationWindow {
                 delegate: MenuBarItem {
                     id: menuEntry
                     objectName: menu === fileMenu ? "fileMenuButton" : ""
+                    contentItem: Text {
+                        text: menuEntry.text.replace(/&/g, "")
+                        textFormat: Text.PlainText
+                        font: menuEntry.font
+                        color: menuEntry.enabled ? Theme.text : Theme.secondaryText
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
                     background: GlassSurface {
                         backdropLayers: [window.background, canvas]
                         radius: Theme.controlRadius
@@ -903,6 +911,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: qsTr("Selection")
+                    font.pointSize: window.font.pointSize * 0.9
                     color: Theme.secondaryText
                     Layout.topMargin: 4
                     Layout.alignment: Qt.AlignHCenter
@@ -1013,6 +1022,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: qsTr("Image")
+                    font.pointSize: window.font.pointSize * 0.9
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -1136,6 +1146,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: qsTr("Tools")
+                    font.pointSize: window.font.pointSize * 0.9
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -1216,6 +1227,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: qsTr("Brushes")
+                    font.pointSize: window.font.pointSize * 0.9
                     Layout.alignment: Qt.AlignHCenter
                     Layout.topMargin: 4
                     color: Theme.secondaryText
@@ -1310,6 +1322,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: qsTr("Shapes")
+                    font.pointSize: window.font.pointSize * 0.9
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -1410,6 +1423,7 @@ ApplicationWindow {
                 }
                 Label {
                     text: qsTr("Colors")
+                    font.pointSize: window.font.pointSize * 0.9
                     color: Theme.secondaryText
                     Layout.alignment: Qt.AlignHCenter
                 }
@@ -1485,18 +1499,31 @@ ApplicationWindow {
                 Layout.rightMargin: 4
                 color: Theme.divider
             }
-            IconButton {
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 56
-                icon.width: 30
-                icon.height: 30
-                objectName: "layersButton"
-                symbol: "layers"
-                text: qsTr("Layers")
-                checkable: true
-                checked: window.layersVisible
-                enabled: window.layersVisible || editor.canEditLayers
-                onClicked: window.toggleLayers()
+            ColumnLayout {
+                Layout.alignment: Qt.AlignBottom
+                spacing: 0
+                IconButton {
+                    Layout.preferredWidth: 48
+                    Layout.preferredHeight: 56
+                    icon.width: 30
+                    icon.height: 30
+                    objectName: "layersButton"
+                    flat: true
+                    symbol: "layers"
+                    text: qsTr("Layers")
+                    checkable: true
+                    checked: window.layersVisible
+                    enabled: window.layersVisible || editor.canEditLayers
+                    onClicked: window.toggleLayers()
+                }
+                Label {
+                    objectName: "layersCaption"
+                    text: qsTr("Layers")
+                    font.pointSize: window.font.pointSize * 0.9
+                    color: Theme.secondaryText
+                    Layout.topMargin: 4
+                    Layout.alignment: Qt.AlignHCenter
+                }
             }
             Item {
                 Layout.fillWidth: true
