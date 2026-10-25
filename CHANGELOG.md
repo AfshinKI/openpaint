@@ -85,7 +85,7 @@
 - Add manual and opt-in daily GitHub stable-release notifications. Installation
   remains manual; Flatpak retains its no-network sandbox and browser links.
 
-User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
+User-visible changes are recorded here. See [current release validation](docs/plans/0062-macos-v2-release.md)
 for artifact hashes, tested desktops and known limits.
 
 ## 1.0.0 — 2026-10-16

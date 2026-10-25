@@ -1,7 +1,8 @@
 # Quality and validation
 
-Current checks cover repository content, document/history, PNG codecs, controller
-lifecycle and the native editor UI. Updater suites become required when it lands.
+Current checks cover repository content, layered document/history, image/project
+codecs, controller lifecycle, release-check policy, blur support and the native
+editor UI. Automatic update installation is not implemented.
 
 ## Check selection
 
@@ -69,7 +70,9 @@ Revisit limits with measurements and a documented decision, not arbitrary remova
 Today: Python content checks and native shell builds/tests run on every PR/push,
 with read-only tokens. CI covers GCC 13 Debug, Clang 18 Release and ASan/UBSan with
 Qt 6.12.0, formatting and QML lint. Packaging CI builds AppImage and restricted
-Flatpak review artifacts without publishing releases. Dependabot checks workflow dependencies weekly.
+Flatpak, Ubuntu DEB and Apple silicon DMG review artifacts. Ordinary PR/push
+runs do not publish releases; explicit release dispatch promotes only checked
+artifacts. macOS CI also runs Cocoa/Metal input/render and native glass tests. Dependabot checks workflow dependencies weekly.
 The GCC Debug lane additionally runs the shell suite on isolated X11/software at
 100%, 125%, 150% and 200% scale. Xvfb prevents live-desktop pointer interference;
 it is not compositor, GPU or physical-device validation. Tests synchronize and
@@ -83,10 +86,14 @@ jobs; known external-library exceptions must be narrow and documented.
 ## Manual release walkthrough
 
 Start clean; create a drawing, resize, select/copy/paste, add text and shapes, add
-layers, undo/redo, export PNG/JPEG, save/reopen `.ora`, and recover after a deliberate
-test crash. Check light/dark, scaling, keyboard/Orca, pressure pen, clipboard between
-apps, file portals, printing, and offline behavior. Then test upgrade and failed
-upgrade with unsaved artwork. Use generated files only and record actual results.
+layers, undo/redo, export PNG/JPEG and save/reopen `.ora`. Check light/dark, scaling,
+keyboard navigation, clipboard between apps, file portals and offline behavior on
+the release platforms. Test manual package replacement after saving and closing
+the app. Use generated files only and record actual results.
+
+Crash recovery, pressure input, printing, full Orca certification and signed
+automatic upgrade/failure handling belong to future roadmap gates. Do not count
+them as passing v2 behaviors or deliberately crash a user session with unsaved work.
 
 Review image metadata, diagnostics, binary paths, license inventory, known bugs,
 and all advertised features before a stable release. See [ROADMAP.md](ROADMAP.md)

@@ -1,10 +1,11 @@
 # Menu and control specification
 
-Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
-It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
-current shipped behavior remains unchanged until implementation is verified.
+The shipped [alpha corrections](plans/0028-alpha-ui-polish.md) superseded the
+earlier shared custom-palette, Swap-button and left-rail targets. Later v1/v2
+revisions appear below; [FEATURES.md](FEATURES.md) records current shipped scope
+and [the roadmap](ROADMAP.md#release-progression) indexes superseded decisions.
 
-This is the visual and interaction contract for future implementation. It does not
+This is the visual and interaction contract, including explicitly deferred work. It does not
 mark features as shipped; [FEATURES.md](FEATURES.md) remains the status ledger.
 Static layouts establish placement and visible choices, not runtime behavior,
 exact dimensions, hidden submenu contents or keyboard semantics. Items below
@@ -17,7 +18,7 @@ on the left, followed immediately by quick Save, Undo and Redo actions with a
 small separator. The Image and Help menus are removed; image commands remain in the ribbon and
 Updates/About are in File. Share is
 deferred until desktop sharing is implemented. Place What's new and Settings at the far right. F1 opens About for keyboard access. Window controls remain
-native Linux decorations, separate from application actions. Core editing needs
+native platform decorations, separate from application actions. Core editing needs
 no account; an account/profile button is not an OpenPaint requirement.
 
 The command groups run left to right: Selection, Image, Tools, Brushes, Shapes,
@@ -297,7 +298,8 @@ columns by three rows, exposing all 20 shapes without scrolling.
 
 The menu row ends with Check for updates and Settings icon buttons. Settings
 exposes System/Light/Dark appearance. The update shortcut opens the existing
-Updates screen (release guidance; automatic checking/installing remains planned).
+Updates screen (automatic startup/open checks with cooldown/backoff on network-capable
+builds; manual browser links for Flatpak; installation remains manual).
 
 Brushes mirrors Selection: the icon and lower arrow share one rounded accent
 outline when active and a stronger shared keyboard-focus outline. Idle has no
