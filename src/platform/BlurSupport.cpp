@@ -191,7 +191,7 @@ BlurSupport::Result BlurSupport::evaluate(const QString& desktop, const QString&
             result.instructions =
                 tr("Copy setup and paste it into a terminal. It downloads Blur My Shell "
                    "from GNOME Extensions only if missing, enables it and configures "
-                   "live application blur with full desktop redraws to prevent flicker. "
+                   "live application blur, enabling full desktop redraws where supported to reduce flicker. "
                    "This can increase GPU use or reduce desktop performance. "
                    "No sudo or Extension Manager is needed. "
                    "Then click Check again; if the terminal asks, sign out and back in first.");

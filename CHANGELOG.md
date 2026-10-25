@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — toward 2.1.0
+
+- Fix Linux glass setup for Blur My Shell schemas without `hacks-level`, while
+  retaining backed-up redraw configuration on versions that support it.
+
 ## 2.0.0 — 2026-10-21
 
 - Add an Apple silicon macOS app bundle, native glass and platform keyboard shortcuts.

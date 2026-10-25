@@ -113,8 +113,9 @@ extensions and configures application blur. GNOME receives ordinary download
 connection metadata; no artwork or app history is sent. Previous settings are
 backed up locally. OpenPaint itself never executes the block or installs software.
 
-The copied glass setup selects live application blur and disables clipped redraws
-through the extension’s no-artifact setting. This affects the whole compositor
+The copied glass setup selects live application blur. Where the extension exposes
+`hacks-level`, it disables clipped redraws through the no-artifact setting; newer
+schemas without that key retain their own redraw handling. This affects the whole compositor
 and may increase GPU use or reduce desktop performance; the setup panel discloses
 this before copying. Original settings are backed up before changes. OpenPaint
 does not capture desktop pixels or execute this setup itself.

@@ -192,3 +192,7 @@ Apple silicon/macOS 14.4+ build and DMG packaging are implemented, with native
 AppKit glass and Command shortcuts. Validation is tracked in [plan 0062](plans/0062-macos-v2-release.md);
 physical Mac visual review remains pending. Intel packages and Apple notarization
 are not part of this release candidate.
+
+Development fix for [issue #57](plans/0065-glass-schema-compatibility.md): copied
+glass setup detects optional extension redraw keys before use. v2.1 planning is
+tracked in [the request plan](plans/0064-v2.1-roadmap.md); it is not released.

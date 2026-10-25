@@ -53,6 +53,8 @@ class BlurSetupTest(unittest.TestCase):
                             "disable-user-extensions": "true", "hacks-level": "1"}
                 def run(*args, **kwargs):
                     calls.append(args)
+                    if "list-keys" in args:
+                        return "hacks-level\ndebug"
                     if "get" in args:
                         return settings[args[-1]]
                     if args[:2] == ("gnome-extensions", "list"):
@@ -85,7 +87,46 @@ class BlurSetupTest(unittest.TestCase):
 
     def test_unknown_redraw_mode_never_changes_settings(self):
         def run(*args, **kwargs):
+            if "list-keys" in args:
+                return "hacks-level"
             return "unknown" if args[-1] == "hacks-level" else "false"
+        with patch.object(setup, "run", side_effect=run) as mocked:
+            with self.assertRaisesRegex(RuntimeError, "no settings were changed"):
+                setup.configure(Path("/synthetic/schemas"))
+            self.assertTrue(all("set" not in call.args for call in mocked.call_args_list))
+
+    def test_missing_redraw_key_configures_without_inventing_backup(self):
+        for prior in ({}, {"hacks-level": "1"}):
+            with self.subTest(prior=prior), tempfile.TemporaryDirectory() as directory:
+                backup = Path(directory) / "openpaint/blur-setup-backup.json"
+                backup.parent.mkdir()
+                backup.write_text(json.dumps(prior))
+                def run(*args, **kwargs):
+                    if "list-keys" in args:
+                        return "debug\nsettings-version"
+                    if "get" in args:
+                        self.assertNotEqual(args[-1], "hacks-level")
+                        if args[-1] in ("whitelist", "blacklist", "enabled-extensions", "disabled-extensions"):
+                            return "[]"
+                        return "false"
+                    self.assertFalse("set" in args and args[-2] == "hacks-level")
+                    return ""
+                with patch.dict(os.environ, {"XDG_STATE_HOME": directory}), \
+                        patch.object(setup, "run", side_effect=run) as mocked, \
+                        patch("sys.stdout", new_callable=io.StringIO) as output:
+                    setup.configure(Path("/synthetic/schemas"))
+                    setup.configure(Path("/synthetic/schemas"))
+                saved = json.loads(backup.read_text())
+                self.assertEqual(saved.get("hacks-level"), prior.get("hacks-level"))
+                self.assertEqual("hacks-level" in saved, "hacks-level" in prior)
+                writes = {c.args[-2]: c.args[-1] for c in mocked.call_args_list if "set" in c.args}
+                self.assertEqual(writes["blur"], "true")
+                self.assertEqual(writes["static-blur"], "false")
+                self.assertIn("manages redraws", output.getvalue())
+
+    def test_failed_schema_inspection_never_changes_settings(self):
+        def run(*args, **kwargs):
+            return None if "list-keys" in args else "false"
         with patch.object(setup, "run", side_effect=run) as mocked:
             with self.assertRaisesRegex(RuntimeError, "no settings were changed"):
                 setup.configure(Path("/synthetic/schemas"))
