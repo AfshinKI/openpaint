@@ -228,6 +228,19 @@ class ShellTest : public QObject {
         QTRY_VERIFY(paintsColor(brush, QColor("#f0dec3")));
         editor->setTool(Editor::Tool::Fill);
         QTRY_VERIFY(fill->property("checked").toBool());
+        for (const auto* name :
+             {"cropButton", "rotateButton", "resizeButton", "flipButton", "invertColorsButton",
+              "pencilButton", "fillButton", "textButton", "pickerButton", "eraserButton"}) {
+            auto* button = window->findChild<QQuickItem*>(name);
+            QVERIFY(button);
+            QQmlExpression fits(qmlContext(button), button,
+                                "icon.width + leftPadding + rightPadding <= width && "
+                                "icon.height + topPadding + bottomPadding <= height");
+            QVERIFY2(fits.evaluate().toBool(), name);
+            QVERIFY(!fits.hasError());
+            QVERIFY(button->mapToScene({0, 0}).x() >= 0);
+            QVERIFY(button->mapToScene({button->width(), 0}).x() <= window->width());
+        }
         QVERIFY(capture("colored-ribbon-light.png"));
         QVERIFY(std::abs(text->mapToScene({0, text->height() / 2}).y() -
                          invert->mapToScene({0, invert->height() / 2}).y()) <= 2);
@@ -989,10 +1002,7 @@ class ShellTest : public QObject {
         auto* action = window->findChild<QObject*>(QStringLiteral("updatesMenuItem"));
         auto* dialog = window->findChild<QObject*>(QStringLiteral("updatesDialog"));
         QVERIFY(editor && action && dialog);
-        auto* credit = window->findChild<QObject*>("designerCredit");
-        QVERIFY(credit);
-        QCOMPARE(credit->property("text").toString(),
-                 QString("Designer: Afshin Kashani, PhD, P.Eng"));
+        QVERIFY(!window->findChild<QObject*>("designerCredit"));
         auto* service = window->findChild<QObject*>("updateService");
         QVERIFY(service);
         QVERIFY(!service->property("automatic").toBool());
@@ -1031,6 +1041,34 @@ class ShellTest : public QObject {
         QVERIFY(editor->dirty());
     }
 
+    void saveAsFormatChoices() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* action = window->findChild<QObject*>("saveAsAction");
+        auto* options = window->findChild<QObject*>("exportOptions");
+        QVERIFY(editor && action && options);
+        const auto before = editor->image();
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QTRY_VERIFY(options->property("opened").toBool());
+        QVERIFY(options->property("savesDocument").toBool());
+        QVERIFY(capture("save-as-format.png"));
+        QVERIFY(options->setProperty("formatIndex", 4));
+        QVERIFY(!options->property("savesDocument").toBool());
+        QVERIFY(options->property("flatten").toBool());
+        QCOMPARE(options->property("suffix").toString(), QString("bmp"));
+        QVERIFY(capture("save-as-mono.png"));
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!options->property("visible").toBool());
+        QCOMPARE(editor->image(), before);
+        editor->addLayer();
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QTRY_VERIFY(options->property("opened").toBool());
+        QCOMPARE(options->property("formatIndex").toInt(), 5);
+        QVERIFY(options->property("savesDocument").toBool());
+        QVERIFY(options->setProperty("formatIndex", 0));
+        QVERIFY(!options->property("savesDocument").toBool());
+        keyClick(Qt::Key_Escape);
+        QVERIFY(editor->dirty());
+    }
     void exportDialogWorkflow() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         auto* action = window->findChild<QObject*>(QStringLiteral("exportAction"));
@@ -1090,7 +1128,7 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
         QTRY_VERIFY(options->property("visible").toBool());
         QCOMPARE(options->property("formatIndex").toInt(), 0);
-        QVERIFY(tabToButton("OK"));
+        QVERIFY(tabToButton("Choose location…"));
         keyClick(Qt::Key_Space);
         QTRY_COMPARE(closed.size(), 2);
         QTRY_VERIFY(file->property("visible").toBool());

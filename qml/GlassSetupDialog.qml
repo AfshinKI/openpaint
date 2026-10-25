@@ -121,7 +121,7 @@ PaintDialog {
             }
             Label {
                 objectName: "blurSetupInstructions"
-                text: Qt.platform.os === "osx" ? BlurSupport.instructions : BlurSupport.ready ? qsTr("Glass is available. Copy and run setup to use live blur with full desktop redraws to prevent flicker. This can increase GPU use or reduce desktop performance. Previous settings are backed up.") : BlurSupport.instructions.length ? BlurSupport.instructions : qsTr("Desktop blur is not verified for this session. OpenPaint currently checks Ubuntu 24.04 with GNOME 46 on X11. Installing Extension Manager alone does not enable blur.")
+                text: Qt.platform.os === "osx" ? BlurSupport.instructions : BlurSupport.ready ? qsTr("Glass is available. Copy and run setup to use live blur, enabling full desktop redraws where supported to reduce flicker. This can increase GPU use or reduce desktop performance. Previous settings are backed up.") : BlurSupport.instructions.length ? BlurSupport.instructions : qsTr("Desktop blur is not verified for this session. OpenPaint currently checks Ubuntu 24.04 with GNOME 46 on X11. Installing Extension Manager alone does not enable blur.")
                 color: Theme.text
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap

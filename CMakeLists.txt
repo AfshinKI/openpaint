@@ -163,6 +163,7 @@ if(BUILD_TESTING)
         coloredRibbonWorkflow
         rulersWorkflow
         zoomSliderWorkflow
+        saveAsFormatChoices
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory

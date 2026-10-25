@@ -776,7 +776,7 @@ void Editor::exportFile(const QUrl& url, int format, int quality, bool lossless,
                         QColor background) {
     if (busy_ || document.active() || previewActive())
         return;
-    if (!url.isLocalFile() || format < 0 || format > 3 ||
+    if (!url.isLocalFile() || format < 0 || format > 4 ||
         !openpaint::exportSuffix(url.toLocalFile(), openpaint::ExportFormat(format))) {
         fail(tr("Choose a local filename matching the export format."));
         emit exported(false);
