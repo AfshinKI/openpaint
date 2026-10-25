@@ -12,6 +12,7 @@ class CanvasItem : public QQuickPaintedItem {
     Q_PROPERTY(QPointF origin READ origin NOTIFY viewportChanged)
     Q_PROPERTY(qreal fitLeftInset READ fitLeftInset WRITE setFitLeftInset NOTIFY fitInsetsChanged)
     Q_PROPERTY(qreal zoom READ zoom NOTIFY viewportChanged)
+    Q_PROPERTY(bool cursorVisible READ cursorVisible NOTIFY cursorPositionChanged)
     Q_PROPERTY(QPointF cursorPosition READ cursorPosition NOTIFY cursorPositionChanged)
   public:
     explicit CanvasItem(QQuickItem* parent = nullptr);
@@ -24,6 +25,9 @@ class CanvasItem : public QQuickPaintedItem {
     }
     qreal zoom() const {
         return zoom_;
+    }
+    bool cursorVisible() const {
+        return hovering_;
     }
     QPointF cursorPosition() const {
         return cursor_;
@@ -63,8 +67,11 @@ class CanvasItem : public QQuickPaintedItem {
 
   private:
     void updateToolCursor();
+    bool zooming_ = false;
+    QPointF zoomStart_, zoomEnd_;
+    void zoomToRegion(QRectF region);
     void finishGesture();
-    void updateGesture(QPointF point, bool constrain = false);
+    void updateGesture(QPointF point, bool constrain = false, bool bypassSnap = false);
     QPointer<Editor> editor_;
     QRegion selectionCache_;
     QPainterPath selectionBoundary_;
