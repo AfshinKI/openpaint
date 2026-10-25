@@ -402,6 +402,6 @@ The menu strip stays inside the shared toolbar on macOS; all controls remain
 reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
 opened with the visible menu buttons rather than Linux Alt-letter mnemonics.
 
-Development v2.1 ribbon sizing: Image/Tools icons use 28px glyphs within existing
-32px targets; Selection uses 28px and Brushes 32px. Other icon families keep
+Development v2.1 ribbon sizing: Image/Tools icons use 20px glyphs within existing
+32px targets; Selection and Brushes use 24px. Other icon families keep
 their existing sizes. [Acceptance and pending validation](plans/0066-ribbon-icon-size.md).

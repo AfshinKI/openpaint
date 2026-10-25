@@ -494,6 +494,6 @@ secondary-color drawing/sampling on the canvas. Release or grab/focus loss resto
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
 
-Development v2.1 ribbon sizing: Image/Tools icons use 28px glyphs within existing
-32px targets; Selection uses 28px and Brushes 32px. Other icon families keep
+Development v2.1 ribbon sizing: Image/Tools icons use 20px glyphs within existing
+32px targets; Selection and Brushes use 24px. Other icon families keep
 their existing sizes. [Acceptance and pending validation](plans/0066-ribbon-icon-size.md).

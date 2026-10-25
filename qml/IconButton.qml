@@ -38,8 +38,8 @@ PaintButton {
     }
     display: AbstractButton.IconOnly
     icon.source: "icons/" + symbol + (symbol === "fill" && checked ? "-selected" : "") + ".svg"
-    icon.width: ribbonIcon ? 28 : colored ? 24 : 20
-    icon.height: ribbonIcon ? 28 : colored ? 24 : 20
+    icon.width: ribbonIcon ? 20 : colored ? 24 : 20
+    icon.height: ribbonIcon ? 20 : colored ? 24 : 20
     icon.color: colored ? "transparent" : enabled ? Theme.text : Theme.secondaryText
     ToolTip.visible: hovered
     ToolTip.delay: 500

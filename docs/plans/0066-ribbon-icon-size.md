@@ -1,4 +1,4 @@
-# Feature: larger ribbon tool icons
+# Feature: balanced ribbon tool icons
 
 Status: implemented; combined Linux validation passed; protected review pending
 Feature IDs: F01
@@ -35,3 +35,11 @@ Xvfb test outside the sandbox. No live-desktop input or glass setup was performe
 This is local combined-source validation, not package or physical Mac certification.
 Next: required hosted checks and protected review/merge of the individual PR;
 then v2.1 release metadata, fresh release screenshots and package validation.
+
+## Reference-driven revision
+
+User rejected the oversized preview and supplied a compact Paint ribbon reference.
+Use 20px Image/Tools glyphs and 24px Selection/Brush glyphs, retaining 32px hit
+areas and separate dropdown targets. Original OpenPaint SVGs remain in use;
+reference artwork is not copied into the repository. The prior 28/32px target
+above is superseded. Validate light/dark and minimum width after rebuilding.

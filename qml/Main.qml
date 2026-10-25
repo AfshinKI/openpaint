@@ -784,8 +784,8 @@ ApplicationWindow {
                     }
                     IconButton {
                         id: selectionMain
-                        icon.width: 28
-                        icon.height: 28
+                        icon.width: 24
+                        icon.height: 24
                         padding: 4
                         objectName: "selectionButton"
                         symbol: editor.colorSelection ? "wand" : editor.freeFormSelection ? "lasso" : "selection"
@@ -1175,8 +1175,8 @@ ApplicationWindow {
                         objectName: "brushesButton"
                         enabled: !editor.textActive
                         symbol: "brush"
-                        icon.width: 32
-                        icon.height: 32
+                        icon.width: 24
+                        icon.height: 24
                         width: 40
                         height: 36
                         padding: 2
