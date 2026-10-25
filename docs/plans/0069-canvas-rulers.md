@@ -67,3 +67,11 @@ and the left ruler spans its height again. Glass surfaces, 3px corners, pointer
 markers and adaptive zoom ticks remain. The rebuilt combined preview passes
 formatting, zero-warning QML lint and ruler/Save As/export workflows (5 Qt cases).
 Save As styling is retained independently in PR #62.
+
+Text toolbar overlap correction: anchor its top edge to the canvas viewport
+with the existing 8px gap, so it sits below the ruler and moves back when rulers
+are hidden. The ruler workflow checks both placements without changing pixels.
+
+Overlap fix validation: combined Qt build, formatting and zero-warning QML lint
+pass. Ruler/Updates workflows pass (4 Qt cases), along with the shell-text CTest
+suite. The light-theme text-toolbar capture was inspected below the top ruler.

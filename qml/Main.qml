@@ -213,7 +213,7 @@ ApplicationWindow {
         id: textOptions
         objectName: "textOptions"
         editor: window.editorController
-        anchors.top: parent.top
+        anchors.top: canvas.top
         anchors.topMargin: 8
         anchors.horizontalCenter: parent.horizontalCenter
         z: 3

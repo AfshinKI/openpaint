@@ -125,10 +125,18 @@ class ShellTest : public QObject {
         }
         canvas->fit();
         QVERIFY(capture("rulers-light.png"));
+        editor->setTool(Editor::Tool::Text);
+        auto* textOptions = window->findChild<QQuickItem*>("textOptions");
+        QVERIFY(textOptions);
+        QTRY_VERIFY(textOptions->isVisible());
+        QVERIFY(textOptions->mapToScene({0, 0}).y() >=
+                horizontal->mapToScene({0, horizontal->height()}).y() + 8);
+        QVERIFY(capture("rulers-text-light.png"));
         QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
         QVERIFY(!horizontal->isVisible());
         QVERIFY(!vertical->isVisible());
         QTRY_COMPARE(canvas->x(), 0.0);
+        QTRY_COMPARE(textOptions->y(), canvas->y() + 8);
         QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
         QVERIFY(horizontal->isVisible());
         QCOMPARE(editor->image(), pixels);
