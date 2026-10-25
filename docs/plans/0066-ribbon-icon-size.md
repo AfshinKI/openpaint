@@ -6,11 +6,11 @@ Target: v2.1.0
 
 ## Outcome and acceptance
 
-Increase the visible Image/Tools glyphs to 28 logical pixels (from 20 monochrome
-or 24 colored) within their existing 32-pixel targets. Increase Selection to 28
-and Brushes to 32 within its larger target. Keep menus/footer/shape gallery sizing
-unchanged. Preserve dropdown targets, all keyboard actions, two-row alignment,
-minimum 1024×640 bounds and both themes. Artwork/history are unaffected.
+Use 20px Image/Tools glyphs and 24px Selection/Brush glyphs in their existing
+hit targets, following the compact reference supplied after preview review.
+Keep menus/footer/shape gallery sizing unchanged. Preserve dropdown targets,
+keyboard actions, two-row alignment, minimum 1024×640 bounds and both themes.
+Artwork/history are unaffected. Original OpenPaint SVGs remain in use.
 
 Existing coloredRibbonWorkflow and frostedToolSelection cover minimum-size bounds,
 keyboard activation, tool colors and theme captures. Extend bounds checks for the
@@ -43,3 +43,14 @@ Use 20px Image/Tools glyphs and 24px Selection/Brush glyphs, retaining 32px hit
 areas and separate dropdown targets. Original OpenPaint SVGs remain in use;
 reference artwork is not copied into the repository. The prior 28/32px target
 above is superseded. Validate light/dark and minimum width after rebuilding.
+
+## Revised preview validation — 2026-10-25
+
+The compact icons, glass rulers, Updates cleanup and optional smart guides were
+rebuilt together with all v2.1 slices in the isolated combined checkout. All 20
+CTest suites pass across the full run and editor/text rerun; a font-dependent
+smart-guide test was moved into the existing GUI text suite. All 44 tooling tests,
+formatting and zero-warning QML lint pass. Focused X11/Mesa checks at 125% pass
+(10 Qt cases); offscreen checks at 200% pass (6 cases). Synthetic light/dark
+captures were inspected. These results supersede earlier visual-preview evidence.
+Required hosted review/checks and release/package validation remain outstanding.
