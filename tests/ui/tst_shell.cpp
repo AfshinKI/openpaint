@@ -2388,20 +2388,20 @@ class ShellTest : public QObject {
         auto* eraser = window->findChild<QQuickItem*>("eraserButton");
         QVERIFY(pencil && eraser);
         const auto pencilSurfaces = visualItems(pencil, "selectedToolSurface");
-        const auto eraserSurfaces = visualItems(eraser, "selectedToolSurface");
-        QVERIFY(!pencilSurfaces.isEmpty() && !eraserSurfaces.isEmpty());
+        auto* eraserSurface = window->findChild<QQuickItem*>("eraserSelectedSurface");
+        QVERIFY(!pencilSurfaces.isEmpty() && eraserSurface);
         QQmlExpression glass(qmlContext(pencil), pencil,
                              "Appearance.glassEnabled = true; Appearance.surfaceOpacity = 40");
         glass.evaluate();
         QVERIFY(!glass.hasError());
         editor->setTool(Editor::Tool::Pencil);
         QVERIFY(pencilSurfaces.first()->isVisible());
-        QVERIFY(!eraserSurfaces.first()->property("selectedSurface").toBool());
+        QVERIFY(!eraserSurface->property("selectedSurface").toBool());
         QVERIFY(tabTo("eraserButton"));
         keyClick(Qt::Key_Space);
         QCOMPARE(editor->tool(), Editor::Tool::Eraser);
         QVERIFY(!pencilSurfaces.first()->property("selectedSurface").toBool());
-        QVERIFY(eraserSurfaces.first()->isVisible());
+        QVERIFY(eraserSurface->isVisible());
         window->resize(1024, 640);
         for (const auto& theme : {QString("light"), QString("dark")}) {
             QVERIFY(QMetaObject::invokeMethod(window->findChild<QObject*>(theme + "ThemeAction"),
@@ -2416,7 +2416,8 @@ class ShellTest : public QObject {
         solid.evaluate();
         QVERIFY(!solid.hasError());
         editor->setTool(Editor::Tool::Eraser);
-        QVERIFY(!eraserSurfaces.first()->isVisible());
+        QVERIFY(eraserSurface->isVisible());
+        QCOMPARE(eraserSurface->property("surfaceAlpha").toReal(), 1.0);
         QVERIFY(capture("selection-glass-disabled.png"));
         QCOMPARE(editor->image(), image);
         QVERIFY(!editor->dirty());
