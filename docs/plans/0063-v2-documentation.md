@@ -27,3 +27,16 @@ handoff; both now point to the current handoff.
 Next: protected PR review. Release acceptance still needs public binary checksum
 verification, deployed-page inspection and physical Mac evidence, as recorded in
 [plan 0062](0062-macos-v2-release.md). This audit does not claim those checks ran.
+
+## Public-entry-point follow-up
+
+The second pass reviewed Contributing, Security, GitHub issue/PR templates,
+installation, packaging README/release notes, website navigation/FAQ and publishing
+guidance, preview provenance, references, templates and current design/quality
+contracts. Corrected pre-M1 claims in Contributing and bug reporting, the no-release
+claim in Security, obsolete update-check instructions, Flatpak channel wording,
+and the missing macOS packaging entry point. Separated future release walkthrough
+gates from shipped behavior and fixed the capture selector for split shell suites.
+Historical plans/ADRs and provenance remain historical; no new external reference
+parity audit or release certification is claimed. Repeated repository checks and
+website staging after these changes; no tooling or application behavior changed.

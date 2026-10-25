@@ -29,3 +29,8 @@ These documents are implementation contracts. Plans describe intended behavior;
 Update the responsible document in the same PR as its behavior. A roadmap entry
 does not override a detailed contract silently: document the change and its reason.
 Maintain one canonical explanation and link to it rather than copying rules.
+
+Plans and decisions are historical evidence as well as contracts. Old checkpoint
+phrases such as “PR deferred” or “next: M1” do not override the current feature
+ledger or release progression. Preserve dated evidence and outstanding manual
+limits when reconciling a plan; do not relabel old captures or tests as v2 results.
