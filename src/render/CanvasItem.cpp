@@ -38,6 +38,7 @@ void CanvasItem::setEditor(Editor* editor) {
                            .adjusted(-2, -2, 2, 2)
                            .toAlignedRect());
         });
+        connect(editor_, &Editor::guidesChanged, this, [this] { update(); });
         connect(editor_, &Editor::documentReplaced, this, &CanvasItem::fit);
         connect(editor_, &Editor::settingsChanged, this, [this] {
             finishGesture();
@@ -67,6 +68,9 @@ void CanvasItem::updateToolCursor() {
         case Editor::Tool::ColorPicker:
             symbol = "eyedropper";
             break;
+        case Editor::Tool::Zoom:
+            symbol = "zoom-region";
+            break;
         case Editor::Tool::Text:
             symbol = "text";
             break;
@@ -76,7 +80,7 @@ void CanvasItem::updateToolCursor() {
                                                   : "selection";
             break;
         case Editor::Tool::Fill:
-            symbol = "fill";
+            symbol = editor_->fillAllMatching ? "fill-all" : "fill";
             break;
         case Editor::Tool::Shape:
             symbol = "shape-" + QString::number(editor_->shapeKind);
@@ -154,14 +158,21 @@ void CanvasItem::updateToolCursor() {
     }
     setCursor(cursors.value(key));
 }
+void CanvasItem::setFitLeftInset(qreal inset) {
+    if (!std::isfinite(inset) || inset < 0 || inset == fitLeftInset_)
+        return;
+    fitLeftInset_ = inset;
+    emit fitInsetsChanged();
+}
 void CanvasItem::fit() {
     if (!editor_ || width() <= 48 || height() <= 48)
         return;
     finishGesture();
-    zoom_ = std::clamp(std::min((width() - 48) / editor_->imageSize().width(),
+    const qreal inset = std::min(fitLeftInset_, width() - 49);
+    zoom_ = std::clamp(std::min((width() - 48 - inset) / editor_->imageSize().width(),
                                 (height() - 48) / editor_->imageSize().height()),
                        0.01, 1.0);
-    origin_ = {(width() - editor_->imageSize().width() * zoom_) / 2,
+    origin_ = {inset + (width() - inset - editor_->imageSize().width() * zoom_) / 2,
                (height() - editor_->imageSize().height() * zoom_) / 2};
     fitted_ = true;
     emit viewportChanged();
@@ -233,6 +244,24 @@ void CanvasItem::paint(QPainter* painter) {
         painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
         painter->drawPolyline(path);
     }
+    if (zooming_) {
+        const QRectF box(fromDocument(zoomStart_), fromDocument(zoomEnd_));
+        painter->setBrush(Qt::NoBrush);
+        painter->setPen(QPen(Qt::white, 1));
+        painter->drawRect(box.normalized());
+        painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
+        painter->drawRect(box.normalized());
+    }
+    const auto guides = editor_->guidePosition();
+    painter->setPen(QPen(QColor("#e94ed7"), 1));
+    if (guides.x() >= 0) {
+        const qreal x = fromDocument({guides.x(), 0}).x();
+        painter->drawLine(QPointF(x, target.top()), QPointF(x, target.bottom()));
+    }
+    if (guides.y() >= 0) {
+        const qreal y = fromDocument({0, guides.y()}).y();
+        painter->drawLine(QPointF(target.left(), y), QPointF(target.right(), y));
+    }
     const auto samplePoint = toDocument(hoverPoint_);
     if (hovering_ && !space_ && !panning_ && !editor_->busy() &&
         editor_->tool() == Editor::Tool::ColorPicker &&
@@ -278,12 +307,19 @@ void CanvasItem::mousePressEvent(QMouseEvent* event) {
     last_ = event->position();
     panning_ = space_ || gestureButton_ == Qt::MiddleButton || gestureButton_ == Qt::RightButton;
     updateToolCursor();
+    if (!panning_ && editor_ && editor_->tool() == Editor::Tool::Zoom) {
+        zooming_ = !editor_->busy() && QRectF(editor_->image().rect()).contains(toDocument(last_));
+        zoomStart_ = zoomEnd_ = toDocument(last_);
+        update();
+        event->accept();
+        return;
+    }
     drawing_ = !panning_ && !picking && editor_;
     if (drawing_)
         editor_->begin(toDocument(last_), gestureButton_ == Qt::RightButton);
     event->accept();
 }
-void CanvasItem::updateGesture(QPointF point, bool constrain) {
+void CanvasItem::updateGesture(QPointF point, bool constrain, bool bypassSnap) {
     if (!std::isfinite(point.x()) || !std::isfinite(point.y()))
         return;
     if (panning_) {
@@ -291,8 +327,13 @@ void CanvasItem::updateGesture(QPointF point, bool constrain) {
         fitted_ = false;
         emit viewportChanged();
         update();
+    } else if (zooming_ && editor_) {
+        const auto doc = toDocument(point);
+        zoomEnd_ = {std::clamp(doc.x(), 0.0, double(editor_->image().width())),
+                    std::clamp(doc.y(), 0.0, double(editor_->image().height()))};
+        update();
     } else if (drawing_ && editor_) {
-        editor_->extend(toDocument(point), constrain);
+        editor_->extend(toDocument(point), constrain, bypassSnap ? 0 : 6 / zoom_);
     }
     last_ = point;
     hoverPoint_ = point;
@@ -307,15 +348,26 @@ void CanvasItem::mouseMoveEvent(QMouseEvent* event) {
         finishGesture();
         return;
     }
-    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier);
+    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier,
+                  event->modifiers() & Qt::ControlModifier);
 }
 void CanvasItem::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() != gestureButton_)
         return;
-    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier);
+    updateGesture(event->position(), event->modifiers() & Qt::ShiftModifier,
+                  event->modifiers() & Qt::ControlModifier);
+    const bool applyZoom = zooming_;
+    const QRectF region = QRectF(zoomStart_, zoomEnd_).normalized();
+    const bool largeEnough = region.width() * zoom_ >= 4 && region.height() * zoom_ >= 4;
     finishGesture();
+    if (applyZoom && largeEnough)
+        zoomToRegion(region);
 }
 void CanvasItem::finishGesture() {
+    if (zooming_) {
+        zooming_ = false;
+        update();
+    }
     if (editor_)
         editor_->endGesture();
     drawing_ = panning_ = false;
@@ -336,6 +388,7 @@ void CanvasItem::hoverMoveEvent(QHoverEvent* event) {
 }
 void CanvasItem::hoverLeaveEvent(QHoverEvent* event) {
     hovering_ = false;
+    emit cursorPositionChanged();
     if (editor_ && editor_->tool() == Editor::Tool::ColorPicker)
         update();
     QQuickPaintedItem::hoverLeaveEvent(event);
@@ -354,6 +407,11 @@ void CanvasItem::wheelEvent(QWheelEvent* event) {
     event->accept();
 }
 void CanvasItem::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Escape && zooming_) {
+        finishGesture();
+        event->accept();
+        return;
+    }
     if (event->key() == Qt::Key_Space) {
         space_ = true;
         updateToolCursor();
@@ -404,4 +462,20 @@ void CanvasItem::focusOutEvent(QFocusEvent* event) {
     space_ = false;
     updateToolCursor();
     QQuickPaintedItem::focusOutEvent(event);
+}
+
+void CanvasItem::zoomToRegion(QRectF region) {
+    if (!editor_ || width() <= 48 || height() <= 48)
+        return;
+    region = region.intersected(QRectF(editor_->image().rect()));
+    if (region.isEmpty())
+        return;
+    const qreal inset = std::min(fitLeftInset_, std::max(0.0, width() - 49));
+    zoom_ = std::clamp(
+        std::min((width() - inset - 48) / region.width(), (height() - 48) / region.height()), 0.01,
+        32.0);
+    origin_ = QPointF(inset + (width() - inset) / 2, height() / 2) - region.center() * zoom_;
+    fitted_ = false;
+    emit viewportChanged();
+    update();
 }

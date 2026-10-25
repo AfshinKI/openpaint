@@ -13,7 +13,7 @@ There are no package downloads, external fonts, JavaScript, cookies or analytics
 
 ## GitHub Pages
 
-After the PR is merged, select **Settings → Pages → Build and deployment →
+For a new repository or a reset Pages configuration, select **Settings → Pages → Build and deployment →
 Source → GitHub Actions** in the repository. The Project website workflow stages
 only the page, selected assets and license; it does not publish the repository
 or documentation directory. PRs build but cannot deploy. Main-branch updates to
@@ -21,9 +21,11 @@ website inputs deploy through the `github-pages` environment. Restrict that
 environment to main in repository settings.
 
 If Pages was not enabled when the main workflow ran, enable it and manually run
-Project website on main. The expected default URL is
+Project website on main. The project deployment URL is
 <https://afshinki.github.io/openpaint/>; verify the successful deployment before
-advertising it. Repository settings are not changed by adding the workflow.
+advertising a new deployment. The v2 deployment workflow succeeded; independent
+visual verification remains recorded as open in [release evidence](../docs/plans/0062-macos-v2-release.md).
+Repository settings are not changed by adding the workflow.
 
 Download links point to the latest GitHub release rather than fixed filenames.
 Update page claims when the shipped feature scope changes. Check desktop and
