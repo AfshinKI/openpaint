@@ -1,12 +1,13 @@
 # Interface design
 
-Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
-It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
-current shipped behavior remains unchanged until implementation is verified.
+The shipped [alpha corrections](plans/0028-alpha-ui-polish.md) superseded the
+earlier shared custom-palette, Swap-button and left-rail targets. Later v1/v2
+revisions appear below; [FEATURES.md](FEATURES.md) records current shipped scope
+and [the roadmap](ROADMAP.md#release-progression) indexes superseded decisions.
 
 Status: design specification, not an implemented or pixel-verified replica.
 Goal: someone familiar with modern Paint should find the same everyday workflows
-quickly, with Linux window conventions and original OpenPaint assets.
+quickly, with native Linux/macOS window conventions and original OpenPaint assets.
 
 The detailed [menu and control specification](MENUS.md) defines group order,
 menu entries, brush inventory, settings and feature discovery. Read it before
@@ -197,7 +198,7 @@ editor. Skip full palettes and existing duplicates. Both palettes are session-on
 and start empty on launch. Explicit editor Add/Replace/Remove/Clear affects its
 own list immediately for this session; Cancel discards only the pending color
 draft. Palette changes never dirty artwork or enter its undo history. See the
-[current alpha plan](plans/0028-alpha-ui-polish.md) for the superseding contract.
+[shipped alpha plan](plans/0028-alpha-ui-polish.md) for the superseding contract.
 
 The [reference layout refinement](plans/0005-reference-color-layout.md) supersedes
 the earlier inferred hue-ring design. Toolbar height is 112 logical pixels;
@@ -405,3 +406,21 @@ opened with the visible menu buttons rather than Linux Alt-letter mnemonics.
 The shape preview toolbar uses the same glass surface, spacing and controls as
 the text toolbar. It is centered on the canvas viewport, 8px below its top edge,
 and appears only while a shape is being edited. See [plan 0072](plans/0072-floating-shape-toolbar.md).
+### Optional smart guides (v2.1 development)
+
+View → Smart guides starts off and enables magenta canvas-edge/center alignment
+while moving previews. Snap distance is six screen pixels; Ctrl bypasses it.
+A compact move grip above selections/shapes/text supports dragging and keyboard
+nudges. Guides disappear after gestures and never enter saved pixels. Object
+recognition and equal-spacing guides are not included. See [plan 0070](plans/0070-smart-guides.md).
+Development v2.1 adds top/left pixel rulers with adaptive ticks and pointer
+markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
+canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
+[Acceptance and pending validation](plans/0069-canvas-rulers.md).
+
+Ruler surfaces use the shared 6-unit control corner radius for slightly rounder
+corners consistent with other controls. Their opacity, position and zoom behavior
+remain unchanged.
+Development v2.1 ribbon sizing: Image/Tools icons use 20px glyphs within existing
+32px targets; Selection and Brushes use 24px. Other icon families keep
+their existing sizes. [Acceptance and pending validation](plans/0066-ribbon-icon-size.md).

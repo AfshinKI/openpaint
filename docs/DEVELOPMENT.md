@@ -56,7 +56,11 @@ Packaging recipes pin their sources/checksums and document prerequisite setup.
    If scope grows, split out prerequisites/follow-ups before continuing, and keep
    unfinished steps in the plan.
 
-## Worked example: fill tolerance (M2 / F04)
+## Historical worked example: fill tolerance (M2 / F04)
+
+This illustrates the original planning workflow, not the current Fill UI. Since
+v1.2, tolerance is fixed at zero and edge smoothing is automatic; see
+[the current controls](MENUS.md) and [v1.2 plan](plans/0040-release-1.2.0.md).
 
 Outcome: fill neighboring colors within a chosen tolerance without crossing the
 selection boundary. The slider only appears with the Fill tool and supports

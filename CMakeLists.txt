@@ -159,10 +159,13 @@ if(BUILD_TESTING)
         updatesWorkflow)
     add_shell_tests(shell-editing
         floatingShapeToolbar
+        smartGuidesWorkflow
         layersWorkflow
         invertColorsWorkflow
         coloredRibbonWorkflow
+        rulersWorkflow
         zoomSliderWorkflow
+        saveAsFormatChoices
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory
