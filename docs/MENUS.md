@@ -493,3 +493,7 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Canvas expansion applies the selected background/fill color (including alpha) to
+new space on the bottom background layer. New space on drawing layers remains
+transparent. This also applies when resizing by dragging canvas corners or edges.

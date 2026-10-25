@@ -103,10 +103,11 @@ void Editor::startTransform(openpaint::TransformKind operation,
                 return openpaint::transformImage(source, mask, operation, token, options);
             openpaint::TransformResult result;
             auto settings = options;
-            if (operation == openpaint::TransformKind::CanvasResize)
-                settings.background = Qt::transparent;
             // Crop uses the same selection bounds on every layer, preserving the stack.
             for (auto layer : layers) {
+                if (operation == openpaint::TransformKind::CanvasResize)
+                    settings.background =
+                        result.layers.empty() ? options.background : QColor(Qt::transparent);
                 auto input = layer.pixels;
                 if (operation == openpaint::TransformKind::Crop)
                     input = input.copy(cropBounds);
