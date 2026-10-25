@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased — toward 2.1.0
+
+- Keep Layers visible at minimum window width and fit artwork clear of floating tool controls.
+- Recolor recognized antialiased background fringes when filling around lines.
+- Respect the background/fill color when expanding layered canvases.
+- Add shared drawing opacity controls for pencil, fill and shape previews.
+- Move shape preview Options, Apply and Cancel into a compact floating glass toolbar.
+- Add persistent “Skip this version” to Updates while retaining notifications for newer releases.
+- Add optional canvas-edge/center smart guides and accessible move grips for selections, shapes and text.
+- Add top/left pixel rulers and pointer markers synchronized with canvas zoom and pan.
+- Offer image formats in Save As and add true monochrome 1-bit BMP copies, preserving project save state.
+- Show current version, developer credit, website and public contact links in About.
+- Balance compact Image/Tools, Selection and Brush ribbon icons while retaining button targets.
+- Fix Linux glass setup for Blur My Shell schemas without `hacks-level`, while
+  retaining backed-up redraw configuration on versions that support it.
+
 ## 2.0.0 — 2026-10-21
 
 - Add an Apple silicon macOS app bundle, native glass and platform keyboard shortcuts.
@@ -85,7 +101,7 @@
 - Add manual and opt-in daily GitHub stable-release notifications. Installation
   remains manual; Flatpak retains its no-network sandbox and browser links.
 
-User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
+User-visible changes are recorded here. See [current release validation](docs/plans/0062-macos-v2-release.md)
 for artifact hashes, tested desktops and known limits.
 
 ## 1.0.0 — 2026-10-16

@@ -24,6 +24,7 @@ QtObject {
     readonly property color text: dark ? "#F1F4F8" : "#18212B"
     readonly property color secondaryText: dark ? "#ADB8C5" : "#4C5867"
     readonly property color accent: dark ? "#B8C5D2" : "#677887"
+    readonly property color sliderAccent: "#F47F6B"
     readonly property color accentText: dark ? "#10211D" : "#FFFFFF"
     readonly property color divider: dark ? "#454E5A" : "#C9CED6"
 }

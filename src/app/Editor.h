@@ -29,6 +29,8 @@ class Editor : public QObject {
     Q_PROPERTY(bool freeFormSelection MEMBER freeFormSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentSelection MEMBER transparentSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool clipboardBusy READ clipboardBusy NOTIFY changed)
+    Q_PROPERTY(bool smartGuides READ smartGuides WRITE setSmartGuides NOTIFY guidesChanged)
+    Q_PROPERTY(QPointF guidePosition READ guidePosition NOTIFY guidesChanged)
     Q_PROPERTY(bool floatingActive READ floatingActive NOTIFY changed)
     Q_PROPERTY(QPoint floatingPosition READ floatingPosition NOTIFY changed)
     Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY changed)
@@ -62,6 +64,7 @@ class Editor : public QObject {
     Q_PROPERTY(int curveBend2 MEMBER curveBend2 NOTIFY settingsChanged)
     Q_PROPERTY(bool shapeFill MEMBER shapeFill NOTIFY settingsChanged)
     Q_PROPERTY(int brushStyle MEMBER brushStyle NOTIFY settingsChanged)
+    Q_PROPERTY(bool fillAllMatching MEMBER fillAllMatching NOTIFY settingsChanged)
     Q_PROPERTY(int opacity MEMBER opacity NOTIFY settingsChanged)
     Q_PROPERTY(bool loading READ loading NOTIFY changed)
     Q_PROPERTY(QString fileName READ fileName NOTIFY changed)
@@ -111,7 +114,7 @@ class Editor : public QObject {
     Q_INVOKABLE void setLayerVisible(bool visible);
     Q_INVOKABLE void setLayerOpacity(int opacity);
     Q_INVOKABLE void mergeLayerDown();
-    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape, Text, Select };
+    enum class Tool { Pencil, Eraser, ColorPicker, Fill, Brush, Shape, Text, Select, Zoom };
     Q_ENUM(Tool)
     Tool tool() const {
         return tool_;
@@ -137,6 +140,15 @@ class Editor : public QObject {
     Q_INVOKABLE void transformImage(int kind);
     QRectF resizeBounds() const;
     Q_INVOKABLE void resizeCanvas(int x, int y, int width, int height);
+    bool smartGuides() const {
+        return smartGuides_;
+    }
+    void setSmartGuides(bool enabled);
+    QPointF guidePosition() const {
+        return guidePosition_;
+    }
+    Q_INVOKABLE void clearGuides();
+    Q_INVOKABLE void moveActiveBounds(int x, int y, qreal tolerance = 0);
     Q_INVOKABLE void resizeActiveBounds(int x, int y, int width, int height);
     Q_INVOKABLE void resizeImage(int width, int height, qreal skewX, qreal skewY, bool smooth);
     bool clipboardBusy() const {
@@ -259,7 +271,7 @@ class Editor : public QObject {
     Q_INVOKABLE bool setTextDraft(const QString& text);
     Q_INVOKABLE void setTextBounds(int x, int y, int width, int height);
     void begin(QPointF point, bool secondaryButton);
-    void extend(QPointF point, bool constrain = false);
+    void extend(QPointF point, bool constrain = false, qreal snapTolerance = 0);
     void removeShapePoint();
     void endGesture();
     bool previewActive() const {
@@ -279,6 +291,7 @@ class Editor : public QObject {
     Q_INVOKABLE void redo();
     QColor primary = Qt::black, secondary = Qt::white;
     int brushSize = 3, brushStyle = 0, opacity = 100;
+    bool fillAllMatching = false;
     bool colorSelection = false;
     bool freeFormSelection = false, transparentSelection = false;
     bool transparentEraser = false, shapeOutline = true, shapeFill = false;
@@ -288,6 +301,7 @@ class Editor : public QObject {
     bool textBold = false, textItalic = false, textUnderline = false, textStrikeout = false,
          textBackground = false;
   signals:
+    void guidesChanged();
     void changed();
     void textDraftChanged();
     void textFontRequested(const QFont& font);
@@ -302,6 +316,8 @@ class Editor : public QObject {
     void pixelsChanged(QRect rect);
 
   private:
+    bool smartGuides_ = false;
+    QPointF guidePosition_{-1, -1};
     void layerChanged(bool success);
     bool layersInitialized_ = false;
     bool editingSecondary_ = false;

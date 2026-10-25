@@ -63,6 +63,10 @@ Rectangle {
                 id: roundedMask
                 anchors.fill: parent
                 radius: surface.radius
+                topLeftRadius: surface.topLeftRadius
+                topRightRadius: surface.topRightRadius
+                bottomLeftRadius: surface.bottomLeftRadius
+                bottomRightRadius: surface.bottomRightRadius
                 color: "white"
                 layer.enabled: true
                 visible: false
@@ -75,7 +79,7 @@ Rectangle {
                 blur: 1
                 blurMultiplier: surface.selectedSurface ? 1 : !Theme.dark && surface.opaqueBackdrop ? 0.75 : 0
                 autoPaddingEnabled: false
-                maskEnabled: surface.radius > 0
+                maskEnabled: Math.max(surface.topLeftRadius, surface.topRightRadius, surface.bottomLeftRadius, surface.bottomRightRadius) > 0
                 maskSource: roundedMask
             }
         }
@@ -84,6 +88,10 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 1
         radius: Math.max(0, surface.radius - 1)
+        topLeftRadius: Math.max(0, surface.topLeftRadius - 1)
+        topRightRadius: Math.max(0, surface.topRightRadius - 1)
+        bottomLeftRadius: Math.max(0, surface.bottomLeftRadius - 1)
+        bottomRightRadius: Math.max(0, surface.bottomRightRadius - 1)
         color: "transparent"
         border.color: Qt.rgba(1, 1, 1, 0.65 * (1 - surface.surfaceAlpha))
         visible: Appearance.effectiveGlassEnabled && !Theme.dark && surface.surfaceAlpha < 1 && surface.border.width > 0

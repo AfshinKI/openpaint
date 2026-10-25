@@ -1,8 +1,9 @@
 # Contributing to OpenPaint
 
-Thanks for helping bring a familiar painting experience to Linux.
-The native shell is implemented; drawing and file editing are next in
-[M1: the first working canvas](docs/plans/0001-foundation.md).
+Thanks for helping improve OpenPaint for Linux and macOS. The v2 editor ships
+drawing tools, selections, transforms, raster layers and OpenRaster projects.
+Start with the [current feature status](docs/FEATURES.md) and
+[remaining roadmap gates](docs/ROADMAP.md), rather than the completed M1 plan.
 
 ## Pick a change
 
@@ -53,7 +54,10 @@ privacy/secret patterns. They do not prove that a repository contains no secrets
 review your staged diff and commit metadata as well.
 
 For application work, use the checked-in CMake presets and compiler/toolkit setup
-in [the build guide](docs/BUILD.md). Run the shell tests and C++/QML checks as well.
+in [the build guide](docs/BUILD.md). Run the relevant engine, file, input and shell
+tests plus C++/QML checks; [QUALITY.md](docs/QUALITY.md) maps changes to evidence.
+For website changes, also run `python3 tools/build_site.py`. Documentation-only
+changes need documentation checks, not an application rebuild.
 
 ## Working with assistants
 
@@ -64,8 +68,9 @@ checking their provenance, and reporting which tests actually ran.
 
 Example task:
 
-> Read AGENTS.md and docs/plans/0001-foundation.md. Implement the next unfinished
-> step only. Run its acceptance checks, update the plan with evidence, and report
+> Read AGENTS.md, the current feature checklist and the plan for the requested
+> change. Implement its next unfinished step only. Run its acceptance checks,
+> update the plan with evidence, and report
 > any remaining limitation. Do not mark later milestones complete.
 
 ## Before opening a pull request

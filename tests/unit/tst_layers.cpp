@@ -246,6 +246,33 @@ class LayersTest : public QObject {
         e.finish();
         QCOMPARE(e.document.revision(), revision);
     }
+    void canvasExtensionUsesBackgroundColor() {
+        for (const QColor background : {QColor(Qt::white), QColor(Qt::green),
+                                        QColor(30, 60, 90, 128), QColor(Qt::transparent)}) {
+            for (bool layered : {false, true}) {
+                LayerEditor e;
+                e.document.reset(solid(Qt::blue));
+                if (layered)
+                    e.addLayer();
+                const auto before = e.displayImage();
+                e.secondary = background;
+                e.resizeCanvas(-2, -3, 16, 14);
+                QTRY_VERIFY(!e.busy());
+                QCOMPARE(e.imageSize(), QSize(16, 14));
+                QCOMPARE(e.document.layers()[0].pixels.pixel(0, 0),
+                         qPremultiply(background.rgba()));
+                QCOMPARE(e.displayImage().pixel(0, 0), qPremultiply(background.rgba()));
+                QCOMPARE(e.displayImage().pixelColor(2, 3), QColor(Qt::blue));
+                if (layered)
+                    QCOMPARE(e.document.layers()[1].pixels.pixelColor(0, 0).alpha(), 0);
+                const auto expanded = e.displayImage();
+                e.undo();
+                QCOMPARE(e.displayImage(), before);
+                e.redo();
+                QCOMPARE(e.displayImage(), expanded);
+            }
+        }
+    }
     void wholeStackCropResizeAndCancel() {
         LayerEditor e;
         e.document.reset(solid(Qt::blue));
@@ -266,8 +293,9 @@ class LayersTest : public QObject {
         QTRY_VERIFY(!e.busy());
         for (const auto& layer : e.document.layers()) {
             QCOMPARE(layer.pixels.size(), QSize(16, 12));
-            QCOMPARE(layer.pixels.pixelColor(0, 0).alpha(), 0);
         }
+        QCOMPARE(e.document.layers()[0].pixels.pixelColor(0, 0), e.secondary);
+        QCOMPARE(e.document.layers()[1].pixels.pixelColor(0, 0).alpha(), 0);
         e.undo();
         e.resizeImage(6, 4, 0, 0, false);
         QTRY_VERIFY(!e.busy());
