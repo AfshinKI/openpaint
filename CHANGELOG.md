@@ -1,7 +1,13 @@
 # Changelog
 
-## Unreleased — toward 2.1.0
+## 2.1.0 — 2026-10-25
 
+- Add contiguous/global matching-color fill modes with consistent original icons.
+- Add drag-to-region zoom, compact zoom presets and synchronized percentage display.
+- Preview tool size/color/opacity on canvas; add precise icon-and-crosshair cursors for all tools.
+- Refine ribbon captions, split buttons, original eraser artwork and shape No fill icons.
+- Use matching coral size, opacity and zoom sliders; correct rounded glass highlight borders.
+- Remember ruler and Smart guides visibility across launches.
 - Keep Layers visible at minimum window width and fit artwork clear of floating tool controls.
 - Recolor recognized antialiased background fringes when filling around lines.
 - Respect the background/fill color when expanding layered canvases.

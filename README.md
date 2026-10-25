@@ -9,19 +9,19 @@ Free and open source. Editing works offline—no account or telemetry.
 [Installation guide](docs/INSTALL.md) ·
 [Report an issue](https://github.com/AfshinKI/openpaint/issues)
 
-## OpenPaint 2.0.0
+## OpenPaint 2.1.0
 
 Screenshots are cropped to the app window with rounded outer corners.
 
 ### Light mode
 
-![OpenPaint 2.0.0 in light mode](docs/assets/openpaint-2.0.0-light.png)
+![OpenPaint 2.1.0 in light mode](docs/assets/openpaint-2.1.0-light.png)
 
 ### Dark mode
 
-![OpenPaint 2.0.0 in dark mode](docs/assets/openpaint-2.0.0-dark.png)
+![OpenPaint 2.1.0 in dark mode](docs/assets/openpaint-2.1.0-dark.png)
 
-*Captured from the OpenPaint v2.0.0 release UI with glass enabled at 40% surface
+*Captured from the OpenPaint v2.1.0 release UI with glass enabled at 40% surface
 opacity, generated demo artwork and a staged original gradient backdrop. See [capture provenance](docs/assets/README.md).
 The isolated capture harness uses generated artwork and a staged backdrop; it does not demonstrate desktop compositor blur. Unsupported glass configurations use opaque surfaces.*
 
@@ -30,8 +30,9 @@ The isolated capture harness uses generated artwork and a staged backdrop; it do
 - Draw with brushes, pencil, fill, shapes, splines and mixed-font text.
 - Select by rectangle, free-form outline or matching color; copy, move, crop, resize and rotate.
 - Add, reorder, hide, duplicate and merge layers; save editable OpenRaster projects.
-- Open and export PNG, JPEG, BMP and WebP. Save flat drawings as PNG.
-- Undo and redo, use the zoom slider and right-drag to pan, and switch between light and dark themes.
+- Save As PNG, JPEG, BMP, WebP or monochrome BMP; keep editable layers in OpenRaster.
+- Use pixel rulers and optional alignment guides; drag a region or choose a preset to zoom.
+- Adjust drawing opacity, fill disconnected matching colors, undo/redo and right-drag to pan.
 - Adjust supported glass appearance; native packages check for stable releases automatically.
 
 ## Install

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(OpenPaint VERSION 2.0.0 LANGUAGES CXX)
+project(OpenPaint VERSION 2.1.0 LANGUAGES CXX)
 if(APPLE)
     enable_language(OBJCXX)
     set(CMAKE_OBJCXX_STANDARD 20)

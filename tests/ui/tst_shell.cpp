@@ -2716,6 +2716,25 @@ class ShellTest : public QObject {
         QTRY_VERIFY(resizeDialog->property("visible").toBool());
         QTest::qWait(250);
         QVERIFY(releaseCapture(prefix + "-resize-light.png"));
+        QVERIFY(QMetaObject::invokeMethod(resizeDialog, "close"));
+        for (const auto& entry :
+             {qMakePair(QString("fillModeMenu"), QString("fill-modes-light")),
+              qMakePair(QString("zoomPresetMenu"), QString("zoom-presets-light"))}) {
+            auto* menu = window->findChild<QObject*>(entry.first);
+            QVERIFY(menu);
+            QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+            QTRY_VERIFY(menu->property("visible").toBool());
+            QTest::qWait(250);
+            QVERIFY(releaseCapture(prefix + "-" + entry.second + ".png"));
+            QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+        }
+        auto* exportOptions = window->findChild<QObject*>("exportOptions");
+        QVERIFY(exportOptions);
+        exportOptions->setProperty("saveAsMode", true);
+        QVERIFY(QMetaObject::invokeMethod(exportOptions, "open"));
+        QTRY_VERIFY(exportOptions->property("visible").toBool());
+        QTest::qWait(250);
+        QVERIFY(releaseCapture(prefix + "-save-as-light.png"));
     }
     void fileMenuBackdropBlur_data() {
         QTest::addColumn<bool>("dark");

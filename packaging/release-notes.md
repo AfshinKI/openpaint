@@ -1,12 +1,14 @@
 ## New in {VERSION}
 
-- Work with raster layers: add, reorder, hide, duplicate, rename and merge down.
-- Save editable OpenRaster (.ora) projects; export flattened PNG, JPEG, BMP or WebP.
-- A rounded glass Layers panel, thumbnail previews and a fixed background layer.
-- Invert image colors, use the footer zoom slider, and right-drag with a grab cursor to pan.
-- Refined tool icons and simpler Linux glass setup in one user-run terminal block.
-- **macOS on Apple silicon:** an app bundle with native glass and Command shortcuts.
-- New light/dark website and README pictures, with glass at 40% surface opacity.
+- Top and left pixel rulers, plus optional canvas alignment Smart guides; both remember your preference.
+- Save As exposes image formats and adds monochrome 1-bit BMP; OpenRaster retains editable layers.
+- Pencil, fill and shapes gain opacity controls and a temporary canvas size/color preview.
+- Fill connected areas or replace matching colors across the active layer, with improved antialiased edges.
+- Drag a rectangle with the Zoom tool, choose a zoom preset, or use the synchronized slider.
+- More consistent ribbon controls, original icons, precise tool cursors and floating shape actions.
+- Skip a specific update notification, and find project/developer/contact details in About.
+- Fix canvas background extension, Fit clearance and Linux glass setup with newer extension schemas.
+- Fresh light/dark release-build screenshots at 40% glass surface opacity.
 
 ## Downloads
 
@@ -41,3 +43,8 @@ layers within the bounded image-memory budget and a supported OpenRaster subset.
 Crash recovery, printing, AI tools and automatic update installation are not
 included. Save frequently and keep copies of important originals. See the
 installation guide and source release evidence for validation limits.
+
+Smart guides align to canvas edges/centers; painted-object recognition and equal-spacing
+guides are not included. Native desktop frames may retain square outlines around
+rounded client content. Fill-edge coverage is inferred locally and cannot reconstruct
+every textured or translucent boundary.
