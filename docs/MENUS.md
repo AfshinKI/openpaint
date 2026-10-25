@@ -186,7 +186,7 @@ Escape cancels a drag; arrow keys resize by 1px (Shift: 10px). The canvas refits
 after commit. Dimensions are limited to 16384 per side and 32MP overall. A left-side floating rail holds narrow 36px rounded Size (1–128 px) and Opacity
 (0–100%) slider panels, with original stroke/droplet icons and accent thumbs.
 Numeric values appear in tooltips; accessible names retain each role and range. Size appears
-for pencil, brush, eraser and shapes; opacity appears for brushes. Both support
+for pencil, brush, eraser and shapes; opacity appears for pencil, brush, fill and shapes. Both support
 keyboard arrows and are disabled while busy. Fill uses exact color matching with automatic smooth edges. The rail consumes pointer input without painting through
 its margins and does not resize or reposition the canvas.
 
@@ -493,3 +493,7 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Drawing opacity is shared across these tools for the session. Shape preview opacity
+updates live; pencil strokes and fill jobs capture it when they begin. A value of
+0% changes no pixels, and 100% preserves the existing full-strength rendering.

@@ -14,6 +14,39 @@ class SampleEditor : public Editor {
 class EditorTest : public QObject {
     Q_OBJECT
   private slots:
+    void drawingToolOpacity() {
+        for (auto tool : {Editor::Tool::Pencil, Editor::Tool::Fill, Editor::Tool::Shape}) {
+            SampleEditor editor;
+            QImage image(64, 64, QImage::Format_ARGB32_Premultiplied);
+            image.fill(Qt::white);
+            editor.reset(image);
+            const auto base = editor.image();
+            editor.setTool(tool);
+            editor.opacity = 50;
+            editor.brushSize = 12;
+            editor.begin({20, 20}, false);
+            editor.extend({40, 20});
+            editor.endGesture();
+            QTRY_VERIFY(!editor.busy());
+            QCOMPARE(editor.image().pixelColor(30, 20), QColor(128, 128, 128));
+            if (tool == Editor::Tool::Shape) {
+                editor.opacity = 25;
+                emit editor.settingsChanged();
+                QCOMPARE(editor.image().pixelColor(30, 20), QColor(191, 191, 191));
+                editor.opacity = 0;
+                emit editor.settingsChanged();
+                QCOMPARE(editor.image(), base);
+                editor.opacity = 50;
+                emit editor.settingsChanged();
+            }
+            editor.commitPreview();
+            const auto painted = editor.image();
+            editor.undo();
+            QCOMPARE(editor.image(), base);
+            editor.redo();
+            QCOMPARE(editor.image(), painted);
+        }
+    }
     void eraserUsesPaperOrTransparency() {
         SampleEditor editor;
         QImage fixture(24, 24, QImage::Format_ARGB32_Premultiplied);

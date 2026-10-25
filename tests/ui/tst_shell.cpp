@@ -611,6 +611,13 @@ class ShellTest : public QObject {
         QVERIFY(tabTo("brushOpacity"));
         keyClick(Qt::Key_Down);
         QCOMPARE(editor->opacity, 99);
+        for (auto tool : {Editor::Tool::Pencil, Editor::Tool::Fill, Editor::Tool::Shape}) {
+            editor->setTool(tool);
+            QVERIFY(tabTo("brushOpacity"));
+            const int before = editor->opacity;
+            keyClick(Qt::Key_Down);
+            QCOMPARE(editor->opacity, before - 1);
+        }
         QCOMPARE(canvas->mapRectToScene(canvas->boundingRect()), canvasRect);
         auto* rail = window->findChild<QQuickItem*>(QStringLiteral("floatingToolControls"));
         QVERIFY(rail);
@@ -619,6 +626,12 @@ class ShellTest : public QObject {
         QCOMPARE(editor->image(), original);
         QVERIFY(!editor->dirty());
         window->resize(1024, 640);
+        auto* sizeSlider = window->findChild<QQuickItem*>("strokeSize");
+        auto* opacitySlider = window->findChild<QQuickItem*>("brushOpacity");
+        QVERIFY(sizeSlider && opacitySlider);
+        QTRY_COMPARE(sizeSlider->height(), opacitySlider->height());
+        QCOMPARE(sizeSlider->parentItem()->height(), opacitySlider->parentItem()->height());
+        QCOMPARE(sizeSlider->y(), opacitySlider->y());
         QVERIFY(capture(QStringLiteral("floating-controls-1024.png")));
         QTRY_VERIFY(QRectF(0, 0, window->width(), window->height())
                         .contains(rail->mapRectToScene(rail->boundingRect())));
@@ -627,7 +640,7 @@ class ShellTest : public QObject {
         QVERIFY(size && !size->isVisible());
         QVERIFY(!window->findChild<QObject*>("fillTolerance"));
         QCOMPARE(editor->brushSize, 4);
-        QCOMPARE(editor->opacity, 99);
+        QCOMPARE(editor->opacity, 96);
     }
 
     void quickActionPlacement() {

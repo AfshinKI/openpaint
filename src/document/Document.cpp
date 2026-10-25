@@ -1,4 +1,5 @@
 #include "Document.h"
+#include "tools/Opacity.h"
 #include <QColorSpace>
 #include <QPainter>
 #include <algorithm>
@@ -27,6 +28,7 @@ bool Document::reset(const QImage& image) {
     activeLayer_ = 0;
     raster().setColorSpace(QColorSpace::SRgb);
     original_ = {};
+    opacityRaster_ = {};
     selection_ = {};
     brush_.clear();
     active_ = false;
@@ -53,6 +55,8 @@ bool Document::beginStroke(QPointF point, QColor color, qreal width, bool clearA
         !brush_.begin(raster().size(), point, color, width, brushStyle, opacity, selection_))
         return false;
     original_ = raster();
+    strokeOpacity_ = opacity;
+    opacityRaster_ = !brushed_ && opacity < 100 ? original_ : QImage();
     active_ = true;
     color_ = color;
     width_ = width;
@@ -79,7 +83,7 @@ QRect Document::extendStroke(QPointF point) {
                      .toAlignedRect()
                      .intersected(raster().rect());
     if (!rect.isEmpty()) {
-        QPainter painter(&raster());
+        QPainter painter(opacityRaster_.isNull() ? &raster() : &opacityRaster_);
         painter.setRenderHint(QPainter::Antialiasing);
         if (!selection_.isEmpty())
             painter.setClipRegion(selection_);
@@ -90,6 +94,16 @@ QRect Document::extendStroke(QPointF point) {
             painter.drawPoint(point);
         else
             painter.drawLine(previous_, point);
+        painter.end();
+        if (!opacityRaster_.isNull()) {
+            for (int y = rect.top(); y <= rect.bottom(); ++y) {
+                auto* output = reinterpret_cast<QRgb*>(raster().scanLine(y));
+                const auto* before = reinterpret_cast<const QRgb*>(original_.constScanLine(y));
+                const auto* after = reinterpret_cast<const QRgb*>(opacityRaster_.constScanLine(y));
+                for (int x = rect.left(); x <= rect.right(); ++x)
+                    output[x] = operationOpacity(before[x], after[x], strokeOpacity_);
+            }
+        }
         dirtyRect_ = dirtyRect_.united(rect);
     }
     previous_ = point;
@@ -103,16 +117,19 @@ bool Document::commitStroke() {
     brush_.clear();
     if (dirtyRect_.isEmpty() || original_.copy(dirtyRect_) == raster().copy(dirtyRect_)) {
         original_ = {};
+        opacityRaster_ = {};
         return false;
     }
     if (qint64(dirtyRect_.width()) * dirtyRect_.height() * 8 > budget_) {
         raster() = original_;
         original_ = {};
+        opacityRaster_ = {};
         return false;
     }
     Patch patch{dirtyRect_, original_.copy(dirtyRect_), raster().copy(dirtyRect_), revision_,
                 nextRevision_++};
     original_ = {};
+    opacityRaster_ = {};
     append(std::move(patch));
     return true;
 }
@@ -206,6 +223,7 @@ void Document::cancelStroke() {
     if (active_)
         raster() = original_;
     original_ = {};
+    opacityRaster_ = {};
     active_ = false;
     previewMode_ = false;
 }

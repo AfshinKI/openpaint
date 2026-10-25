@@ -1606,7 +1606,7 @@ ApplicationWindow {
             onAdjusted: value => editor.brushSize = value
         }
         ToolSlider {
-            visible: editor.tool === Editor.Brush
+            visible: editor.tool === Editor.Brush || editor.tool === Editor.Pencil || editor.tool === Editor.Fill || editor.tool === Editor.Shape
             height: parent.panelHeight
             label: qsTr("Opacity")
             symbol: "opacity"

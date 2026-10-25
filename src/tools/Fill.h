@@ -14,5 +14,5 @@ struct FillResult {
 };
 FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int tolerance,
                       const std::shared_ptr<std::atomic_bool>& cancelled,
-                      const QRegion& selection = {}, bool smoothEdges = false);
+                      const QRegion& selection = {}, bool smoothEdges = false, int opacity = 100);
 } // namespace openpaint

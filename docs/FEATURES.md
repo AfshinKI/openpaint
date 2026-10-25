@@ -192,3 +192,6 @@ Apple silicon/macOS 14.4+ build and DMG packaging are implemented, with native
 AppKit glass and Command shortcuts. Validation is tracked in [plan 0062](plans/0062-macos-v2-release.md);
 physical Mac visual review remains pending. Intel packages and Apple notarization
 are not part of this release candidate.
+
+Development opacity controls now cover pencil, fill and shapes as well as brushes
+([plan 0073](plans/0073-drawing-tool-opacity.md)).
