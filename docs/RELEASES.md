@@ -41,6 +41,16 @@ preferred eventual stable channel, but publication requires its submission/revie
 process. A GitHub `.flatpak` bundle alone does not establish an update repository.
 Until a remote exists, explain manual replacement accurately in the Updates screen.
 
+## DEB installation troubleshooting
+
+Record fresh-install and previous-version upgrade results separately from app
+launch/edit/save checks. If APT reports failure, inspect the OpenPaint package
+status and `dpkg --audit` to distinguish an app-package failure from unrelated
+pending system-package configuration. A local-file `_apt` access notice alone is
+not proof that OpenPaint failed to install. Stage downloads in a readable folder;
+do not relax home-directory permissions or add driver/kernel repair to package
+scripts. Keep support logs sanitized before publishing evidence.
+
 ## Version and artifact contract
 
 Use semantic `MAJOR.MINOR.PATCH` versions, with prerelease suffixes such as

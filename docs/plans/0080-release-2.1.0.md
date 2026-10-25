@@ -18,7 +18,7 @@ title bar was explicitly left out. No copied Microsoft artwork or fonts are used
 - [x] Preserve all local refinements and audit the assembled code against the tested preview.
 - [x] Merge documentation PR 58 through protection; retain focused PRs for the remaining slices.
 - [ ] Required checks pass and feature PRs merge through protection.
-- [ ] Release build, full native/tooling tests, format/QML checks and scaled UI validation pass.
+- [x] Release build, full native/tooling tests, format/QML checks and scaled UI validation pass.
 - [x] Fresh light/dark release captures use original artwork/backdrop at 40% surface opacity.
 - [ ] README, website, notes, version and metadata are reconciled and visually reviewed.
 - [ ] Package install/upgrade/edit/save/reopen/remove evidence is recorded.
@@ -42,7 +42,9 @@ tests pass. C++/QML formatting, zero-warning QML lint, repository links/privacy
 checks and website staging pass. Two stale UI regressions were updated in their
 owning PRs: cursor hotspots now use the approved 5,5 crosshair, and eraser
 selection is verified on the shared split-button surface, including opaque mode.
-No behavior checks were removed or disabled.
+No behavior checks were removed or disabled. The complete shell suite also passes
+under isolated X11/Mesa OpenGL at 125% scale: 74 cases, zero failures/skips
+(58.16 s).
 
 Seven fresh captures are recorded in `website/release.json` and the asset
 provenance notes. Light/dark and Save As/fill/zoom menus were visually inspected.
@@ -54,6 +56,20 @@ This is browser viewport validation, not a physical-device certification.
 The maintainer accepted the interactive development UI before requesting release.
 Native system-frame outline limitations remain accepted; no custom title bar was
 introduced. Installed-package and hosted macOS validation remain separate gates.
+
+### Historical branch disposition
+
+Merged historical branch heads and their ancestors were removed after preserving
+a verified recovery bundle locally. Two obsolete documentation-only branches were
+archived in the same bundle: generic DEB troubleshooting is retained in RELEASES;
+the unconfirmed v1.3 “Waiting to check” report remains a follow-up below. Active
+v2.1 branches are retained until their protected PRs merge.
+
+The historical v1.3 waiting-state report was not reproduced against an installed
+v2.1 package. Unit tests cover release-check states; they do not prove the cause
+of that report. If reported again, record package/session/network conditions and
+confirm startup/open transitions to checking, cooldown, success or error. Do not
+claim this historical report fixed solely from the current test suite.
 
 ## Next step
 
