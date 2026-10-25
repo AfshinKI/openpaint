@@ -103,11 +103,107 @@ class ShellTest : public QObject {
         QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
     }
 
+    void regionZoomToolWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        QVERIFY(tabTo("regionZoomButton"));
+        keyClick(Qt::Key_Space);
+        QCOMPARE(editor->tool(), Editor::Tool::Zoom);
+        const auto original = editor->image();
+        const auto before = canvas->zoom();
+        const auto start = canvas->mapToScene(canvas->fromDocument({200, 150})).toPoint();
+        const auto end = canvas->mapToScene(canvas->fromDocument({400, 300})).toPoint();
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QVERIFY(canvas->zoom() > before);
+        auto* slider = window->findChild<QQuickItem*>("zoomSlider");
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - std::log2(canvas->zoom())) < 0.001);
+        QCOMPARE(editor->image(), original);
+    }
+    void rulersWorkflow() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* horizontal = window->findChild<QQuickItem*>("horizontalRuler");
+        auto* vertical = window->findChild<QQuickItem*>("verticalRuler");
+        auto* action = window->findChild<QObject*>("rulersAction");
+        QVERIFY(editor && canvas && horizontal && vertical && action);
+        auto* appearance = engine->singletonInstance<Appearance*>("OpenPaint", "Appearance");
+        auto* ribbon = window->findChild<QObject*>("ribbonSurface");
+        auto* topSurface = horizontal->findChild<QObject*>("rulerSurface");
+        auto* leftSurface = vertical->findChild<QObject*>("rulerSurface");
+        QVERIFY(ribbon && topSurface && leftSurface);
+        const int oldTheme = appearance->themeMode();
+        const int oldOpacity = appearance->surfaceOpacity();
+        const bool oldGlass = appearance->glassEnabled();
+        for (int theme : {1, 2}) {
+            appearance->setThemeMode(theme);
+            for (bool glass : {false, true}) {
+                appearance->setGlassEnabled(glass);
+                for (int opacity : {40, 70, 100}) {
+                    appearance->setSurfaceOpacity(opacity);
+                    for (auto* surface : {topSurface, leftSurface}) {
+                        QCOMPARE(surface->property("surfaceAlpha"),
+                                 ribbon->property("surfaceAlpha"));
+                        QCOMPARE(surface->property("tintAlpha"), ribbon->property("tintAlpha"));
+                    }
+                }
+            }
+        }
+        appearance->setThemeMode(oldTheme);
+        appearance->setSurfaceOpacity(oldOpacity);
+        appearance->setGlassEnabled(oldGlass);
+        const auto pixels = editor->image();
+        const auto dirty = editor->dirty();
+        window->resize(1024, 640);
+        QTRY_COMPARE(horizontal->width(), canvas->width());
+        QCOMPARE(vertical->height(), canvas->height());
+        QCOMPARE(horizontal->property("imageLength").toReal(), qreal(editor->imageSize().width()));
+        for (const qreal zoom : {0.01, 1.25, 32.0}) {
+            canvas->zoomBy(zoom / canvas->zoom());
+            QTRY_COMPARE(horizontal->property("zoomFactor").toReal(), canvas->zoom());
+            QCOMPARE(horizontal->property("offset").toReal(), canvas->origin().x());
+            QCOMPARE(vertical->property("offset").toReal(), canvas->origin().y());
+            QVERIFY(horizontal->property("majorStep").toReal() >= 1);
+        }
+        canvas->fit();
+        QVERIFY(capture("rulers-light.png"));
+        editor->setTool(Editor::Tool::Text);
+        auto* textOptions = window->findChild<QQuickItem*>("textOptions");
+        QVERIFY(textOptions);
+        QTRY_VERIFY(textOptions->isVisible());
+        QVERIFY(textOptions->mapToScene({0, 0}).y() >=
+                horizontal->mapToScene({0, horizontal->height()}).y() + 8);
+        QVERIFY(capture("rulers-text-light.png"));
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(!horizontal->isVisible());
+        QVERIFY(!vertical->isVisible());
+        QTRY_COMPARE(canvas->x(), 0.0);
+        QTRY_COMPARE(textOptions->y(), canvas->y() + 8);
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QVERIFY(horizontal->isVisible());
+        QCOMPARE(editor->image(), pixels);
+        QCOMPARE(editor->dirty(), dirty);
+    }
     void zoomSliderWorkflow() {
         auto* editor = window->findChild<Editor*>("editor");
         auto* canvas = window->findChild<CanvasItem*>("canvas");
         auto* slider = window->findChild<QQuickItem*>("zoomSlider");
         QVERIFY(slider);
+        auto* percentage = window->findChild<QQuickItem*>("zoomPercentage");
+        QVERIFY(percentage);
+        QVERIFY(QMetaObject::invokeMethod(percentage, "clicked"));
+        auto* preset = window->findChild<QQuickItem*>("zoomPreset200");
+        QVERIFY(preset);
+        QTRY_VERIFY(preset->isVisible());
+        QTest::mouseClick(
+            window, Qt::LeftButton, {},
+            preset->mapToScene({preset->width() / 2, preset->height() / 2}).toPoint());
+        QTRY_COMPARE(canvas->zoom(), 2.0);
+        QTRY_VERIFY(percentage->property("text").toString().startsWith("200%"));
+        QTRY_VERIFY(qAbs(slider->property("value").toDouble() - std::log2(2.0)) < 0.001);
+        canvas->zoomBy(1.37 / canvas->zoom());
+        QTRY_VERIFY(percentage->property("text").toString().startsWith("137%"));
         const auto original = editor->image();
         const bool dirty = editor->dirty();
         window->resize(1024, 640);
@@ -164,9 +260,28 @@ class ShellTest : public QObject {
         QTRY_VERIFY(paintsColor(brush, QColor("#f0dec3")));
         editor->setTool(Editor::Tool::Fill);
         QTRY_VERIFY(fill->property("checked").toBool());
+        for (const auto* name :
+             {"cropButton", "rotateButton", "resizeButton", "flipButton", "invertColorsButton",
+              "pencilButton", "fillButton", "textButton", "pickerButton", "eraserButton"}) {
+            auto* button = window->findChild<QQuickItem*>(name);
+            QVERIFY(button);
+            QQmlExpression fits(qmlContext(button), button,
+                                "icon.width + leftPadding + rightPadding <= width && "
+                                "icon.height + topPadding + bottomPadding <= height");
+            QVERIFY2(fits.evaluate().toBool(), name);
+            QVERIFY(!fits.hasError());
+            QVERIFY(button->mapToScene({0, 0}).x() >= 0);
+            QVERIFY(button->mapToScene({button->width(), 0}).x() <= window->width());
+        }
         QVERIFY(capture("colored-ribbon-light.png"));
+        auto* pencil = window->findChild<QQuickItem*>("pencilButton");
+        auto* zoomTool = window->findChild<QQuickItem*>("regionZoomButton");
+        auto* picker = window->findChild<QQuickItem*>("pickerButton");
+        QVERIFY(pencil && zoomTool && picker);
         QVERIFY(std::abs(text->mapToScene({0, text->height() / 2}).y() -
-                         invert->mapToScene({0, invert->height() / 2}).y()) <= 2);
+                         pencil->mapToScene({0, pencil->height() / 2}).y()) <= 2);
+        QVERIFY(std::abs(zoomTool->mapToScene({0, zoomTool->height() / 2}).y() -
+                         picker->mapToScene({0, picker->height() / 2}).y()) <= 2);
         editor->setEditingSecondary(true);
         editor->setSelectedColor(QColor("#348bd5"));
         appearance->setThemeMode(2);
@@ -433,6 +548,29 @@ class ShellTest : public QObject {
         QVERIFY(!editor->canUndo());
     }
 
+    void fillModeMenu() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* button = window->findChild<QQuickItem*>("fillButton");
+        QVERIFY(button);
+        QVERIFY(tabTo("fillMenuButton"));
+        keyClick(Qt::Key_Space);
+        auto* item = window->findChild<QQuickItem*>("replaceMatchingFillItem");
+        QVERIFY(item);
+        QTRY_VERIFY(item->isVisible());
+        QTest::mouseClick(window, Qt::LeftButton, {},
+                          item->mapToScene({item->width() / 2, item->height() / 2}).toPoint());
+        QTRY_VERIFY(editor->fillAllMatching);
+        QCOMPARE(editor->tool(), Editor::Tool::Fill);
+        QCOMPARE(button->property("symbol").toString(), QString("fill-all"));
+        QVERIFY(tabTo("fillMenuButton"));
+        keyClick(Qt::Key_Space);
+        item = window->findChild<QQuickItem*>("contiguousFillItem");
+        QTRY_VERIFY(item->isVisible());
+        QTest::mouseClick(window, Qt::LeftButton, {},
+                          item->mapToScene({item->width() / 2, item->height() / 2}).toPoint());
+        QTRY_VERIFY(!editor->fillAllMatching);
+        QCOMPARE(button->property("symbol").toString(), QString("fill"));
+    }
     void eraserModeMenu() {
         auto* pickerPosition = window->findChild<QQuickItem*>("pickerButton");
         auto* eraserPosition = window->findChild<QQuickItem*>("eraserButton");
@@ -573,6 +711,14 @@ class ShellTest : public QObject {
             QVERIFY(frame.pixelColor(frame.width() - 1, 0).alpha() > 0);
             QCOMPARE(frame.pixelColor(0, frame.height() - 1).alpha(), 0);
             QCOMPARE(frame.pixelColor(frame.width() - 1, frame.height() - 1).alpha(), 0);
+            const qreal scale = frame.devicePixelRatio();
+            for (int x = 0; x < 3; ++x)
+                for (int y = 0; y < 3; ++y) {
+                    const int px = int((x + 0.5) * scale);
+                    const int py = frame.height() - 1 - int((y + 0.5) * scale);
+                    QCOMPARE(frame.pixelColor(px, py).alpha(), 0);
+                    QCOMPARE(frame.pixelColor(frame.width() - 1 - px, py).alpha(), 0);
+                }
         }
         window->showMaximized();
         QTRY_COMPARE(window->windowState(), Qt::WindowMaximized);
@@ -586,12 +732,30 @@ class ShellTest : public QObject {
         QVERIFY(!editor->dirty());
     }
 
+    void fitAndMinimumWidthClearControls() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* rail = window->findChild<QQuickItem*>("floatingToolControls");
+        auto* layers = window->findChild<QQuickItem*>("layersButton");
+        QVERIFY(editor && canvas && rail && layers);
+        window->resize(window->minimumWidth(), 640);
+        QGuiApplication::sync();
+        QVERIFY(layers->mapToScene({layers->width(), 0}).x() <= window->width() - 4);
+        for (auto tool : {Editor::Tool::Pencil, Editor::Tool::Brush, Editor::Tool::Shape}) {
+            editor->setTool(tool);
+            QGuiApplication::sync();
+            canvas->fit();
+            QVERIFY(canvas->mapToScene(canvas->origin()).x() >=
+                    rail->mapToScene({rail->width(), 0}).x() + 24);
+        }
+    }
     void launchAndResize() {
         QVERIFY(window->isVisible());
         QVERIFY(window->title().contains(QStringLiteral("OpenPaint")));
         QVERIFY(window->findChild<QObject*>(QStringLiteral("canvas")));
-        window->resize(1024, 640);
-        QTRY_COMPARE(window->size(), QSize(1024, 640));
+        const int width = window->minimumWidth();
+        window->resize(width, 640);
+        QTRY_COMPARE(window->size(), QSize(width, 640));
         QVERIFY(!window->grabWindow().isNull());
         for (auto* swatch : visualItems(window->contentItem(), QStringLiteral("colorSwatch"))) {
             QVERIFY(swatch->width() >= 24);
@@ -611,6 +775,13 @@ class ShellTest : public QObject {
         QVERIFY(tabTo("brushOpacity"));
         keyClick(Qt::Key_Down);
         QCOMPARE(editor->opacity, 99);
+        for (auto tool : {Editor::Tool::Pencil, Editor::Tool::Fill, Editor::Tool::Shape}) {
+            editor->setTool(tool);
+            QVERIFY(tabTo("brushOpacity"));
+            const int before = editor->opacity;
+            keyClick(Qt::Key_Down);
+            QCOMPARE(editor->opacity, before - 1);
+        }
         QCOMPARE(canvas->mapRectToScene(canvas->boundingRect()), canvasRect);
         auto* rail = window->findChild<QQuickItem*>(QStringLiteral("floatingToolControls"));
         QVERIFY(rail);
@@ -619,6 +790,12 @@ class ShellTest : public QObject {
         QCOMPARE(editor->image(), original);
         QVERIFY(!editor->dirty());
         window->resize(1024, 640);
+        auto* sizeSlider = window->findChild<QQuickItem*>("strokeSize");
+        auto* opacitySlider = window->findChild<QQuickItem*>("brushOpacity");
+        QVERIFY(sizeSlider && opacitySlider);
+        QTRY_COMPARE(sizeSlider->height(), opacitySlider->height());
+        QCOMPARE(sizeSlider->parentItem()->height(), opacitySlider->parentItem()->height());
+        QCOMPARE(sizeSlider->y(), opacitySlider->y());
         QVERIFY(capture(QStringLiteral("floating-controls-1024.png")));
         QTRY_VERIFY(QRectF(0, 0, window->width(), window->height())
                         .contains(rail->mapRectToScene(rail->boundingRect())));
@@ -627,7 +804,7 @@ class ShellTest : public QObject {
         QVERIFY(size && !size->isVisible());
         QVERIFY(!window->findChild<QObject*>("fillTolerance"));
         QCOMPARE(editor->brushSize, 4);
-        QCOMPARE(editor->opacity, 99);
+        QCOMPARE(editor->opacity, 96);
     }
 
     void quickActionPlacement() {
@@ -687,6 +864,43 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(system, "trigger", Q_ARG(QObject*, nullptr)));
         QVERIFY(system->property("checked").toBool());
         QVERIFY(!light->property("checked").toBool());
+    }
+
+    void smartGuidesWorkflow() {
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* toggle = window->findChild<QObject*>("smartGuidesMenuItem");
+        auto* grip = window->findChild<QQuickItem*>("movePreviewHandle");
+        QVERIFY(canvas && editor && toggle && grip);
+        QVERIFY(!editor->smartGuides());
+        QVERIFY(QMetaObject::invokeMethod(toggle, "triggered"));
+        QVERIFY(editor->smartGuides());
+        const auto original = editor->image();
+        QImage patch(40, 40, QImage::Format_ARGB32_Premultiplied);
+        patch.fill(Qt::red);
+        editor->pasteImage(patch);
+        editor->moveFloating(100, 100);
+        QTRY_VERIFY(grip->isVisible());
+        grip->forceActiveFocus();
+        QTest::keyClick(window, Qt::Key_Right);
+        QCOMPARE(editor->floatingPosition(), QPoint(101, 100));
+        QTest::keyClick(window, Qt::Key_Down, Qt::ShiftModifier);
+        QCOMPARE(editor->floatingPosition(), QPoint(101, 110));
+        const auto start =
+            grip->mapToScene(QPointF(grip->width() / 2, grip->height() / 2)).toPoint();
+        const int targetX = editor->imageSize().width() / 2 - 20;
+        const auto end = start + QPoint(qRound((targetX - 101 - 2) * canvas->zoom()), 0);
+        QTest::mousePress(window, Qt::LeftButton, {}, start);
+        QTest::mouseMove(window, end);
+        QTRY_COMPARE(editor->floatingPosition().x(), targetX);
+        QCOMPARE(editor->guidePosition().x(), editor->imageSize().width() / 2.0);
+        QVERIFY(capture(QStringLiteral("smart-guides.png")));
+        QTest::mouseRelease(window, Qt::LeftButton, {}, end);
+        QCOMPARE(editor->guidePosition(), QPointF(-1, -1));
+        QTest::keyClick(window, Qt::Key_Escape);
+        QCOMPARE(editor->image(), original);
+        QVERIFY(QMetaObject::invokeMethod(toggle, "triggered"));
+        QVERIFY(!editor->smartGuides());
     }
 
     void keyboardAboutAndEscape() {
@@ -925,10 +1139,7 @@ class ShellTest : public QObject {
         auto* action = window->findChild<QObject*>(QStringLiteral("updatesMenuItem"));
         auto* dialog = window->findChild<QObject*>(QStringLiteral("updatesDialog"));
         QVERIFY(editor && action && dialog);
-        auto* credit = window->findChild<QObject*>("designerCredit");
-        QVERIFY(credit);
-        QCOMPARE(credit->property("text").toString(),
-                 QString("Designer: Afshin Kashani, PhD, P.Eng"));
+        QVERIFY(!window->findChild<QObject*>("designerCredit"));
         auto* service = window->findChild<QObject*>("updateService");
         QVERIFY(service);
         QVERIFY(!service->property("automatic").toBool());
@@ -967,6 +1178,34 @@ class ShellTest : public QObject {
         QVERIFY(editor->dirty());
     }
 
+    void saveAsFormatChoices() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* action = window->findChild<QObject*>("saveAsAction");
+        auto* options = window->findChild<QObject*>("exportOptions");
+        QVERIFY(editor && action && options);
+        const auto before = editor->image();
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QTRY_VERIFY(options->property("opened").toBool());
+        QVERIFY(options->property("savesDocument").toBool());
+        QVERIFY(capture("save-as-format.png"));
+        QVERIFY(options->setProperty("formatIndex", 4));
+        QVERIFY(!options->property("savesDocument").toBool());
+        QVERIFY(options->property("flatten").toBool());
+        QCOMPARE(options->property("suffix").toString(), QString("bmp"));
+        QVERIFY(capture("save-as-mono.png"));
+        keyClick(Qt::Key_Escape);
+        QTRY_VERIFY(!options->property("visible").toBool());
+        QCOMPARE(editor->image(), before);
+        editor->addLayer();
+        QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
+        QTRY_VERIFY(options->property("opened").toBool());
+        QCOMPARE(options->property("formatIndex").toInt(), 5);
+        QVERIFY(options->property("savesDocument").toBool());
+        QVERIFY(options->setProperty("formatIndex", 0));
+        QVERIFY(!options->property("savesDocument").toBool());
+        keyClick(Qt::Key_Escape);
+        QVERIFY(editor->dirty());
+    }
     void exportDialogWorkflow() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));
         auto* action = window->findChild<QObject*>(QStringLiteral("exportAction"));
@@ -1026,7 +1265,7 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
         QTRY_VERIFY(options->property("visible").toBool());
         QCOMPARE(options->property("formatIndex").toInt(), 0);
-        QVERIFY(tabToButton("OK"));
+        QVERIFY(tabToButton("Choose location…"));
         keyClick(Qt::Key_Space);
         QTRY_COMPARE(closed.size(), 2);
         QTRY_VERIFY(file->property("visible").toBool());
@@ -2754,6 +2993,45 @@ class ShellTest : public QObject {
             QMetaObject::invokeMethod(menu, "close");
         }
         QVERIFY(!editor->dirty());
+    }
+    void floatingShapeToolbar() {
+        auto* editor = window->findChild<Editor*>("editor");
+        auto* canvas = window->findChild<CanvasItem*>("canvas");
+        auto* toolbar = window->findChild<QQuickItem*>("shapeToolbar");
+        auto* apply = window->findChild<QQuickItem*>("applyPreviewButton");
+        auto* cancel = window->findChild<QQuickItem*>("cancelShapeButton");
+        auto* footerApply = window->findChild<QQuickItem*>("applySelectionButton");
+        QVERIFY(editor && canvas && toolbar && apply && cancel && footerApply);
+        const auto original = editor->image();
+        QVERIFY(!toolbar->isVisible());
+        editor->setTool(Editor::Tool::Shape);
+        QVERIFY(!toolbar->isVisible());
+        editor->begin({100, 100}, false);
+        editor->extend({300, 200});
+        editor->endGesture();
+        QTRY_VERIFY(toolbar->isVisible());
+        QVERIFY(!footerApply->isVisible());
+        QCOMPARE(toolbar->y(), canvas->y() + 8);
+        QVERIFY(capture("shape-toolbar-light.png"));
+        const auto preview = editor->image();
+        QVERIFY(preview != original);
+        QTest::mouseClick(window, Qt::LeftButton, {},
+                          apply->mapToScene({apply->width() / 2, apply->height() / 2}).toPoint());
+        QTRY_VERIFY(!toolbar->isVisible());
+        QVERIFY(!editor->previewActive());
+        editor->undo();
+        QCOMPARE(editor->image(), original);
+        editor->redo();
+        QCOMPARE(editor->image(), preview);
+        editor->begin({350, 200}, false);
+        editor->extend({450, 300});
+        editor->endGesture();
+        QTRY_VERIFY(toolbar->isVisible());
+        QTest::mouseClick(
+            window, Qt::LeftButton, {},
+            cancel->mapToScene({cancel->width() / 2, cancel->height() / 2}).toPoint());
+        QTRY_VERIFY(!toolbar->isVisible());
+        QCOMPARE(editor->image(), preview);
     }
     void shapeOptionsKeyboard() {
         auto* editor = window->findChild<Editor*>(QStringLiteral("editor"));

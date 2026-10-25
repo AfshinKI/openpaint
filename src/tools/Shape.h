@@ -15,5 +15,6 @@ struct ShapePatch {
 };
 ShapePatch renderShape(const QImage& base, QPointF start, QPointF end, int kind,
                        QColor outlineColor, QColor fillColor, int width, bool outline, bool fill,
-                       qreal bend1 = 30, qreal bend2 = -30, const QList<QPointF>& vertices = {});
+                       qreal bend1 = 30, qreal bend2 = -30, const QList<QPointF>& vertices = {},
+                       int opacity = 100);
 } // namespace openpaint
