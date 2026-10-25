@@ -260,6 +260,7 @@ ApplicationWindow {
     Editor {
         id: editor
         objectName: "editor"
+        smartGuides: Appearance.smartGuides
     }
     Connections {
         target: editor
@@ -656,7 +657,7 @@ ApplicationWindow {
                         text: qsTr("Smart guides")
                         checkable: true
                         checked: editor.smartGuides
-                        onTriggered: editor.smartGuides = !editor.smartGuides
+                        onTriggered: Appearance.smartGuides = !Appearance.smartGuides
                     }
                     PaintMenuItem {
                         text: qsTr("Layers")

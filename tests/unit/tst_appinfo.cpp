@@ -13,6 +13,21 @@ class AppInfoTest : public QObject {
         received = url;
     }
   private slots:
+    void smartGuidePreferencePersists() {
+        QTemporaryDir dir;
+        const auto file = dir.filePath("appearance.ini");
+        Appearance first(file);
+        QVERIFY(!first.smartGuides());
+        first.setSmartGuides(true);
+        Appearance reopened(file);
+        QVERIFY(reopened.smartGuides());
+        reopened.restoreDefaults();
+        Appearance afterGlassReset(file);
+        QVERIFY(afterGlassReset.smartGuides());
+        afterGlassReset.setSmartGuides(false);
+        Appearance disabledAgain(file);
+        QVERIFY(!disabledAgain.smartGuides());
+    }
     void appearancePersistenceAndBounds() {
         QTemporaryDir dir;
         const auto file = dir.filePath("appearance.ini");

@@ -10,6 +10,7 @@ class Appearance : public QObject {
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
+    Q_PROPERTY(bool smartGuides READ smartGuides WRITE setSmartGuides NOTIFY changed)
     Q_PROPERTY(bool glassEnabled READ glassEnabled WRITE setGlassEnabled NOTIFY changed)
     Q_PROPERTY(bool desktopBlurAvailable READ desktopBlurAvailable WRITE setDesktopBlurAvailable
                    NOTIFY changed)
@@ -21,6 +22,10 @@ class Appearance : public QObject {
   public:
     explicit Appearance(QObject* parent = nullptr);
     explicit Appearance(const QString& settingsFile, QObject* parent = nullptr);
+    bool smartGuides() const {
+        return smartGuides_;
+    }
+    void setSmartGuides(bool enabled);
     bool glassEnabled() const {
         return glassEnabled_;
     }
@@ -51,6 +56,7 @@ class Appearance : public QObject {
     void save();
     void updateApplicationIcon();
     std::unique_ptr<QSettings> settings_;
+    bool smartGuides_ = false;
     bool glassEnabled_ = true;
     bool desktopBlurAvailable_ = false;
     int surfaceOpacity_ = 40;

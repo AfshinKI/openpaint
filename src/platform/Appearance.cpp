@@ -11,6 +11,7 @@ Appearance::Appearance(const QString& file, QObject* parent) : QObject(parent) {
                     ? std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
                                                   "OpenPaint", "OpenPaint")
                     : std::make_unique<QSettings>(file, QSettings::IniFormat);
+    smartGuides_ = settings_->value("view/smartGuides", false).toBool();
     themeMode_ = std::clamp(settings_->value("appearance/theme", 0).toInt(), 0, 2);
     glassEnabled_ = settings_->value("appearance/glass", true).toBool();
     bool ok = false;
@@ -46,6 +47,14 @@ void Appearance::save() {
     settings_->setValue("appearance/opacity", surfaceOpacity_);
     settings_->sync();
     updateApplicationIcon();
+    emit changed();
+}
+void Appearance::setSmartGuides(bool enabled) {
+    if (enabled == smartGuides_)
+        return;
+    smartGuides_ = enabled;
+    settings_->setValue("view/smartGuides", enabled);
+    settings_->sync();
     emit changed();
 }
 void Appearance::setGlassEnabled(bool enabled) {

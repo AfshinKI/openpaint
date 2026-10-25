@@ -7,8 +7,8 @@ Target: v2.1.0
 ## User outcome and scope
 
 View → Smart guides enables temporary magenta alignment lines and snapping while
-moving a selection, pasted image, shape preview or text preview. It starts off for
-each application session. Targets are canvas edges and center. Automatic detection
+moving a selection, pasted image, shape preview or text preview. It starts off and remembers the user’s choice
+across application sessions. Targets are canvas edges and center. Automatic detection
 of objects painted into a layer, spacing guides and ruler-dragged guides are outside
 this slice. See DESIGN.md, MENUS.md and ARCHITECTURE.md.
 
@@ -55,3 +55,7 @@ themes. No live desktop input, artwork or user settings were touched.
 
 Next: required hosted checks and protected review/merge; v2.1 release preparation
 and package/physical Mac validation remain separate.
+
+View → Smart guides now persists its state in local settings independently of
+glass preferences. A temporary-settings regression verifies both values across
+fresh application-settings instances.
