@@ -47,3 +47,14 @@ corner radius and subtle elevation. Rulers now use inset GlassSurface panels
 with 3px corners and a soft one-pixel shadow. Tick canvases remain transparent;
 text/markers keep their own opacity. Glass-off/100% uses the standard opaque
 fallback. Revalidate themes, 40% opacity and disabled glass before approval.
+
+## Revised preview validation — 2026-10-25
+
+The compact icons, glass rulers, Updates cleanup and optional smart guides were
+rebuilt together with all v2.1 slices in the isolated combined checkout. All 20
+CTest suites pass across the full run and editor/text rerun; a font-dependent
+smart-guide test was moved into the existing GUI text suite. All 44 tooling tests,
+formatting and zero-warning QML lint pass. Focused X11/Mesa checks at 125% pass
+(10 Qt cases); offscreen checks at 200% pass (6 cases). Synthetic light/dark
+captures were inspected. These results supersede earlier visual-preview evidence.
+Required hosted review/checks and release/package validation remain outstanding.
