@@ -406,3 +406,7 @@ Development v2.1 adds top/left pixel rulers with adaptive ticks and pointer
 markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
 canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
 [Acceptance and pending validation](plans/0069-canvas-rulers.md).
+
+Ruler surfaces use the shared 6-unit control corner radius for slightly rounder
+corners consistent with other controls. Their opacity, position and zoom behavior
+remain unchanged.

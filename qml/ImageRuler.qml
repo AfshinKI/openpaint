@@ -33,7 +33,7 @@ Item {
         objectName: "rulerSurface"
         anchors.fill: parent
         anchors.margins: 2
-        radius: 3
+        radius: Theme.controlRadius
         raisedSurface: false
         backdropSource: null
     }
