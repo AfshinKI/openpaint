@@ -66,4 +66,4 @@ These are integrity checks, not signatures or a new installed-desktop certificat
 Release preparation, publication and public-download verification are complete.
 Do not redispatch or replace this published version. Remaining platform/input/
 accessibility limits above are carried forward, not silently closed. The next
-feature planning step is recorded in [the roadmap](../ROADMAP.md#current-handoff-toward-v210).
+feature planning step is recorded in [the roadmap](../ROADMAP.md#current-handoff-after-v210).
