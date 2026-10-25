@@ -401,3 +401,6 @@ recipe. Shared surface-opacity and light/dark preferences still apply.
 The menu strip stays inside the shared toolbar on macOS; all controls remain
 reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
 opened with the visible menu buttons rather than Linux Alt-letter mnemonics.
+
+Glass surfaces apply their individual corner radii to both the inset highlight
+border and backdrop blur mask, preventing square pixels outside rounded edges.

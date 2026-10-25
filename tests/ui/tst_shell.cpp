@@ -573,6 +573,14 @@ class ShellTest : public QObject {
             QVERIFY(frame.pixelColor(frame.width() - 1, 0).alpha() > 0);
             QCOMPARE(frame.pixelColor(0, frame.height() - 1).alpha(), 0);
             QCOMPARE(frame.pixelColor(frame.width() - 1, frame.height() - 1).alpha(), 0);
+            const qreal scale = frame.devicePixelRatio();
+            for (int x = 0; x < 3; ++x)
+                for (int y = 0; y < 3; ++y) {
+                    const int px = int((x + 0.5) * scale);
+                    const int py = frame.height() - 1 - int((y + 0.5) * scale);
+                    QCOMPARE(frame.pixelColor(px, py).alpha(), 0);
+                    QCOMPARE(frame.pixelColor(frame.width() - 1 - px, py).alpha(), 0);
+                }
         }
         window->showMaximized();
         QTRY_COMPARE(window->windowState(), Qt::WindowMaximized);
