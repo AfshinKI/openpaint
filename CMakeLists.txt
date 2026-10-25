@@ -162,7 +162,9 @@ if(BUILD_TESTING)
         layersWorkflow
         invertColorsWorkflow
         coloredRibbonWorkflow
+        rulersWorkflow
         zoomSliderWorkflow
+        saveAsFormatChoices
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory

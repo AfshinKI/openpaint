@@ -4,7 +4,7 @@ title: "[Bug]: "
 body:
   - type: markdown
     attributes:
-      value: "Use synthetic files. Remove personal paths, images, and credentials. The native shell runs from source; drawing and file editing are not available yet."
+      value: "Use synthetic files. Remove personal paths, images, and credentials. Include the affected release and whether you used a packaged or source build."
   - type: input
     id: version
     attributes:
@@ -16,7 +16,7 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Distribution, desktop, Wayland/X11, installation format; no private machine names.
+      description: Operating system/version, CPU architecture, installation format, and Linux desktop/Wayland/X11 when applicable; no private machine names.
   - type: textarea
     id: steps
     attributes:
