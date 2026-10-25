@@ -144,6 +144,7 @@ if(BUILD_TESTING)
     add_shell_tests(shell
         launchAndResize
         toolCursorsAndIndicators
+        fillModeMenu
         eraserModeMenu
         themedApplicationIcon
         splineKeyboardWorkflow
@@ -158,10 +159,16 @@ if(BUILD_TESTING)
         glassSetupWorkflow
         updatesWorkflow)
     add_shell_tests(shell-editing
+        fitAndMinimumWidthClearControls
+        floatingShapeToolbar
+        smartGuidesWorkflow
         layersWorkflow
         invertColorsWorkflow
         coloredRibbonWorkflow
+        regionZoomToolWorkflow
+        rulersWorkflow
         zoomSliderWorkflow
+        saveAsFormatChoices
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory

@@ -1,6 +1,6 @@
 # Architecture
 
-Status: native shell, bounded raster layers, patch/stack history, drawing UI and background image/project lifecycle implemented in development. See [layer decision](decisions/0008-bounded-layer-projects.md).
+Status: native shell, bounded raster layers, patch/stack history, drawing UI and background image/project lifecycle shipped in v2.0.0. See [layer decision](decisions/0008-bounded-layer-projects.md).
 See [decision 0001](decisions/0001-native-stack.md) for alternatives and tradeoffs.
 
 ## Stack
@@ -23,30 +23,26 @@ the selected Linux environments; record any necessary adjustment in an ADR.
 Use Qt Core, Gui, Qml, Quick, QuickControls2, Concurrent, Network (updater only),
 Test and QuickTest as needed. Add dependencies only when their feature lands.
 
-## Proposed tree
-
-Create these directories with real code, not empty placeholders:
+## Current source layout
 
 ```text
 src/
-  app/          application startup, actions, document controller
-  document/     layers, pixels, selections, revisions, undo commands
-  tools/        pointer-driven edit operations and previews
-  render/       viewport transforms, compositing, canvas scene-graph bridge
-  io/           image/project codecs, atomic saves, recovery
-  platform/     dialogs, clipboard, input, XDG locations, install provenance
-  updates/      update state machine, package-specific backends
-  ai/           optional worker protocol and capability discovery (later)
-qml/
-  components/   reusable controls and design tokens
-  panels/       tool options, layers, settings, updates
-tests/
-  unit/         engine, commands, codecs, updater policy
-  integration/  file lifecycle, clipboard, input, packaging
-  ui/           keyboard navigation and representative workflows
-  fixtures/     generated images and documented provenance
-packaging/      desktop entry, AppStream metadata, Flatpak/AppImage recipes
+  app/          startup, Editor controller, selection/transform actions
+  document/     layers, pixels, revisions and undo history
+  color/        color conversions, session palettes and spectrum
+  tools/        brush, fill, shapes, text, selection and transforms
+  render/       canvas scene graph and brush/shape/layer previews
+  io/           bounded image/OpenRaster codecs and atomic saves
+  platform/     install identity, appearance, blur detection and native Mac glass
+  updates/      bounded release checks (installation remains manual)
+qml/            shared controls, menus, dialogs, panels, icons and theme tokens
+tests/          engine, file lifecycle, input and shell workflows
+packaging/      Linux and macOS package recipes and metadata
+tools/          repository, packaging, release and website checks
 ```
+
+Recovery, an AI worker module and automatic installation backends are future work;
+the tree above describes existing modules rather than proposed placeholders.
 
 Dependency direction: QML → application actions/controllers → document/tools/io.
 Rendering consumes read-only document snapshots. Platform and updater services

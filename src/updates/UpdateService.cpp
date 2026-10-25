@@ -27,6 +27,7 @@ UpdateService::UpdateService(QNetworkAccessManager* network, const QString& file
                     ? std::make_unique<QSettings>(QSettings::IniFormat, QSettings::UserScope,
                                                   "OpenPaint", "OpenPaint")
                     : std::make_unique<QSettings>(file, QSettings::IniFormat);
+    skippedVersion_ = settings_->value("updates/skippedVersion").toString();
     automatic_ = supported();
     lastAttempt_ = settings_->value("updates/lastAttempt", 0).toLongLong();
     retryAt_ = settings_->value("updates/retryAt", 0).toLongLong();
@@ -64,6 +65,8 @@ QString UpdateService::summary() const {
         return tr("Latest releases");
     if (busy())
         return tr("Checking for updates…");
+    if (skipped())
+        return tr("This version is skipped");
     if (available_)
         return tr("An update is ready");
     if (verified_)
@@ -233,8 +236,23 @@ void UpdateService::finish() {
     available_ = newer;
     setMessage(newer ? tr("OpenPaint %1 is available.").arg(latestVersion_)
                      : tr("No newer stable release is available on GitHub."));
-    if (notify)
+    if (notify && !skipped())
         emit updateFound();
+}
+bool UpdateService::skipVersion() {
+    if (!available_ || busy() || latestVersion_.isEmpty())
+        return false;
+    settings_->setValue("updates/skippedVersion", latestVersion_);
+    settings_->sync();
+    if (settings_->status() != QSettings::NoError) {
+        settings_->setValue("updates/skippedVersion", skippedVersion_);
+        setMessage(tr("Could not save the skipped version. Please try again."));
+        return false;
+    }
+    skippedVersion_ = latestVersion_;
+    setMessage(
+        tr("Version %1 is skipped. You’ll be notified about newer releases.").arg(latestVersion_));
+    return true;
 }
 bool UpdateService::openRelease() const {
     if (!available_ || latestVersion_.isEmpty())
