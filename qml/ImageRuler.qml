@@ -8,7 +8,8 @@ Item {
     required property CanvasItem viewport
     required property real imageLength
     property bool vertical: false
-    readonly property real offset: vertical ? viewport.origin.y : viewport.origin.x
+    property real viewportOffset: 0
+    readonly property real offset: (vertical ? viewport.origin.y : viewport.origin.x) - viewportOffset
     readonly property real zoomFactor: viewport.zoom
     readonly property real length: vertical ? height : width
     readonly property color inkColor: Theme.text
