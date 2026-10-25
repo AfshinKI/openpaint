@@ -1,6 +1,6 @@
 # Releases and in-app updates
 
-The v2 release and platform evidence are tracked in
+The current stable release is v2.0.0, published 2026-10-22 UTC. Release and platform evidence are tracked in
 [plan 0062](plans/0062-macos-v2-release.md); prior v1.3.0 evidence remains in
 [plan 0057](plans/0057-release-1.3.0.md). Ordinary CI runs validate development
 packages; explicit main-branch release runs publish only after every check passes.

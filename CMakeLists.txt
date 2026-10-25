@@ -158,10 +158,13 @@ if(BUILD_TESTING)
         glassSetupWorkflow
         updatesWorkflow)
     add_shell_tests(shell-editing
+        smartGuidesWorkflow
         layersWorkflow
         invertColorsWorkflow
         coloredRibbonWorkflow
+        rulersWorkflow
         zoomSliderWorkflow
+        saveAsFormatChoices
         exportDialogWorkflow
         resizeDialogWorkflow
         ribbonActionMemory

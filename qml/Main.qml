@@ -10,7 +10,7 @@ ApplicationWindow {
     id: window
     property Action lastRotation: rotateRightAction
     property Action lastFlip: flipHorizontalAction
-    readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible || layersPanel.propertiesOpen
+    readonly property bool documentOptionsOpen: resizeDialog.visible || exportOptions.visible || exportDialog.visible || saveAsFileDialog.visible || layersPanel.propertiesOpen
     readonly property bool textInputFocused: activeFocusItem instanceof TextInput || activeFocusItem instanceof TextEdit
     readonly property Editor editorController: editor
     readonly property CanvasItem canvasController: canvas
@@ -50,6 +50,17 @@ ApplicationWindow {
     palette.buttonText: Theme.text
     palette.highlight: Theme.accent
     palette.highlightedText: Theme.accentText
+    readonly property bool rulersVisible: Appearance.rulersVisible
+    Action {
+        id: rulersAction
+        objectName: "rulersAction"
+        text: qsTr("Rulers")
+        shortcut: Qt.platform.os === "osx" ? "Meta+R" : "Ctrl+R"
+        checkable: true
+        checked: window.rulersVisible
+        enabled: !window.textInputFocused
+        onTriggered: Appearance.rulersVisible = !Appearance.rulersVisible
+    }
     property bool layersVisible: false
     function toggleLayers() {
         if (layersVisible) {
@@ -184,7 +195,12 @@ ApplicationWindow {
         objectName: "exportOptions"
         editor: window.editorController
         parent: Overlay.overlay
-        onChooseDestination: exportDialog.open()
+        onChooseDestination: {
+            if (exportOptions.savesDocument)
+                saveAsFileDialog.open();
+            else
+                exportDialog.open();
+        }
     }
     ResizeDialog {
         id: resizeDialog
@@ -202,7 +218,7 @@ ApplicationWindow {
         id: textOptions
         objectName: "textOptions"
         editor: window.editorController
-        anchors.top: parent.top
+        anchors.top: canvas.top
         anchors.topMargin: 8
         anchors.horizontalCenter: parent.horizontalCenter
         z: 3
@@ -260,6 +276,7 @@ ApplicationWindow {
     Editor {
         id: editor
         objectName: "editor"
+        smartGuides: Appearance.smartGuides
     }
     Connections {
         target: editor
@@ -310,13 +327,15 @@ ApplicationWindow {
     }
     Action {
         id: saveAsAction
+        objectName: "saveAsAction"
         icon.source: "icons/save.svg"
         text: qsTr("Save &As…")
         shortcut: StandardKey.SaveAs
         enabled: !editor.busy && !window.documentOptionsOpen
         onTriggered: {
             editor.commitPreview();
-            saveDialog.open();
+            exportOptions.saveAsMode = true;
+            exportOptions.open();
         }
     }
     Action {
@@ -325,7 +344,10 @@ ApplicationWindow {
         objectName: "exportAction"
         text: qsTr("Export &copy…")
         enabled: !editor.busy && !editor.previewActive && !window.documentOptionsOpen
-        onTriggered: exportOptions.open()
+        onTriggered: {
+            exportOptions.saveAsMode = false;
+            exportOptions.open();
+        }
     }
     Action {
         id: quitAction
@@ -652,6 +674,17 @@ ApplicationWindow {
                 PaintMenu {
                     title: qsTr("&View")
                     PaintMenuItem {
+                        action: rulersAction
+                    }
+                    PaintMenuItem {
+                        objectName: "smartGuidesMenuItem"
+                        text: qsTr("Smart guides")
+                        checkable: true
+                        checked: editor.smartGuides
+                        onTriggered: Appearance.smartGuides = !Appearance.smartGuides
+                    }
+                    MenuSeparator {}
+                    PaintMenuItem {
                         text: qsTr("Layers")
                         checkable: true
                         checked: window.layersVisible
@@ -761,6 +794,7 @@ ApplicationWindow {
             raisedSurface: false
             anchors.fill: parent
             anchors.margins: 4
+            anchors.bottomMargin: 0
         }
         RowLayout {
             anchors.fill: parent
@@ -784,8 +818,8 @@ ApplicationWindow {
                     }
                     IconButton {
                         id: selectionMain
-                        icon.width: 26
-                        icon.height: 26
+                        icon.width: 24
+                        icon.height: 24
                         padding: 4
                         objectName: "selectionButton"
                         symbol: editor.colorSelection ? "wand" : editor.freeFormSelection ? "lasso" : "selection"
@@ -923,6 +957,7 @@ ApplicationWindow {
                         Layout.column: 0
                         flat: true
                         symbol: "crop"
+                        ribbonIcon: true
                         objectName: "cropButton"
                         action: cropAction
                     }
@@ -932,6 +967,7 @@ ApplicationWindow {
                         spacing: 0
                         IconButton {
                             flat: true
+                            ribbonIcon: true
                             objectName: "rotateButton"
                             icon.source: window.lastRotation.icon.source
                             action: window.lastRotation
@@ -966,6 +1002,7 @@ ApplicationWindow {
                         Layout.column: 0
                         flat: true
                         symbol: "resize"
+                        ribbonIcon: true
                         objectName: "resizeButton"
                         action: resizeAction
                     }
@@ -975,6 +1012,7 @@ ApplicationWindow {
                         spacing: 0
                         IconButton {
                             flat: true
+                            ribbonIcon: true
                             objectName: "flipButton"
                             icon.source: window.lastFlip.icon.source
                             action: window.lastFlip
@@ -1007,6 +1045,7 @@ ApplicationWindow {
                         Layout.rowSpan: 2
                         flat: true
                         symbol: "invert-colors"
+                        ribbonIcon: true
                         objectName: "invertColorsButton"
                         action: invertColorsAction
                     }
@@ -1029,6 +1068,7 @@ ApplicationWindow {
                         Layout.row: 0
                         Layout.column: 0
                         symbol: "pencil"
+                        ribbonIcon: true
                         objectName: "pencilButton"
                         text: qsTr("Pencil")
                         enabled: !editor.textActive
@@ -1043,6 +1083,7 @@ ApplicationWindow {
                         Layout.row: 0
                         Layout.column: 1
                         symbol: "fill"
+                        ribbonIcon: true
                         objectName: "fillButton"
                         text: qsTr("Fill")
                         enabled: !editor.textActive
@@ -1058,6 +1099,7 @@ ApplicationWindow {
                         Layout.column: 2
                         Layout.rowSpan: 2
                         symbol: "text"
+                        ribbonIcon: true
                         objectName: "textButton"
                         text: qsTr("Text")
                         enabled: !editor.textActive
@@ -1072,6 +1114,7 @@ ApplicationWindow {
                         Layout.row: 1
                         Layout.column: 0
                         symbol: "eyedropper"
+                        ribbonIcon: true
                         objectName: "pickerButton"
                         text: qsTr("Color picker")
                         enabled: !editor.textActive
@@ -1088,6 +1131,7 @@ ApplicationWindow {
                         IconButton {
                             flat: true
                             symbol: editor.transparentEraser ? "eraser" : "eraser-paper"
+                            ribbonIcon: true
                             objectName: "eraserButton"
                             text: qsTr("Eraser")
                             enabled: !editor.textActive && !editor.busy
@@ -1165,11 +1209,11 @@ ApplicationWindow {
                         objectName: "brushesButton"
                         enabled: !editor.textActive
                         symbol: "brush"
-                        icon.width: 28
-                        icon.height: 28
+                        icon.width: 24
+                        icon.height: 24
                         width: 40
                         height: 36
-                        padding: 4
+                        padding: 2
                         text: qsTr("Brush")
                         background: GlassSurface {
                             backdropLayers: [window.background, canvas]
@@ -1515,10 +1559,31 @@ ApplicationWindow {
         width: 200
         z: 5
     }
+    ImageRuler {
+        objectName: "horizontalRuler"
+        viewport: canvas
+        imageLength: editor.imageSize.width
+        visible: window.rulersVisible
+        x: canvas.x
+        width: canvas.width
+        height: 28
+    }
+    ImageRuler {
+        objectName: "verticalRuler"
+        viewport: canvas
+        imageLength: editor.imageSize.height
+        vertical: true
+        visible: window.rulersVisible
+        y: canvas.y
+        height: canvas.height
+        width: 28
+    }
     CanvasItem {
         id: canvas
         objectName: "canvas"
         anchors.fill: parent
+        anchors.leftMargin: window.rulersVisible ? 28 : 0
+        anchors.topMargin: window.rulersVisible ? 28 : 0
         anchors.rightMargin: window.layersVisible ? layersPanel.width + 8 : 0
         editor: window.editorController
         enabled: !window.editorController.loading || window.editorController.filling
@@ -1585,8 +1650,8 @@ ApplicationWindow {
     Column {
         id: floatingControls
         objectName: "floatingToolControls"
-        anchors.left: parent.left
-        anchors.top: parent.top
+        anchors.left: canvas.left
+        anchors.top: canvas.top
         anchors.leftMargin: 12
         anchors.topMargin: 24
         spacing: 8
@@ -1771,6 +1836,15 @@ ApplicationWindow {
         onAccepted: editor.exportFile(selectedFile, exportOptions.formatIndex, exportOptions.quality, exportOptions.lossless, exportOptions.flatten, exportOptions.backgroundColor)
     }
     FileDialog {
+        id: saveAsFileDialog
+        objectName: "saveAsFileDialog"
+        title: qsTr("Save drawing (.%1)").arg(exportOptions.suffix)
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: ""
+        nameFilters: [exportOptions.fileFilter]
+        onAccepted: editor.saveFile(selectedFile)
+    }
+    FileDialog {
         id: saveDialog
         objectName: "saveDialog"
         title: editor.needsProject ? qsTr("Save project (.ora)") : qsTr("Save drawing")
@@ -1841,16 +1915,70 @@ ApplicationWindow {
         id: aboutDialog
         objectName: "aboutDialog"
         anchors.centerIn: parent
-        width: Math.min(window.width - 64, 440)
+        width: Math.min(window.width - 64, 520)
         title: qsTr("About OpenPaint")
         modal: true
         standardButtons: Dialog.Ok
         closePolicy: Popup.CloseOnEscape
-        Label {
-            width: parent.width
-            text: qsTr("Open-source painting for Linux.\n\nDevelopment build: drawing, erasing, colors, undo and PNG files.\n\nGPL-3.0-or-later. Independent of Microsoft.")
-            wrapMode: Text.WordWrap
-            color: Theme.text
+        property string browserError: ""
+        onOpened: browserError = ""
+        contentItem: ColumnLayout {
+            spacing: 12
+            Label {
+                objectName: "aboutVersion"
+                text: qsTr("OpenPaint %1").arg(AppInfo.version)
+                font.bold: true
+                font.pixelSize: 22
+                color: Theme.text
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+            }
+            Label {
+                text: qsTr("Open-source painting for Linux and macOS.\nDrawing tools, raster layers and editable OpenRaster projects.")
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.text
+            }
+            Label {
+                objectName: "aboutDeveloper"
+                text: qsTr("Developed and designed by Afshin Kashani, PhD, P.Eng")
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.text
+            }
+            PaintButton {
+                objectName: "aboutWebsite"
+                text: qsTr("Website")
+                Layout.fillWidth: true
+                onClicked: if (!AppInfo.openWebsite())
+                    aboutDialog.browserError = qsTr("Open https://afshinki.github.io/openpaint/ in your browser.")
+            }
+            PaintButton {
+                objectName: "aboutContact"
+                text: qsTr("Contact / report an issue")
+                Layout.fillWidth: true
+                onClicked: if (!AppInfo.openContact())
+                    aboutDialog.browserError = qsTr("Open https://github.com/AfshinKI/openpaint/issues in your browser.")
+            }
+            Label {
+                text: qsTr("Links open in your browser. GitHub issues are public; do not include private artwork or personal information.")
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.secondaryText
+            }
+            Label {
+                text: aboutDialog.browserError
+                visible: text.length > 0
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.text
+            }
+            Label {
+                text: qsTr("GPL-3.0-or-later. Independent of Microsoft.")
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.secondaryText
+            }
         }
     }
 }

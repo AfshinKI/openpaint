@@ -119,14 +119,6 @@ PaintDialog {
                     wrapMode: Text.WordWrap
                 }
                 Label {
-                    objectName: "designerCredit"
-                    text: qsTr("Designer: Afshin Kashani, PhD, P.Eng")
-                    color: Theme.secondaryText
-                    font.pixelSize: 11
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                }
-                Label {
                     text: dialog.browserError
                     visible: text.length > 0
                     color: Theme.text

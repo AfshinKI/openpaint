@@ -29,6 +29,8 @@ class Editor : public QObject {
     Q_PROPERTY(bool freeFormSelection MEMBER freeFormSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool transparentSelection MEMBER transparentSelection NOTIFY settingsChanged)
     Q_PROPERTY(bool clipboardBusy READ clipboardBusy NOTIFY changed)
+    Q_PROPERTY(bool smartGuides READ smartGuides WRITE setSmartGuides NOTIFY guidesChanged)
+    Q_PROPERTY(QPointF guidePosition READ guidePosition NOTIFY guidesChanged)
     Q_PROPERTY(bool floatingActive READ floatingActive NOTIFY changed)
     Q_PROPERTY(QPoint floatingPosition READ floatingPosition NOTIFY changed)
     Q_PROPERTY(bool hasSelection READ hasSelection NOTIFY changed)
@@ -137,6 +139,15 @@ class Editor : public QObject {
     Q_INVOKABLE void transformImage(int kind);
     QRectF resizeBounds() const;
     Q_INVOKABLE void resizeCanvas(int x, int y, int width, int height);
+    bool smartGuides() const {
+        return smartGuides_;
+    }
+    void setSmartGuides(bool enabled);
+    QPointF guidePosition() const {
+        return guidePosition_;
+    }
+    Q_INVOKABLE void clearGuides();
+    Q_INVOKABLE void moveActiveBounds(int x, int y, qreal tolerance = 0);
     Q_INVOKABLE void resizeActiveBounds(int x, int y, int width, int height);
     Q_INVOKABLE void resizeImage(int width, int height, qreal skewX, qreal skewY, bool smooth);
     bool clipboardBusy() const {
@@ -259,7 +270,7 @@ class Editor : public QObject {
     Q_INVOKABLE bool setTextDraft(const QString& text);
     Q_INVOKABLE void setTextBounds(int x, int y, int width, int height);
     void begin(QPointF point, bool secondaryButton);
-    void extend(QPointF point, bool constrain = false);
+    void extend(QPointF point, bool constrain = false, qreal snapTolerance = 0);
     void removeShapePoint();
     void endGesture();
     bool previewActive() const {
@@ -288,6 +299,7 @@ class Editor : public QObject {
     bool textBold = false, textItalic = false, textUnderline = false, textStrikeout = false,
          textBackground = false;
   signals:
+    void guidesChanged();
     void changed();
     void textDraftChanged();
     void textFontRequested(const QFont& font);
@@ -302,6 +314,8 @@ class Editor : public QObject {
     void pixelsChanged(QRect rect);
 
   private:
+    bool smartGuides_ = false;
+    QPointF guidePosition_{-1, -1};
     void layerChanged(bool success);
     bool layersInitialized_ = false;
     bool editingSecondary_ = false;
