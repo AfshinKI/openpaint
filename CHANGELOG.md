@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — toward 2.1.0
+
+- Offer image formats in Save As and add true monochrome 1-bit BMP copies, preserving project save state.
+
 ## 2.0.0 — 2026-10-21
 
 - Add an Apple silicon macOS app bundle, native glass and platform keyboard shortcuts.
