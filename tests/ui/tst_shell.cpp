@@ -489,8 +489,7 @@ class ShellTest : public QObject {
             const auto glyph = canvas->cursor().pixmap().toImage();
             QVERIFY(glyph != previous);
             previous = glyph;
-            QCOMPARE(canvas->cursor().hotSpot(),
-                     tool == Editor::Tool::Eraser ? QPoint(5, 22) : QPoint(6, 22));
+            QCOMPARE(canvas->cursor().hotSpot(), QPoint(5, 5));
             painter.drawPixmap(column++ * 32, 6, canvas->cursor().pixmap());
             canvas->forceActiveFocus();
             QTest::keyPress(window, Qt::Key_Space);
@@ -511,7 +510,8 @@ class ShellTest : public QObject {
             QVERIFY(cursors.save(directory + "/tool-cursors.png"));
         }
         editor->setTool(Editor::Tool::Shape);
-        QCOMPARE(canvas->cursor().shape(), Qt::CrossCursor);
+        QCOMPARE(canvas->cursor().shape(), Qt::BitmapCursor);
+        QCOMPARE(canvas->cursor().hotSpot(), QPoint(5, 5));
         editor->setProperty("shapeOutline", false);
         QCOMPARE(window->findChild<QObject*>("shapeOutlineButton")->property("symbol").toString(),
                  QString("shape-outline-off"));
