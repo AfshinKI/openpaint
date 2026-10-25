@@ -1,8 +1,14 @@
 # Feature: invert active-layer colors
 
-Status: implemented; local validation complete; PR #56 review pending
+Status: shipped in v2.0.0 via merged PR #56
 Feature IDs: F09 (image editing extension)
 Milestone: M3 development polish
+
+
+Release reconciliation (2026-10-25): PR #56 merged on 2026-10-22 UTC and this
+feature shipped in v2.0.0. [Plan 0062](0062-macos-v2-release.md) records publication
+and remaining validation. Below, review/no-release handoffs are historical
+checkpoints; their implementation evidence and stated manual limits are retained.
 
 ## User outcome and scope
 
