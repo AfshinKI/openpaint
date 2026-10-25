@@ -778,7 +778,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         selectedSurface: true
                         radius: Theme.controlRadius
-                        visible: Appearance.effectiveGlassEnabled && editor.tool === Editor.Select
+                        visible: editor.tool === Editor.Select || selectionMain.hovered || selectionDropdown.hovered || selectionMain.visualFocus || selectionDropdown.visualFocus
                         backdropLayers: [window.background, canvas]
                         border.width: 0
                     }
@@ -791,11 +791,10 @@ ApplicationWindow {
                         symbol: editor.colorSelection ? "wand" : editor.freeFormSelection ? "lasso" : "selection"
                         text: editor.colorSelection ? qsTr("Select by color") : editor.freeFormSelection ? qsTr("Select free-form") : qsTr("Select rectangle")
                         Accessible.name: text
-                        background: GlassSurface {
-                            backdropLayers: [window.background, canvas]
+                        background: Rectangle {
                             radius: Theme.controlRadius
-                            selectedSurface: editor.tool === Editor.Select || selectionMain.down || selectionMain.hovered
-                            visible: selectedSurface || selectionMain.visualFocus
+                            bottomLeftRadius: 0
+                            bottomRightRadius: 0
                             color: selectionMain.down ? Theme.pressed : selectionMain.hovered ? Theme.hover : "transparent"
                         }
                         enabled: editor.canSelect
@@ -811,12 +810,18 @@ ApplicationWindow {
                         y: 36
                         width: parent.width
                         height: 20
-                        background: GlassSurface {
-                            backdropLayers: [window.background, canvas]
+                        background: Rectangle {
                             radius: Theme.controlRadius
-                            selectedSurface: editor.tool === Editor.Select || selectionDropdown.down || selectionDropdown.hovered
-                            visible: selectedSurface || selectionDropdown.visualFocus
-                            color: selectionDropdown.down ? Theme.pressed : selectionDropdown.hovered ? Theme.hover : "transparent"
+                            topLeftRadius: 0
+                            topRightRadius: 0
+                            color: selectionDropdown.down ? Theme.pressed : selectionDropdown.hovered ? Theme.hover : (Theme.dark ? "#0CFFFFFF" : "#08000000")
+                            Rectangle {
+                                width: parent.width - 2
+                                x: 1
+                                height: 1
+                                color: Theme.text
+                                opacity: 0.14
+                            }
                         }
                         enabled: editor.canSelect || editor.floatingActive
                         onClicked: selectionMenu.open()
@@ -926,22 +931,59 @@ ApplicationWindow {
                         objectName: "cropButton"
                         action: cropAction
                     }
-                    RowLayout {
+                    Item {
                         Layout.row: 0
                         Layout.column: 1
-                        spacing: 0
+                        Layout.preferredWidth: 48
+                        Layout.preferredHeight: 32
+                        GlassSurface {
+                            anchors.fill: parent
+                            radius: Theme.controlRadius
+                            raisedSurface: false
+                            backdropLayers: [window.background, canvas]
+                            visible: rotateMain.hovered || rotateDropdown.hovered || rotateMain.visualFocus || rotateDropdown.visualFocus
+                            border.width: rotateMain.visualFocus || rotateDropdown.visualFocus ? 2 : 1
+                            border.color: Theme.divider
+                        }
                         IconButton {
+                            id: rotateMain
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                topRightRadius: 0
+                                bottomRightRadius: 0
+                                color: rotateMain.down ? Theme.pressed : rotateMain.hovered ? Theme.hover : "transparent"
+                            }
+                            width: 32
+                            height: 32
                             flat: true
                             objectName: "rotateButton"
                             icon.source: window.lastRotation.icon.source
                             action: window.lastRotation
                         }
                         PaintButton {
+                            id: rotateDropdown
+                            padding: 0
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                topLeftRadius: 0
+                                bottomLeftRadius: 0
+                                color: rotateDropdown.down ? Theme.pressed : rotateDropdown.hovered ? Theme.hover : (Theme.dark ? "#0CFFFFFF" : "#08000000")
+                                Rectangle {
+                                    y: 1
+                                    width: 1
+                                    height: parent.height - 2
+                                    color: Theme.text
+                                    opacity: 0.14
+                                }
+                            }
+                            x: 32
+                            width: 16
+                            height: 32
                             flat: true
                             objectName: "rotateMenuButton"
                             text: "⌄"
                             Accessible.name: qsTr("Rotation options")
-                            implicitWidth: 24
+                            implicitWidth: 16
                             implicitHeight: 32
                             enabled: rotateRightAction.enabled
                             onClicked: rotateMenu.open()
@@ -969,22 +1011,59 @@ ApplicationWindow {
                         objectName: "resizeButton"
                         action: resizeAction
                     }
-                    RowLayout {
+                    Item {
                         Layout.row: 1
                         Layout.column: 1
-                        spacing: 0
+                        Layout.preferredWidth: 48
+                        Layout.preferredHeight: 32
+                        GlassSurface {
+                            anchors.fill: parent
+                            radius: Theme.controlRadius
+                            raisedSurface: false
+                            backdropLayers: [window.background, canvas]
+                            visible: flipMain.hovered || flipDropdown.hovered || flipMain.visualFocus || flipDropdown.visualFocus
+                            border.width: flipMain.visualFocus || flipDropdown.visualFocus ? 2 : 1
+                            border.color: Theme.divider
+                        }
                         IconButton {
+                            id: flipMain
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                topRightRadius: 0
+                                bottomRightRadius: 0
+                                color: flipMain.down ? Theme.pressed : flipMain.hovered ? Theme.hover : "transparent"
+                            }
+                            width: 32
+                            height: 32
                             flat: true
                             objectName: "flipButton"
                             icon.source: window.lastFlip.icon.source
                             action: window.lastFlip
                         }
                         PaintButton {
+                            id: flipDropdown
+                            padding: 0
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                topLeftRadius: 0
+                                bottomLeftRadius: 0
+                                color: flipDropdown.down ? Theme.pressed : flipDropdown.hovered ? Theme.hover : (Theme.dark ? "#0CFFFFFF" : "#08000000")
+                                Rectangle {
+                                    y: 1
+                                    width: 1
+                                    height: parent.height - 2
+                                    color: Theme.text
+                                    opacity: 0.14
+                                }
+                            }
+                            x: 32
+                            width: 16
+                            height: 32
                             flat: true
                             objectName: "flipMenuButton"
                             text: "⌄"
                             Accessible.name: qsTr("Flip options")
-                            implicitWidth: 24
+                            implicitWidth: 16
                             implicitHeight: 32
                             enabled: flipHorizontalAction.enabled
                             onClicked: flipMenu.open()
@@ -1081,11 +1160,31 @@ ApplicationWindow {
                         onClicked: editor.tool = Editor.ColorPicker
                         Accessible.name: text
                     }
-                    Row {
+                    Item {
                         Layout.row: 1
                         Layout.column: 1
-                        spacing: 0
+                        Layout.preferredWidth: 48
+                        Layout.preferredHeight: 32
+                        GlassSurface {
+                            anchors.fill: parent
+                            radius: Theme.controlRadius
+                            raisedSurface: false
+                            backdropLayers: [window.background, canvas]
+                            selectedSurface: editor.tool === Editor.Eraser
+                            visible: selectedSurface || eraserMain.hovered || eraserDropdown.hovered || eraserMain.visualFocus || eraserDropdown.visualFocus
+                            border.width: eraserMain.visualFocus || eraserDropdown.visualFocus ? 2 : 1
+                            border.color: selectedSurface ? Theme.selectionOutline : Theme.divider
+                        }
                         IconButton {
+                            id: eraserMain
+                            width: 32
+                            height: 32
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                topRightRadius: 0
+                                bottomRightRadius: 0
+                                color: eraserMain.down ? Theme.pressed : eraserMain.hovered ? Theme.hover : "transparent"
+                            }
                             flat: true
                             symbol: editor.transparentEraser ? "eraser" : "eraser-paper"
                             objectName: "eraserButton"
@@ -1098,6 +1197,21 @@ ApplicationWindow {
                             Accessible.name: text
                         }
                         PaintButton {
+                            id: eraserDropdown
+                            x: 32
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                topLeftRadius: 0
+                                bottomLeftRadius: 0
+                                color: eraserDropdown.down ? Theme.pressed : eraserDropdown.hovered ? Theme.hover : (Theme.dark ? "#0CFFFFFF" : "#08000000")
+                                Rectangle {
+                                    y: 1
+                                    width: 1
+                                    height: parent.height - 2
+                                    color: Theme.text
+                                    opacity: 0.14
+                                }
+                            }
                             objectName: "eraserMenuButton"
                             text: "⌄"
                             flat: true
@@ -1155,7 +1269,7 @@ ApplicationWindow {
                         anchors.fill: parent
                         selectedSurface: true
                         radius: Theme.controlRadius
-                        visible: Appearance.effectiveGlassEnabled && editor.tool === Editor.Brush
+                        visible: editor.tool === Editor.Brush || brushesButton.hovered || brushDropdown.hovered || brushesButton.visualFocus || brushDropdown.visualFocus
                         backdropLayers: [window.background, canvas]
                         border.width: 0
                     }
@@ -1171,11 +1285,10 @@ ApplicationWindow {
                         height: 36
                         padding: 4
                         text: qsTr("Brush")
-                        background: GlassSurface {
-                            backdropLayers: [window.background, canvas]
+                        background: Rectangle {
                             radius: Theme.controlRadius
-                            selectedSurface: editor.tool === Editor.Brush || brushesButton.down || brushesButton.hovered
-                            visible: selectedSurface || brushesButton.visualFocus
+                            bottomLeftRadius: 0
+                            bottomRightRadius: 0
                             color: brushesButton.down ? Theme.pressed : brushesButton.hovered ? Theme.hover : "transparent"
                         }
                         onClicked: editor.tool = Editor.Brush
@@ -1189,12 +1302,18 @@ ApplicationWindow {
                         width: 40
                         height: 20
                         y: 36
-                        background: GlassSurface {
-                            backdropLayers: [window.background, canvas]
+                        background: Rectangle {
                             radius: Theme.controlRadius
-                            selectedSurface: editor.tool === Editor.Brush || brushDropdown.down || brushDropdown.hovered
-                            visible: selectedSurface || brushDropdown.visualFocus
-                            color: brushDropdown.down ? Theme.pressed : brushDropdown.hovered ? Theme.hover : "transparent"
+                            topLeftRadius: 0
+                            topRightRadius: 0
+                            color: brushDropdown.down ? Theme.pressed : brushDropdown.hovered ? Theme.hover : (Theme.dark ? "#0CFFFFFF" : "#08000000")
+                            Rectangle {
+                                width: parent.width - 2
+                                x: 1
+                                height: 1
+                                color: Theme.text
+                                opacity: 0.14
+                            }
                         }
                         enabled: !editor.textActive && !editor.busy
                         Accessible.name: qsTr("Brush styles")

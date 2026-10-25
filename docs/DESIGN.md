@@ -401,3 +401,12 @@ recipe. Shared surface-opacity and light/dark preferences still apply.
 The menu strip stays inside the shared toolbar on macOS; all controls remain
 reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
 opened with the visible menu buttons rather than Linux Alt-letter mnemonics.
+
+Selection and Brushes use one shared rounded split-control surface and outline.
+The dropdown portion has a subtle tint and faint horizontal divider, with square
+interior corners. Each half retains independent hover, click and keyboard actions.
+Rotate and Flip use the same split-control treatment horizontally, with a tinted
+right dropdown section, a vertical divider and square interior corners.
+Rotate, Flip and Eraser retain 32-unit main buttons with compact 16-unit dropdown
+sections. Eraser shares the same tinted right section and faint vertical divider;
+its shared surface highlights when the eraser tool is selected.
