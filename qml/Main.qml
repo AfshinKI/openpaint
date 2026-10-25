@@ -1621,8 +1621,8 @@ ApplicationWindow {
     Column {
         id: floatingControls
         objectName: "floatingToolControls"
-        anchors.left: parent.left
-        anchors.top: parent.top
+        anchors.left: canvas.left
+        anchors.top: canvas.top
         anchors.leftMargin: 12
         anchors.topMargin: 24
         spacing: 8

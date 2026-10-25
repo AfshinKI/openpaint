@@ -118,7 +118,7 @@ class ShellTest : public QObject {
         QCOMPARE(horizontal->property("imageLength").toReal(), qreal(editor->imageSize().width()));
         for (const qreal zoom : {0.01, 1.25, 32.0}) {
             canvas->zoomBy(zoom / canvas->zoom());
-            QTRY_COMPARE(horizontal->property("scale").toReal(), canvas->zoom());
+            QTRY_COMPARE(horizontal->property("zoomFactor").toReal(), canvas->zoom());
             QCOMPARE(horizontal->property("offset").toReal(), canvas->origin().x());
             QCOMPARE(vertical->property("offset").toReal(), canvas->origin().y());
             QVERIFY(horizontal->property("majorStep").toReal() >= 1);

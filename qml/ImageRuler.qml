@@ -9,14 +9,14 @@ Item {
     required property real imageLength
     property bool vertical: false
     readonly property real offset: vertical ? viewport.origin.y : viewport.origin.x
-    readonly property real scale: viewport.zoom
+    readonly property real zoomFactor: viewport.zoom
     readonly property real length: vertical ? height : width
     readonly property color surfaceColor: Theme.panel
     readonly property color inkColor: Theme.text
     readonly property color tickColor: Theme.secondaryText
     readonly property real marker: vertical ? viewport.cursorPosition.y : viewport.cursorPosition.x
     readonly property real majorStep: {
-        const desired = 64 / scale;
+        const desired = 64 / zoomFactor;
         const base = Math.pow(10, Math.floor(Math.log10(desired)));
         const ratio = desired / base;
         return Math.max(1, (ratio <= 1 ? 1 : ratio <= 2 ? 2 : ratio <= 5 ? 5 : 10) * base);
@@ -25,7 +25,7 @@ Item {
     Accessible.role: Accessible.StaticText
     Accessible.name: vertical ? qsTr("Vertical ruler in pixels") : qsTr("Horizontal ruler in pixels")
     onOffsetChanged: ticks.requestPaint()
-    onScaleChanged: ticks.requestPaint()
+    onZoomFactorChanged: ticks.requestPaint()
     onImageLengthChanged: ticks.requestPaint()
     onSurfaceColorChanged: ticks.requestPaint()
     onInkColorChanged: ticks.requestPaint()
@@ -43,13 +43,13 @@ Item {
             ctx.fillRect(0, 0, width, height);
             const thickness = ruler.vertical ? width : height;
             const step = Math.max(1, ruler.majorStep / 5);
-            const first = Math.max(0, Math.ceil(-ruler.offset / ruler.scale / step));
-            const last = Math.min(Math.floor(ruler.imageLength / step), Math.floor((ruler.length - ruler.offset) / ruler.scale / step));
+            const first = Math.max(0, Math.ceil(-ruler.offset / ruler.zoomFactor / step));
+            const last = Math.min(Math.floor(ruler.imageLength / step), Math.floor((ruler.length - ruler.offset) / ruler.zoomFactor / step));
             ctx.font = "10px sans-serif";
             ctx.lineWidth = 1;
             for (let index = first; index <= last; ++index) {
                 const value = index * step;
-                const position = ruler.offset + value * ruler.scale;
+                const position = ruler.offset + value * ruler.zoomFactor;
                 const major = Math.abs(value / ruler.majorStep - Math.round(value / ruler.majorStep)) < 0.0001;
                 ctx.strokeStyle = ruler.tickColor;
                 ctx.beginPath();
@@ -77,10 +77,10 @@ Item {
         }
     }
     Rectangle {
-        visible: ruler.viewport.cursorVisible && ruler.marker >= 0 && ruler.marker <= ruler.imageLength
+        visible: ruler.viewport.cursorVisible && ruler.viewport.cursorPosition.x >= 0 && ruler.viewport.cursorPosition.y >= 0 && ruler.viewport.cursorPosition.x <= ruler.viewport.editor.imageSize.width && ruler.viewport.cursorPosition.y <= ruler.viewport.editor.imageSize.height
         color: Theme.accent
-        x: ruler.vertical ? 0 : ruler.offset + ruler.marker * ruler.scale
-        y: ruler.vertical ? ruler.offset + ruler.marker * ruler.scale : 0
+        x: ruler.vertical ? 0 : ruler.offset + ruler.marker * ruler.zoomFactor
+        y: ruler.vertical ? ruler.offset + ruler.marker * ruler.zoomFactor : 0
         width: ruler.vertical ? parent.width : 1
         height: ruler.vertical ? 1 : parent.height
     }
