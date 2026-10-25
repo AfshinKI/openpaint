@@ -401,3 +401,6 @@ recipe. Shared surface-opacity and light/dark preferences still apply.
 The menu strip stays inside the shared toolbar on macOS; all controls remain
 reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
 opened with the visible menu buttons rather than Linux Alt-letter mnemonics.
+
+Size, opacity and footer zoom sliders use coral red (#F47F6B) for their
+handles and active tracks in both themes; focus outlines remain theme-aware.

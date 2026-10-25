@@ -1729,7 +1729,7 @@ ApplicationWindow {
                         width: zoomSlider.position * parent.width
                         height: parent.height
                         radius: 2
-                        color: Theme.accent
+                        color: Theme.sliderAccent
                     }
                 }
                 handle: Rectangle {
@@ -1738,7 +1738,7 @@ ApplicationWindow {
                     width: 16
                     height: 16
                     radius: 8
-                    color: Theme.accent
+                    color: Theme.sliderAccent
                     border.width: zoomSlider.visualFocus ? 3 : 2
                     border.color: zoomSlider.visualFocus ? Theme.text : Theme.panel
                 }

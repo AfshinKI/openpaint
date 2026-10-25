@@ -66,7 +66,7 @@ GlassSurface {
                     width: parent.width
                     height: slider.position * parent.height
                     radius: 2
-                    color: Theme.accent
+                    color: Theme.sliderAccent
                 }
             }
             handle: Rectangle {
@@ -75,7 +75,7 @@ GlassSurface {
                 width: 18
                 height: 18
                 radius: 9
-                color: Theme.accent
+                color: Theme.sliderAccent
                 border.width: slider.visualFocus ? 3 : 2
                 border.color: slider.visualFocus ? Theme.text : Theme.panel
             }
