@@ -1,7 +1,7 @@
 # Build OpenPaint
 
-The current development app supports pencil/eraser, colors and size, undo/redo,
-zoom/pan, PNG open/save, guarded close and System/Light/Dark themes. Packaged downloads are described in [INSTALL.md](INSTALL.md). This guide builds
+The v2 editor supports drawing tools, selections, transforms, raster layers,
+OpenRaster projects, image import/export, undo/redo and System/Light/Dark themes. Packaged downloads are described in [INSTALL.md](INSTALL.md). This guide builds
 from source and does not install the app system-wide.
 
 ## Tested baseline
@@ -165,15 +165,18 @@ and Transparent modes. Each drag is one undo step; Escape cancels it.
 
 Ctrl+Z undoes; Ctrl+Y/Ctrl+Shift+Z redo. Ctrl+wheel zooms around the pointer;
 Right-drag, Space+drag or middle-drag pans; Ctrl+0 fits. Ctrl+N creates a blank image, Ctrl+O
-opens supported images, Ctrl+S saves and Ctrl+Shift+S chooses another PNG filename. Unsaved
+opens supported images/projects, Ctrl+S saves and Ctrl+Shift+S chooses another destination.
+On macOS, use the platform Command shortcuts. Unsaved
 New/Open/Close offers Save, Discard and Cancel. Failed saves keep the drawing open.
 
 Static PNG, JPEG, BMP and WebP imports have a 32 MP limit. Source metadata is
 removed, colors normalize to sRGB and JPEG/PNG/WebP EXIF orientation is applied.
-Animated PNG/WebP and BMP V4/V5 color headers are rejected. Save writes PNG;
-non-PNG imports ask for a PNG destination. File → Export copy writes PNG/JPEG/BMP/WebP
+Animated PNG/WebP and BMP V4/V5 color headers are rejected. Flat drawings save as
+PNG; documents requiring layer structure/properties save as OpenRaster (.ora).
+Non-PNG image imports ask for a new destination; bounded .ora projects reopen
+with their layers intact. File → Export copy writes PNG/JPEG/BMP/WebP
 with explicit quality/background options and leaves the drawing’s saved state intact. Recovery after a
-crash remains planned. Current implemented tools and development layer support
+crash remains planned. Current implemented tools and layer limits
 are tracked in [the feature checklist](FEATURES.md).
 
 Controller/codec tests verify snapshot saves, errors and lossless reopen. After a

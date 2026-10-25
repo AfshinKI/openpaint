@@ -5,7 +5,7 @@ These documents are implementation contracts. Plans describe intended behavior;
 
 | Need | Start here |
 | --- | --- |
-| Build/run the current native shell | [Build guide](BUILD.md) |
+| Build/run the current editor | [Build guide](BUILD.md) |
 | Product goals and release order | [Roadmap](ROADMAP.md) |
 | Modern Paint scope and reference evidence | [Feature checklist](FEATURES.md) |
 | Layout, visual rules, shortcuts, interactions | [Interface design](DESIGN.md) |
@@ -14,8 +14,10 @@ These documents are implementation contracts. Plans describe intended behavior;
 | First executable implementation plan | [M1 foundation](plans/0001-foundation.md) |
 | M1 completion evidence and performance baseline | [M1 closure](plans/0009-m1-closure.md) |
 | Testing and release gates | [Quality](QUALITY.md) |
-| Alpha installation and removal | [Install guide](INSTALL.md) |
-| Next: alpha ribbon/color polish | [Eight-step UI plan](plans/0028-alpha-ui-polish.md) |
+| Linux/macOS installation and removal | [Install guide](INSTALL.md) |
+| Current release and platform evidence | [v2 release plan](plans/0062-macos-v2-release.md) |
+| Intermediate changes and superseded decisions | [Release progression](ROADMAP.md#release-progression) |
+| Historical alpha ribbon/color polish | [Eight-step UI plan](plans/0028-alpha-ui-polish.md) |
 | M2 completion and release validation | [Alpha release plan](plans/0027-alpha-release.md) |
 | Download formats and Updates screen | [Releases](RELEASES.md) |
 | Personal data, network access, fixture rules | [Privacy](PRIVACY.md) |

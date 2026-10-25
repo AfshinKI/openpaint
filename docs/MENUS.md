@@ -297,7 +297,8 @@ columns by three rows, exposing all 20 shapes without scrolling.
 
 The menu row ends with Check for updates and Settings icon buttons. Settings
 exposes System/Light/Dark appearance. The update shortcut opens the existing
-Updates screen (release guidance; automatic checking/installing remains planned).
+Updates screen (automatic startup/open checks with cooldown/backoff on network-capable
+builds; manual browser links for Flatpak; installation remains manual).
 
 Brushes mirrors Selection: the icon and lower arrow share one rounded accent
 outline when active and a stronger shared keyboard-focus outline. Idle has no
