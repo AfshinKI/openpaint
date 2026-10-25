@@ -172,7 +172,7 @@ class ShellTest : public QObject {
             QQmlExpression fits(qmlContext(button), button,
                                 "icon.width + leftPadding + rightPadding <= width && "
                                 "icon.height + topPadding + bottomPadding <= height");
-            QVERIFY(fits.evaluate().toBool());
+            QVERIFY2(fits.evaluate().toBool(), name);
             QVERIFY(!fits.hasError());
             QVERIFY(button->mapToScene({0, 0}).x() >= 0);
             QVERIFY(button->mapToScene({button->width(), 0}).x() <= window->width());
