@@ -193,6 +193,58 @@ class DocumentTest : public QObject {
         QVERIFY(!opacity.beginStroke({16, 16}, Qt::red, 12, false, 9, 100));
     }
 
+    void fillRecolorsAntialiasedBackground() {
+        for (bool transparent : {false, true}) {
+            Document doc({64, 64});
+            QImage base = doc.image();
+            base.fill(transparent ? Qt::transparent : Qt::white);
+            QVERIFY(doc.reset(base));
+            QVERIFY(doc.beginStroke({10.25, 12.75}, Qt::black, 3));
+            doc.extendStroke({49.25, 43.75});
+            QVERIFY(doc.commitStroke());
+            const auto line = doc.image();
+            const auto token = std::make_shared<std::atomic_bool>(false);
+            const auto red = openpaint::fillRegion(line, {0, 0}, Qt::red, 0, token, {}, true);
+            QVERIFY(!red.failed && !red.image.isNull());
+            for (int y = 0; y < 64; ++y)
+                for (int x = 0; x < 64; ++x) {
+                    const int background =
+                        transparent ? 255 - qAlpha(line.pixel(x, y)) : qRed(line.pixel(x, y));
+                    QVERIFY(std::abs(qRed(red.image.pixel(x, y)) - background) <= 2);
+                    QCOMPARE(qGreen(red.image.pixel(x, y)), 0);
+                    QCOMPARE(qBlue(red.image.pixel(x, y)), 0);
+                    QCOMPARE(qAlpha(red.image.pixel(x, y)), 255);
+                }
+            const auto blue =
+                openpaint::fillRegion(red.image, {0, 0}, Qt::blue, 0, token, {}, true);
+            QVERIFY(!blue.image.isNull());
+            for (int y = 0; y < 64; ++y)
+                for (int x = 0; x < 64; ++x)
+                    QVERIFY(std::abs(qBlue(blue.image.pixel(x, y)) - qRed(red.image.pixel(x, y))) <=
+                            2);
+            QVERIFY(doc.applyPatch(red.image, red.rect, doc.revision()));
+            doc.undo();
+            QCOMPARE(doc.image(), line);
+            doc.redo();
+            QCOMPARE(doc.image(), red.image);
+        }
+        QImage boundary(6, 3, QImage::Format_ARGB32_Premultiplied);
+        boundary.fill(Qt::white);
+        for (int y = 0; y < 3; ++y) {
+            boundary.setPixelColor(1, y, QColor(180, 180, 180));
+            boundary.setPixelColor(2, y, Qt::black);
+        }
+        boundary.setPixelColor(1, 1, Qt::cyan);
+        const auto token = std::make_shared<std::atomic_bool>(false);
+        const auto filled = openpaint::fillRegion(boundary, {0, 0}, Qt::red, 0, token, {}, true);
+        QCOMPARE(filled.image.pixelColor(1, 0), QColor(180, 0, 0));
+        QCOMPARE(filled.image.pixelColor(1, 1), QColor(Qt::cyan));
+        QCOMPARE(filled.image.pixelColor(2, 0), QColor(Qt::black));
+        QCOMPARE(filled.image.pixelColor(3, 0), QColor(Qt::white));
+        const auto selected = openpaint::fillRegion(boundary, {0, 0}, Qt::red, 0, token,
+                                                    QRegion(QRect(0, 0, 1, 3)), true);
+        QCOMPARE(selected.image.pixel(1, 0), boundary.pixel(1, 0));
+    }
     void fillSmoothSameColorFringe() {
         using namespace openpaint;
         Document doc({64, 64});

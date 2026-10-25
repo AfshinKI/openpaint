@@ -493,3 +493,8 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Fill recolors the background contribution at recognized antialiased line edges,
+keeping the line color and smooth coverage rather than leaving the old background
+as a halo. Inference is local and never grows the connected flood region; arbitrary
+painted gradients and ambiguous edge colors may remain unchanged.
