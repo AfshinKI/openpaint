@@ -401,3 +401,9 @@ recipe. Shared surface-opacity and light/dark preferences still apply.
 The menu strip stays inside the shared toolbar on macOS; all controls remain
 reachable with Tab. macOS File/Edit shortcuts use Command, and file menus can be
 opened with the visible menu buttons rather than Linux Alt-letter mnemonics.
+
+The eraser uses original OpenPaint vector artwork: a diagonal pink rubber block
+with a blue sleeve and a small mode badge (paper white or checkerboard). Its colors
+remain fixed in both themes. The paths were authored from geometric primitives;
+no Microsoft icon, screenshot or traced asset is incorporated. Artwork is licensed
+GPL-3.0-or-later with the project.
