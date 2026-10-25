@@ -1,12 +1,13 @@
 # Interface design
 
-Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
-It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
-current shipped behavior remains unchanged until implementation is verified.
+The shipped [alpha corrections](plans/0028-alpha-ui-polish.md) superseded the
+earlier shared custom-palette, Swap-button and left-rail targets. Later v1/v2
+revisions appear below; [FEATURES.md](FEATURES.md) records current shipped scope
+and [the roadmap](ROADMAP.md#release-progression) indexes superseded decisions.
 
 Status: design specification, not an implemented or pixel-verified replica.
 Goal: someone familiar with modern Paint should find the same everyday workflows
-quickly, with Linux window conventions and original OpenPaint assets.
+quickly, with native Linux/macOS window conventions and original OpenPaint assets.
 
 The detailed [menu and control specification](MENUS.md) defines group order,
 menu entries, brush inventory, settings and feature discovery. Read it before
@@ -197,7 +198,7 @@ editor. Skip full palettes and existing duplicates. Both palettes are session-on
 and start empty on launch. Explicit editor Add/Replace/Remove/Clear affects its
 own list immediately for this session; Cancel discards only the pending color
 draft. Palette changes never dirty artwork or enter its undo history. See the
-[current alpha plan](plans/0028-alpha-ui-polish.md) for the superseding contract.
+[shipped alpha plan](plans/0028-alpha-ui-polish.md) for the superseding contract.
 
 The [reference layout refinement](plans/0005-reference-color-layout.md) supersedes
 the earlier inferred hue-ring design. Toolbar height is 112 logical pixels;

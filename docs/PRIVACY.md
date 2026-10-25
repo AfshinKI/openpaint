@@ -15,13 +15,13 @@ Remove selected and Clear all remain available for the editor's session list.
 
 Core editing works without a network connection, account, analytics, advertising,
 or telemetry. No automatic crash uploads. No unique installation identifier.
-Recent files, settings, and recovery artwork remain in local platform settings storage, with
-visible controls to clear them. Do not include document paths or contents in logs.
+Settings remain in local platform storage. Recent-file management, recovery
+artwork and visible clearing controls are future requirements, not shipped features. Do not include document paths or contents in logs.
 
 Manual and automatic update checks contact api.github.com. Automatic checks are
 enabled by default on network-capable builds, at startup and daily while running;
 Opening Updates also checks, subject to cooldown/backoff. Updates discloses the destination. The former checkbox and saved opt-out are no longer used. A web host can see an IP address even when the app sends
-no personal fields. Diagnostics are opt-in exports that users can preview and edit.
+no personal fields. Any future diagnostics export must be opt-in and previewable/editable; no such export is shipped.
 
 Export strips author/device/GPS/text metadata by default. Color-profile conversion
 and required orientation handling are separate from personal metadata removal.
@@ -80,11 +80,11 @@ address and ordinary connection metadata with a fixed application User-Agent; no
 artwork, paths, credentials or installation identifier is sent. Automatic checks
 default on for network-capable builds: once per startup after a short delay, then
 at most daily while running. Persisted cooldown/server backoff still applies.
-There is no check button or checkbox. Local XDG settings retain
+There is no check button or checkbox. Local platform settings retain
 request/backoff timestamps. Browser navigation
 requires an explicit action. Flatpak retains no network permission and manual links.
 
-Theme choice, glass enablement and opacity persist locally in XDG configuration. These preferences contain no artwork or identifiers and cause no network requests.
+Theme choice, glass enablement and opacity persist locally in platform configuration. These preferences contain no artwork or identifiers and cause no network requests.
 
 ## Public website screenshots
 
@@ -96,7 +96,7 @@ app and deliberately staged original backdrop; never include private desktop
 content or interrupt a user's unsaved document. A source harness is allowed for
 clearly labeled test evidence, but must not be presented as an installed capture.
 
-Development blur onboarding reads local desktop/version, extension settings and
+Linux blur onboarding reads local desktop/version, extension settings and
 extension activation/configuration without networking. The setup command is copied only
 on request; OpenPaint never runs it or changes desktop settings. A local welcome
 revision records dismissal. No capability results or command output are logged.
@@ -113,8 +113,9 @@ extensions and configures application blur. GNOME receives ordinary download
 connection metadata; no artwork or app history is sent. Previous settings are
 backed up locally. OpenPaint itself never executes the block or installs software.
 
-The copied glass setup selects live application blur and disables clipped redraws
-through the extension’s no-artifact setting. This affects the whole compositor
+The copied glass setup selects live application blur. Where the extension exposes
+`hacks-level`, it disables clipped redraws through the no-artifact setting; newer
+schemas without that key retain their own redraw handling. This affects the whole compositor
 and may increase GPU use or reduce desktop performance; the setup panel discloses
 this before copying. Original settings are backed up before changes. OpenPaint
 does not capture desktop pixels or execute this setup itself.

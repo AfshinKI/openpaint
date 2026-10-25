@@ -3,6 +3,8 @@
 ## Unreleased — toward 2.1.0
 
 - Balance compact Image/Tools, Selection and Brush ribbon icons while retaining button targets.
+- Fix Linux glass setup for Blur My Shell schemas without `hacks-level`, while
+  retaining backed-up redraw configuration on versions that support it.
 
 ## 2.0.0 — 2026-10-21
 
@@ -89,7 +91,7 @@
 - Add manual and opt-in daily GitHub stable-release notifications. Installation
   remains manual; Flatpak retains its no-network sandbox and browser links.
 
-User-visible changes are recorded here. See [release validation](docs/plans/0031-stable-release.md)
+User-visible changes are recorded here. See [current release validation](docs/plans/0062-macos-v2-release.md)
 for artifact hashes, tested desktops and known limits.
 
 ## 1.0.0 — 2026-10-16
