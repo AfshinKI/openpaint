@@ -1,17 +1,15 @@
 # Feature checklist and reference audit
 
-Alpha corrections shipped through PR #34; the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md)
-records implementation evidence and remaining desktop-validation limits. It
-supersedes the earlier shared custom-palette, Swap-button and left-rail targets.
-The v2 release is tracked in [plan 0062](plans/0062-macos-v2-release.md).
+Current release: [v2.0.0](https://github.com/AfshinKI/openpaint/releases/tag/v2.0.0),
+published 2026-10-22 UTC from merged PR #56. [Plan 0062](plans/0062-macos-v2-release.md)
+records release/platform evidence and remaining limits. Raster layers and
+OpenRaster shipped in v2; this does not complete the recovery, tiling or
+cross-application acceptance gates of M3. See [release progression](ROADMAP.md#release-progression)
+for changes introduced between the alpha and v2.
 
-Reference audit date: 2026-10-12. The editor now includes raster layers.
-Development layer support is tracked separately in [plan 0058](plans/0058-layers.md).
-The maintainer selected this feature scope for [v1.0.0](plans/0031-stable-release.md);
-future feature rows below remain planned.
-The M1 source-editor checkpoint is complete; see [validation and limits](plans/0009-m1-closure.md).
-M2 editing tools and package recipes are implemented; release evidence is recorded
-in [the alpha plan](plans/0027-alpha-release.md). Later features remain planned.
+Reference audit date: 2026-10-12. The reference audit is historical; current
+OpenPaint implementation status is recorded below. M1/M2 closure evidence remains
+in [M1 closure](plans/0009-m1-closure.md) and [the alpha plan](plans/0027-alpha-release.md).
 The reference is modern Windows 11 Paint, including separately identified preview
 features. This is a research baseline, not an exhaustive test of today's installed
 Paint. No Windows binary was available for a hands-on comparison. The
@@ -34,12 +32,12 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F06 | Lines, rectangles, ellipses, shape palette | R1; partial visible shape inventory specified, full palette still unverified | M2 | Implemented: 20-shape 7×3 ribbon gallery with separate Outline and Fill menus, retained previews, outline/fill, numeric geometry, curve bends, polygon and spline entry and Shift constraints; [basic previews](plans/0013-basic-shapes.md) and [palette](plans/0014-shape-palette.md). Exact full-reference inventory remains unverified. |
 | F07 | Text, font/style/size/alignment and background | R1; detailed control behavior needs observation | M2 | Implemented: inline plain text, system font/style/alignment, optional background, floating formatting toolbar and outside-click/Ctrl+Enter raster commit; [plan 0015](plans/0015-inline-text.md). |
 | F08 | Rectangle/free-form/color selection; copy/cut/paste | R1 | M2 | Implemented: rectangle/free-form selection, inversion, color-key transparency, numeric bounds, selection clearing on tool changes and undoable background-color deletion; [plan 0016](plans/0016-rectangular-selection.md). Move and PNG clipboard: [plan 0017](plans/0017-selection-clipboard.md); free-form and transparent selection: [plan 0018](plans/0018-freeform-selection.md). |
-| F09 | Crop, resize/skew, flip, right-angle rotate, invert colors | R1 supports crop/resize/flip/rotate; skew needs observation | M2 | Implemented: crop, flips and right-angle rotations for image/selection, with dimension-aware undo; [plan 0019](plans/0019-crop-rotate-flip.md). Canvas crop/expand and active selection, shape and text corner handles: [alpha polish](plans/0028-alpha-ui-polish.md). Active-layer color inversion is implemented in development; see [plan 0059](plans/0059-invert-colors.md). Pixel/percent resize, resampling and bounded skew: [plan 0020](plans/0020-resize-skew.md). |
+| F09 | Crop, resize/skew, flip, right-angle rotate, invert colors | R1 supports crop/resize/flip/rotate; skew needs observation | M2 | Implemented: crop, flips and right-angle rotations for image/selection, with dimension-aware undo; [plan 0019](plans/0019-crop-rotate-flip.md). Canvas crop/expand and active selection, shape and text corner handles: [alpha polish](plans/0028-alpha-ui-polish.md). Active-layer color inversion shipped in v2; see [plan 0059](plans/0059-invert-colors.md). Pixel/percent resize, resampling and bounded skew: [plan 0020](plans/0020-resize-skew.md). |
 | F10 | Freeform rotation of active content | R4: Paint 11.2601.391.0 preview | M4 | Planned |
-| F11 | Zoom, pan, status, rulers, grid | R1; exact bounds and ruler behavior need observation | M1–M4 | In progress: zoom/pan (including right-drag with a closed-hand cursor), synchronized 1–3200% footer slider, fit and basic status implemented ([plan 0060](plans/0060-zoom-and-blur-setup.md)); rulers, grid and thumbnail planned. |
-| F12 | Add/delete/rename/reorder/duplicate/merge layers | R1 covers layers/reorder/merge; other operations are product choices pending audit | M3 | Implemented in development: bounded raster layers, undoable stack operations and project persistence; [plan 0058](plans/0058-layers.md). Release/platform verification remains pending. |
-| F13 | Transparent canvas, layer visibility/opacity | R1 plus OpenPaint contract; detailed parity needs observation | M3 | Implemented in development: bounded raster layers, undoable stack operations and project persistence; [plan 0058](plans/0058-layers.md). Release/platform verification remains pending. |
-| F14 | Editable layered project save/reopen | R2; OpenPaint uses .ora initially | M3 | Implemented in development: bounded raster layers, undoable stack operations and project persistence; [plan 0058](plans/0058-layers.md). Release/platform verification remains pending. |
+| F11 | Zoom, pan, status, rulers, grid | R1; exact bounds and ruler behavior need observation | M1–M4 | In progress: zoom/pan (including right-drag with a closed-hand cursor), synchronized 1–3200% footer slider, fit and basic status implemented ([plan 0060](plans/0060-zoom-and-blur-setup.md)); top/left pixel rulers implemented in development ([plan 0069](plans/0069-canvas-rulers.md)); grid and thumbnail planned. |
+| F12 | Add/delete/rename/reorder/duplicate/merge layers | R1 covers layers/reorder/merge; other operations are product choices pending audit | M3 | Shipped in v2: bounded raster layers, undoable stack operations and OpenRaster persistence; [plan 0058](plans/0058-layers.md), [release evidence and platform limits](plans/0062-macos-v2-release.md). |
+| F13 | Transparent canvas, layer visibility/opacity | R1 plus OpenPaint contract; detailed parity needs observation | M3 | Shipped in v2: bounded raster layers, undoable stack operations and OpenRaster persistence; [plan 0058](plans/0058-layers.md), [release evidence and platform limits](plans/0062-macos-v2-release.md). |
+| F14 | Editable layered project save/reopen | R2; OpenPaint uses .ora initially | M3 | Shipped in v2: bounded raster layers, undoable stack operations and OpenRaster persistence; [plan 0058](plans/0058-layers.md), [release evidence and platform limits](plans/0062-macos-v2-release.md). |
 | F15 | PNG, JPEG, BMP, WebP interchange; static GIF import | R1 documents some formats; exact supported subset is our choice | M1–M4 | In progress: static PNG open/save, EXIF orientation normalization and failure checks implemented; see [PNG validation](plans/0007-png-validation.md); JPEG/BMP/WebP import: [plan 0021](plans/0021-image-import.md). Explicit export copies: [plan 0022](plans/0022-image-export.md). Static GIF import remains M4. |
 | F16 | Undo/redo, crash recovery, atomic saves | Product choice; reference workflow requires hands-on audit | M1–M3 | In progress: stroke history and atomic PNG saves tested; crash recovery pending. |
 | F17 | Stylus pressure, touch and fractional scaling | R1 confirms stylus; precise pressure behavior needs observation | M4 | Planned |
@@ -50,7 +48,7 @@ OpenPaint requirement, not a claim about Microsoft behavior.
 | F22 | Sticker generation | R5 | M6 | Planned |
 | F23 | Coloring-page generation | R3 preview, hardware/account restrictions in reference | M6 | Planned |
 | F24 | Collapsible command toolbar | Persistent/auto-hide modes specified visually; timing and focus behavior need validation | M4 | Planned |
-| F25 | Linux/macOS installers, portable downloads and Updates screen | Platform product choice | M2–M5 | Updates screen, bounded manual and default-on startup/daily release checks ([plan 0037](plans/0037-release-notifications.md)) and install metadata implemented in [plan 0024](plans/0024-install-updates.md); AppImage recipe in [plan 0025](plans/0025-appimage-package.md); Flatpak recipe in [plan 0026](plans/0026-flatpak-package.md); alpha downloads and validation in [plan 0027](plans/0027-alpha-release.md); Ubuntu DEB installer in [plan 0030](plans/0030-debian-installer.md); v1.0.0 publication and Ubuntu 24.04 GNOME/X11 evidence in [plan 0031](plans/0031-stable-release.md); verified automatic updates remain M5. |
+| F25 | Linux/macOS installers, portable downloads and Updates screen | Platform product choice | M2–M5 | Updates screen, bounded manual and default-on startup/daily release checks ([plan 0037](plans/0037-release-notifications.md)) and install metadata implemented in [plan 0024](plans/0024-install-updates.md); AppImage recipe in [plan 0025](plans/0025-appimage-package.md); Flatpak recipe in [plan 0026](plans/0026-flatpak-package.md); alpha downloads and validation in [plan 0027](plans/0027-alpha-release.md); Ubuntu DEB installer in [plan 0030](plans/0030-debian-installer.md); v1.0.0 publication and Ubuntu 24.04 GNOME/X11 evidence in [plan 0031](plans/0031-stable-release.md); Apple silicon DMG and native glass shipped in [v2](plans/0062-macos-v2-release.md); signed automatic installation remains M5. |
 | F26 | Privacy controls, metadata removal, accessible keyboard UI | Product choice | M1–M5 | In progress: offline PNG metadata removal, keyboard lifecycle, accessible names/roles and GNOME portal workflow tested; see [desktop workflow](plans/0008-keyboard-desktop-workflow.md); Orca usability certification remains M4. |
 | F27 | Printing through the Linux print dialog | Product choice; reference details need observation | M4 | Planned |
 
@@ -125,36 +123,37 @@ Theme selection (System/Light/Dark), glass enabled state and surface opacity per
 across restarts. Inline text displays a blinking caret at the scaled font height.
 The Updates dialog uses explicit theme text colors and brighter dark-mode buttons.
 
-Development default: glass starts at 40% opacity; saved user choices are retained.
-Development font picker replaces the native dialog with searchable family previews;
+Current default: glass starts at 40% opacity; saved user choices are retained.
+The font picker replaces the native dialog with searchable family previews;
 see [plan 0043](plans/0043-font-picker.md).
-Development text editing uses a dashed black/white box outline and a blinking
+Text editing uses a dashed black/white box outline and a blinking
 black caret immediately in an empty box at the scaled text height; neither overlay is saved in the artwork.
-Development startup release-check policy is recorded in [plan 0045](plans/0045-startup-updates.md).
-Development Linux windows use 12px rounded bottom client corners and matching input masks;
+The startup release-check policy is recorded in [plan 0045](plans/0045-startup-updates.md).
+Linux windows use 12px rounded bottom client corners and matching input masks;
 top corners stay square, and other platforms receive no custom corner mask.
 maximized/fullscreen edges are square. Native decorations remain desktop-owned.
-Development glass selection uses stronger neutral frost and light outlines instead
+Glass selection uses stronger neutral frost and light outlines instead
 of green fills. Software rendering uses tint/outline; desktop blur stays compositor-owned.
-Development Updates attribution is recorded in [plan 0048](plans/0048-designer-credit.md).
+Developer attribution now belongs in About; its removal from Updates is recorded
+in [plan 0067](plans/0067-about-project-details.md).
 
 
-Development refinements retain the 40–100% glass range with a 40% default and no
+Current refinements retain the 40–100% glass range with a 40% default and no
 separate tint control. Flat toolbar buttons stay clear when idle; selected controls
 use stronger frost and light outlines. Checkmarks use neutral frosted colors, and
 selected color swatches use a bright outer ring without recoloring the swatch.
 The font picker retains its searchable per-family previews.
 
 Pencil, brush, eraser and eyedropper cursors identify the active tool over the canvas,
-with white contrast edges and tip-aligned hotspots. Space/middle-button panning
+with white contrast edges and tip-aligned hotspots. Right-button/Space/middle-button panning
 uses a hand and restores the tool cursor afterward. Shape controls show a solid
 filled drop when solid fill is active, and a small × on the outline icon when
 outline is off. See [refinement acceptance](plans/0050-appearance-refinements.md).
 
 Eraser modes are Paper white (opaque white, independent of the background/fill
 swatch) and Transparent. A small dropdown beside the eraser replaces the separate
-ribbon options group. The eraser cursor's + marks the actual erase point. Both
-mouse buttons honor the chosen mode; strokes retain undo/redo and cancellation.
+ribbon options group. The eraser cursor's + marks the actual erase point. Left-button
+erasing honors the chosen mode; right-drag pans in v2; strokes retain undo/redo and cancellation.
 See [eraser acceptance](plans/0051-eraser-target.md).
 
 The eraser button/cursor shows a small filled patch in Paper white mode; Transparent
@@ -172,7 +171,7 @@ uses outline color/width, and ignores fill. Endpoints and overall bounds remain
 editable; undo/redo and PNG saving use the existing document pipeline.
 See [icon and spline acceptance](plans/0052-icon-and-spline.md).
 
-Development [blur welcome and Updates](plans/0054-blur-onboarding-design.md):
+The [blur welcome and Updates](plans/0054-blur-onboarding-design.md):
 real app previews, local capability checks, optional setup command copying,
 a separate one-time welcome with a contribution link, and silent opaque fallback.
 Disabled glass controls link to the on-demand Enable Glass panel. Initial setup scope is Ubuntu
@@ -191,4 +190,30 @@ Text font controls support selected ranges and insertion formatting in the same 
 Apple silicon/macOS 14.4+ build and DMG packaging are implemented, with native
 AppKit glass and Command shortcuts. Validation is tracked in [plan 0062](plans/0062-macos-v2-release.md);
 physical Mac visual review remains pending. Intel packages and Apple notarization
-are not part of this release candidate.
+are not part of v2.0.0.
+
+Development opacity controls now cover pencil, fill and shapes as well as brushes
+([plan 0073](plans/0073-drawing-tool-opacity.md)).
+
+Development shape previews use a floating Options / Apply / Cancel toolbar
+([plan 0072](plans/0072-floating-shape-toolbar.md)), retaining preview undo/cancel semantics.
+
+Development Updates can remember a skipped release across launches while still
+notifying for later versions ([plan 0071](plans/0071-skip-update-version.md)).
+
+Optional canvas-edge/center smart guides and preview move grips are implemented
+for v2.1 development, with local combined validation ([plan 0070](plans/0070-smart-guides.md)).
+Automatic painted-object alignment and equal-spacing guides remain outside scope.
+
+Development v2.1 adds top/left pixel rulers with adaptive ticks and pointer
+markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
+canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
+[Acceptance and pending validation](plans/0069-canvas-rulers.md).
+
+Development Save As offers PNG/OpenRaster document saving and explicit image-copy
+choices (JPEG, BMP, monochrome 1-bit BMP, WebP, and layered PNG). Copies retain
+the editable document's saved state. [Acceptance](plans/0068-save-as-image-formats.md).
+
+Development fix for [issue #57](plans/0065-glass-schema-compatibility.md): copied
+glass setup detects optional extension redraw keys before use. v2.1 planning is
+tracked in [the request plan](plans/0064-v2.1-roadmap.md); it is not released.

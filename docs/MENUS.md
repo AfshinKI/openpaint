@@ -1,10 +1,11 @@
 # Menu and control specification
 
-Pending alpha corrections are specified in the [eight-step UI polish plan](plans/0028-alpha-ui-polish.md).
-It supersedes the earlier shared custom-palette, Swap-button and left-rail targets;
-current shipped behavior remains unchanged until implementation is verified.
+The shipped [alpha corrections](plans/0028-alpha-ui-polish.md) superseded the
+earlier shared custom-palette, Swap-button and left-rail targets. Later v1/v2
+revisions appear below; [FEATURES.md](FEATURES.md) records current shipped scope
+and [the roadmap](ROADMAP.md#release-progression) indexes superseded decisions.
 
-This is the visual and interaction contract for future implementation. It does not
+This is the visual and interaction contract, including explicitly deferred work. It does not
 mark features as shipped; [FEATURES.md](FEATURES.md) remains the status ledger.
 Static layouts establish placement and visible choices, not runtime behavior,
 exact dimensions, hidden submenu contents or keyboard semantics. Items below
@@ -17,7 +18,7 @@ on the left, followed immediately by quick Save, Undo and Redo actions with a
 small separator. The Image and Help menus are removed; image commands remain in the ribbon and
 Updates/About are in File. Share is
 deferred until desktop sharing is implemented. Place What's new and Settings at the far right. F1 opens About for keyboard access. Window controls remain
-native Linux decorations, separate from application actions. Core editing needs
+native platform decorations, separate from application actions. Core editing needs
 no account; an account/profile button is not an OpenPaint requirement.
 
 The command groups run left to right: Selection, Image, Tools, Brushes, Shapes,
@@ -186,7 +187,7 @@ Escape cancels a drag; arrow keys resize by 1px (Shift: 10px). The canvas refits
 after commit. Dimensions are limited to 16384 per side and 32MP overall. A left-side floating rail holds narrow 36px rounded Size (1–128 px) and Opacity
 (0–100%) slider panels, with original stroke/droplet icons and accent thumbs.
 Numeric values appear in tooltips; accessible names retain each role and range. Size appears
-for pencil, brush, eraser and shapes; opacity appears for brushes. Both support
+for pencil, brush, eraser and shapes; opacity appears for pencil, brush, fill and shapes. Both support
 keyboard arrows and are disabled while busy. Fill uses exact color matching with automatic smooth edges. The rail consumes pointer input without painting through
 its margins and does not resize or reposition the canvas.
 
@@ -297,7 +298,8 @@ columns by three rows, exposing all 20 shapes without scrolling.
 
 The menu row ends with Check for updates and Settings icon buttons. Settings
 exposes System/Light/Dark appearance. The update shortcut opens the existing
-Updates screen (release guidance; automatic checking/installing remains planned).
+Updates screen (automatic startup/open checks with cooldown/backoff on network-capable
+builds; manual browser links for Flatpak; installation remains manual).
 
 Brushes mirrors Selection: the icon and lower arrow share one rounded accent
 outline when active and a stronger shared keyboard-focus outline. Idle has no
@@ -499,3 +501,43 @@ right dropdown. Replace matching color affects matching pixels across the active
 layer, limited by the current selection, with the same undo and smooth-edge
 behavior. Both original icons share a bucket; a continuous patch identifies Contiguous fill
 and separated patches identify Replace matching color. Mode resets on launch.
+Fill recolors the background contribution at recognized antialiased line edges,
+keeping the line color and smooth coverage rather than leaving the old background
+as a halo. Inference is local and never grows the connected flood region; arbitrary
+painted gradients and ambiguous edge colors may remain unchanged.
+Canvas expansion applies the selected background/fill color (including alpha) to
+new space on the bottom background layer. New space on drawing layers remains
+transparent. This also applies when resizing by dragging canvas corners or edges.
+Drawing opacity is shared across these tools for the session. Shape preview opacity
+updates live; pencil strokes and fill jobs capture it when they begin. A value of
+0% changes no pixels, and 100% preserves the existing full-strength rendering.
+Shape previews show a compact floating Options / Apply / Cancel toolbar below the
+ribbon and rulers. These actions no longer occupy the footer for shapes. Selection
+and text footer behavior is unchanged; Enter/Escape still apply/cancel shapes.
+Updates includes “Skip this version” when a newer release is available. It is
+disabled while checking or once skipped. The choice persists across launches;
+only that version’s notice is suppressed, and its manual download remains available.
+### Smart guides (v2.1 development)
+
+View → Smart guides toggles optional canvas-edge/center snapping, initially off.
+Drag selections normally or use the move grip above active selection/shape/text
+bounds. Hold Ctrl to bypass snapping. The focused grip accepts arrow keys (1 px),
+Shift+arrow (10 px), and Escape to cancel the preview. See [plan 0070](plans/0070-smart-guides.md).
+Development v2.1 adds top/left pixel rulers with adaptive ticks and pointer
+markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
+canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
+[Acceptance and pending validation](plans/0069-canvas-rulers.md).
+Development Save As offers PNG/OpenRaster document saving and explicit image-copy
+choices (JPEG, BMP, monochrome 1-bit BMP, WebP, and layered PNG). Copies retain
+the editable document's saved state. [Acceptance](plans/0068-save-as-image-formats.md).
+
+Save As/Export format options share the glass dialog and menu controls. The
+full-width format list marks the active choice; “Choose location…” advances to
+the system file picker. The concise notice distinguishes saving from exporting
+a copy without changing document state.
+Development About displays build version, Linux/macOS scope and approved developer
+credit, with explicit website/contact buttons. Contact opens public GitHub Issues;
+no private email is published. [Acceptance](plans/0067-about-project-details.md).
+Development v2.1 ribbon sizing: Image/Tools icons use 20px glyphs within existing
+32px targets; Selection and Brushes use 24px. Other icon families keep
+their existing sizes. [Acceptance and pending validation](plans/0066-ribbon-icon-size.md).
