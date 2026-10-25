@@ -497,3 +497,8 @@ Layer and palette context menus retain their right-click actions.
 Development Save As offers PNG/OpenRaster document saving and explicit image-copy
 choices (JPEG, BMP, monochrome 1-bit BMP, WebP, and layered PNG). Copies retain
 the editable document's saved state. [Acceptance](plans/0068-save-as-image-formats.md).
+
+Save As/Export format options share the glass dialog and menu controls. The
+full-width format list marks the active choice; “Choose location…” advances to
+the system file picker. The concise notice distinguishes saving from exporting
+a copy without changing document state.

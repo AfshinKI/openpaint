@@ -38,3 +38,12 @@ Xvfb test outside the sandbox. No live-desktop input or glass setup was performe
 This is local combined-source validation, not package or physical Mac certification.
 Next: required hosted checks and protected review/merge of the individual PR;
 then v2.1 release metadata, fresh release screenshots and package validation.
+
+## Save As visual revision
+
+Use the shared glass dialog/menu surfaces and a full-width, left-aligned format
+picker with extension text. The format menu matches the picker width and marks
+the active choice. Concise format help and aligned option rows reduce clutter.
+The primary action reads “Choose location…” before opening the system file picker.
+Save/copy semantics are unchanged. Validate light/dark, keyboard format selection,
+minimum window width and both save/export flows after rebuilding.

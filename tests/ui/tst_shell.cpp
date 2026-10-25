@@ -976,10 +976,12 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
         QTRY_VERIFY(options->property("opened").toBool());
         QVERIFY(options->property("savesDocument").toBool());
+        QVERIFY(capture("save-as-format.png"));
         QVERIFY(options->setProperty("formatIndex", 4));
         QVERIFY(!options->property("savesDocument").toBool());
         QVERIFY(options->property("flatten").toBool());
         QCOMPARE(options->property("suffix").toString(), QString("bmp"));
+        QVERIFY(capture("save-as-mono.png"));
         keyClick(Qt::Key_Escape);
         QTRY_VERIFY(!options->property("visible").toBool());
         QCOMPARE(editor->image(), before);
@@ -1052,7 +1054,7 @@ class ShellTest : public QObject {
         QVERIFY(QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject*, nullptr)));
         QTRY_VERIFY(options->property("visible").toBool());
         QCOMPARE(options->property("formatIndex").toInt(), 0);
-        QVERIFY(tabToButton("OK"));
+        QVERIFY(tabToButton("Choose location…"));
         keyClick(Qt::Key_Space);
         QTRY_COMPARE(closed.size(), 2);
         QTRY_VERIFY(file->property("visible").toBool());
