@@ -19,7 +19,7 @@ title bar was explicitly left out. No copied Microsoft artwork or fonts are used
 - [x] Merge documentation PR 58 through protection; retain focused PRs for the remaining slices.
 - [ ] Required checks pass and feature PRs merge through protection.
 - [ ] Release build, full native/tooling tests, format/QML checks and scaled UI validation pass.
-- [ ] Fresh light/dark release captures use original artwork/backdrop at 40% surface opacity.
+- [x] Fresh light/dark release captures use original artwork/backdrop at 40% surface opacity.
 - [ ] README, website, notes, version and metadata are reconciled and visually reviewed.
 - [ ] Package install/upgrade/edit/save/reopen/remove evidence is recorded.
 - [ ] Protected release-preparation PR merges, then main workflow dispatch promotes 2.1.0.
@@ -33,6 +33,27 @@ checks are recorded in their plans. Release evidence must be recorded below and
 must not be inferred from earlier builds. Physical Mac visual validation and
 notarization remain unavailable; hosted native Cocoa validation and ad-hoc signing
 are the supported release lane. GNOME/KDE/Wayland coverage is reported exactly.
+
+### Local release validation (2026-10-25)
+
+Qt 6.12.0/GCC 13 Release build completed. All 20 CTest suites pass (78.06 s),
+including engine, persistence, updater and shell workflows. All 44 Python tooling
+tests pass. C++/QML formatting, zero-warning QML lint, repository links/privacy
+checks and website staging pass. Two stale UI regressions were updated in their
+owning PRs: cursor hotspots now use the approved 5,5 crosshair, and eraser
+selection is verified on the shared split-button surface, including opaque mode.
+No behavior checks were removed or disabled.
+
+Seven fresh captures are recorded in `website/release.json` and the asset
+provenance notes. Light/dark and Save As/fill/zoom menus were visually inspected.
+The staged website was reviewed in Chrome at desktop size and a 390×844 phone
+viewport (375px content width with scrollbar); no horizontal overflow or broken
+images was found. The external-link SVG renders as a monochrome vector on mobile.
+This is browser viewport validation, not a physical-device certification.
+
+The maintainer accepted the interactive development UI before requesting release.
+Native system-frame outline limitations remain accepted; no custom title bar was
+introduced. Installed-package and hosted macOS validation remain separate gates.
 
 ## Next step
 

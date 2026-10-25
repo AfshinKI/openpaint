@@ -281,7 +281,7 @@ download page and in release notes. Never claim Gatekeeper certification or
 physical Mac visual validation from offscreen/hosted tests. Native macOS glass
 uses AppKit and needs no Linux extension command. Intel Mac packaging is deferred.
 
-### Skip one release (v2.1 development)
+### Skip one release (v2.1)
 
 Updates → Skip this version remembers the current available release locally and
 suppresses its startup notice across launches. Checks continue; newer versions

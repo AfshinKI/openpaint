@@ -534,17 +534,17 @@ and text footer behavior is unchanged; Enter/Escape still apply/cancel shapes.
 Updates includes “Skip this version” when a newer release is available. It is
 disabled while checking or once skipped. The choice persists across launches;
 only that version’s notice is suppressed, and its manual download remains available.
-### Smart guides (v2.1 development)
+### Smart guides (v2.1)
 
 View → Smart guides toggles optional canvas-edge/center snapping, initially off.
 Drag selections normally or use the move grip above active selection/shape/text
 bounds. Hold Ctrl to bypass snapping. The focused grip accepts arrow keys (1 px),
 Shift+arrow (10 px), and Escape to cancel the preview. See [plan 0070](plans/0070-smart-guides.md).
-Development v2.1 adds top/left pixel rulers with adaptive ticks and pointer
+v2.1 adds top/left pixel rulers with adaptive ticks and pointer
 markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
 canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
-[Acceptance and pending validation](plans/0069-canvas-rulers.md).
-Development Save As offers PNG/OpenRaster document saving and explicit image-copy
+[Implementation and validation](plans/0069-canvas-rulers.md).
+Save As offers PNG/OpenRaster document saving and explicit image-copy
 choices (JPEG, BMP, monochrome 1-bit BMP, WebP, and layered PNG). Copies retain
 the editable document's saved state. [Acceptance](plans/0068-save-as-image-formats.md).
 
@@ -552,9 +552,9 @@ Save As/Export format options share the glass dialog and menu controls. The
 full-width format list marks the active choice; “Choose location…” advances to
 the system file picker. The concise notice distinguishes saving from exporting
 a copy without changing document state.
-Development About displays build version, Linux/macOS scope and approved developer
+About displays build version, Linux/macOS scope and approved developer
 credit, with explicit website/contact buttons. Contact opens public GitHub Issues;
 no private email is published. [Acceptance](plans/0067-about-project-details.md).
-Development v2.1 ribbon sizing: Image/Tools icons use 20px glyphs within existing
+v2.1 ribbon sizing: Image/Tools icons use 20px glyphs within existing
 32px targets; Selection and Brushes use 24px. Other icon families keep
-their existing sizes. [Acceptance and pending validation](plans/0066-ribbon-icon-size.md).
+their existing sizes. [Implementation and validation](plans/0066-ribbon-icon-size.md).

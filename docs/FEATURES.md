@@ -7,6 +7,8 @@ OpenRaster shipped in v2; this does not complete the recovery, tiling or
 cross-application acceptance gates of M3. See [release progression](ROADMAP.md#release-progression)
 for changes introduced between the alpha and v2.
 
+The v2.1.0 candidate adds the changes below; [release validation and publication](plans/0080-release-2.1.0.md) remain the final gate.
+
 Reference audit date: 2026-10-12. The reference audit is historical; current
 OpenPaint implementation status is recorded below. M1/M2 closure evidence remains
 in [M1 closure](plans/0009-m1-closure.md) and [the alpha plan](plans/0027-alpha-release.md).
@@ -195,25 +197,26 @@ are not part of v2.0.0.
 Development opacity controls now cover pencil, fill and shapes as well as brushes
 ([plan 0073](plans/0073-drawing-tool-opacity.md)).
 
-Development shape previews use a floating Options / Apply / Cancel toolbar
+Shape previews use a floating Options / Apply / Cancel toolbar
 ([plan 0072](plans/0072-floating-shape-toolbar.md)), retaining preview undo/cancel semantics.
 
-Development Updates can remember a skipped release across launches while still
+Updates can remember a skipped release across launches while still
 notifying for later versions ([plan 0071](plans/0071-skip-update-version.md)).
 
 Optional canvas-edge/center smart guides and preview move grips are implemented
-for v2.1 development, with local combined validation ([plan 0070](plans/0070-smart-guides.md)).
+for v2.1, with validation ([plan 0070](plans/0070-smart-guides.md)).
 Automatic painted-object alignment and equal-spacing guides remain outside scope.
 
-Development v2.1 adds top/left pixel rulers with adaptive ticks and pointer
+v2.1 adds top/left pixel rulers with adaptive ticks and pointer
 markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
 canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
-[Acceptance and pending validation](plans/0069-canvas-rulers.md).
+[Implementation and validation](plans/0069-canvas-rulers.md).
 
-Development Save As offers PNG/OpenRaster document saving and explicit image-copy
+Save As offers PNG/OpenRaster document saving and explicit image-copy
 choices (JPEG, BMP, monochrome 1-bit BMP, WebP, and layered PNG). Copies retain
 the editable document's saved state. [Acceptance](plans/0068-save-as-image-formats.md).
 
-Development fix for [issue #57](plans/0065-glass-schema-compatibility.md): copied
+Fix for [issue #57](plans/0065-glass-schema-compatibility.md): copied
 glass setup detects optional extension redraw keys before use. v2.1 planning is
-tracked in [the request plan](plans/0064-v2.1-roadmap.md); it is not released.
+tracked in [the request plan](plans/0064-v2.1-roadmap.md); publication evidence
+is recorded in [the release plan](plans/0080-release-2.1.0.md).

@@ -434,21 +434,21 @@ border and backdrop blur mask, preventing square pixels outside rounded edges.
 The shape preview toolbar uses the same glass surface, spacing and controls as
 the text toolbar. It is centered on the canvas viewport, 8px below its top edge,
 and appears only while a shape is being edited. See [plan 0072](plans/0072-floating-shape-toolbar.md).
-### Optional smart guides (v2.1 development)
+### Optional smart guides (v2.1)
 
 View → Smart guides starts off and enables magenta canvas-edge/center alignment
 while moving previews. Snap distance is six screen pixels; Ctrl bypasses it.
 A compact move grip above selections/shapes/text supports dragging and keyboard
 nudges. Guides disappear after gestures and never enter saved pixels. Object
 recognition and equal-spacing guides are not included. See [plan 0070](plans/0070-smart-guides.md).
-Development v2.1 adds top/left pixel rulers with adaptive ticks and pointer
+v2.1 adds top/left pixel rulers with adaptive ticks and pointer
 markers, toggled together from View → Rulers (Ctrl+R / Command+R). They follow
 canvas pan/zoom and do not modify artwork. Alignment snapping remains separate.
-[Acceptance and pending validation](plans/0069-canvas-rulers.md).
+[Implementation and validation](plans/0069-canvas-rulers.md).
 
 Ruler surfaces use the shared 6-unit control corner radius for slightly rounder
 corners consistent with other controls. Their opacity, position and zoom behavior
 remain unchanged.
-Development v2.1 ribbon sizing: Image/Tools icons use 20px glyphs within existing
+v2.1 ribbon sizing: Image/Tools icons use 20px glyphs within existing
 32px targets; Selection and Brushes use 24px. Other icon families keep
-their existing sizes. [Acceptance and pending validation](plans/0066-ribbon-icon-size.md).
+their existing sizes. [Implementation and validation](plans/0066-ribbon-icon-size.md).
