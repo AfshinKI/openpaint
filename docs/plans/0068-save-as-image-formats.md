@@ -47,3 +47,10 @@ the active choice. Concise format help and aligned option rows reduce clutter.
 The primary action reads “Choose location…” before opening the system file picker.
 Save/copy semantics are unchanged. Validate light/dark, keyboard format selection,
 minimum window width and both save/export flows after rebuilding.
+
+The revised combined preview builds with Qt 6.12.0; formatting and zero-warning
+QML lint pass. All six shell CTest suites pass. Final ruler/Save As/export workflows
+pass offscreen at 100% and 200% (5 Qt cases each), and with the floating-glass
+check on isolated X11/Mesa at 125% (6 cases). Light/dark PNG, monochrome BMP,
+JPEG and WebP dialog captures were inspected. Keyboard destination selection
+and export preserve their existing behavior. Protected review remains pending.
