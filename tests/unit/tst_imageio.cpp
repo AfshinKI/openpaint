@@ -165,6 +165,39 @@ class ImageIoTest : public QObject {
             QCOMPARE(result.image.size(), source.size());
         }
     }
+    void monochromeBmp() {
+        QTemporaryDir dir;
+        const auto path = dir.filePath("mono.bmp");
+        QImage source(13, 3, QImage::Format_ARGB32_Premultiplied);
+        source.fill(Qt::transparent);
+        source.setPixelColor(0, 0, QColor(127, 127, 127));
+        source.setPixelColor(1, 0, QColor(128, 128, 128));
+        openpaint::ExportOptions options;
+        options.format = openpaint::ExportFormat::MonoBmp;
+        options.flatten = true;
+        QVERIFY(openpaint::exportImage(path, source, options).ok());
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        const auto bytes = file.readAll();
+        file.close();
+        QVERIFY(bytes.size() > 54);
+        QCOMPARE(qFromLittleEndian<quint16>(bytes.constData() + 28), quint16(1));
+        const auto loaded = openpaint::loadImage(path);
+        QVERIFY2(loaded.ok(), qPrintable(loaded.error));
+        QCOMPARE(loaded.image.size(), source.size());
+        QCOMPARE(loaded.image.pixelColor(0, 0), QColor(Qt::black));
+        QCOMPARE(loaded.image.pixelColor(1, 0), QColor(Qt::white));
+        QCOMPARE(loaded.image.pixelColor(12, 2), QColor(Qt::white));
+        auto token = std::make_shared<std::atomic_bool>(true);
+        QVERIFY(openpaint::exportImage(path, source, options, token).cancelled);
+        QVERIFY(!openpaint::exportImage(path, source, options, {}, [](QSaveFile&) {
+                     return false;
+                 }).ok());
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QCOMPARE(file.readAll(), bytes);
+        options.flatten = false;
+        QVERIFY(!openpaint::exportImage(path, source, options).ok());
+    }
     void import_data() {
         QTest::addColumn<QByteArray>("format");
         for (const auto& format : {"png", "jpeg", "bmp", "webp"})

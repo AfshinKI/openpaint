@@ -121,12 +121,12 @@ void Editor::begin(QPointF point, bool secondaryButton) {
         cancellation_ = std::make_shared<std::atomic_bool>(false);
         busy_ = filling_ = true;
         emit changed();
-        fillWatcher_.setFuture(
-            QtConcurrent::run([snapshot, color, point, tolerance = 0, token = cancellation_,
-                               selection = document.selection(), smoothEdges = true] {
+        fillWatcher_.setFuture(QtConcurrent::run(
+            [snapshot, color, point, tolerance = 0, token = cancellation_,
+             selection = document.selection(), smoothEdges = true, fillOpacity = opacity] {
                 return openpaint::fillRegion(
                     snapshot, QPoint(int(std::floor(point.x())), int(std::floor(point.y()))), color,
-                    tolerance, token, selection, smoothEdges);
+                    tolerance, token, selection, smoothEdges, fillOpacity);
             }));
         return;
     }
@@ -171,17 +171,17 @@ void Editor::begin(QPointF point, bool secondaryButton) {
     if (document.beginStroke(
             point, eraser ? QColor(Qt::white) : (secondaryButton ? secondary : primary), brushSize,
             eraser && transparentEraser, tool_ == Tool::Brush ? brushStyle : -1,
-            tool_ == Tool::Brush ? opacity : 100)) {
+            (tool_ == Tool::Brush || tool_ == Tool::Pencil) ? opacity : 100)) {
         emit pixelsChanged(QRect());
         emit changed();
     }
 }
-void Editor::extend(QPointF point, bool constrain) {
+void Editor::extend(QPointF point, bool constrain, qreal snapTolerance) {
     if (floatingActive_) {
         if (floatingDragging_ && std::isfinite(point.x()) && std::isfinite(point.y()) &&
             std::abs(point.x()) <= 1000000 && std::abs(point.y()) <= 1000000)
-            moveFloating(int(std::floor(point.x())) - floatingDragOffset_.x(),
-                         int(std::floor(point.y())) - floatingDragOffset_.y());
+            moveActiveBounds(int(std::floor(point.x())) - floatingDragOffset_.x(),
+                             int(std::floor(point.y())) - floatingDragOffset_.y(), snapTolerance);
         return;
     }
     if (selecting_) {
@@ -252,6 +252,7 @@ void Editor::extend(QPointF point, bool constrain) {
         emit pixelsChanged(rect);
 }
 void Editor::endGesture() {
+    clearGuides();
     if (floatingActive_) {
         floatingDragging_ = false;
         return;
@@ -299,7 +300,7 @@ void Editor::refreshShape() {
     const auto patch = openpaint::renderShape(
         document.previewBase(), shapeStart_, shapeEnd_, shapeKind,
         shapeSecondary_ ? secondary : primary, shapeSecondary_ ? primary : secondary, brushSize,
-        shapeOutline, shapeFill, curveBend1, curveBend2, shapePoints_);
+        shapeOutline, shapeFill, curveBend1, curveBend2, shapePoints_, opacity);
     document.updatePreview(patch.image, patch.rect);
     emit pixelsChanged({});
     emit changed();
@@ -567,6 +568,7 @@ void Editor::commitPreview() {
     finish();
 }
 void Editor::finish() {
+    clearGuides();
     finishSelection();
     if (shapeActive_ && shapeKind == openpaint::PolygonShape && shapePoints_.size() < 3) {
         cancel();
@@ -586,6 +588,7 @@ void Editor::finish() {
     emit changed();
 }
 void Editor::cancel() {
+    clearGuides();
     if (selecting_) {
         document.setSelection(previousSelection_);
         selecting_ = false;
@@ -776,7 +779,7 @@ void Editor::exportFile(const QUrl& url, int format, int quality, bool lossless,
                         QColor background) {
     if (busy_ || document.active() || previewActive())
         return;
-    if (!url.isLocalFile() || format < 0 || format > 3 ||
+    if (!url.isLocalFile() || format < 0 || format > 4 ||
         !openpaint::exportSuffix(url.toLocalFile(), openpaint::ExportFormat(format))) {
         fail(tr("Choose a local filename matching the export format."));
         emit exported(false);

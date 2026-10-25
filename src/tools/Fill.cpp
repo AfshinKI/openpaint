@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Fill.h"
+#include "Opacity.h"
 #include "document/Document.h"
 #include <algorithm>
 #include <cmath>
@@ -73,12 +74,12 @@ QRgb recolorEdge(const QImage& source, QPoint point, QRgb background, QRgb repla
 
 FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int tolerance,
                       const std::shared_ptr<std::atomic_bool>& cancelled, const QRegion& selection,
-                      bool smoothEdges) {
+                      bool smoothEdges, int opacity) {
     if (!Document::validSize(source.size()) || !source.rect().contains(seed) ||
         source.format() != QImage::Format_ARGB32_Premultiplied || !color.isValid() ||
-        tolerance < 0 || tolerance > 255 || !cancelled)
+        tolerance < 0 || tolerance > 255 || opacity < 0 || opacity > 100 || !cancelled)
         return {{}, {}, true};
-    if (cancelled->load() || (!selection.isEmpty() && !selection.contains(seed)))
+    if (opacity == 0 || cancelled->load() || (!selection.isEmpty() && !selection.contains(seed)))
         return {};
     try {
         const QRgb target = source.pixel(seed), replacement = qPremultiply(color.rgba());
@@ -144,6 +145,16 @@ FillResult fillRegion(const QImage& source, QPoint seed, QColor color, int toler
         }
         if (cancelled->load() || changed.isEmpty())
             return {};
+        if (opacity < 100) {
+            for (int y = changed.top(); y <= changed.bottom(); ++y) {
+                if (cancelled->load())
+                    return {};
+                auto* row = reinterpret_cast<QRgb*>(output.scanLine(y));
+                const auto* before = reinterpret_cast<const QRgb*>(source.constScanLine(y));
+                for (int x = changed.left(); x <= changed.right(); ++x)
+                    row[x] = operationOpacity(before[x], row[x], opacity);
+            }
+        }
         return {output, changed, false};
     } catch (const std::bad_alloc&) {
         return {{}, {}, true};

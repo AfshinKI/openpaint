@@ -79,6 +79,61 @@ class FakeNetwork : public QNetworkAccessManager {
 class UpdatesTest : public QObject {
     Q_OBJECT
   private slots:
+    void skipVersionPersistsAndNewerReleaseNotifies() {
+        QTemporaryDir directory;
+        const auto file = directory.filePath("settings.ini");
+        FakeNetwork network;
+        qint64 now = 1700000000;
+        {
+            UpdateService service(&network, file, [&] { return now; });
+            QVERIFY(!service.skipVersion());
+            service.check();
+            QVERIFY(!service.skipVersion()); // A pending check cannot be skipped.
+            QTRY_VERIFY(!service.busy());
+            QVERIFY(service.available());
+            QVERIFY(service.skipVersion());
+            QVERIFY(service.skipped());
+            QVERIFY(service.available()); // Manual download stays available.
+            QCOMPARE(service.summary(), QString("This version is skipped"));
+        }
+        now += 61;
+        UpdateService restarted(&network, file, [&] { return now; });
+        QSignalSpy found(&restarted, &UpdateService::updateFound);
+        QTRY_COMPARE_WITH_TIMEOUT(network.requests.size(), 2, 2500);
+        QTRY_VERIFY(!restarted.busy());
+        QVERIFY(restarted.skipped());
+        QVERIFY(restarted.available());
+        QCOMPARE(found.size(), 0);
+        now += 61;
+        restarted.refresh();
+        QTRY_VERIFY(!restarted.busy());
+        QVERIFY(restarted.skipped());
+        QCOMPARE(found.size(), 0);
+        now += 61;
+        network.next.body = R"({"tag_name":"v999.0.1","draft":false,"prerelease":false})";
+        restarted.check();
+        QTRY_VERIFY(!restarted.busy());
+        QVERIFY(!restarted.skipped());
+        QCOMPARE(found.size(), 1);
+        QCOMPARE(restarted.latestVersion(), QString("999.0.1"));
+        QSettings settings(file, QSettings::IniFormat);
+        QCOMPARE(settings.value("updates/skippedVersion").toString(), QString("999.0.0"));
+    }
+    void skipWriteFailureDoesNotHideRelease() {
+        QTemporaryDir directory;
+        const auto blocker = directory.filePath("not-a-directory");
+        QFile file(blocker);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.close();
+        FakeNetwork network;
+        UpdateService service(&network, blocker + "/settings.ini", [] { return 1700000000; });
+        service.check();
+        QTRY_VERIFY(!service.busy());
+        QVERIFY(service.available());
+        QVERIFY(!service.skipVersion());
+        QVERIFY(!service.skipped());
+        QVERIFY(service.message().contains("Could not save"));
+    }
     void versionComparison() {
         bool valid = false;
         QVERIFY(UpdateService::newerStable("v1.10.0", "1.9.0", &valid));
