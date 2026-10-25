@@ -1841,16 +1841,70 @@ ApplicationWindow {
         id: aboutDialog
         objectName: "aboutDialog"
         anchors.centerIn: parent
-        width: Math.min(window.width - 64, 440)
+        width: Math.min(window.width - 64, 520)
         title: qsTr("About OpenPaint")
         modal: true
         standardButtons: Dialog.Ok
         closePolicy: Popup.CloseOnEscape
-        Label {
-            width: parent.width
-            text: qsTr("Open-source painting for Linux.\n\nDevelopment build: drawing, erasing, colors, undo and PNG files.\n\nGPL-3.0-or-later. Independent of Microsoft.")
-            wrapMode: Text.WordWrap
-            color: Theme.text
+        property string browserError: ""
+        onOpened: browserError = ""
+        contentItem: ColumnLayout {
+            spacing: 12
+            Label {
+                objectName: "aboutVersion"
+                text: qsTr("OpenPaint %1").arg(AppInfo.version)
+                font.bold: true
+                font.pixelSize: 22
+                color: Theme.text
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+            }
+            Label {
+                text: qsTr("Open-source painting for Linux and macOS.\nDrawing tools, raster layers and editable OpenRaster projects.")
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.text
+            }
+            Label {
+                objectName: "aboutDeveloper"
+                text: qsTr("Developed and designed by Afshin Kashani, PhD, P.Eng")
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.text
+            }
+            PaintButton {
+                objectName: "aboutWebsite"
+                text: qsTr("Website")
+                Layout.fillWidth: true
+                onClicked: if (!AppInfo.openWebsite())
+                    aboutDialog.browserError = qsTr("Open https://afshinki.github.io/openpaint/ in your browser.")
+            }
+            PaintButton {
+                objectName: "aboutContact"
+                text: qsTr("Contact / report an issue")
+                Layout.fillWidth: true
+                onClicked: if (!AppInfo.openContact())
+                    aboutDialog.browserError = qsTr("Open https://github.com/AfshinKI/openpaint/issues in your browser.")
+            }
+            Label {
+                text: qsTr("Links open in your browser. GitHub issues are public; do not include private artwork or personal information.")
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.secondaryText
+            }
+            Label {
+                text: aboutDialog.browserError
+                visible: text.length > 0
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.text
+            }
+            Label {
+                text: qsTr("GPL-3.0-or-later. Independent of Microsoft.")
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                color: Theme.secondaryText
+            }
         }
     }
 }

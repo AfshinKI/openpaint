@@ -118,3 +118,7 @@ through the extension’s no-artifact setting. This affects the whole compositor
 and may increase GPU use or reduce desktop performance; the setup panel discloses
 this before copying. Original settings are backed up before changes. OpenPaint
 does not capture desktop pixels or execute this setup itself.
+
+About offers explicit browser actions for the public project website and GitHub
+Issues contact page. Opening About itself makes no request. External links carry
+no artwork or document metadata; the browser supplies ordinary connection metadata.

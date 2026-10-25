@@ -493,3 +493,7 @@ Canvas right-button hold-and-drag pans with a closed-hand cursor, replacing
 secondary-color drawing/sampling on the canvas. Release or grab/focus loss restores
 the tool cursor. Only the viewport moves; artwork and undo history stay unchanged.
 Layer and palette context menus retain their right-click actions.
+
+Development About displays build version, Linux/macOS scope and approved developer
+credit, with explicit website/contact buttons. Contact opens public GitHub Issues;
+no private email is published. [Acceptance](plans/0067-about-project-details.md).
