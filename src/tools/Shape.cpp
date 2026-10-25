@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "Shape.h"
+#include "Opacity.h"
 #include <QPainter>
 #include <QPainterPath>
 #include <QTransform>
@@ -8,11 +9,11 @@
 namespace openpaint {
 ShapePatch renderShape(const QImage& base, QPointF start, QPointF end, int kind,
                        QColor outlineColor, QColor fillColor, int width, bool outline, bool fill,
-                       qreal bend1, qreal bend2, const QList<QPointF>& vertices) {
-    if (base.isNull() || kind < 0 || kind >= ShapeCount || width < 1 || width > 128 ||
-        !outlineColor.isValid() || !fillColor.isValid() || !std::isfinite(bend1) ||
-        !std::isfinite(bend2) || std::abs(bend1) > 200 || std::abs(bend2) > 200 ||
-        vertices.size() > 4096)
+                       qreal bend1, qreal bend2, const QList<QPointF>& vertices, int opacity) {
+    if (opacity < 0 || opacity > 100 || base.isNull() || kind < 0 || kind >= ShapeCount ||
+        width < 1 || width > 128 || !outlineColor.isValid() || !fillColor.isValid() ||
+        !std::isfinite(bend1) || !std::isfinite(bend2) || std::abs(bend1) > 200 ||
+        std::abs(bend2) > 200 || vertices.size() > 4096)
         return {};
     auto valid = [](QPointF p) {
         return std::isfinite(p.x()) && std::isfinite(p.y()) && std::abs(p.x()) <= 1000000 &&
@@ -169,6 +170,14 @@ ShapePatch renderShape(const QImage& base, QPointF start, QPointF end, int kind,
     painter.setBrush(fill && closed ? QBrush(fillColor) : Qt::NoBrush);
     painter.drawPath(path);
     painter.end();
+    if (opacity < 100) {
+        for (int y = 0; y < image.height(); ++y) {
+            auto* row = reinterpret_cast<QRgb*>(image.scanLine(y));
+            const auto* before = reinterpret_cast<const QRgb*>(base.constScanLine(y + rect.y()));
+            for (int x = 0; x < image.width(); ++x)
+                row[x] = operationOpacity(before[x + rect.x()], row[x], opacity);
+        }
+    }
     return {image, rect};
 }
 } // namespace openpaint

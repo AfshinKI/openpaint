@@ -70,3 +70,11 @@ bool AppInfo::openContributing() const {
     return QDesktopServices::openUrl(
         QUrl("https://github.com/AfshinKI/openpaint/blob/main/CONTRIBUTING.md"));
 }
+
+bool AppInfo::openWebsite() const {
+    return QDesktopServices::openUrl(QUrl("https://afshinki.github.io/openpaint/"));
+}
+
+bool AppInfo::openContact() const {
+    return QDesktopServices::openUrl(QUrl("https://github.com/AfshinKI/openpaint/issues"));
+}
